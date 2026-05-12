@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "tenantId": "acme-corp",
+  "baseline": [],
+  "custom": [
+    {
+      "id": "codename-project-x",
+      "name": "Project X Codename",
+      "description": "Prevent leaking internal project codename",
+      "severity": "high",
+      "action": "require_confirmation",
+      "enabled": true,
+      "tags": ["confidential", "codename"],
+      "kind": "dictionary",
+      "terms": ["Project X", "ProjectX", "proj-x"],
+      "caseSensitive": false
+    },
+    {
+      "id": "internal-domain",
+      "name": "Internal Domain",
+      "description": "Detects references to internal corp domain",
+      "severity": "medium",
+      "action": "warn",
+      "enabled": true,
+      "tags": ["network", "internal"],
+      "kind": "pattern",
+      "pattern": "\\.acme\\.internal\\b",
+      "flags": "i",
+      "validator": "none",
+      "scope": "all"
+    }
+  ],
+  "perSite": {
+    "chatgpt.com": { "enabled": true },
+    "chat.openai.com": { "enabled": true },
+    "claude.ai": { "enabled": true },
+    "gemini.google.com": { "enabled": true }
+  },
+  "allowSendAnywayWithReason": false,
+  "auditRetentionDays": 90
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ChatGPT Mock</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; background: #212121; color: #ececec; }
+      .composer-area { display: flex; gap: 8px; align-items: flex-end; margin-top: 2rem; background: #2f2f2f; padding: 12px; border-radius: 16px; }
+      #prompt-textarea { flex: 1; background: transparent; border: none; color: #ececec; font-size: 16px; resize: none; outline: none; min-height: 48px; padding: 8px; }
+      #send-button { background: white; color: #212121; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; }
+      #send-button:disabled { opacity: 0.4; cursor: default; }
+      #output { margin-top: 1rem; font-size: 14px; color: #aaa; }
+    </style>
+  </head>
+  <body>
+    <h2>ChatGPT (Mock)</h2>
+    <p id="output">No message sent yet.</p>
+
+    <div class="composer-area">
+      <textarea
+        id="prompt-textarea"
+        placeholder="Message ChatGPT"
+        rows="3"
+        data-testid="send-button"
+      ></textarea>
+      <button id="send-button" data-testid="send-button" aria-label="Send message">
+        Send
+      </button>
+    </div>
+
+    <script>
+      const textarea = document.getElementById("prompt-textarea");
+      const sendBtn = document.getElementById("send-button");
+      const output = document.getElementById("output");
+
+      sendBtn.addEventListener("click", () => {
+        output.textContent = "SENT: " + textarea.value;
+        textarea.value = "";
+      });
+
+      textarea.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
+    </script>
+  </body>
+</html>

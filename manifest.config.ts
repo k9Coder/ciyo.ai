@@ -1,0 +1,51 @@
+import { defineManifest } from "@crxjs/vite-plugin";
+
+const LLM_HOSTS = [
+  "https://chatgpt.com/*",
+  "https://chat.openai.com/*",
+  "https://claude.ai/*",
+  "https://gemini.google.com/*",
+];
+
+export default defineManifest({
+  manifest_version: 3,
+  name: "PromptShield",
+  version: "0.1.0",
+  description: "Browser-based DLP for LLM chat interfaces",
+  permissions: ["storage", "scripting", "activeTab"],
+  host_permissions: LLM_HOSTS,
+  background: {
+    service_worker: "src/background/service-worker.ts",
+    type: "module",
+  },
+  content_scripts: [
+    {
+      matches: LLM_HOSTS,
+      js: ["src/content/content-script.ts"],
+      run_at: "document_idle",
+      world: "ISOLATED",
+    },
+  ],
+  action: {
+    default_popup: "src/popup/index.html",
+    default_icon: {
+      "16": "public/icons/icon16.png",
+      "32": "public/icons/icon32.png",
+      "48": "public/icons/icon48.png",
+      "128": "public/icons/icon128.png",
+    },
+  },
+  options_page: "src/options/index.html",
+  web_accessible_resources: [
+    {
+      resources: ["src/content/overlay/*"],
+      matches: LLM_HOSTS,
+    },
+  ],
+  icons: {
+    "16": "public/icons/icon16.png",
+    "32": "public/icons/icon32.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png",
+  },
+});

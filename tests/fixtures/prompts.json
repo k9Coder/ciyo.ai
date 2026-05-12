@@ -1,0 +1,158 @@
+[
+  {
+    "id": "api-key-1",
+    "text": "Here is my OpenAI key: sk-ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmno",
+    "expectedRuleIds": ["openai-api-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-2",
+    "text": "Use OPENAI_KEY=sk-proj-XYZabcdef1234567890ABCDEFGHIJKLMNOPQRSTUVxyz to authenticate",
+    "expectedRuleIds": ["openai-project-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-3",
+    "text": "My Anthropic key is sk-ant-api03-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNO",
+    "expectedRuleIds": ["anthropic-api-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-4",
+    "text": "AWS credentials: AKIAIOSFODNN7EXAMPLE / wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+    "expectedRuleIds": ["aws-access-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-5",
+    "text": "My GitHub token: ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgHiJkL",
+    "expectedRuleIds": ["github-token"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-6",
+    "text": "SLACK_BOT_TOKEN=xoxb-123456789012-123456789012-ABCDEFabcdefGHIJKLghijkl",
+    "expectedRuleIds": ["slack-token"],
+    "shouldDetect": true
+  },
+  {
+    "id": "api-key-7",
+    "text": "google_key = AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345678",
+    "expectedRuleIds": ["google-api-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "pem-1",
+    "text": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4\n-----END RSA PRIVATE KEY-----",
+    "expectedRuleIds": ["pem-private-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "ssh-1",
+    "text": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAA\n-----END OPENSSH PRIVATE KEY-----",
+    "expectedRuleIds": ["ssh-private-key"],
+    "shouldDetect": true
+  },
+  {
+    "id": "jwt-1",
+    "text": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+    "expectedRuleIds": ["jwt-token"],
+    "shouldDetect": true
+  },
+  {
+    "id": "cc-1",
+    "text": "Please charge card 4532015112830366 for this order.",
+    "expectedRuleIds": ["credit-card"],
+    "shouldDetect": true
+  },
+  {
+    "id": "ssn-1",
+    "text": "My SSN is 123-45-6789, please verify my identity.",
+    "expectedRuleIds": ["us-ssn"],
+    "shouldDetect": true
+  },
+  {
+    "id": "ip-1",
+    "text": "The database is at 10.0.1.55:5432, connect with the usual credentials.",
+    "expectedRuleIds": ["rfc1918-ip"],
+    "shouldDetect": true
+  },
+  {
+    "id": "ip-2",
+    "text": "Internal gateway: 192.168.1.1",
+    "expectedRuleIds": ["rfc1918-ip"],
+    "shouldDetect": true
+  },
+  {
+    "id": "dotenv-1",
+    "text": "DATABASE_URL=postgres://admin:SuperSecret123@localhost:5432/mydb\nREDIS_PASSWORD=abcdef1234567890",
+    "expectedRuleIds": ["dotenv-line"],
+    "shouldDetect": true
+  },
+  {
+    "id": "negative-1",
+    "text": "How do I reverse a linked list in Python?",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-2",
+    "text": "Explain the difference between TCP and UDP.",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-3",
+    "text": "Write a haiku about autumn leaves.",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-4",
+    "text": "What is the time complexity of quicksort?",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-5",
+    "text": "sk-short and AIza123 and AKIA123 are all too short to be real keys.",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-6",
+    "text": "Call me at (555) 123-4567 or reach me via extension 100.",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-7",
+    "text": "The server is at 8.8.8.8 (public Google DNS).",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "negative-8",
+    "text": "Here is some code:\n```python\nSECRET_KEY = 'development_only'\n```",
+    "expectedRuleIds": [],
+    "shouldDetect": false
+  },
+  {
+    "id": "multi-1",
+    "text": "Environment dump:\nOPENAI_KEY=sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno\nDB_HOST=192.168.1.100",
+    "expectedRuleIds": ["openai-api-key", "rfc1918-ip"],
+    "shouldDetect": true
+  },
+  {
+    "id": "github-oauth-1",
+    "text": "gho_16C7e42F292c6912E7710c838347Ae178B4a",
+    "expectedRuleIds": ["github-token"],
+    "shouldDetect": true
+  },
+  {
+    "id": "github-server-1",
+    "text": "Using ghs_9C5fnsdfb5j2fasd98f4y3jvnvs1fjbp2q8s token for server-to-server",
+    "expectedRuleIds": ["github-token"],
+    "shouldDetect": true
+  }
+]

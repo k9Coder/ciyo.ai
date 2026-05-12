@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "promptshield_policy": {
+      "title": "PromptShield Policy",
+      "description": "Detection policy document. See docs/policy-format.md for schema details.",
+      "type": "object"
+    }
+  }
+}
