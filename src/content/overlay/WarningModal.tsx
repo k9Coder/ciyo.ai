@@ -1,19 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import type { Finding } from "@/detection/types";
 import type { Action } from "@/detection/types";
-import { SNIPPET_CONTEXT_CHARS } from "@/shared/constants";
 import { buildSnippet } from "@/detection/engine";
 
 export type ModalDecision =
   | { type: "edit" }
-  | { type: "cancel" }
   | { type: "send_anyway"; reason: string };
 
 interface Props {
   findings: Finding[];
   highestAction: Action;
   promptText: string;
-  allowSendAnywayWithReason: boolean;
   onDecision: (decision: ModalDecision) => void;
 }
 
@@ -27,8 +24,6 @@ const SEVERITY_COLORS: Record<string, string> = {
 function FindingRow({ finding, promptText }: { finding: Finding; promptText: string }) {
   const snippet = buildSnippet(promptText, finding.startOffset, finding.endOffset);
   const colorClass = SEVERITY_COLORS[finding.severity] ?? "bg-gray-100 text-gray-800";
-
-  // Split snippet at the [...] markers for highlighting
   const parts = snippet.split(/\[|\]/);
 
   return (
@@ -50,68 +45,38 @@ function FindingRow({ finding, promptText }: { finding: Finding; promptText: str
   );
 }
 
-export function WarningModal({
-  findings,
-  highestAction,
-  promptText,
-  allowSendAnywayWithReason,
-  onDecision,
-}: Props) {
-  const [showReason, setShowReason] = useState(false);
-  const [reason, setReason] = useState("");
-  const [reasonError, setReasonError] = useState("");
-  const modalRef = useRef<HTMLDivElement>(null);
+export function WarningModal({ findings, highestAction, promptText, onDecision }: Props) {
   const editBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Focus the Edit button on mount (default safe action)
+  // Focus "Edit prompt" on mount — safest default action
   useEffect(() => {
     editBtnRef.current?.focus();
   }, []);
 
-  // Keyboard: Esc = cancel, Enter on modal (not inside textarea) = edit
+  // Esc = edit prompt (close modal, go fix it)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onDecision({ type: "cancel" });
+        onDecision({ type: "edit" });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onDecision]);
 
-  const canSendAnyway =
-    allowSendAnywayWithReason && highestAction !== "block";
-
-  function handleSendAnyway() {
-    if (!showReason) {
-      setShowReason(true);
-      return;
-    }
-    if (reason.trim().length < 10) {
-      setReasonError("Please enter at least 10 characters.");
-      return;
-    }
-    onDecision({ type: "send_anyway", reason: reason.trim() });
-  }
+  // "block" severity means sending is not allowed
+  const canSendAnyway = highestAction !== "block";
 
   return (
-    /* Backdrop */
     <div
       className="fixed inset-0 z-[2147483646] flex items-center justify-center bg-black/50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="ps-modal-title"
-      onClick={(e) => {
-        // Click outside modal → cancel
-        if (e.target === e.currentTarget) onDecision({ type: "cancel" });
-      }}
     >
-      {/* Panel */}
-      <div
-        ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-4 max-h-[80vh] overflow-y-auto"
-      >
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+
         {/* Header */}
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
@@ -137,52 +102,32 @@ export function WarningModal({
           ))}
         </ul>
 
-        {/* Reason input */}
-        {showReason && (
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700" htmlFor="ps-reason">
-              Reason for sending (required)
-            </label>
-            <textarea
-              id="ps-reason"
-              value={reason}
-              onChange={(e) => { setReason(e.target.value); setReasonError(""); }}
-              rows={3}
-              placeholder="Describe why this content is safe to send…"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {reasonError && (
-              <p className="text-xs text-red-600">{reasonError}</p>
-            )}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex flex-wrap gap-2 justify-end">
-          <button
-            onClick={() => onDecision({ type: "cancel" })}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          >
-            Cancel
-          </button>
-
+        {/* Actions — two buttons, no cancel clutter */}
+        <div className="flex gap-3 justify-end pt-1">
           {canSendAnyway && (
             <button
-              onClick={handleSendAnyway}
-              className="px-4 py-2 text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              onClick={() => onDecision({ type: "send_anyway", reason: "user acknowledged" })}
+              className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:underline"
             >
-              {showReason ? "Confirm send" : "Send anyway…"}
+              Looks fine, send it
             </button>
           )}
 
           <button
             ref={editBtnRef}
             onClick={() => onDecision({ type: "edit" })}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Edit prompt
           </button>
         </div>
+
+        {highestAction === "block" && (
+          <p className="text-xs text-red-500 text-center">
+            Your policy does not allow sending this content.
+          </p>
+        )}
+
       </div>
     </div>
   );

@@ -52,8 +52,6 @@ async function bootstrap() {
       const promptText = adapter.readPromptText(composer);
       if (!promptText.trim()) return { proceed: true };
 
-      const policy = await getPolicy();
-
       // Detect via background service worker (runs in its own context)
       const result: DetectionResult = await sendMessage({
         type: "DETECT",
@@ -70,16 +68,12 @@ async function bootstrap() {
       }
 
       // Show modal and wait for user decision
-      const decision = await showWarningModal(result, promptText, policy);
+      const decision = await showWarningModal(result, promptText);
 
       switch (decision.type) {
         case "edit":
           await writeAuditEvent(result, promptText, hostname, "edited");
           composer.focus();
-          return { proceed: false };
-
-        case "cancel":
-          await writeAuditEvent(result, promptText, hostname, "cancelled");
           return { proceed: false };
 
         case "send_anyway":

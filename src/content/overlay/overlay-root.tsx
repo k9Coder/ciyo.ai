@@ -2,7 +2,6 @@ import React from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { WarningModal, type ModalDecision } from "./WarningModal";
 import type { DetectionResult } from "@/detection/types";
-import type { Policy } from "@/policy/schema";
 import { logger } from "@/shared/logger";
 // Vite's ?inline suffix gives us the compiled Tailwind CSS as a plain string,
 // which we inject into the shadow root so it's scoped there and can't be
@@ -69,8 +68,7 @@ function getReactRoot(): Root {
  */
 export function showWarningModal(
   result: DetectionResult,
-  promptText: string,
-  policy: Policy
+  promptText: string
 ): Promise<ModalDecision> {
   return new Promise((resolve) => {
     try {
@@ -86,7 +84,6 @@ export function showWarningModal(
           findings={result.findings}
           highestAction={result.highestAction}
           promptText={promptText}
-          allowSendAnywayWithReason={policy.allowSendAnywayWithReason}
           onDecision={handleDecision}
         />
       );
