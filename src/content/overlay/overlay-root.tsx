@@ -4,6 +4,10 @@ import { WarningModal, type ModalDecision } from "./WarningModal";
 import type { DetectionResult } from "@/detection/types";
 import type { Policy } from "@/policy/schema";
 import { logger } from "@/shared/logger";
+// Vite's ?inline suffix gives us the compiled Tailwind CSS as a plain string,
+// which we inject into the shadow root so it's scoped there and can't be
+// overridden by the host page's styles.
+import overlayStyles from "./overlay.css?inline";
 
 // ─── Shadow DOM setup ─────────────────────────────────────────────────────────
 
@@ -15,7 +19,6 @@ function ensureShadowHost(): ShadowRoot {
   if (!shadowHost) {
     shadowHost = document.createElement("div");
     shadowHost.id = "promptshield-overlay-host";
-    // Position the host off-flow so it never affects page layout
     Object.assign(shadowHost.style, {
       position: "fixed",
       top: "0",
@@ -33,17 +36,14 @@ function ensureShadowHost(): ShadowRoot {
   if (!shadow) {
     shadow = shadowHost.attachShadow({ mode: "open" });
 
-    // Inject Tailwind styles into the shadow root so host-page styles can't leak in
+    // Inject the compiled Tailwind stylesheet directly into the shadow tree.
+    // This ensures host-page CSS can never bleed in and break the modal.
     const style = document.createElement("style");
-    // NOTE: At build time, @crxjs/vite-plugin inlines the CSS. We inject it here
-    // so it scopes to the shadow root. The actual CSS is imported at content-script
-    // load time via a side-effect import.
-    // TODO: configure crxjs to emit shadow-compatible CSS and import it here.
+    style.textContent = overlayStyles;
     shadow.appendChild(style);
 
     const container = document.createElement("div");
     container.id = "ps-react-root";
-    // Re-enable pointer events for the actual modal container
     container.style.pointerEvents = "auto";
     shadow.appendChild(container);
   }

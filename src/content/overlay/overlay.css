@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure the modal always renders on top of any host-page z-index */
+#ps-react-root * {
+  box-sizing: border-box;
+}
