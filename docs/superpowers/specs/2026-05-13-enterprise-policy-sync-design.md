@@ -99,7 +99,8 @@ CREATE TABLE tenants (
   external_sub_id       TEXT NOT NULL,                        -- Stripe sub ID or PayPal billing agreement ID
   subscription_status   TEXT NOT NULL DEFAULT 'active',       -- 'active' | 'past_due' | 'cancelled'
   plan                  TEXT NOT NULL DEFAULT 'pro',          -- reserved for future tiers
-  grace_period_ends_at  TIMESTAMPTZ,                          -- set on first payment failure
+  grace_period_days     INTEGER NOT NULL DEFAULT 7,           -- editable per tenant in super-admin
+  grace_period_ends_at  TIMESTAMPTZ,                          -- computed: first_failure_at + grace_period_days
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -229,18 +230,21 @@ SUBJECT TO PROTECTIVE ORDER
 
 Rather than firing individual regex rules, a **document confidence score** is computed when a large paste is detected (>200 characters inserted in a single `paste` event). This avoids false positives from lawyers quoting a statute in passing.
 
-| Signal | Points |
-|--------|--------|
-| Detected as paste (not typed) | +20 |
-| Text length > 400 words | +20 |
-| Contains WHEREAS / HEREBY / IN WITNESS WHEREOF | +25 each |
-| Numbered paragraphs at line start (`^\s*\d+\.`) | +15 |
-| Average sentence length > 25 words | +10 |
-| All-caps formal heading on its own line | +10 |
-| Looks like a block quote (`>` prefix or indented) | −15 |
+| Signal | Default Points | Configurable? |
+|--------|---------------|---------------|
+| Detected as paste (not typed) | +20 | yes |
+| Text length > 400 words | +20 | yes (word threshold editable) |
+| Contains WHEREAS / HEREBY / IN WITNESS WHEREOF | +25 each | yes |
+| Numbered paragraphs at line start (`^\s*\d+\.`) | +15 | yes |
+| Average sentence length > 25 words | +10 | yes |
+| All-caps formal heading on its own line | +10 | yes |
+| Looks like a block quote (`>` prefix or indented) | −15 | yes |
 
-- Score 50–79 → `warn`
-- Score ≥ 80 → `require_confirmation`
+**Thresholds are per-tenant and editable in the admin console at any time:**
+- `warnThreshold` — default 50, min 10, max 100
+- `confirmThreshold` — default 80, min 10, max 100
+
+Both live inside the `ScoreRule` definition in the tenant's policy JSON. Changing them in the admin console and publishing immediately takes effect on all machines at next sync (within 30 minutes).
 
 This is implemented as a new `ScoreRule` kind in the detection engine (parallel to `PatternRule`, `EntropyRule`, `DictionaryRule`).
 
