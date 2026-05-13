@@ -1,6 +1,8 @@
 import { detectPrompt } from "@/detection/engine";
 import { loadPolicy, savePolicy } from "@/policy/loader";
 import { appendAuditEvent } from "@/audit/log";
+import { syncPolicy } from "@/policy/sync";
+import { getRole } from "@/policy/role";
 import type { Message } from "@/shared/messages";
 import { logger } from "@/shared/logger";
 
@@ -8,6 +10,14 @@ import { logger } from "@/shared/logger";
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   logger.info("PromptShield installed. Reason:", reason);
+  void syncPolicy();
+  chrome.alarms.create("policy-sync", { periodInMinutes: 30 });
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "policy-sync") {
+    void syncPolicy();
+  }
 });
 
 // ─── Message handler ──────────────────────────────────────────────────────────
@@ -52,6 +62,28 @@ async function handleMessage(message: Message): Promise<unknown> {
       const policy = await loadPolicy();
       const site = policy.perSite[hostname];
       return { hostname, enabled: site?.enabled ?? true };
+    }
+
+    case "SYNC_NOW": {
+      await syncPolicy();
+      return { ok: true };
+    }
+
+    case "GET_ROLE": {
+      return { role: await getRole() };
+    }
+
+    case "GET_SUBSCRIPTION_STATUS": {
+      const result = await chrome.storage.local.get([
+        "subscriptionExpired",
+        "subscriptionWarning",
+        "tenantName",
+      ]) as Record<string, unknown>;
+      return {
+        expired: result["subscriptionExpired"] === true,
+        warning: result["subscriptionWarning"] === true,
+        tenantName: typeof result["tenantName"] === "string" ? result["tenantName"] : null,
+      };
     }
 
     default:
