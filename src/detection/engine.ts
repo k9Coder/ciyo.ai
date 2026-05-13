@@ -1,5 +1,5 @@
 import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule } from "@/policy/schema";
-import type { DetectionResult, Finding } from "./types";
+import type { DetectionResult, Finding, ScoreRule, ScoreSignalConfig } from "./types";
 import { maxAction } from "./types";
 import { normalizeText } from "./normalize";
 import { findCodeSpans, isInsideCode } from "./code-block";
@@ -28,6 +28,64 @@ export function buildSnippet(text: string, start: number, end: number): string {
   const match = text.slice(start, end);
   const after = text.slice(end, end + SNIPPET_CONTEXT_CHARS);
   return `${before}[${match}]${after}`;
+}
+
+// ─── ScoreRule helpers ────────────────────────────────────────────────────────
+
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function avgSentenceLength(text: string): number {
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+  if (sentences.length === 0) return 0;
+  return sentences.reduce((sum, s) => sum + countWords(s), 0) / sentences.length;
+}
+
+const SIGNAL_TESTS: Record<
+  string,
+  (text: string, pasteDetected: boolean, signal: ScoreSignalConfig) => boolean
+> = {
+  paste_detected: (_t, p) => p,
+  long_text: (t, _p, s) => countWords(t) > (s.threshold ?? 400),
+  legal_terms_whereas: (t) => /\b(?:WHEREAS|HEREBY)\b|IN WITNESS WHEREOF/i.test(t),
+  numbered_paragraphs: (t) => /^\s*\d+\./m.test(t),
+  long_avg_sentence: (t) => avgSentenceLength(t) > 25,
+  formal_heading: (t) => /^[A-Z][A-Z\s]{3,}$/m.test(t),
+  block_quote: (t) => /^>/m.test(t) || /^ {4}/m.test(t),
+};
+
+function runScoreRule(text: string, rule: ScoreRule, pasteDetected: boolean): Finding[] {
+  if (!pasteDetected) return [];
+  let score = 0;
+  for (const signal of rule.signals) {
+    if (!signal.enabled) continue;
+    const fn = SIGNAL_TESTS[signal.id];
+    if (fn && fn(text, pasteDetected, signal)) score += signal.points;
+  }
+  if (score < rule.warnThreshold) return [];
+  const action: Finding["action"] =
+    score >= rule.confirmThreshold ? rule.action : "warn";
+  return [
+    {
+      ruleId: rule.id,
+      ruleName: rule.name,
+      severity: rule.severity,
+      action,
+      matchedText: text.slice(0, 200),
+      startOffset: 0,
+      endOffset: text.length,
+    },
+  ];
+}
+
+/** Exported for unit testing only. */
+export function runScoreRuleForTest(
+  text: string,
+  rule: ScoreRule,
+  pasteDetected: boolean
+): Finding[] {
+  return runScoreRule(text, rule, pasteDetected);
 }
 
 // ─── Layer runners ────────────────────────────────────────────────────────────
@@ -105,8 +163,9 @@ function runDictionaryRule(
 function runRule(
   text: string,
   normalised: string,
-  rule: Rule,
-  codeSpans: ReturnType<typeof findCodeSpans>
+  rule: Rule | ScoreRule,
+  codeSpans: ReturnType<typeof findCodeSpans>,
+  pasteDetected: boolean
 ): Finding[] {
   if (!rule.enabled) return [];
   switch (rule.kind) {
@@ -116,6 +175,8 @@ function runRule(
       return runEntropyRule(normalised, rule);
     case "dictionary":
       return runDictionaryRule(normalised, rule);
+    case "score":
+      return runScoreRule(text, rule, pasteDetected);
   }
 }
 
@@ -131,7 +192,8 @@ function runRule(
 export async function detectPrompt(
   promptText: string,
   policy: Policy,
-  hostname: string
+  hostname: string,
+  pasteDetected = false
 ): Promise<DetectionResult> {
   const start = performance.now();
 
@@ -150,7 +212,7 @@ export async function detectPrompt(
   // async pipeline stages, awaited after the sync layers complete.
   const findings: Finding[] = [];
   for (const rule of allRules) {
-    const ruleFindings = runRule(promptText, normalised, rule, codeSpans);
+    const ruleFindings = runRule(promptText, normalised, rule as Rule | ScoreRule, codeSpans, pasteDetected);
     findings.push(...ruleFindings);
   }
 
