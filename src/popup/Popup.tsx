@@ -4,11 +4,18 @@ import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { EXTENSION_NAME } from "@/shared/constants";
 
+interface SubscriptionStatus {
+  expired: boolean;
+  warning: boolean;
+  tenantName: string | null;
+}
+
 export function Popup() {
   const [hostname, setHostname] = useState<string>("");
   const [siteEnabled, setSiteEnabled] = useState(true);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sub, setSub] = useState<SubscriptionStatus>({ expired: false, warning: false, tenantName: null });
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -20,18 +27,17 @@ export function Popup() {
         const host = url.hostname;
         setHostname(host);
 
-        const [statusResult, events] = await Promise.all([
-          sendMessage<{ enabled: boolean }>({
-            type: "GET_SITE_STATUS",
-            payload: { hostname: host },
-          }),
+        const [statusResult, events, subStatus] = await Promise.all([
+          sendMessage<{ enabled: boolean }>({ type: "GET_SITE_STATUS", payload: { hostname: host } }),
           queryAuditEvents({ hostname: host, limit: 5 }),
+          sendMessage<SubscriptionStatus>({ type: "GET_SUBSCRIPTION_STATUS" }),
         ]);
 
         setSiteEnabled(statusResult.enabled);
         setRecentEvents(events);
+        setSub(subStatus);
       } catch {
-        // ignore errors — we don't want the popup to show an error state
+        // ignore errors
       } finally {
         setLoading(false);
       }
@@ -41,21 +47,10 @@ export function Popup() {
   async function toggleSite() {
     const next = !siteEnabled;
     setSiteEnabled(next);
-    await sendMessage({
-      type: "TOGGLE_SITE",
-      payload: { hostname, enabled: next },
-    });
+    await sendMessage({ type: "TOGGLE_SITE", payload: { hostname, enabled: next } });
   }
 
-  function openOptions() {
-    chrome.runtime.openOptionsPage();
-  }
-
-  if (loading) {
-    return (
-      <div className="p-4 text-sm text-gray-500">Loading…</div>
-    );
-  }
+  if (loading) return <div className="p-4 text-sm text-gray-500">Loading…</div>;
 
   return (
     <div className="bg-white text-gray-900 font-sans">
@@ -65,14 +60,27 @@ export function Popup() {
           PS
         </div>
         <span className="font-semibold text-sm">{EXTENSION_NAME}</span>
+        {sub.tenantName && (
+          <span className="ml-auto text-xs text-gray-400 truncate max-w-[120px]">{sub.tenantName}</span>
+        )}
       </div>
+
+      {/* Subscription banners */}
+      {sub.expired && (
+        <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-xs text-red-700 font-medium">
+          Subscription expired — contact your IT admin
+        </div>
+      )}
+      {!sub.expired && sub.warning && (
+        <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 font-medium">
+          Subscription expiring soon — contact your IT admin
+        </div>
+      )}
 
       {/* Site toggle */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
         <div>
-          <p className="text-sm font-medium">
-            {siteEnabled ? "Active" : "Paused"} on this site
-          </p>
+          <p className="text-sm font-medium">{siteEnabled ? "Active" : "Paused"} on this site</p>
           {hostname && (
             <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[180px]">{hostname}</p>
           )}
@@ -127,7 +135,7 @@ export function Popup() {
       {/* Footer */}
       <div className="px-4 py-2 border-t border-gray-100">
         <button
-          onClick={openOptions}
+          onClick={() => chrome.runtime.openOptionsPage()}
           className="w-full text-sm text-blue-600 hover:text-blue-800 text-center py-1"
         >
           Open settings →
