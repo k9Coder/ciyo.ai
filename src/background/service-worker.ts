@@ -27,9 +27,9 @@ chrome.runtime.onMessage.addListener(
 async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
-      const { text, hostname } = message.payload;
+      const { text, hostname, pasteDetected } = message.payload;
       const policy = await loadPolicy();
-      return detectPrompt(text, policy, hostname);
+      return detectPrompt(text, policy, hostname, pasteDetected ?? false);
     }
 
     case "GET_POLICY": {

@@ -4,13 +4,16 @@ import type { Policy } from "@/policy/schema";
 /** Typed message bus for runtime.sendMessage / onMessage. */
 
 export type Message =
-  | { type: "DETECT"; payload: { text: string; hostname: string } }
+  | { type: "DETECT"; payload: { text: string; hostname: string; pasteDetected?: boolean } }
   | { type: "DETECT_RESULT"; payload: DetectionResult }
   | { type: "GET_POLICY"; payload?: never }
   | { type: "POLICY_UPDATED"; payload: Policy }
   | { type: "TOGGLE_SITE"; payload: { hostname: string; enabled: boolean } }
   | { type: "GET_SITE_STATUS"; payload: { hostname: string } }
-  | { type: "SITE_STATUS"; payload: { hostname: string; enabled: boolean } };
+  | { type: "SITE_STATUS"; payload: { hostname: string; enabled: boolean } }
+  | { type: "SYNC_NOW"; payload?: never }
+  | { type: "GET_ROLE"; payload?: never }
+  | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never };
 
 /** Send a message to the background service worker from a content script or popup. */
 export function sendMessage<T>(message: Message): Promise<T> {

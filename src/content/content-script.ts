@@ -28,6 +28,11 @@ async function bootstrap() {
 
   logger.info("PromptShield active on", adapter.name);
 
+  // Track paste events so ScoreRule knows whether text was pasted or typed
+  let lastPasteAt = 0;
+  document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
+  function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
+
   let cachedPolicy: Policy | null = null;
 
   /** Fetch/refresh the policy from the background worker. */
@@ -55,7 +60,7 @@ async function bootstrap() {
       // Detect via background service worker (runs in its own context)
       const result: DetectionResult = await sendMessage({
         type: "DETECT",
-        payload: { text: promptText, hostname },
+        payload: { text: promptText, hostname, pasteDetected: wasPasteRecent() },
       });
 
       logger.debug("Detection result:", result);
