@@ -40,10 +40,26 @@ export const DictionaryRuleSchema = RuleBaseSchema.extend({
   caseSensitive: z.boolean(),
 });
 
+export const ScoreSignalConfigSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+  points: z.number(),
+  enabled: z.boolean(),
+  threshold: z.number().optional(),
+});
+
+export const ScoreRuleSchema = RuleBaseSchema.extend({
+  kind: z.literal("score"),
+  signals: z.array(ScoreSignalConfigSchema),
+  warnThreshold: z.number().int().min(10).max(100),
+  confirmThreshold: z.number().int().min(10).max(100),
+});
+
 export const RuleSchema = z.discriminatedUnion("kind", [
   PatternRuleSchema,
   EntropyRuleSchema,
   DictionaryRuleSchema,
+  ScoreRuleSchema,
 ]);
 
 // ─── Full policy ─────────────────────────────────────────────────────────────
@@ -70,5 +86,7 @@ export type Action = z.infer<typeof ActionSchema>;
 export type PatternRule = z.infer<typeof PatternRuleSchema>;
 export type EntropyRule = z.infer<typeof EntropyRuleSchema>;
 export type DictionaryRule = z.infer<typeof DictionaryRuleSchema>;
+export type ScoreSignalConfig = z.infer<typeof ScoreSignalConfigSchema>;
+export type ScoreRule = z.infer<typeof ScoreRuleSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type Policy = z.infer<typeof PolicySchema>;

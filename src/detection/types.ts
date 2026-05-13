@@ -50,3 +50,26 @@ export function compareAction(a: Action, b: Action): number {
 export function maxAction(a: Action, b: Action): Action {
   return ACTION_ORDER[a] >= ACTION_ORDER[b] ? a : b;
 }
+
+export interface ScoreSignalConfig {
+  id: string;
+  description: string;
+  points: number;
+  enabled: boolean;
+  /** Optional numeric threshold (e.g. word count for long_text signal). */
+  threshold?: number;
+}
+
+export interface ScoreRule {
+  kind: "score";
+  id: string;
+  name: string;
+  description: string;
+  severity: Severity;
+  action: Action;
+  enabled: boolean;
+  tags: string[];
+  signals: ScoreSignalConfig[];
+  warnThreshold: number;
+  confirmThreshold: number;
+}
