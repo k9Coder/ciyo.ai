@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tenants, policies, matters } from '../src/db/schema.js'
+import { tenants, policies, divisions } from '../src/db/schema.js'
 import {
   parseToken, generateSecret, formatToken, hashToken, compareToken,
 } from '../src/auth/tokens.js'
@@ -8,7 +8,7 @@ describe('schema exports', () => {
   it('exports all three tables', () => {
     expect(tenants).toBeDefined()
     expect(policies).toBeDefined()
-    expect(matters).toBeDefined()
+    expect(divisions).toBeDefined()
   })
 })
 

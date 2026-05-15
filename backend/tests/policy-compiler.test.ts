@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { createMatter, updateMatter } from '../src/matters/service.js'
+import { createSubject } from '../src/subjects/service.js'
+import { createRule, updateRule } from '../src/rules/service.js'
 import { compilePolicy } from '../src/policy/compiler.js'
 
 let tenantId: string
@@ -11,58 +12,55 @@ beforeEach(async () => {
 })
 
 describe('compilePolicy', () => {
-  it('always includes confidentiality-markers DictionaryRule', async () => {
+  it('returns empty subjects list when no subjects exist', async () => {
     const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'confidentiality-markers')
-    expect((rule as { kind: string }).kind).toBe('dictionary')
-    expect((rule as { terms: string[] }).terms).toContain('ATTORNEY-CLIENT PRIVILEGE')
+    expect(policy.version).toBe(1)
+    expect(policy.tenantId).toBe(tenantId)
+    expect(policy.subjects).toHaveLength(0)
   })
 
-  it('always includes legal-document-structure ScoreRule', async () => {
+  it('includes active subjects with their active rules', async () => {
+    const subject = await createSubject(tenantId, { name: 'Confidential Data' })
+    await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['secret', 'classified'], action: 'block' })
+
     const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'legal-document-structure')
-    expect((rule as { kind: string }).kind).toBe('score')
-    expect((rule as { warnThreshold: number }).warnThreshold).toBe(50)
-    expect((rule as { confirmThreshold: number }).confirmThreshold).toBe(80)
+    expect(policy.subjects).toHaveLength(1)
+    expect(policy.subjects[0]!.name).toBe('Confidential Data')
+    expect(policy.subjects[0]!.rules).toHaveLength(1)
+    expect(policy.subjects[0]!.rules[0]!.kind).toBe('keyword')
+    expect(policy.subjects[0]!.rules[0]!.keywords).toContain('secret')
+    expect(policy.subjects[0]!.rules[0]!.action).toBe('block')
   })
 
-  it('omits client-roster when no active matters exist', async () => {
+  it('excludes inactive rules', async () => {
+    const subject = await createSubject(tenantId, { name: 'Test' })
+    const rule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })
+    await updateRule(tenantId, rule.id, { active: false })
+
     const policy = await compilePolicy(tenantId)
-    expect(policy.custom.find(r => (r as { id: string }).id === 'client-roster')).toBeUndefined()
+    expect(policy.subjects[0]!.rules).toHaveLength(0)
   })
 
-  it('includes active matter fields in client-roster terms', async () => {
-    await createMatter(tenantId, { clientName: 'Widget Corp', matterNumber: 'WC-001', opposingParties: ['Acme Inc'] })
+  it('reflects global scope when no divisionId or teamId', async () => {
+    const subject = await createSubject(tenantId, { name: 'Global Subject' })
     const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'client-roster') as { terms: string[] }
-    expect(rule.terms).toContain('Widget Corp')
-    expect(rule.terms).toContain('WC-001')
-    expect(rule.terms).toContain('Acme Inc')
+    const compiled = policy.subjects.find(s => s.id === subject.id)!
+    expect(compiled.divisionId).toBeNull()
+    expect(compiled.teamId).toBeNull()
   })
 
-  it('adds fuzzy variant for names ≤ 20 chars', async () => {
-    await createMatter(tenantId, { clientName: 'Short Name' })
+  it('includes subjects from multiple categories in one snapshot', async () => {
+    await createSubject(tenantId, { name: 'PII' })
+    await createSubject(tenantId, { name: 'Legal' })
+    await createSubject(tenantId, { name: 'Finance' })
+
     const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'client-roster') as
-      { fuzzyTerms?: Array<{ term: string; maxDistance: number }> }
-    expect(rule.fuzzyTerms?.some(f => f.term === 'Short Name')).toBe(true)
+    expect(policy.subjects).toHaveLength(3)
   })
 
-  it('does NOT add fuzzy variant for names > 20 chars', async () => {
-    await createMatter(tenantId, { clientName: 'This Is A Very Long Client Name' })
+  it('subject with no rules compiles to empty rules array', async () => {
+    await createSubject(tenantId, { name: 'Empty Subject' })
     const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'client-roster') as
-      { fuzzyTerms?: Array<{ term: string }> } | undefined
-    expect(rule?.fuzzyTerms?.some(f => f.term === 'This Is A Very Long Client Name')).toBeFalsy()
-  })
-
-  it('excludes inactive matters', async () => {
-    await createMatter(tenantId, { clientName: 'Active' })
-    const inactive = await createMatter(tenantId, { clientName: 'Inactive' })
-    await updateMatter(tenantId, inactive.id, { active: false })
-    const policy = await compilePolicy(tenantId)
-    const rule = policy.custom.find(r => (r as { id: string }).id === 'client-roster') as { terms: string[] }
-    expect(rule.terms).toContain('Active')
-    expect(rule.terms).not.toContain('Inactive')
+    expect(policy.subjects[0]!.rules).toHaveLength(0)
   })
 })

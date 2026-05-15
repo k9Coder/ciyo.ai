@@ -2,6 +2,12 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import './types.js'
 import { policyRouter } from './policy/router.js'
+import { divisionsRouter } from './divisions/router.js'
+import { teamsRouter } from './teams/router.js'
+import { membersRouter } from './members/router.js'
+import { subjectsRouter } from './subjects/router.js'
+import { rulesRouter } from './rules/router.js'
+import { joinRouter } from './auth/join.js'
 import { handleStripeEvent } from './billing/stripe.js'
 import { handlePayPalEvent } from './billing/paypal.js'
 
@@ -29,6 +35,12 @@ export function buildApp() {
   })
 
   void app.register(policyRouter, { prefix: '/v1' })
+  void app.register(divisionsRouter, { prefix: '/v1' })
+  void app.register(teamsRouter, { prefix: '/v1' })
+  void app.register(membersRouter, { prefix: '/v1' })
+  void app.register(subjectsRouter, { prefix: '/v1' })
+  void app.register(rulesRouter, { prefix: '/v1' })
+  void app.register(joinRouter, { prefix: '/v1' })
 
   app.setErrorHandler((err, _req, reply) => {
     app.log.error(err)
