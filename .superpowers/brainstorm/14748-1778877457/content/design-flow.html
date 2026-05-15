@@ -1,0 +1,63 @@
+<h2>Design — Section 3: Two Critical Flows</h2>
+<p class="subtitle">How employees join, and how policy gets from the admin UI to the extension.</p>
+
+<div class="section">
+  <p class="label">Flow 1 — Employee joins via extension</p>
+  <div class="mockup">
+    <div class="mockup-header">First-time install</div>
+    <div class="mockup-body" style="font-size:0.875rem; line-height:2.2">
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">1</span>
+        <span>CISO generates a <strong>join code</strong> for the company in the admin UI (e.g. <code>ACME-7X4K</code>). Shares it with employees via Slack/email.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">2</span>
+        <span>Employee installs extension → popup asks for their <strong>work email + join code</strong>.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">3</span>
+        <span>Extension calls <code>POST /v1/auth/join</code> → backend creates a <strong>member</strong> record, assigns them to the tenant's default team, returns an <strong>org token</strong> + memberId.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">4</span>
+        <span>Extension stores org token locally. Syncs the compiled policy. Starts enforcing rules immediately.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">5</span>
+        <span>CISO sees the new member appear in the admin UI → moves them into the right division/teams.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem">
+  <p class="label">Flow 2 — Policy change reaches the extension</p>
+  <div class="mockup">
+    <div class="mockup-header">Admin edits a rule → employee's extension updates</div>
+    <div class="mockup-body" style="font-size:0.875rem; line-height:2.2">
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#059669;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">1</span>
+        <span>Admin adds a new Subject + Rule in the admin UI (or via AI chat).</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#059669;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">2</span>
+        <span>Admin clicks <strong>Publish</strong> → <code>POST /v1/policy/publish</code> → the <strong>policy compiler</strong> reads all active divisions, subjects, and rules from the DB, builds a structured JSON, and writes a new versioned snapshot into the <code>policies</code> table.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#059669;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">3</span>
+        <span>Each employee's extension polls <code>GET /v1/policy/version</code> every 30 min (existing alarm). Detects new version → fetches <code>GET /v1/policy</code> → updates local ruleset.</span>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:0.75rem">
+        <span style="background:#059669;color:#fff;padding:2px 10px;border-radius:99px;font-size:0.75rem;white-space:nowrap;margin-top:3px">4</span>
+        <span>The compiled policy includes each member's team memberships → the extension knows exactly which subjects and rules apply to <em>this specific user</em>.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem; background:var(--bg-secondary,#f8f9fa);padding:1.25rem;border-radius:8px; border-left:4px solid var(--accent,#6366f1)">
+  <p class="label">What the policy compiler changes</p>
+  <p style="margin:0.5rem 0 0; font-size:0.875rem">Currently it reads from <code>matters</code> and builds fuzzy dictionary rules from opposing-party names. After the redesign: it reads from <code>subjects</code> + <code>rules</code> tables, groups them by division scope, and outputs the same JSONB format the extension already understands. The extension sync mechanism is <strong>unchanged</strong>.</p>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Does this flow make sense?</p>

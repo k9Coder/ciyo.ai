@@ -1,0 +1,84 @@
+<h2>Design — Section 2: API Endpoints</h2>
+<p class="subtitle">What gets deleted, kept, and added. 🔴 = super admin only · 🟡 = super admin or own division admin · 🟢 = any admin</p>
+
+<div class="section">
+  <p class="label" style="color:#dc2626">🗑 Deleted</p>
+  <div style="background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:2">
+    <div>DELETE &nbsp;GET / POST / PATCH / DELETE &nbsp;<strong>/v1/matters*</strong></div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label" style="color:#059669">✅ Kept</p>
+  <div style="background:#f0fdf4; border-left:4px solid #059669; border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:2">
+    <div>GET &nbsp;&nbsp;<strong>/v1/policy/version</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; org token — extension polls this</div>
+    <div>GET &nbsp;&nbsp;<strong>/v1/policy</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; org token — full compiled policy</div>
+    <div>POST &nbsp;<strong>/v1/policy/publish</strong> &nbsp;&nbsp;&nbsp;&nbsp; 🔴 compile + version snapshot</div>
+    <div>GET &nbsp;&nbsp;<strong>/v1/policy/history</strong> &nbsp;&nbsp;&nbsp;&nbsp; 🔴 list versions</div>
+    <div>POST &nbsp;<strong>/v1/policy/rollback/:v</strong> &nbsp;🔴 rollback to version</div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label" style="color:#6366f1">✨ New</p>
+
+  <div style="display:grid; gap:0.75rem; margin-top:0.75rem">
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; border-left:4px solid #6366f1">
+      <p class="label" style="margin-bottom:0.5rem">Divisions</p>
+      <div style="font-family:monospace; font-size:0.8rem; line-height:2">
+        <div>GET &nbsp;&nbsp;&nbsp;/v1/divisions &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟢 list all divisions</div>
+        <div>POST &nbsp;&nbsp;/v1/divisions &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔴 create</div>
+        <div>PATCH &nbsp;/v1/divisions/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 update name</div>
+        <div>DELETE /v1/divisions/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔴 delete</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; border-left:4px solid #7c3aed">
+      <p class="label" style="margin-bottom:0.5rem">Teams</p>
+      <div style="font-family:monospace; font-size:0.8rem; line-height:2">
+        <div>GET &nbsp;&nbsp;&nbsp;/v1/divisions/:id/teams &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 list teams in division</div>
+        <div>POST &nbsp;&nbsp;/v1/divisions/:id/teams &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 create team</div>
+        <div>PATCH &nbsp;/v1/teams/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 update</div>
+        <div>DELETE /v1/teams/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 delete</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; border-left:4px solid #0891b2">
+      <p class="label" style="margin-bottom:0.5rem">Members</p>
+      <div style="font-family:monospace; font-size:0.8rem; line-height:2">
+        <div>GET &nbsp;&nbsp;&nbsp;/v1/members &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟢 list (division admins see own division only)</div>
+        <div>POST &nbsp;&nbsp;/v1/members &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 add single member by email</div>
+        <div>POST &nbsp;&nbsp;/v1/members/import &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔴 bulk CSV import</div>
+        <div>PATCH &nbsp;/v1/members/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 update role / move teams</div>
+        <div>DELETE /v1/members/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 remove</div>
+        <div>POST &nbsp;&nbsp;/v1/members/:id/teams &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 assign to team</div>
+        <div>DELETE /v1/members/:id/teams/:tid 🟡 remove from team</div>
+        <div>POST &nbsp;&nbsp;/v1/auth/join &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— extension join (company code → member record)</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; border-left:4px solid #059669">
+      <p class="label" style="margin-bottom:0.5rem">Subjects (replaces matters)</p>
+      <div style="font-family:monospace; font-size:0.8rem; line-height:2">
+        <div>GET &nbsp;&nbsp;&nbsp;/v1/subjects &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟢 list (filtered by division for division admins)</div>
+        <div>POST &nbsp;&nbsp;/v1/subjects &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 create</div>
+        <div>PATCH &nbsp;/v1/subjects/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 update</div>
+        <div>DELETE /v1/subjects/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 delete</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; border-left:4px solid #dc2626">
+      <p class="label" style="margin-bottom:0.5rem">Rules</p>
+      <div style="font-family:monospace; font-size:0.8rem; line-height:2">
+        <div>GET &nbsp;&nbsp;&nbsp;/v1/subjects/:id/rules &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 list rules under a subject</div>
+        <div>POST &nbsp;&nbsp;/v1/subjects/:id/rules &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 create rule</div>
+        <div>PATCH &nbsp;/v1/rules/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 update</div>
+        <div>DELETE /v1/rules/:id &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🟡 delete</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Does this API shape look right?</p>

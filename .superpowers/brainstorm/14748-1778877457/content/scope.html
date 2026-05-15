@@ -1,0 +1,55 @@
+<h2>What You're Building — System Scope</h2>
+<p class="subtitle">This is a large product. Let's agree on the sub-projects before designing any one piece.</p>
+
+<div class="section">
+  <p class="label">Five Independent Subsystems</p>
+
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="org" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h3>Org Structure</h3>
+        <p>Companies → Divisions → Teams → Users. Replace the current "matters" model with a generic multi-level org hierarchy. This is the foundation everything else sits on.</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="policy" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h3>Policy Engine</h3>
+        <p>Policy rules scoped to org units. Website / domain groups. Actions: warn or block. Custom confidential terms per matter/case. JSON schema that can represent all of this.</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="admin" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h3>Admin Web App</h3>
+        <p>Side-panel layout for CISOs and chosen admins. JSON editor + AI chat interface (Loveable-style) that edits policy behind the scenes. Domain preview panel. Policy tester.</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="extension" onclick="toggleSelect(this)">
+      <div class="letter">4</div>
+      <div class="content">
+        <h3>Chrome Extension</h3>
+        <p>Employee-facing. Signs in, downloads org policy, enforces rules based on user's team membership. Warn or block before sending to AI sites.</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="ai" onclick="toggleSelect(this)">
+      <div class="letter">5</div>
+      <div class="content">
+        <h3>AI Policy Assistant</h3>
+        <p>Chat UI that talks to Claude (or GPT) and translates natural language into policy JSON changes. Shows progress as it edits. The "Loveable for policies" interface.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:2rem; padding: 1.25rem; background: var(--bg-secondary, #f8f9fa); border-radius: 8px; border-left: 4px solid var(--accent, #6366f1)">
+  <p class="label">Recommended build order</p>
+  <p style="margin:0.5rem 0 0">1 → 2 → 4 → 3 → 5 &nbsp;|&nbsp; Org structure first (everything depends on it), then policy schema, then extension enforcement, then admin UI, finally AI assistant</p>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Click to highlight what you want to tackle first — or tell me in the terminal. Multi-select is fine.</p>

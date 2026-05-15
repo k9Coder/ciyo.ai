@@ -1,0 +1,65 @@
+<h2>How a "Project" works — law firm example</h2>
+<p class="subtitle">The law firm is your tenant. They have one or many Projects. Here's the full flow.</p>
+
+<div class="section">
+  <p class="label">Step 1 — CISO creates a Project</p>
+  <div class="mockup">
+    <div class="mockup-header">Admin UI → Projects → New Project</div>
+    <div class="mockup-body" style="font-size:0.9rem; line-height:1.8">
+      <div><strong>Project name:</strong> Zuckerberg Employment Contract</div>
+      <div><strong>Description:</strong> M&A matter for Meta executive employment dispute</div>
+      <div><strong>Sensitive keywords:</strong>
+        <span style="background:#fef3c7;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">Zuckerberg</span>
+        <span style="background:#fef3c7;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">Marc Z</span>
+        <span style="background:#fef3c7;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">employment contract</span>
+        <span style="background:#fef3c7;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">executive compensation</span>
+        <span style="background:#fef3c7;padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">Project Zeus</span>
+      </div>
+      <div><strong>Applies to:</strong> M&A Team, Corporate Law Division</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">Step 2 — CISO writes a rule for this project</p>
+  <div class="mockup">
+    <div class="mockup-header">Policy rule attached to "Zuckerberg Employment Contract"</div>
+    <div class="mockup-body" style="font-size:0.9rem; line-height:1.8">
+      <div>IF message contains any keyword from <strong>Zuckerberg Employment Contract</strong></div>
+      <div>AND destination is <strong>any AI chat site</strong> (ChatGPT, Claude, Gemini...)</div>
+      <div>THEN → <span style="background:#fee2e2;padding:2px 10px;border-radius:4px;font-weight:bold;color:#991b1b">BLOCK</span></div>
+      <div style="margin-top:0.5rem; color:#666; font-size:0.85rem">Message shown to employee: "This message contains confidential matter content and cannot be sent."</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">Step 3 — Lawyer types a message in ChatGPT</p>
+  <div class="mockup">
+    <div class="mockup-header">ChatGPT — lawyer's browser</div>
+    <div class="mockup-body" style="font-size:0.9rem; font-family: monospace; line-height:1.8">
+      <div style="color:#666">You:</div>
+      <div>Can you help me draft a clause about <span style="background:#fca5a5;padding:1px 4px;border-radius:3px">executive compensation</span> for a senior tech executive? The package involves...</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">Step 4 — Extension detects it</p>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap">
+    <div style="flex:1; min-width:200px; background:#fee2e2; border-radius:8px; padding:1rem; border-left:4px solid #dc2626">
+      <strong style="color:#991b1b">BLOCKED</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.85rem; color:#7f1d1d">Extension matched "executive compensation" → Project: Zuckerberg Employment Contract → Rule: Block on AI sites</p>
+    </div>
+    <div style="flex:1; min-width:200px; background:#fef9c3; border-radius:8px; padding:1rem; border-left:4px solid #ca8a04">
+      <strong style="color:#92400e">If it were WARN instead:</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.85rem; color:#78350f">Overlay pops up: "This may contain confidential matter content. Are you sure you want to send?" → user can proceed or cancel.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="background:var(--bg-secondary,#f8f9fa);padding:1.25rem;border-radius:8px; border-left:4px solid var(--accent,#6366f1)">
+  <p class="label">So what does the CISO actually "add to the policy"?</p>
+  <p style="margin:0.5rem 0 0">Three things: <strong>(1)</strong> a Project with a list of sensitive keywords, <strong>(2)</strong> which teams/divisions it applies to, and <strong>(3)</strong> what to do when those keywords appear in a message to a given destination — warn or block.</p>
+  <p style="margin:0.5rem 0 0; color:#666">The <strong>policy compiler</strong> (already exists in the backend) takes all projects + rules and builds the final ruleset that gets pushed to the extension.</p>
+</div>

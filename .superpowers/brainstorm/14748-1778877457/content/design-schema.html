@@ -1,0 +1,68 @@
+<h2>Design — Section 1: Database Schema</h2>
+<p class="subtitle">What gets deleted, what gets kept, what gets added.</p>
+
+<div class="section">
+  <p class="label" style="color:#dc2626">🗑 Deleted</p>
+  <div style="background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:1rem; font-family:monospace; font-size:0.875rem">
+    <div><strong>matters</strong> — gone entirely (clientName, matterNumber, opposingParties — all legal-specific)</div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label" style="color:#059669">✅ Kept (unchanged)</p>
+  <div style="background:#f0fdf4; border-left:4px solid #059669; border-radius:8px; padding:1rem; font-family:monospace; font-size:0.875rem; line-height:2">
+    <div><strong>tenants</strong> — id, name, slug, orgTokenHash, adminTokenHash, plan, subscriptionStatus…</div>
+    <div><strong>policies</strong> — id, tenantId, version, policyJson (JSONB), publishedAt</div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label" style="color:#6366f1">✨ New tables</p>
+
+  <div style="display:grid; gap:1rem; margin-top:0.75rem">
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #6366f1">
+      <div style="font-weight:bold; margin-bottom:0.25rem">divisions</div>
+      <div>id · tenantId · name · slug · createdAt</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">"Corporate Law", "Litigation", "Engineering" — org units within a company</div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #7c3aed">
+      <div style="font-weight:bold; margin-bottom:0.25rem">teams</div>
+      <div>id · tenantId · divisionId · name · slug · createdAt</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">"M&A Team", "Contract Review" — groups within a division</div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #0891b2">
+      <div style="font-weight:bold; margin-bottom:0.25rem">members</div>
+      <div>id · tenantId · email · displayName · role (super_admin | division_admin | member) · adminDivisionId (nullable) · createdAt</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">Employees of the tenant. Separate from auth tokens — these are the people the extension enforces policy on</div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #0891b2">
+      <div style="font-weight:bold; margin-bottom:0.25rem">member_teams</div>
+      <div>memberId · teamId</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">Many-to-many: one person can be on multiple teams</div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #059669">
+      <div style="font-weight:bold; margin-bottom:0.25rem">subjects</div>
+      <div>id · tenantId · divisionId (nullable = global) · name · description · active · createdAt</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">Replaces "matters". A named sensitive context: "Zuckerberg Contract", "Project Zeus". divisionId = null means it applies globally across all divisions</div>
+    </div>
+
+    <div style="background:var(--bg-secondary,#f8f9fa); border-radius:8px; padding:1rem; font-family:monospace; font-size:0.825rem; line-height:1.9; border-left:4px solid #dc2626">
+      <div style="font-weight:bold; margin-bottom:0.25rem">rules</div>
+      <div>id · tenantId · subjectId · kind (keyword | pattern | entropy | score) · keywords[] · pattern (regex) · destinations[] · action (warn | block) · message (custom warning text) · active · createdAt</div>
+      <div style="color:#666; font-family:sans-serif; font-size:0.8rem; margin-top:0.25rem">The actual detection logic. Stored relationally so the admin UI can list/edit/filter them. The policy compiler reads these rows and builds the versioned JSONB snapshot.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="background:var(--bg-secondary,#f8f9fa);padding:1.25rem;border-radius:8px; border-left:4px solid var(--accent,#6366f1); margin-top:1.5rem">
+  <p class="label">How it compiles</p>
+  <p style="margin:0.5rem 0 0; font-size:0.9rem">The <strong>policy compiler</strong> (already exists) reads all active subjects + rules for a tenant, organises them by division, and writes a versioned JSONB snapshot into the <code>policies</code> table. The extension fetches that snapshot. Nothing changes in how the extension syncs — only how the data is authored.</p>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Does this schema look right to you?</p>

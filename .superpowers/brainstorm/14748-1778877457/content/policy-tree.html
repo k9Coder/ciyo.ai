@@ -1,0 +1,72 @@
+<h2>The Policy Tree</h2>
+<p class="subtitle">4-level hierarchy: Policy → Division → Subject → Rules</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Acme Law Firm — Active Policy</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 0.85rem; line-height: 2.2;">
+
+      <div style="color:#6366f1; font-weight:bold;">📋 Policy (tenant root)</div>
+
+      <div style="padding-left:1.5rem; border-left: 2px solid #e0e7ff; margin-left:0.5rem">
+
+        <div style="color:#7c3aed; font-weight:bold; margin-top:0.5rem">🏢 Division: Corporate Law</div>
+        <div style="padding-left:1.5rem; border-left: 2px dashed #ddd6fe; margin-left:0.5rem">
+
+          <div style="color:#059669; font-weight:bold">📁 Subject: "Zuckerberg Contract"</div>
+          <div style="padding-left:1.5rem; border-left: 2px dotted #d1fae5; margin-left:0.5rem">
+            <div>🔴 Rule: keywords <span style="background:#fef3c7;padding:1px 6px;border-radius:3px">Zuckerberg, Project Zeus, exec comp</span> → <strong>Block</strong> on AI sites</div>
+            <div>🟡 Rule: keyword <span style="background:#fef3c7;padding:1px 6px;border-radius:3px">employment agreement</span> → <strong>Warn</strong> anywhere</div>
+          </div>
+
+          <div style="color:#059669; font-weight:bold; margin-top:0.5rem">📁 Subject: "Meta Acquisition"</div>
+          <div style="padding-left:1.5rem; border-left: 2px dotted #d1fae5; margin-left:0.5rem">
+            <div>🔴 Rule: keywords <span style="background:#fef3c7;padding:1px 6px;border-radius:3px">acquisition, merger terms, deal structure</span> → <strong>Block</strong> on AI sites</div>
+          </div>
+        </div>
+
+        <div style="color:#7c3aed; font-weight:bold; margin-top:0.75rem">🏢 Division: Litigation</div>
+        <div style="padding-left:1.5rem; border-left: 2px dashed #ddd6fe; margin-left:0.5rem">
+          <div style="color:#059669; font-weight:bold">📁 Subject: "Smith vs Johnson"</div>
+          <div style="padding-left:1.5rem; border-left: 2px dotted #d1fae5; margin-left:0.5rem">
+            <div>🔴 Rule: keywords <span style="background:#fef3c7;padding:1px 6px;border-radius:3px">Smith, case #2024-441, deposition</span> → <strong>Block</strong> on AI sites</div>
+          </div>
+        </div>
+
+        <div style="color:#7c3aed; font-weight:bold; margin-top:0.75rem">🌐 Division: Global (all divisions)</div>
+        <div style="padding-left:1.5rem; border-left: 2px dashed #ddd6fe; margin-left:0.5rem">
+          <div style="color:#059669; font-weight:bold">📁 Subject: "Always Blocked"</div>
+          <div style="padding-left:1.5rem; border-left: 2px dotted #d1fae5; margin-left:0.5rem">
+            <div>🔴 Rule: SSNs, credit cards → <strong>Block</strong> everywhere</div>
+            <div>🔴 Rule: API keys, credentials → <strong>Block</strong> everywhere</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem">
+  <p class="label">What each level means</p>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:0.75rem">
+    <div style="background:var(--bg-secondary,#f8f9fa); padding:1rem; border-radius:8px">
+      <strong style="color:#6366f1">Policy</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.875rem">The tenant's entire ruleset. One active policy at a time. Versioned — can rollback.</p>
+    </div>
+    <div style="background:var(--bg-secondary,#f8f9fa); padding:1rem; border-radius:8px">
+      <strong style="color:#7c3aed">Division</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.875rem">Org scope. Rules inside only apply to users in this division. "Global" = applies to everyone.</p>
+    </div>
+    <div style="background:var(--bg-secondary,#f8f9fa); padding:1rem; border-radius:8px">
+      <strong style="color:#059669">Subject</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.875rem">A named concern — a case, a project, a data category. Groups related rules together. This is what replaces "matter".</p>
+    </div>
+    <div style="background:var(--bg-secondary,#f8f9fa); padding:1rem; border-radius:8px">
+      <strong style="color:#dc2626">Rule</strong>
+      <p style="margin:0.5rem 0 0; font-size:0.875rem">The actual detection logic: what to look for (keywords, patterns, entropy) + what to do (warn/block) + where (which sites).</p>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Does this tree match what you had in mind? Should teams also be a level (between Division and Subject)?</p>

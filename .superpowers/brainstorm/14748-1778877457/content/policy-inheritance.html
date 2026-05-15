@@ -1,0 +1,66 @@
+<h2>How do policies stack across levels?</h2>
+<p class="subtitle">A user belongs to a Team, which belongs to a Division, which belongs to the Company. All three levels can have rules. When they conflict — what wins?</p>
+
+<div class="section">
+  <div class="mockup" style="margin-bottom: 2rem;">
+    <div class="mockup-header">Example: Sarah is on the "M&A Team" in the "Legal Division" at "Acme Corp"</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 0.85rem; line-height: 2;">
+      <div style="display:flex; align-items:center; gap: 0.5rem;">
+        <span style="background:#6366f1;color:#fff;padding:2px 10px;border-radius:4px">Company</span>
+        <span>→ Global rule: "Block sending SSNs anywhere"</span>
+      </div>
+      <div style="display:flex; align-items:center; gap: 0.5rem; padding-left: 2rem;">
+        <span style="background:#8b5cf6;color:#fff;padding:2px 10px;border-radius:4px">Division: Legal</span>
+        <span>→ "Warn before sending case names to ChatGPT"</span>
+      </div>
+      <div style="display:flex; align-items:center; gap: 0.5rem; padding-left: 4rem;">
+        <span style="background:#a78bfa;color:#fff;padding:2px 10px;border-radius:4px">Team: M&A</span>
+        <span>→ "Block sending anything about Project Zeus"</span>
+      </div>
+      <div style="display:flex; align-items:center; gap: 0.5rem; padding-left: 6rem;">
+        <span style="background:#c4b5fd;color:#333;padding:2px 10px;border-radius:4px">Sarah</span>
+        <span>→ Which rules apply to her?</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="additive" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Additive — all rules combine</h3>
+      <p>Sarah gets every rule from every level: company + division + team. No conflicts — rules stack up. Strictest outcome because nothing is ever "overridden away."</p>
+      <div class="pros-cons" style="margin-top:0.75rem">
+        <div class="pros"><h4>Pros</h4><ul><li>Simple mental model</li><li>No gaps — a rule set at company level always applies</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Can't give one team a looser rule than company default</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="specific-wins" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Most specific wins — team overrides division overrides company</h3>
+      <p>Team-level rules take precedence. A team can tighten OR loosen a company default. E.g., a trusted internal tools team could be exempt from a company-wide ChatGPT block.</p>
+      <div class="pros-cons" style="margin-top:0.75rem">
+        <div class="pros"><h4>Pros</h4><ul><li>Flexible — teams can have exceptions</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>A company-level "always block" can be accidentally overridden</li><li>Harder to reason about what rules are in effect</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="restrictive-wins" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Most restrictive wins — block beats warn, warn beats allow</h3>
+      <p>Rules combine, but when two rules cover the same thing, the stricter action wins. A company "warn" + a team "block" = block. A company "block" can never be loosened by a team.</p>
+      <div class="pros-cons" style="margin-top:0.75rem">
+        <div class="pros"><h4>Pros</h4><ul><li>Security-first: higher authority can never be bypassed</li><li>Still additive — more rules = more coverage</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Slightly more complex to explain to admins</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:1.5rem; color: var(--text-secondary, #666)">Click your preferred model or describe what you have in mind in the terminal.</p>
