@@ -15,6 +15,7 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
       keywords?: string[]
       pattern?: string
       destinations?: string[]
+      destinationGroupIds?: string[]
       action: 'warn' | 'block'
       message?: string
     }
@@ -28,6 +29,7 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
       keywords: string[]
       pattern: string
       destinations: string[]
+      destinationGroupIds: string[]
       action: 'warn' | 'block'
       message: string
       active: boolean

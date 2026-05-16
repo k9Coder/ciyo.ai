@@ -63,4 +63,16 @@ describe('compilePolicy', () => {
     const policy = await compilePolicy(tenantId)
     expect(policy.subjects[0]!.rules).toHaveLength(0)
   })
+
+  it('stores destinationGroupIds in snapshot (not expanded)', async () => {
+    const subject = await createSubject(tenantId, { name: 'Test' })
+    await createRule(tenantId, subject.id, {
+      kind: 'keyword',
+      keywords: ['secret'],
+      action: 'block',
+      destinationGroupIds: ['00000000-0000-0000-0000-000000000001'],
+    })
+    const policy = await compilePolicy(tenantId)
+    expect(policy.subjects[0]!.rules[0]!.destinationGroupIds).toContain('00000000-0000-0000-0000-000000000001')
+  })
 })

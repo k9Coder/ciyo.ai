@@ -8,6 +8,7 @@ export interface RulePolicy {
   keywords: string[] | null
   pattern: string | null
   destinations: string[]
+  destinationGroupIds: string[]
   action: 'warn' | 'block'
   message: string | null
 }
@@ -33,6 +34,7 @@ function toRulePolicy(r: Rule): RulePolicy {
     keywords: r.keywords ?? null,
     pattern: r.pattern ?? null,
     destinations: r.destinations ?? [],
+    destinationGroupIds: r.destinationGroupIds ?? [],
     action: r.action,
     message: r.message ?? null,
   }
