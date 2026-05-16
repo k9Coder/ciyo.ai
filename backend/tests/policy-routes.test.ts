@@ -4,17 +4,17 @@ import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { publishPolicy } from '../src/policy/service.js'
 import { db } from '../src/db/client.js'
-import { tenants } from '../src/db/schema.js'
+import { tenants, divisions, teams, members, memberTeams } from '../src/db/schema.js'
 import { buildApp } from '../src/app.js'
 import type { FastifyInstance } from 'fastify'
+import { createSubject } from '../src/subjects/service.js'
+import { createRule } from '../src/rules/service.js'
+import { compilePolicy } from '../src/policy/compiler.js'
 
 const BASE_POLICY = {
   version: 1 as const,
-  baseline: [],
-  custom: [],
-  perSite: {},
-  allowSendAnywayWithReason: true,
-  auditRetentionDays: 90,
+  tenantId: 'placeholder',
+  subjects: [],
 }
 
 let app: FastifyInstance
@@ -131,5 +131,42 @@ describe('POST /v1/policy/rollback/:version', () => {
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
     expect(res.body.version).toBe(2)
+  })
+})
+
+describe('GET /v1/policy with X-Member-Id', () => {
+  it('returns only global subjects for a member with no teams', async () => {
+    const globalSubject = await createSubject(tenantId, { name: 'Global' })
+    await createRule(tenantId, globalSubject.id, { kind: 'keyword', keywords: ['secret'], action: 'warn' })
+
+    const [div] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning()
+    const [team] = await db.insert(teams).values({ tenantId, divisionId: div!.id, name: 'Corp', slug: 'corp' }).returning()
+    const teamSubject = await createSubject(tenantId, { name: 'Team Only', teamId: team!.id, divisionId: div!.id })
+    await createRule(tenantId, teamSubject.id, { kind: 'keyword', keywords: ['classified'], action: 'block' })
+
+    const [member] = await db.insert(members).values({ tenantId, email: 'alice@example.com', role: 'member' }).returning()
+    await publishPolicy(tenantId, await compilePolicy(tenantId))
+
+    const res = await supertest(app.server)
+      .get('/v1/policy')
+      .set('Authorization', `Bearer ${orgToken}`)
+      .set('X-Member-Id', member!.id)
+    expect(res.status).toBe(200)
+    expect(res.body.policy.subjects).toHaveLength(1)
+    expect(res.body.policy.subjects[0].name).toBe('Global')
+  })
+
+  it('returns full snapshot when X-Member-Id header is absent', async () => {
+    const subject1 = await createSubject(tenantId, { name: 'A' })
+    await createRule(tenantId, subject1.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })
+    const subject2 = await createSubject(tenantId, { name: 'B' })
+    await createRule(tenantId, subject2.id, { kind: 'keyword', keywords: ['y'], action: 'block' })
+    await publishPolicy(tenantId, await compilePolicy(tenantId))
+
+    const res = await supertest(app.server)
+      .get('/v1/policy')
+      .set('Authorization', `Bearer ${orgToken}`)
+    expect(res.status).toBe(200)
+    expect(res.body.policy.subjects).toHaveLength(2)
   })
 })

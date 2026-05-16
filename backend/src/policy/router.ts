@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { requireOrgToken, requireAdminToken } from '../auth/middleware.js'
 import { getVersionOnly, getLatestPolicy, publishPolicy, getHistory, rollback } from './service.js'
-import { compilePolicy } from './compiler.js'
+import { compilePolicy, type PolicyDoc } from './compiler.js'
+import { resolveMemberPolicy } from './resolver.js'
 
 export async function policyRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/policy/version', { preHandler: requireOrgToken }, async (req, reply) => {
@@ -24,9 +25,15 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     const row = await getLatestPolicy(tenant.id)
     if (!row) return reply.status(404).send({ error: 'No policy published' })
 
+    const snapshot = row.policyJson as PolicyDoc
+    const memberId = req.headers['x-member-id'] as string | undefined
+    const policy = memberId
+      ? await resolveMemberPolicy(tenant.id, memberId, snapshot)
+      : snapshot
+
     const response: Record<string, unknown> = {
       version: row.version,
-      policy: row.policyJson,
+      policy,
       tenantName: tenant.name,
       plan: tenant.plan,
       expiresAt: tenant.gracePeriodEndsAt?.toISOString() ?? null,
