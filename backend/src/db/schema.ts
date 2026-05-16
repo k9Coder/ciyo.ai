@@ -100,19 +100,33 @@ export const subjects = pgTable('subjects', {
 
 // ── Rules ─────────────────────────────────────────────────────────────────────
 export const rules = pgTable('rules', {
-  id:           uuid('id').primaryKey().defaultRandom(),
-  tenantId:     uuid('tenant_id').notNull().references(() => tenants.id),
-  subjectId:    uuid('subject_id').notNull().references(() => subjects.id),
-  kind:         ruleKindEnum('kind').notNull(),
-  keywords:     text('keywords').array(),
-  pattern:      text('pattern'),
-  destinations: text('destinations').array().default(sql`'{}'`),
-  action:       ruleActionEnum('action').notNull(),
-  message:      text('message'),
-  active:       boolean('active').notNull().default(true),
-  createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  id:                  uuid('id').primaryKey().defaultRandom(),
+  tenantId:            uuid('tenant_id').notNull().references(() => tenants.id),
+  subjectId:           uuid('subject_id').notNull().references(() => subjects.id),
+  kind:                ruleKindEnum('kind').notNull(),
+  keywords:            text('keywords').array(),
+  pattern:             text('pattern'),
+  destinations:        text('destinations').array().default(sql`'{}'`),
+  destinationGroupIds: uuid('destination_group_ids').array().default(sql`'{}'`),
+  action:              ruleActionEnum('action').notNull(),
+  message:             text('message'),
+  active:              boolean('active').notNull().default(true),
+  createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   subjectIdx: index().on(t.subjectId),
+}))
+
+// ── Destination Groups ────────────────────────────────────────────────────────
+export const destinationGroups = pgTable('destination_groups', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  divisionId: uuid('division_id').references(() => divisions.id),
+  teamId:     uuid('team_id').references(() => teams.id),
+  name:       text('name').notNull(),
+  domains:    text('domains').array().notNull().default(sql`'{}'`),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantIdx: index().on(t.tenantId),
 }))
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -134,3 +148,6 @@ export type NewSubject = typeof subjects.$inferInsert
 
 export type Rule    = typeof rules.$inferSelect
 export type NewRule = typeof rules.$inferInsert
+
+export type DestinationGroup    = typeof destinationGroups.$inferSelect
+export type NewDestinationGroup = typeof destinationGroups.$inferInsert
