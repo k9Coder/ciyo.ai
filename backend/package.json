@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@clerk/backend": "^3.4.9",
     "@fastify/cors": "^9.0.1",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.30.10",
@@ -20,6 +21,7 @@
     "nodemailer": "^6.9.13",
     "postgres": "^3.4.4",
     "stripe": "^14.21.0",
+    "svix": "^1.93.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

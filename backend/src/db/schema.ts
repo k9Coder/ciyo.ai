@@ -14,6 +14,7 @@ export const tenants = pgTable('tenants', {
   id:                 uuid('id').primaryKey().defaultRandom(),
   name:               text('name').notNull(),
   slug:               text('slug').notNull(),
+  clerkOrgId:         text('clerk_org_id').unique(),
   orgTokenHash:       text('org_token_hash').notNull(),
   adminTokenHash:     text('admin_token_hash').notNull(),
   paymentProvider:    text('payment_provider').notNull(),
@@ -24,7 +25,8 @@ export const tenants = pgTable('tenants', {
   gracePeriodEndsAt:  timestamp('grace_period_ends_at', { withTimezone: true }),
   createdAt:          timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
-  slugUniq: unique().on(t.slug),
+  slugUniq:     unique().on(t.slug),
+  clerkOrgUniq: unique().on(t.clerkOrgId),
 }))
 
 // ── Policies (versioned snapshots — unchanged) ────────────────────────────────
@@ -68,6 +70,10 @@ export const members = pgTable('members', {
   tenantId:        uuid('tenant_id').notNull().references(() => tenants.id),
   email:           text('email').notNull(),
   displayName:     text('display_name'),
+  firstName:       text('first_name'),
+  lastName:        text('last_name'),
+  avatarUrl:       text('avatar_url'),
+  clerkId:         text('clerk_id').unique(),
   role:            memberRoleEnum('role').notNull().default('member'),
   adminDivisionId: uuid('admin_division_id').references(() => divisions.id),
   createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -129,6 +135,18 @@ export const destinationGroups = pgTable('destination_groups', {
   tenantIdx: index().on(t.tenantId),
 }))
 
+// ── Site Configs ──────────────────────────────────────────────────────────────
+export const siteConfigs = pgTable('site_configs', {
+  id:                  uuid('id').primaryKey().defaultRandom(),
+  tenantId:            uuid('tenant_id').notNull().references(() => tenants.id),
+  domain:              text('domain').notNull(),
+  inputSelector:       text('input_selector').notNull(),
+  sendButtonSelector:  text('send_button_selector').notNull(),
+  createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantDomainUniq: unique().on(t.tenantId, t.domain),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Tenant    = typeof tenants.$inferSelect
 export type NewTenant = typeof tenants.$inferInsert
@@ -151,3 +169,6 @@ export type NewRule = typeof rules.$inferInsert
 
 export type DestinationGroup    = typeof destinationGroups.$inferSelect
 export type NewDestinationGroup = typeof destinationGroups.$inferInsert
+
+export type SiteConfig    = typeof siteConfigs.$inferSelect
+export type NewSiteConfig = typeof siteConfigs.$inferInsert

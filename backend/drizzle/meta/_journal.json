@@ -22,6 +22,13 @@
       "when": 1778877458000,
       "tag": "0002_policy_engine",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778954510000,
+      "tag": "0003_clerk_auth",
+      "breakpoints": true
     }
   ]
 }
