@@ -48,13 +48,13 @@ describe('token helpers', () => {
   })
 })
 
-describe('api.matters.list', () => {
-  it('calls GET /v1/matters with Bearer header', async () => {
+describe('api.subjects.list', () => {
+  it('calls GET /v1/subjects with Bearer header', async () => {
     setToken('ps_adm_acme_token')
     mockFetch.mockReturnValueOnce(ok([]))
-    await api.matters.list()
+    await api.subjects.list()
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v1/matters'),
+      expect.stringContaining('/v1/subjects'),
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({ Authorization: 'Bearer ps_adm_acme_token' }),
@@ -66,46 +66,46 @@ describe('api.matters.list', () => {
     setToken('bad')
     mockFetch.mockReturnValueOnce(err(401, { error: 'Unauthorized' }))
     let thrown: unknown = null
-    await api.matters.list().catch(e => { thrown = e })
+    await api.subjects.list().catch(e => { thrown = e })
     expect(thrown).toBeInstanceOf(AdminApiError)
     expect((thrown as InstanceType<typeof AdminApiError>).status).toBe(401)
   })
 })
 
-describe('api.matters.create', () => {
-  it('calls POST /v1/matters with body', async () => {
+describe('api.subjects.create', () => {
+  it('calls POST /v1/subjects with body', async () => {
     setToken('tok')
-    mockFetch.mockReturnValueOnce(ok({ id: '1', clientName: 'Acme' }))
-    await api.matters.create({ clientName: 'Acme', matterNumber: 'AC-001' })
+    mockFetch.mockReturnValueOnce(ok({ id: '1', name: 'Test Subject' }))
+    await api.subjects.create({ name: 'Test Subject' })
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v1/matters'),
+      expect.stringContaining('/v1/subjects'),
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ clientName: 'Acme', matterNumber: 'AC-001' }),
+        body: JSON.stringify({ name: 'Test Subject' }),
       })
     )
   })
 })
 
-describe('api.matters.update', () => {
-  it('calls PATCH /v1/matters/:id', async () => {
+describe('api.subjects.update', () => {
+  it('calls PATCH /v1/subjects/:id', async () => {
     setToken('tok')
-    mockFetch.mockReturnValueOnce(ok({ id: 'abc', clientName: 'New' }))
-    await api.matters.update('abc', { clientName: 'New' })
+    mockFetch.mockReturnValueOnce(ok({ id: 'abc', name: 'New' }))
+    await api.subjects.update('abc', { name: 'New' })
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v1/matters/abc'),
+      expect.stringContaining('/v1/subjects/abc'),
       expect.objectContaining({ method: 'PATCH' })
     )
   })
 })
 
-describe('api.matters.remove', () => {
-  it('calls DELETE /v1/matters/:id', async () => {
+describe('api.subjects.remove', () => {
+  it('calls DELETE /v1/subjects/:id', async () => {
     setToken('tok')
     mockFetch.mockReturnValueOnce({ ok: true, status: 204, json: () => Promise.resolve(undefined), statusText: 'No Content' })
-    await api.matters.remove('abc')
+    await api.subjects.remove('abc')
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v1/matters/abc'),
+      expect.stringContaining('/v1/subjects/abc'),
       expect.objectContaining({ method: 'DELETE' })
     )
   })
