@@ -56,4 +56,9 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     const newVersion = await rollback(req.tenant.id, parseInt(version, 10))
     return { version: newVersion }
   })
+
+  fastify.get('/tenant', { preHandler: requireAdminToken }, async (req) => {
+    const { id, name, slug, plan, subscriptionStatus } = req.tenant
+    return { id, name, slug, plan, subscriptionStatus }
+  })
 }

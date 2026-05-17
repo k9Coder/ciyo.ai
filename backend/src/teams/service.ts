@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { teams, type Team, type NewTeam } from '../db/schema.js'
+import { teams, memberTeams, members, type Team, type NewTeam, type Member } from '../db/schema.js'
 
 export async function listTeams(tenantId: string, divisionId: string): Promise<Team[]> {
   return db.select().from(teams).where(
@@ -32,4 +32,13 @@ export async function updateTeam(
 
 export async function deleteTeam(tenantId: string, id: string): Promise<void> {
   await db.delete(teams).where(and(eq(teams.id, id), eq(teams.tenantId, tenantId)))
+}
+
+export async function listMembersByTeam(tenantId: string, teamId: string): Promise<Member[]> {
+  const rows = await db
+    .select({ member: members })
+    .from(memberTeams)
+    .innerJoin(members, eq(members.id, memberTeams.memberId))
+    .where(eq(memberTeams.teamId, teamId))
+  return rows.map(r => r.member).filter(m => m.tenantId === tenantId)
 }
