@@ -1,17 +1,17 @@
 import type { FastifyInstance } from 'fastify'
-import { requireOrgToken, requireAdminToken } from '../auth/middleware.js'
+import { requireOrgTokenOrClerkAuth, requireAdminToken } from '../auth/middleware.js'
 import { getVersionOnly, getLatestPolicy, publishPolicy, getHistory, rollback } from './service.js'
 import { compilePolicy, type PolicyDoc } from './compiler.js'
 import { resolveMemberPolicy } from './resolver.js'
 
 export async function policyRouter(fastify: FastifyInstance): Promise<void> {
-  fastify.get('/policy/version', { preHandler: requireOrgToken }, async (req, reply) => {
+  fastify.get('/policy/version', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
     const version = await getVersionOnly(req.tenant.id)
     if (version === null) return reply.status(404).send({ error: 'No policy published' })
     return { version }
   })
 
-  fastify.get('/policy', { preHandler: requireOrgToken }, async (req, reply) => {
+  fastify.get('/policy', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
     const tenant = req.tenant
 
     if (tenant.subscriptionStatus === 'cancelled') {
@@ -26,17 +26,16 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     if (!row) return reply.status(404).send({ error: 'No policy published' })
 
     const snapshot = row.policyJson as PolicyDoc
-    const memberId = req.headers['x-member-id'] as string | undefined
-    const policy = memberId
-      ? await resolveMemberPolicy(tenant.id, memberId, snapshot)
+    const policy = req.member
+      ? await resolveMemberPolicy(tenant.id, req.member.id, snapshot)
       : snapshot
 
     const response: Record<string, unknown> = {
-      version: row.version,
+      version:    row.version,
       policy,
       tenantName: tenant.name,
-      plan: tenant.plan,
-      expiresAt: tenant.gracePeriodEndsAt?.toISOString() ?? null,
+      plan:       tenant.plan,
+      expiresAt:  tenant.gracePeriodEndsAt?.toISOString() ?? null,
     }
     if (tenant.subscriptionStatus === 'past_due') response['warning'] = 'subscription_expiring'
     return response
