@@ -168,10 +168,10 @@ Simple toast system. `useToast()` returns `{ toast }` where `toast({ message, va
 **SubjectForm fields:** name (text), scope (select: global / division / team), scopeId (shown when scope ≠ global; dependent select populated from divisions/teams).
 
 **RuleForm fields:** kind (select: keyword / pattern / entropy / score). Then dynamic fields:
-- `keyword`: keywords (textarea, comma-separated), action (warn/block)
-- `pattern`: regex (text, monospace), action (warn/block), message (optional)
-- `entropy`: threshold (number 0–8), action (warn/block)
-- `score`: signals (checklist with point values), threshold (number), action (warn/block)
+- `keyword`: keywords (textarea, comma-separated → stored as `string[]`), action (warn/block), optional destinationGroupIds (multi-select)
+- `pattern`: regex (text, monospace), action (warn/block), message (optional), optional destinationGroupIds
+- `entropy`: action (warn/block), config JSON field (textarea, advanced — backend stores as JSONB `config`)
+- `score`: action (warn/block), config JSON field (textarea, advanced — backend stores as JSONB `config`)
 
 ### Org Structure (`/org`)
 
@@ -192,17 +192,16 @@ Each item has edit (pencil) and delete (trash) icon buttons on hover. Add/edit u
 
 Card grid (or table) — each card: group name (bold), description (muted), created date. Edit and delete icon buttons. `EntityModal<DestinationGroupForm>` for add/edit.
 
-**DestinationGroupForm fields:** name (text), description (textarea, optional).
+**DestinationGroupForm fields:** name (text), domains (textarea, one domain per line — stored as `string[]`), divisionId (optional select), teamId (optional select).
 
 ### Site Configs (`/sites`)
 
 `PageHeader` title "Site Configs" + "+ New Site" button.
 
-Table: hostname | Enabled (`Toggle`) | Edit | Delete.  
-Toggling enabled fires `updateSiteConfig` immediately (optimistic).  
-`EntityModal<SiteConfigForm>` for add/edit.
+Table: domain | inputSelector | sendButtonSelector | Edit | Delete.  
+`EntityModal<SiteConfigForm>` for add/edit. PATCH keyed by domain (URL segment).
 
-**SiteConfigForm fields:** hostname (text), enabled (checkbox/toggle).
+**SiteConfigForm fields:** domain (text), inputSelector (text, CSS selector for the chat input), sendButtonSelector (text, CSS selector for the send button).
 
 ### Policy / Publish (`/publish`)
 
@@ -220,7 +219,7 @@ Two sections:
 
 ## Auth / Login
 
-`/login` — simple centered card: "Admin Token" text input + "Sign in" button. On submit: `POST /v1/auth/verify` (or just make a test request to `/v1/subjects`); if 200, save token to `localStorage` and redirect to `/subjects`. If 401, show error.
+`/login` — simple centered card: "Admin Token" text input + "Sign in" button. On submit: `GET /v1/subjects` with the token as probe; if 200, save token to `localStorage` and redirect to `/subjects`. If 401, show "Invalid token" error.
 
 Route guard: `<RequireAuth>` wrapper checks `localStorage` for token. If absent, redirects to `/login`.
 
