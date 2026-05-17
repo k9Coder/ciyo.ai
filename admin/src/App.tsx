@@ -1,74 +1,42 @@
-import { useState } from 'react'
-import { getToken, clearToken } from './api'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AppLayout } from './components/layout/AppLayout'
+import { RequireAuth } from './components/layout/RequireAuth'
 import { LoginPage } from './pages/LoginPage'
-import { MattersPage } from './pages/MattersPage'
-import { PolicyPage } from './pages/PolicyPage'
-import { HistoryPage } from './pages/HistoryPage'
+import { SubjectsPage } from './pages/SubjectsPage'
+import { OrgPage } from './pages/OrgPage'
+import { DestinationsPage } from './pages/DestinationsPage'
+import { SitesPage } from './pages/SitesPage'
+import { PublishPage } from './pages/PublishPage'
 import { SettingsPage } from './pages/SettingsPage'
 
-type Tab = 'matters' | 'policy' | 'history' | 'settings'
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'matters', label: 'Matters' },
-  { id: 'policy', label: 'Policy' },
-  { id: 'history', label: 'History' },
-  { id: 'settings', label: 'Settings' },
-]
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+})
 
 export function App() {
-  const [authed, setAuthed] = useState(() => getToken() !== null)
-  const [activeTab, setActiveTab] = useState<Tab>('matters')
-
-  function handleSignOut() {
-    clearToken()
-    setAuthed(false)
-  }
-
-  if (!authed) {
-    return <LoginPage onLogin={() => setAuthed(true)} />
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            PS
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">PromptShield Admin</h1>
-          <button
-            onClick={handleSignOut}
-            className="ml-auto text-xs text-gray-500 hover:text-gray-800"
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            element={
+              <RequireAuth>
+                <AppLayout />
+              </RequireAuth>
+            }
           >
-            Sign out
-          </button>
-        </div>
-      </header>
-
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto flex">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <main className="max-w-5xl mx-auto px-6 py-8">
-        {activeTab === 'matters' && <MattersPage />}
-        {activeTab === 'policy' && <PolicyPage />}
-        {activeTab === 'history' && <HistoryPage />}
-        {activeTab === 'settings' && <SettingsPage />}
-      </main>
-    </div>
+            <Route index element={<Navigate to="/subjects" replace />} />
+            <Route path="/subjects"     element={<SubjectsPage />} />
+            <Route path="/org"          element={<OrgPage />} />
+            <Route path="/destinations" element={<DestinationsPage />} />
+            <Route path="/sites"        element={<SitesPage />} />
+            <Route path="/publish"      element={<PublishPage />} />
+            <Route path="/settings"     element={<SettingsPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
