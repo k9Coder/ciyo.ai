@@ -79,7 +79,7 @@ export const PolicySchema = z.object({
   auditRetentionDays: z.number().int().positive(),
 });
 
-// ─── Derived TypeScript types ─────────────────────────────────────────────────
+// ─── Derived TypeScript types (engine-internal) ───────────────────────────────
 
 export type Severity = z.infer<typeof SeveritySchema>;
 export type Action = z.infer<typeof ActionSchema>;
@@ -90,3 +90,38 @@ export type ScoreSignalConfig = z.infer<typeof ScoreSignalConfigSchema>;
 export type ScoreRule = z.infer<typeof ScoreRuleSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type Policy = z.infer<typeof PolicySchema>;
+
+// ─── Backend API shape (ResolvedPolicy from GET /v1/policy) ──────────────────
+
+export const ResolvedRuleSchema = z.object({
+  id:           z.string(),
+  kind:         z.enum(["keyword", "pattern", "entropy", "score"]),
+  keywords:     z.array(z.string()).nullable(),
+  pattern:      z.string().nullable(),
+  destinations: z.array(z.string()),
+  action:       z.enum(["warn", "block"]),
+  message:      z.string().nullable(),
+});
+
+export const ResolvedSubjectSchema = z.object({
+  id:    z.string(),
+  name:  z.string(),
+  rules: z.array(ResolvedRuleSchema),
+});
+
+export const SiteConfigSchema = z.object({
+  inputSelector:      z.string(),
+  sendButtonSelector: z.string(),
+});
+
+export const PolicyDocSchema = z.object({
+  version:     z.literal(1),
+  tenantId:    z.string(),
+  subjects:    z.array(ResolvedSubjectSchema),
+  siteConfigs: z.record(SiteConfigSchema).default({}),
+});
+
+export type ResolvedRule    = z.infer<typeof ResolvedRuleSchema>;
+export type ResolvedSubject = z.infer<typeof ResolvedSubjectSchema>;
+export type SiteConfigEntry = z.infer<typeof SiteConfigSchema>;
+export type PolicyDoc       = z.infer<typeof PolicyDocSchema>;

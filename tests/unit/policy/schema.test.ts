@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PolicySchema } from "@/policy/schema";
+import { PolicySchema, PolicyDocSchema } from "@/policy/schema";
 import { DEFAULT_POLICY } from "@/policy/defaults";
 
 describe("PolicySchema", () => {
@@ -106,5 +106,48 @@ describe("PolicySchema", () => {
     };
     const result = PolicySchema.safeParse(policy);
     expect(result.success).toBe(true);
+  });
+});
+
+describe("PolicyDocSchema (backend API shape)", () => {
+  it("parses a valid ResolvedPolicy from the backend", () => {
+    const raw = {
+      version: 1,
+      tenantId: "tenant-uuid",
+      subjects: [
+        {
+          id: "sub-1",
+          name: "Confidential",
+          rules: [
+            { id: "rule-1", kind: "keyword", keywords: ["secret", "classified"], pattern: null, destinations: [], action: "block", message: null },
+            { id: "rule-2", kind: "pattern", keywords: null, pattern: "sk-[A-Za-z0-9]{20,}", destinations: [], action: "warn", message: "API key detected" },
+          ],
+        },
+      ],
+      siteConfigs: {
+        "app.acme.com": { inputSelector: "#chat-input", sendButtonSelector: "#send-btn" },
+      },
+    };
+    const result = PolicyDocSchema.safeParse(raw);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.subjects[0]!.rules[0]!.kind).toBe("keyword");
+      expect(result.data.siteConfigs["app.acme.com"]!.inputSelector).toBe("#chat-input");
+    }
+  });
+
+  it("defaults siteConfigs to {} when absent", () => {
+    const raw = { version: 1, tenantId: "x", subjects: [] };
+    const result = PolicyDocSchema.safeParse(raw);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.siteConfigs).toEqual({});
+  });
+
+  it("rejects unknown rule kind", () => {
+    const raw = {
+      version: 1, tenantId: "x",
+      subjects: [{ id: "s", name: "S", rules: [{ id: "r", kind: "invalid", action: "warn" }] }],
+    };
+    expect(PolicyDocSchema.safeParse(raw).success).toBe(false);
   });
 });
