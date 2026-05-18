@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock chrome APIs before importing the module
 const mockManagedGet = vi.fn()
 const mockLocalGet = vi.fn()
 const mockLocalSet = vi.fn()
@@ -12,19 +11,18 @@ vi.stubGlobal('chrome', {
   },
 })
 
-// Mock fetch
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 const { syncPolicy } = await import('@/policy/sync')
 
 const TOKEN = 'ps_live_acmelaw_' + 'a'.repeat(32)
-const POLICY_RESPONSE = {
-  version: 3,
-  policy: { version: 1, baseline: [], custom: [], perSite: {}, allowSendAnywayWithReason: false, auditRetentionDays: 365 },
-  tenantName: 'Acme Law',
-  plan: 'pro',
-  expiresAt: null,
+
+const POLICY_DOC = {
+  version: 1,
+  tenantId: 'tenant-acme',
+  subjects: [],
+  siteConfigs: {},
 }
 
 beforeEach(() => {
@@ -40,7 +38,8 @@ beforeEach(() => {
 })
 
 describe('syncPolicy', () => {
-  it('does nothing when no org token is present', async () => {
+  it('does nothing when no token is present', async () => {
+    mockManagedGet.mockResolvedValue({})
     mockLocalGet.mockResolvedValue({})
     await syncPolicy()
     expect(mockFetch).not.toHaveBeenCalled()
@@ -62,15 +61,24 @@ describe('syncPolicy', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 
-  it('fetches and stores policy when version changes', async () => {
+  it('fetches and stores policyDoc when version changes', async () => {
     mockFetch
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ version: 3 }) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(POLICY_RESPONSE) })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          version: 3,
+          policy: POLICY_DOC,
+          tenantName: 'Test Firm',
+          plan: 'pro',
+          expiresAt: null,
+        }),
+      })
     await syncPolicy()
     expect(mockFetch).toHaveBeenCalledTimes(2)
     expect(mockLocalSet).toHaveBeenCalledWith(expect.objectContaining({
       cachedPolicyVersion: 3,
-      tenantName: 'Acme Law',
+      policyDoc: expect.objectContaining({ version: 1, tenantId: 'tenant-acme' }),
       subscriptionExpired: false,
     }))
   })

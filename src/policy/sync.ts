@@ -1,8 +1,13 @@
-const API_BASE = "https://api.promptshield.dev";
+import { PolicyDocSchema } from "./schema";
+import { API_BASE } from "@/shared/constants";
 
-async function getOrgToken(): Promise<string | null> {
+async function getAuthToken(): Promise<string | null> {
+  const clerkResult = await chrome.storage.local.get("clerkSessionToken") as Record<string, unknown>;
+  if (typeof clerkResult["clerkSessionToken"] === "string") return clerkResult["clerkSessionToken"];
+
   const managed = await chrome.storage.managed.get("orgToken").catch(() => ({})) as Record<string, unknown>;
   if (typeof managed["orgToken"] === "string") return managed["orgToken"];
+
   const local = await chrome.storage.local.get("orgToken") as Record<string, unknown>;
   return typeof local["orgToken"] === "string" ? local["orgToken"] : null;
 }
@@ -14,7 +19,7 @@ async function getCachedVersion(): Promise<number | null> {
 }
 
 export async function syncPolicy(): Promise<void> {
-  const token = await getOrgToken();
+  const token = await getAuthToken();
   if (!token) return;
 
   try {
@@ -25,9 +30,9 @@ export async function syncPolicy(): Promise<void> {
       if (versionRes.status === 402) await chrome.storage.local.set({ subscriptionExpired: true });
       return;
     }
-    const { version } = await versionRes.json() as { version: number };
+    const { version: contentVersion } = await versionRes.json() as { version: number };
     const cached = await getCachedVersion();
-    if (cached === version) return;
+    if (cached === contentVersion) return;
 
     const policyRes = await fetch(`${API_BASE}/v1/policy`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -36,17 +41,16 @@ export async function syncPolicy(): Promise<void> {
       if (policyRes.status === 402) await chrome.storage.local.set({ subscriptionExpired: true });
       return;
     }
-    const body = await policyRes.json() as {
-      version: number; policy: unknown; warning?: string; tenantName: string;
-    };
+    const raw = await policyRes.json() as { policy: unknown };
+    const parsed = PolicyDocSchema.safeParse(raw.policy);
+    if (!parsed.success) return;
+
     await chrome.storage.local.set({
-      policy: body.policy,
-      cachedPolicyVersion: body.version,
-      tenantName: body.tenantName,
+      policyDoc: parsed.data,
+      cachedPolicyVersion: contentVersion,
       subscriptionExpired: false,
-      subscriptionWarning: body.warning === "subscription_expiring",
     });
   } catch {
-    // Network error — leave cached policy in place, do not surface to user
+    // Network error — leave cached policy in place
   }
 }
