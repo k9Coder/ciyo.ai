@@ -108,9 +108,9 @@ describe('POST /webhooks/clerk', () => {
 
   it('returns 400 when Svix signature is invalid', async () => {
     const { Webhook } = await import('svix')
-    vi.mocked((Webhook as ReturnType<typeof vi.fn>).mock.results[0]!.value.verify).mockImplementationOnce(() => {
-      throw new Error('Invalid signature')
-    })
+    ;(Webhook as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
+      verify: () => { throw new Error('Invalid signature') },
+    }))
     const res = await makeWebhookRequest({ type: 'organization.created', data: {} })
     expect(res.status).toBe(400)
   })
