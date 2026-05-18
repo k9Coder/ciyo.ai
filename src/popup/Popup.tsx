@@ -1,43 +1,60 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth, useUser } from "@clerk/chrome-extension";
 import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { EXTENSION_NAME } from "@/shared/constants";
 
-interface SubscriptionStatus {
-  expired: boolean;
-  warning: boolean;
-  tenantName: string | null;
+function SignedOutView() {
+  return (
+    <div className="p-6 flex flex-col items-center gap-4">
+      <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+        PS
+      </div>
+      <p className="text-sm text-gray-600 text-center">
+        Sign in to enable policy enforcement for your organization.
+      </p>
+      <button
+        onClick={() => chrome.runtime.openOptionsPage()}
+        className="w-full py-2 px-4 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+      >
+        Sign in via Settings
+      </button>
+    </div>
+  );
 }
 
-export function Popup() {
+function SignedInView() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const [hostname, setHostname] = useState<string>("");
   const [siteEnabled, setSiteEnabled] = useState(true);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sub, setSub] = useState<SubscriptionStatus>({ expired: false, warning: false, tenantName: null });
+
+  // Persist session token so service worker can use it for API calls
+  useEffect(() => {
+    getToken().then((token) => {
+      if (token) void chrome.storage.local.set({ clerkSessionToken: token });
+    });
+  }, [getToken]);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
       if (!tab?.url) { setLoading(false); return; }
-
       try {
         const url = new URL(tab.url);
         const host = url.hostname;
         setHostname(host);
-
-        const [statusResult, events, subStatus] = await Promise.all([
+        const [statusResult, events] = await Promise.all([
           sendMessage<{ enabled: boolean }>({ type: "GET_SITE_STATUS", payload: { hostname: host } }),
           queryAuditEvents({ hostname: host, limit: 5 }),
-          sendMessage<SubscriptionStatus>({ type: "GET_SUBSCRIPTION_STATUS" }),
         ]);
-
         setSiteEnabled(statusResult.enabled);
         setRecentEvents(events);
-        setSub(subStatus);
       } catch {
-        // ignore errors
+        // ignore
       } finally {
         setLoading(false);
       }
@@ -60,22 +77,12 @@ export function Popup() {
           PS
         </div>
         <span className="font-semibold text-sm">{EXTENSION_NAME}</span>
-        {sub.tenantName && (
-          <span className="ml-auto text-xs text-gray-400 truncate max-w-[120px]">{sub.tenantName}</span>
+        {user?.primaryEmailAddress && (
+          <span className="ml-auto text-xs text-gray-400 truncate max-w-[120px]">
+            {user.primaryEmailAddress.emailAddress}
+          </span>
         )}
       </div>
-
-      {/* Subscription banners */}
-      {sub.expired && (
-        <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-xs text-red-700 font-medium">
-          Subscription expired — contact your IT admin
-        </div>
-      )}
-      {!sub.expired && sub.warning && (
-        <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 font-medium">
-          Subscription expiring soon — contact your IT admin
-        </div>
-      )}
 
       {/* Site toggle */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
@@ -124,7 +131,7 @@ export function Popup() {
                   {ev.action}
                 </span>
                 <span className="text-gray-600 truncate">
-                  {ev.userDecision} — {new Date(ev.timestamp).toLocaleTimeString()}
+                  {new Date(ev.timestamp).toLocaleTimeString()}
                 </span>
               </li>
             ))}
@@ -143,4 +150,12 @@ export function Popup() {
       </div>
     </div>
   );
+}
+
+export function Popup() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) return <div className="p-4 text-sm text-gray-500">Loading…</div>;
+  if (!isSignedIn) return <SignedOutView />;
+  return <SignedInView />;
 }

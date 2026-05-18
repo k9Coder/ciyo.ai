@@ -1,4 +1,3 @@
-import React from "react";
 import { EXTENSION_NAME, EXTENSION_VERSION } from "@/shared/constants";
 
 export function AboutPage() {

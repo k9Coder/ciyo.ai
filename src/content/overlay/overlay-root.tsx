@@ -1,4 +1,3 @@
-import React from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { WarningModal, type ModalDecision } from "./WarningModal";
 import type { DetectionResult } from "@/detection/types";
@@ -89,7 +88,7 @@ export function showWarningModal(
       );
     } catch (err) {
       logger.error("Failed to render warning modal:", err);
-      resolve({ type: "cancel" });
+      resolve({ type: "edit" });
     }
   });
 }

@@ -1,42 +1,43 @@
-import { PolicySchema, type Policy } from "./schema";
+import { PolicyDocSchema, type Policy, type PolicyDoc } from "./schema";
+import { bridgePolicy } from "./bridge";
 import { DEFAULT_POLICY } from "./defaults";
-import { STORAGE_POLICY_KEY } from "@/shared/constants";
+import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
 
-/**
- * Load the active policy from chrome.storage.
- * Merges: managed (enterprise, read-only) > sync (user-level) > local (device).
- * Falls back to the built-in DEFAULT_POLICY on any parse error.
- */
+async function getStoredDoc(): Promise<PolicyDoc | null> {
+  const result = await chrome.storage.local.get("policyDoc") as Record<string, unknown>;
+  const raw = result["policyDoc"];
+  if (!raw) return null;
+  const parsed = PolicyDocSchema.safeParse(raw);
+  if (!parsed.success) {
+    logger.warn("Stored policyDoc parse failed:", parsed.error);
+    return null;
+  }
+  return parsed.data;
+}
+
+async function getDisabledSites(): Promise<string[]> {
+  const result = await chrome.storage.local.get(STORAGE_SITE_OVERRIDES_KEY) as Record<string, unknown>;
+  const raw = result[STORAGE_SITE_OVERRIDES_KEY];
+  return Array.isArray(raw) ? (raw as string[]) : [];
+}
+
 export async function loadPolicy(): Promise<Policy> {
   try {
-    // chrome.storage.managed may not be available without enterprise deployment.
-    const [localData, syncData] = await Promise.all([
-      chrome.storage.local.get(STORAGE_POLICY_KEY),
-      chrome.storage.sync.get(STORAGE_POLICY_KEY).catch(() => ({})),
-    ]);
-
-    const raw = syncData[STORAGE_POLICY_KEY] ?? localData[STORAGE_POLICY_KEY];
-    if (!raw) return DEFAULT_POLICY;
-
-    const result = PolicySchema.safeParse(raw);
-    if (!result.success) {
-      logger.warn("Policy parse failed, falling back to defaults:", result.error);
-      return DEFAULT_POLICY;
-    }
-    return result.data;
+    const [doc, disabledSites] = await Promise.all([getStoredDoc(), getDisabledSites()]);
+    if (!doc) return DEFAULT_POLICY;
+    return bridgePolicy(doc, disabledSites);
   } catch (err) {
     logger.error("Failed to load policy:", err);
     return DEFAULT_POLICY;
   }
 }
 
-/** Persist a policy to chrome.storage.local. */
-export async function savePolicy(policy: Policy): Promise<void> {
-  await chrome.storage.local.set({ [STORAGE_POLICY_KEY]: policy });
-}
-
-/** Reset to the built-in defaults. */
-export async function resetPolicy(): Promise<void> {
-  await savePolicy(DEFAULT_POLICY);
+export async function getSiteConfigs(): Promise<PolicyDoc["siteConfigs"]> {
+  try {
+    const doc = await getStoredDoc();
+    return doc?.siteConfigs ?? {};
+  } catch {
+    return {};
+  }
 }

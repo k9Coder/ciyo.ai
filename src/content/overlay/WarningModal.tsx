@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { Finding } from "@/detection/types";
 import type { Action } from "@/detection/types";
 import { buildSnippet } from "@/detection/engine";

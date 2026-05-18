@@ -3,7 +3,6 @@ import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
 import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@/detection/types";
-import type { Policy } from "@/policy/schema";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
 
@@ -13,7 +12,6 @@ import { logger } from "@/shared/logger";
   try {
     await bootstrap();
   } catch (err) {
-    // Never throw to the page
     logger.error("PromptShield bootstrap failed:", err);
   }
 })();
@@ -21,34 +19,13 @@ import { logger } from "@/shared/logger";
 async function bootstrap() {
   const hostname = location.hostname;
   const adapter = getAdapter(hostname);
-  if (!adapter) {
-    logger.info("No adapter for hostname:", hostname);
-    return;
-  }
 
   logger.info("PromptShield active on", adapter.name);
 
-  // Track paste events so ScoreRule knows whether text was pasted or typed
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
   function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
 
-  let cachedPolicy: Policy | null = null;
-
-  /** Fetch/refresh the policy from the background worker. */
-  async function getPolicy(): Promise<Policy> {
-    if (!cachedPolicy) {
-      cachedPolicy = await sendMessage<Policy>({ type: "GET_POLICY" });
-    }
-    return cachedPolicy;
-  }
-
-  // Invalidate cache when policy changes
-  chrome.storage.onChanged.addListener(() => {
-    cachedPolicy = null;
-  });
-
-  // ── Send-intent handler ────────────────────────────────────────────────────
   adapter.onSendIntent(async (_e: Event) => {
     try {
       const composer = adapter.findComposer();
@@ -57,7 +34,6 @@ async function bootstrap() {
       const promptText = adapter.readPromptText(composer);
       if (!promptText.trim()) return { proceed: true };
 
-      // Detect via background service worker (runs in its own context)
       const result: DetectionResult = await sendMessage({
         type: "DETECT",
         payload: { text: promptText, hostname, pasteDetected: wasPasteRecent() },
@@ -65,14 +41,12 @@ async function bootstrap() {
 
       logger.debug("Detection result:", result);
 
-      // Always write an audit event
       await writeAuditEvent(result, promptText, hostname, "sent");
 
       if (result.highestAction === "log") {
         return { proceed: true };
       }
 
-      // Show modal and wait for user decision
       const decision = await showWarningModal(result, promptText);
 
       switch (decision.type) {
@@ -87,7 +61,7 @@ async function bootstrap() {
       }
     } catch (err) {
       logger.error("Send-intent handler error:", err);
-      return { proceed: true }; // fail open so we don't block the user
+      return { proceed: true };
     }
   });
 }

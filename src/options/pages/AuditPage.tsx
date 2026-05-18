@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { queryAuditEvents, exportAuditCSV } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 

@@ -234,7 +234,7 @@ export async function detectPrompt(
   };
 }
 
-function emptyResult(promptText: string, startPerf: number): DetectionResult {
+function emptyResult(_promptText: string, startPerf: number): DetectionResult {
   return {
     findings: [],
     highestAction: "log",

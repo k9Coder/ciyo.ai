@@ -1,9 +1,8 @@
 import { detectPrompt } from "@/detection/engine";
-import { loadPolicy, savePolicy } from "@/policy/loader";
-import { appendAuditEvent } from "@/audit/log";
+import { loadPolicy } from "@/policy/loader";
 import { syncPolicy } from "@/policy/sync";
-import { getRole } from "@/policy/role";
 import type { Message } from "@/shared/messages";
+import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
@@ -34,6 +33,12 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+async function getDisabledSites(): Promise<string[]> {
+  const result = await chrome.storage.local.get(STORAGE_SITE_OVERRIDES_KEY) as Record<string, unknown>;
+  const raw = result[STORAGE_SITE_OVERRIDES_KEY];
+  return Array.isArray(raw) ? (raw as string[]) : [];
+}
+
 async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
@@ -48,20 +53,18 @@ async function handleMessage(message: Message): Promise<unknown> {
 
     case "TOGGLE_SITE": {
       const { hostname, enabled } = message.payload;
-      const policy = await loadPolicy();
-      policy.perSite[hostname] = {
-        ...(policy.perSite[hostname] ?? {}),
-        enabled,
-      };
-      await savePolicy(policy);
+      const disabled = await getDisabledSites();
+      const updated = enabled
+        ? disabled.filter((h) => h !== hostname)
+        : [...new Set([...disabled, hostname])];
+      await chrome.storage.local.set({ [STORAGE_SITE_OVERRIDES_KEY]: updated });
       return { ok: true };
     }
 
     case "GET_SITE_STATUS": {
       const { hostname } = message.payload;
-      const policy = await loadPolicy();
-      const site = policy.perSite[hostname];
-      return { hostname, enabled: site?.enabled ?? true };
+      const disabled = await getDisabledSites();
+      return { hostname, enabled: !disabled.includes(hostname) };
     }
 
     case "SYNC_NOW": {
@@ -69,21 +72,9 @@ async function handleMessage(message: Message): Promise<unknown> {
       return { ok: true };
     }
 
-    case "GET_ROLE": {
-      return { role: await getRole() };
-    }
-
     case "GET_SUBSCRIPTION_STATUS": {
-      const result = await chrome.storage.local.get([
-        "subscriptionExpired",
-        "subscriptionWarning",
-        "tenantName",
-      ]) as Record<string, unknown>;
-      return {
-        expired: result["subscriptionExpired"] === true,
-        warning: result["subscriptionWarning"] === true,
-        tenantName: typeof result["tenantName"] === "string" ? result["tenantName"] : null,
-      };
+      const result = await chrome.storage.local.get("subscriptionExpired") as Record<string, unknown>;
+      return { expired: result["subscriptionExpired"] === true };
     }
 
     default:
