@@ -1,64 +1,136 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { clearToken } from '../../api'
+import { NavLink, Outlet } from 'react-router-dom'
+import { useOrganization, useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
+import { getTheme, setTheme } from '../../utils/theme'
+import { useState } from 'react'
 
 const NAV = [
-  { to: '/subjects',     label: 'Subjects & Rules' },
-  { to: '/org',          label: 'Org Structure' },
-  { to: '/destinations', label: 'Destination Groups' },
-  { to: '/sites',        label: 'Site Configs' },
-  { to: '/publish',      label: 'Publish' },
-  { to: '/settings',     label: 'Settings' },
+  { to: '/dashboard',  label: 'Dashboard',  icon: '▦' },
+  { to: '/subjects',   label: 'Policies',   icon: '⊡' },
+  { to: '/org',        label: 'Teams',      icon: '⊞' },
+  { to: '/members',    label: 'Members',    icon: '◎' },
+  { to: '/audit',      label: 'Audit Log',  icon: '≡' },
+  { to: '/settings',   label: 'Settings',   icon: '⚙' },
 ]
 
-export function AppLayout() {
-  const navigate = useNavigate()
-
-  function handleSignOut() {
-    clearToken()
-    navigate('/login')
+function ThemeToggle() {
+  const [theme, setThemeState] = useState<'dark' | 'light'>(() => getTheme())
+  function toggle() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    setThemeState(next)
   }
+  return (
+    <button onClick={toggle} title="Toggle theme" style={{
+      background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+      color: 'var(--text-muted)', fontSize: 14, lineHeight: 1,
+    }}>
+      {theme === 'dark' ? '☀' : '🌙'}
+    </button>
+  )
+}
+
+export function AppLayout() {
+  const { organization } = useOrganization()
+  const { user } = useUser()
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className="w-52 shrink-0 bg-slate-800 flex flex-col">
-        <div className="px-4 py-5">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-red-500 rounded flex items-center justify-center text-white text-xs font-bold">PS</div>
-            <span className="text-white font-semibold text-sm">PromptShield</span>
-          </div>
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-base)',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif", overflow: 'hidden' }}>
+
+      {/* Sidebar */}
+      <aside style={{
+        width: 210, flexShrink: 0, background: 'var(--bg-surface)',
+        borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
+      }}>
+        {/* Logo */}
+        <div style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
+                      display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="22" height="22" viewBox="0 0 80 80" fill="none">
+            <rect x="8" y="24" width="64" height="32" rx="10"
+                  fill="var(--bg-base)" stroke="var(--brand-primary)" strokeWidth="2.5"/>
+            <rect x="17" y="36" width="22" height="2" rx="1"
+                  fill="var(--brand-primary)" opacity="0.5"/>
+            <circle cx="60" cy="40" r="10" fill="var(--brand-primary)" opacity="0.12"/>
+            <circle cx="60" cy="40" r="10" stroke="var(--brand-primary)" strokeWidth="2"/>
+            <path d="M56 40L59 43L65 37" stroke="var(--brand-primary)" strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.5px' }}>
+            <span style={{ color: 'var(--text-primary)' }}>safe</span>
+            <span style={{ color: 'var(--brand-primary)' }}>input</span>
+          </span>
         </div>
-        <nav className="flex-1 px-2 space-y-0.5">
-          {NAV.map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded text-sm transition-colors ${
-                  isActive
-                    ? 'bg-slate-700 text-white font-medium'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }`
-              }
-            >
+
+        {/* Org badge */}
+        {organization && (
+          <div style={{
+            margin: '10px 10px 4px', background: 'var(--bg-surface-raised)',
+            borderRadius: 8, padding: '8px 12px', border: '1px solid var(--border)',
+          }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 9,
+                          letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+              Organization
+            </div>
+            <div style={{ color: 'var(--text-primary)', fontSize: 12,
+                          fontWeight: 600, marginTop: 3 }}>
+              {organization.name}
+            </div>
+          </div>
+        )}
+
+        {/* Nav */}
+        <nav style={{ padding: 8, flex: 1 }}>
+          {NAV.map(({ to, label, icon }) => (
+            <NavLink key={to} to={to} style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '8px 12px', borderRadius: 6, marginBottom: 2,
+              textDecoration: 'none', fontSize: 12, transition: 'all 0.1s',
+              background: isActive ? 'var(--bg-surface-raised)' : 'transparent',
+              color: isActive ? 'var(--brand-primary)' : 'var(--text-muted)',
+              fontWeight: isActive ? 600 : 400,
+              border: isActive ? '1px solid var(--border)' : '1px solid transparent',
+            })}>
+              <span style={{ fontSize: 13 }}>{icon}</span>
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-slate-700">
-          <button
-            onClick={handleSignOut}
-            className="text-xs text-slate-500 hover:text-slate-300"
-          >
-            Sign out
-          </button>
+
+        {/* User */}
+        <div style={{
+          padding: '12px 16px', borderTop: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <UserButton afterSignOutUrl="/login" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: 'var(--text-primary)', fontSize: 11,
+                          fontWeight: 600, overflow: 'hidden',
+                          textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.fullName ?? user?.primaryEmailAddress?.emailAddress}
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 9 }}>Admin</div>
+          </div>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        {/* Top bar */}
+        <div style={{
+          padding: '14px 24px', borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-surface)', display: 'flex',
+          justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
+        }}>
+          <ThemeToggle />
+        </div>
+
+        {/* Page content */}
+        <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-base)' }}>
           <Outlet />
         </div>
-      </main>
+      </div>
+
       <ToastContainer />
     </div>
   )
