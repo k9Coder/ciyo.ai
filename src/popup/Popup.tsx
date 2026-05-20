@@ -3,23 +3,89 @@ import { useAuth, useUser } from "@clerk/chrome-extension";
 import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
-import { EXTENSION_NAME } from "@/shared/constants";
+import { getTheme, setTheme } from "@/shared/theme";
+
+function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
+  const color = danger ? "var(--status-danger)" : "var(--brand-primary)";
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none">
+      <rect x="8" y="24" width="64" height="32" rx="10"
+            fill="var(--bg-surface)" stroke={color} strokeWidth="2"/>
+      <rect x="17" y="36" width="26" height="2.5" rx="1.25"
+            fill={color} opacity="0.5"/>
+      <rect x="17" y="41.5" width="16" height="2.5" rx="1.25"
+            fill={color} opacity="0.3"/>
+      <circle cx="60" cy="40" r="11" fill={color} opacity="0.12"/>
+      <circle cx="60" cy="40" r="11" stroke={color} strokeWidth="2"/>
+      {danger ? (
+        <>
+          <path d="M60 33v8" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+          <circle cx="60" cy="46" r="1.5" fill={color}/>
+        </>
+      ) : (
+        <path d="M55.5 40L59 43.5L65.5 37"
+              stroke={color} strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round"/>
+      )}
+    </svg>
+  );
+}
+
+function Wordmark({ danger = false }: { danger?: boolean }) {
+  return (
+    <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.5px" }}>
+      <span style={{ color: "var(--text-primary)" }}>safe</span>
+      <span style={{ color: danger ? "var(--status-danger)" : "var(--brand-primary)" }}>input</span>
+    </span>
+  );
+}
+
+function ThemeToggle() {
+  const [theme, setThemeState] = useState<"dark" | "light">(() => getTheme());
+  function toggle() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    setThemeState(next);
+  }
+  return (
+    <button onClick={toggle} style={{
+      background: "none", border: "none", cursor: "pointer",
+      color: "var(--text-muted)", padding: 4,
+    }} title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+      {theme === "dark" ? "☀" : "🌙"}
+    </button>
+  );
+}
 
 function SignedOutView() {
   return (
-    <div className="p-6 flex flex-col items-center gap-4">
-      <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-        PS
+    <div style={{ background: "var(--bg-base)", minWidth: 320 }}>
+      <div style={{
+        padding: "14px 16px", display: "flex", alignItems: "center",
+        justifyContent: "space-between", borderBottom: "1px solid var(--border)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <LogoIcon size={24} />
+          <Wordmark />
+        </div>
+        <ThemeToggle />
       </div>
-      <p className="text-sm text-gray-600 text-center">
-        Sign in to enable policy enforcement for your organization.
-      </p>
-      <button
-        onClick={() => chrome.runtime.openOptionsPage()}
-        className="w-full py-2 px-4 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-      >
-        Sign in via Settings
-      </button>
+      <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", textAlign: "center", margin: 0 }}>
+          Sign in to enable policy enforcement for your organization.
+        </p>
+        <button
+          onClick={() => chrome.runtime.openOptionsPage()}
+          style={{
+            width: "100%", padding: "8px 16px",
+            background: "var(--brand-primary)", color: "var(--bg-base)",
+            border: "none", borderRadius: 6, fontSize: 13,
+            fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          Sign in via Settings
+        </button>
+      </div>
     </div>
   );
 }
@@ -32,7 +98,6 @@ function SignedInView() {
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Persist session token so service worker can use it for API calls
   useEffect(() => {
     getToken().then((token) => {
       if (token) void chrome.storage.local.set({ clerkSessionToken: token });
@@ -67,85 +132,125 @@ function SignedInView() {
     await sendMessage({ type: "TOGGLE_SITE", payload: { hostname, enabled: next } });
   }
 
-  if (loading) return <div className="p-4 text-sm text-gray-500">Loading…</div>;
+  if (loading) {
+    return (
+      <div style={{ background: "var(--bg-base)", width: 320, padding: 24,
+                    display: "flex", justifyContent: "center" }}>
+        <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Loading…</span>
+      </div>
+    );
+  }
+
+  const hasEvents = recentEvents.length > 0;
 
   return (
-    <div className="bg-white text-gray-900 font-sans">
+    <div style={{ background: "var(--bg-base)", width: 320, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
-        <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center text-white text-xs font-bold">
-          PS
+      <div style={{
+        padding: "14px 16px", display: "flex", alignItems: "center",
+        justifyContent: "space-between", borderBottom: "1px solid var(--border)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <LogoIcon size={24} danger={hasEvents} />
+          <Wordmark danger={hasEvents} />
         </div>
-        <span className="font-semibold text-sm">{EXTENSION_NAME}</span>
-        {user?.primaryEmailAddress && (
-          <span className="ml-auto text-xs text-gray-400 truncate max-w-[120px]">
-            {user.primaryEmailAddress.emailAddress}
-          </span>
-        )}
+        <ThemeToggle />
       </div>
 
-      {/* Site toggle */}
-      <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+      {/* Status banner */}
+      <div style={{
+        margin: 12, borderRadius: 8, padding: "10px 14px",
+        display: "flex", alignItems: "center", gap: 10,
+        background: hasEvents ? "rgba(255,77,106,0.08)" : "rgba(0,204,136,0.08)",
+        border: `1px solid ${hasEvents ? "rgba(255,77,106,0.25)" : "rgba(0,204,136,0.25)"}`,
+      }}>
+        <div style={{
+          width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+          background: hasEvents ? "var(--status-danger)" : "var(--status-safe)",
+        }}/>
         <div>
-          <p className="text-sm font-medium">{siteEnabled ? "Active" : "Paused"} on this site</p>
-          {hostname && (
-            <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[180px]">{hostname}</p>
-          )}
+          <div style={{
+            fontSize: 12, fontWeight: 600,
+            color: hasEvents ? "var(--status-danger)" : "var(--status-safe)",
+          }}>
+            {hasEvents ? "Sensitive data detected" : "All clear"}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>
+            {hasEvents
+              ? `${recentEvents.length} issue${recentEvents.length > 1 ? "s" : ""} found`
+              : "No sensitive data detected"}
+          </div>
         </div>
+      </div>
+
+      {/* Site info */}
+      <div style={{
+        margin: "0 12px", borderRadius: 8, padding: "9px 14px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: "var(--bg-surface)",
+      }}>
+        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+          {hostname || "No active tab"}
+        </span>
         <button
           onClick={toggleSite}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            siteEnabled ? "bg-blue-600" : "bg-gray-200"
-          }`}
-          role="switch"
-          aria-checked={siteEnabled}
+          style={{
+            fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 4,
+            background: siteEnabled ? "rgba(0,212,255,0.12)" : "rgba(58,80,96,0.3)",
+            color: siteEnabled ? "var(--brand-primary)" : "var(--text-muted)",
+            border: "none", cursor: "pointer",
+          }}
         >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              siteEnabled ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
+          {siteEnabled ? "ACTIVE" : "PAUSED"}
         </button>
       </div>
 
       {/* Recent events */}
-      <div className="px-4 py-3">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-          Recent events
-        </p>
-        {recentEvents.length === 0 ? (
-          <p className="text-xs text-gray-400">No events yet.</p>
-        ) : (
-          <ul className="space-y-1.5">
-            {recentEvents.map((ev) => (
-              <li key={ev.id} className="flex items-center gap-2 text-xs">
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                    ev.action === "block"
-                      ? "bg-red-100 text-red-700"
-                      : ev.action === "warn"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {ev.action}
+      {hasEvents && (
+        <div style={{ margin: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+          {recentEvents.slice(0, 3).map((ev, i) => (
+            <div key={i} style={{
+              background: "var(--bg-surface)", borderRadius: 8,
+              padding: "9px 14px",
+              borderLeft: `3px solid ${ev.action === "block" ? "var(--status-danger)" : "var(--status-warn)"}`,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 600,
+                  color: ev.action === "block" ? "var(--status-danger)" : "var(--status-warn)",
+                }}>
+                  {ev.findings[0]?.ruleName ?? "Detection"}
                 </span>
-                <span className="text-gray-600 truncate">
-                  {new Date(ev.timestamp).toLocaleTimeString()}
+                <span style={{
+                  fontSize: 9, padding: "2px 6px", borderRadius: 4,
+                  background: ev.action === "block" ? "rgba(255,77,106,0.15)" : "rgba(255,170,0,0.15)",
+                  color: ev.action === "block" ? "var(--status-danger)" : "var(--status-warn)",
+                }}>
+                  {ev.action?.toUpperCase() ?? "DETECTED"}
                 </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-gray-100">
+      <div style={{
+        padding: "10px 16px", marginTop: 8,
+        borderTop: "1px solid var(--border)",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
+          {user?.organizationMemberships?.[0]?.organization?.name ?? "SafeInput"}
+        </span>
         <button
           onClick={() => chrome.runtime.openOptionsPage()}
-          className="w-full text-sm text-blue-600 hover:text-blue-800 text-center py-1"
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 10, color: "var(--brand-primary)",
+          }}
         >
-          Open settings →
+          Settings →
         </button>
       </div>
     </div>
@@ -154,8 +259,22 @@ function SignedInView() {
 
 export function Popup() {
   const { isLoaded, isSignedIn } = useAuth();
+  const [timedOut, setTimedOut] = useState(false);
 
-  if (!isLoaded) return <div className="p-4 text-sm text-gray-500">Loading…</div>;
+  useEffect(() => {
+    if (isLoaded) return;
+    const id = setTimeout(() => setTimedOut(true), 4000);
+    return () => clearTimeout(id);
+  }, [isLoaded]);
+
+  if (!isLoaded && !timedOut) {
+    return (
+      <div style={{ background: "var(--bg-base)", width: 320, padding: 24,
+                    display: "flex", justifyContent: "center" }}>
+        <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Loading…</span>
+      </div>
+    );
+  }
   if (!isSignedIn) return <SignedOutView />;
   return <SignedInView />;
 }
