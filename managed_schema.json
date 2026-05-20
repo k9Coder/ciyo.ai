@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "promptshield_policy": {
-      "title": "PromptShield Policy",
+      "title": "SafeInput Policy",
       "description": "Detection policy document. See docs/policy-format.md for schema details.",
       "type": "object"
     }

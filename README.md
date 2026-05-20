@@ -1,6 +1,6 @@
-# PromptShield
+# SafeInput
 
-Browser-based DLP (Data Loss Prevention) for LLM chat interfaces. Inspects your prompts before they leave the browser, detects secrets and PII, and warns you before anything sensitive is sent.
+AI prompt protection — detects secrets and PII before they leave your browser. SafeInput is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the SafeInput Admin Console.
 
 ## Supported Sites
 

@@ -9,10 +9,10 @@ const LLM_HOSTS = [
 
 export default defineManifest({
   manifest_version: 3,
-  name: "PromptShield",
-  version: "0.1.0",
-  description: "Browser-based DLP for LLM chat interfaces",
-  permissions: ["storage", "scripting", "activeTab"],
+  name: "SafeInput",
+  version: "2.0.0",
+  description: "AI prompt protection — detects secrets and PII before they leave your browser.",
+  permissions: ["storage", "scripting", "activeTab", "alarms"],
   host_permissions: LLM_HOSTS,
   background: {
     service_worker: "src/background/service-worker.ts",

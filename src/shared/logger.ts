@@ -1,7 +1,7 @@
 /** Structured logger that is silenced in production builds. */
 const IS_DEV = import.meta.env.DEV;
 
-const prefix = "[PromptShield]";
+const prefix = "[SafeInput]";
 
 export const logger = {
   debug: (...args: unknown[]) => {

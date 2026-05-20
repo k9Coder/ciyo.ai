@@ -8,7 +8,7 @@ import { logger } from "@/shared/logger";
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
-  logger.info("PromptShield installed. Reason:", reason);
+  logger.info("SafeInput installed. Reason:", reason);
   void syncPolicy();
   chrome.alarms.create("policy-sync", { periodInMinutes: 30 });
 });
