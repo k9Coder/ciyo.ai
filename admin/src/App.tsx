@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppLayout } from './components/layout/AppLayout'
 import { RequireAuth } from './components/layout/RequireAuth'
 import { LoginPage } from './pages/LoginPage'
+import { UnauthorizedPage } from './pages/UnauthorizedPage'
+import { DashboardPage } from './pages/DashboardPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { OrgPage } from './pages/OrgPage'
 import { DestinationsPage } from './pages/DestinationsPage'
@@ -20,6 +22,7 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
             element={
               <RequireAuth>
@@ -27,7 +30,8 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<Navigate to="/subjects" replace />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard"    element={<DashboardPage />} />
             <Route path="/subjects"     element={<SubjectsPage />} />
             <Route path="/org"          element={<OrgPage />} />
             <Route path="/destinations" element={<DestinationsPage />} />
