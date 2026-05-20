@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none">
+  <!-- Icon -->
+  <rect x="4" y="12" width="40" height="24" rx="7"
+        fill="#0d1525" stroke="#00d4ff" stroke-width="2"/>
+  <rect x="10" y="21" width="16" height="2" rx="1"
+        fill="#00d4ff" opacity="0.5"/>
+  <rect x="10" y="25" width="10" height="2" rx="1"
+        fill="#00d4ff" opacity="0.3"/>
+  <circle cx="36" cy="24" r="7" fill="#00d4ff" opacity="0.12"/>
+  <circle cx="36" cy="24" r="7" stroke="#00d4ff" stroke-width="1.5"/>
+  <path d="M33 24L35.5 26.5L40 21.5"
+        stroke="#00d4ff" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Wordmark -->
+  <text x="56" y="30"
+        font-family="'Segoe UI', system-ui, sans-serif"
+        font-size="18" font-weight="600" letter-spacing="-0.5"
+        fill="#ffffff">safe</text>
+  <text x="93" y="30"
+        font-family="'Segoe UI', system-ui, sans-serif"
+        font-size="18" font-weight="600" letter-spacing="-0.5"
+        fill="#00d4ff">input</text>
+</svg>
