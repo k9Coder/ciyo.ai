@@ -1,0 +1,29 @@
+/* Dark mode — default */
+:root {
+  --brand-primary:     #00d4ff;
+  --bg-base:           #0a0e1a;
+  --bg-surface:        #0d1525;
+  --bg-surface-raised: #1a2a3a;
+  --border:            #1a2a3a;
+  --text-primary:      #ffffff;
+  --text-secondary:    #8899aa;
+  --text-muted:        #3a5060;
+  --status-danger:     #ff4d6a;
+  --status-warn:       #ffaa00;
+  --status-safe:       #00cc88;
+}
+
+/* Light mode */
+[data-theme="light"] {
+  --brand-primary:     #0077aa;
+  --bg-base:           #f0f4f8;
+  --bg-surface:        #ffffff;
+  --bg-surface-raised: #f8fafc;
+  --border:            #dde3ea;
+  --text-primary:      #0a0e1a;
+  --text-secondary:    #4a6070;
+  --text-muted:        #9aacba;
+  --status-danger:     #e03050;
+  --status-warn:       #cc8800;
+  --status-safe:       #00aa66;
+}
