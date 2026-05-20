@@ -5,6 +5,9 @@ import path from "path";
 import manifest from "./manifest.config";
 
 export default defineConfig({
+  define: {
+    global: 'globalThis',
+  },
   plugins: [react(), crx({ manifest })],
   resolve: {
     alias: {
