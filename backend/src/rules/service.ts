@@ -17,7 +17,7 @@ export async function listAllActiveRules(tenantId: string): Promise<Rule[]> {
 export async function createRule(
   tenantId: string,
   subjectId: string,
-  data: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message'>
+  data: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'reportLevel'>
 ): Promise<Rule> {
   const [row] = await db.insert(rules).values({ tenantId, subjectId, ...data }).returning()
   return row!
@@ -26,7 +26,7 @@ export async function createRule(
 export async function updateRule(
   tenantId: string,
   id: string,
-  data: Partial<Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'active'>>
+  data: Partial<Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'active' | 'reportLevel'>>
 ): Promise<Rule | null> {
   const [row] = await db
     .update(rules)
