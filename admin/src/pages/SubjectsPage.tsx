@@ -40,12 +40,13 @@ function SubjectForm({
 }
 
 type RuleFormState = {
-  kind: Rule['kind']
-  action: Rule['action']
-  keywords: string
-  pattern: string
-  message: string
+  kind:               Rule['kind']
+  action:             Rule['action']
+  keywords:           string
+  pattern:            string
+  message:            string
   destinationGroupIds: string
+  reportLevel:        Rule['reportLevel']
 }
 
 function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: RuleFormState) => void }) {
@@ -129,6 +130,20 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
       </div>
 
       <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1">Report to analytics</label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          value={value.reportLevel}
+          onChange={e => onChange({ ...value, reportLevel: e.target.value as Rule['reportLevel'] })}
+        >
+          <option value="none">None — don&apos;t report</option>
+          <option value="minimal">Minimal — action + site + time</option>
+          <option value="medium">Medium — + who triggered it</option>
+          <option value="rich">Rich — + matched term/pattern</option>
+        </select>
+      </div>
+
+      <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
           Destination Group IDs (comma-separated UUIDs, optional)
         </label>
@@ -147,7 +162,7 @@ function RulesPanel({ subject }: { subject: Subject }) {
   const { data: rules = [], isLoading } = useRules(subject.id)
   const mutations = useRuleMutations(subject.id)
 
-  const blankRule: RuleFormState = { kind: 'keyword', action: 'warn', keywords: '', pattern: '', message: '', destinationGroupIds: '' }
+  const blankRule: RuleFormState = { kind: 'keyword', action: 'warn', keywords: '', pattern: '', message: '', destinationGroupIds: '', reportLevel: 'none' }
   const [modal, setModal] = useState<{ open: boolean; editing: Rule | null; form: RuleFormState }>({
     open: false, editing: null, form: blankRule,
   })
@@ -159,12 +174,13 @@ function RulesPanel({ subject }: { subject: Subject }) {
       open: true,
       editing: rule,
       form: {
-        kind: rule.kind,
-        action: rule.action,
-        keywords: rule.keywords?.join(', ') ?? '',
-        pattern: rule.pattern ?? '',
-        message: rule.message ?? '',
+        kind:               rule.kind,
+        action:             rule.action,
+        keywords:           rule.keywords?.join(', ') ?? '',
+        pattern:            rule.pattern ?? '',
+        message:            rule.message ?? '',
         destinationGroupIds: rule.destinationGroupIds.join(', '),
+        reportLevel:        rule.reportLevel,
       },
     })
   }
@@ -172,12 +188,13 @@ function RulesPanel({ subject }: { subject: Subject }) {
 
   function buildPayload(form: RuleFormState) {
     return {
-      kind: form.kind,
-      action: form.action,
-      keywords: form.kind === 'keyword' ? form.keywords.split(',').map(s => s.trim()).filter(Boolean) : undefined,
-      pattern: form.kind === 'pattern' ? form.pattern.trim() || undefined : undefined,
-      message: form.message.trim() || undefined,
+      kind:               form.kind,
+      action:             form.action,
+      keywords:           form.kind === 'keyword' ? form.keywords.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+      pattern:            form.kind === 'pattern' ? form.pattern.trim() || undefined : undefined,
+      message:            form.message.trim() || undefined,
       destinationGroupIds: form.destinationGroupIds.split(',').map(s => s.trim()).filter(Boolean),
+      reportLevel:        form.reportLevel,
     }
   }
 
