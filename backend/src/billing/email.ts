@@ -18,11 +18,11 @@ function createTransport() {
 export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> {
   const transport = createTransport()
   await transport.sendMail({
-    from: process.env.SMTP_FROM ?? 'noreply@safeinput.ai',
+    from: process.env.SMTP_FROM ?? 'noreply@ciyo.ai',
     to: input.to,
-    subject: `Welcome to SafeInput — ${input.tenantName}`,
+    subject: `Welcome to ciyo — ${input.tenantName}`,
     text: [
-      `Welcome to SafeInput, ${input.tenantName}!`,
+      `Welcome to ciyo, ${input.tenantName}!`,
       '',
       'Your deployment tokens are below. Keep these secure.',
       '',

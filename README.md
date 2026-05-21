@@ -1,6 +1,6 @@
-# SafeInput
+# ciyo
 
-AI prompt protection — detects secrets and PII before they leave your browser. SafeInput is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the SafeInput Admin Console.
+AI prompt protection — detects secrets and PII before they leave your browser. ciyo is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the ciyo Admin Console.
 
 ## Supported Sites
 

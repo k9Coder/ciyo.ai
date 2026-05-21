@@ -9,7 +9,7 @@ const LLM_HOSTS = [
 
 export default defineManifest({
   manifest_version: 3,
-  name: "SafeInput",
+  name: "ciyo",
   version: "2.0.0",
   description: "AI prompt protection — detects secrets and PII before they leave your browser.",
   permissions: ["storage", "scripting", "activeTab", "alarms"],

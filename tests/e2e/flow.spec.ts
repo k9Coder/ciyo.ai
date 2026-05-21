@@ -17,7 +17,7 @@ const MOCK_PAGE = path.resolve(__dirname, "fixtures/chatgpt-mock.html");
 // chrome.storage is unavailable in the ISOLATED world without the background sw.
 // The e2e suite is meant to be run after `pnpm build`.
 
-test.describe("SafeInput E2E", () => {
+test.describe("ciyo E2E", () => {
   test("modal appears when API key is typed and send is clicked", async () => {
     const context = await chromium.launchPersistentContext("", {
       headless: false,
