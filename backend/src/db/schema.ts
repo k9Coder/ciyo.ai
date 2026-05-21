@@ -164,6 +164,16 @@ export const events = pgTable('events', {
   ruleIdx:       index().on(t.ruleId),
 }))
 
+// ── Scans (prompt-level count) ────────────────────────────────────────────────
+export const scans = pgTable('scans', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:   uuid('member_id').references(() => members.id),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Tenant    = typeof tenants.$inferSelect
 export type NewTenant = typeof tenants.$inferInsert
@@ -192,3 +202,6 @@ export type NewSiteConfig = typeof siteConfigs.$inferInsert
 
 export type Event    = typeof events.$inferSelect
 export type NewEvent = typeof events.$inferInsert
+
+export type Scan    = typeof scans.$inferSelect
+export type NewScan = typeof scans.$inferInsert

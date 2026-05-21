@@ -1,9 +1,10 @@
 import { db } from '../../src/db/client.js'
-import { tenants, policies, divisions, teams, members, memberTeams, subjects, rules, destinationGroups, siteConfigs, events } from '../../src/db/schema.js'
+import { tenants, policies, divisions, teams, members, memberTeams, subjects, rules, destinationGroups, siteConfigs, events, scans } from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
 
 export async function truncateAll(): Promise<void> {
   await db.delete(events)
+  await db.delete(scans)
   await db.delete(memberTeams)
   await db.delete(rules)
   await db.delete(subjects)
