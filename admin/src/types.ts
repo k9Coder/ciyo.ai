@@ -20,6 +20,7 @@ export interface Rule {
   destinationGroupIds: string[]
   action: 'warn' | 'block'
   message: string | null
+  reportLevel: 'none' | 'minimal' | 'medium' | 'rich'
   active: boolean
   createdAt: string
 }

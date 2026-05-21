@@ -20,12 +20,15 @@ export function setToken(token: string): void { localStorage.setItem(TOKEN_KEY, 
 export function getToken(): string | null { return localStorage.getItem(TOKEN_KEY) }
 export function clearToken(): void { localStorage.removeItem(TOKEN_KEY) }
 
+let _tokenGetter: (() => Promise<string | null>) | null = null
+export function setTokenGetter(fn: (() => Promise<string | null>) | null): void { _tokenGetter = fn }
+
 export function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = getToken()
+  const token = _tokenGetter ? await _tokenGetter() : getToken()
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
@@ -56,12 +59,12 @@ export const api = {
     create: (subjectId: string, data: {
       kind: Rule['kind']; action: Rule['action']
       keywords?: string[]; pattern?: string; message?: string
-      destinationGroupIds?: string[]
+      destinationGroupIds?: string[]; reportLevel?: Rule['reportLevel']
     }) => request<Rule>('POST', `/v1/subjects/${subjectId}/rules`, data),
     update: (id: string, data: Partial<{
       kind: Rule['kind']; action: Rule['action']
       keywords: string[]; pattern: string; message: string
-      destinationGroupIds: string[]; active: boolean
+      destinationGroupIds: string[]; active: boolean; reportLevel: Rule['reportLevel']
     }>) => request<Rule>('PATCH', `/v1/rules/${id}`, data),
     remove: (id: string) => request<void>('DELETE', `/v1/rules/${id}`),
   },
