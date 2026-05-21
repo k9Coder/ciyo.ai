@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth, useClerk } from '@clerk/react'
 
 export function LoginPage() {
-  const { isLoaded, isSignedIn, orgRole } = useAuth()
+  const { isLoaded, isSignedIn, orgId, orgRole } = useAuth()
   const { openSignIn } = useClerk()
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return
-    navigate(orgRole === 'org:admin' ? '/subjects' : '/unauthorized', { replace: true })
-  }, [isLoaded, isSignedIn, orgRole, navigate])
+    navigate(!orgId ? '/onboarding' : orgRole === 'org:admin' ? '/dashboard' : '/unauthorized', { replace: true })
+  }, [isLoaded, isSignedIn, orgId, orgRole, navigate])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
