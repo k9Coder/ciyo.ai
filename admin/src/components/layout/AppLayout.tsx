@@ -46,19 +46,20 @@ export function AppLayout() {
         {/* Logo */}
         <div style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', gap: 10 }}>
-          <svg width="22" height="22" viewBox="0 0 80 80" fill="none">
-            <rect x="8" y="24" width="64" height="32" rx="10"
-                  fill="var(--bg-base)" stroke="var(--brand-primary)" strokeWidth="2.5"/>
-            <rect x="17" y="36" width="22" height="2" rx="1"
-                  fill="var(--brand-primary)" opacity="0.5"/>
-            <circle cx="60" cy="40" r="10" fill="var(--brand-primary)" opacity="0.12"/>
-            <circle cx="60" cy="40" r="10" stroke="var(--brand-primary)" strokeWidth="2"/>
-            <path d="M56 40L59 43L65 37" stroke="var(--brand-primary)" strokeWidth="2"
+          <svg width="22" height="22" viewBox="0 0 56 56" fill="none">
+            <rect width="56" height="56" rx="14" fill="var(--bg-base)"/>
+            <path d="M20 14 L14 14 L14 42 L20 42"
+                  stroke="var(--brand-primary)" strokeWidth="3"
                   strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="34" cy="28" r="5" fill="var(--brand-primary)"/>
+            <path d="M30 18 L38 18 L38 24"
+                  stroke="var(--brand-primary)" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
           </svg>
-          <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.5px' }}>
-            <span style={{ color: 'var(--text-primary)' }}>safe</span>
-            <span style={{ color: 'var(--brand-primary)' }}>input</span>
+          <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.5px' }}>
+            <span style={{ color: 'var(--text-primary)' }}>c</span>
+            <span style={{ color: 'var(--brand-primary)' }}>i</span>
+            <span style={{ color: 'var(--text-primary)' }}>yo</span>
           </span>
         </div>
 
