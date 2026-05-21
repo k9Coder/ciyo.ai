@@ -101,6 +101,7 @@ export const ResolvedRuleSchema = z.object({
   destinations: z.array(z.string()),
   action:       z.enum(["warn", "block"]),
   message:      z.string().nullable(),
+  reportLevel:  z.enum(["none", "minimal", "medium", "rich"]).default("none"),
 });
 
 export const ResolvedSubjectSchema = z.object({
