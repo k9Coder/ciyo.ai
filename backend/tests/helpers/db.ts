@@ -1,8 +1,9 @@
 import { db } from '../../src/db/client.js'
-import { tenants, policies, divisions, teams, members, memberTeams, subjects, rules, destinationGroups, siteConfigs } from '../../src/db/schema.js'
+import { tenants, policies, divisions, teams, members, memberTeams, subjects, rules, destinationGroups, siteConfigs, events } from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
 
 export async function truncateAll(): Promise<void> {
+  await db.delete(events)
   await db.delete(memberTeams)
   await db.delete(rules)
   await db.delete(subjects)
@@ -22,20 +23,30 @@ export interface TestTenantResult {
 }
 
 export async function buildTestTenant(slug = 'testfirm'): Promise<TestTenantResult> {
-  const orgSecret = generateSecret()
+  const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
-  const orgToken = formatToken('ps_live', slug, orgSecret)
-  const adminToken = formatToken('ps_adm', slug, adminSecret)
+  const orgToken    = formatToken('ps_live', slug, orgSecret)
+  const adminToken  = formatToken('ps_adm', slug, adminSecret)
 
   const [row] = await db.insert(tenants).values({
-    name: 'Test Firm LLP',
+    name:               'Test Firm LLP',
     slug,
-    orgTokenHash: await hashToken(orgSecret),
-    adminTokenHash: await hashToken(adminSecret),
-    paymentProvider: 'stripe',
-    externalSubId: `sub_test_${slug}`,
+    orgTokenHash:       await hashToken(orgSecret),
+    adminTokenHash:     await hashToken(adminSecret),
+    paymentProvider:    'stripe',
+    externalSubId:      `sub_test_${slug}`,
     subscriptionStatus: 'active',
   }).returning({ id: tenants.id })
 
   return { tenantId: row!.id, orgToken, adminToken }
+}
+
+export async function buildTestMember(tenantId: string, clerkId = 'clerk_test_user'): Promise<string> {
+  const [row] = await db.insert(members).values({
+    tenantId,
+    email:   `${clerkId}@test.com`,
+    clerkId,
+    role:    'member',
+  }).returning({ id: members.id })
+  return row!.id
 }

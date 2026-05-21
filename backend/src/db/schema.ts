@@ -5,16 +5,17 @@ import {
 import { sql } from 'drizzle-orm'
 
 // ── Enums ────────────────────────────────────────────────────────────────────
-export const memberRoleEnum = pgEnum('member_role', ['super_admin', 'division_admin', 'member'])
-export const ruleKindEnum   = pgEnum('rule_kind',   ['keyword', 'pattern', 'entropy', 'score'])
-export const ruleActionEnum = pgEnum('rule_action', ['warn', 'block'])
+export const memberRoleEnum  = pgEnum('member_role',  ['super_admin', 'division_admin', 'member'])
+export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score'])
+export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
+export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 
 // ── Tenants ──────────────────────────────────────────────────────────────────
 export const tenants = pgTable('tenants', {
   id:                 uuid('id').primaryKey().defaultRandom(),
   name:               text('name').notNull(),
   slug:               text('slug').notNull(),
-  clerkOrgId:         text('clerk_org_id').unique(),
+  clerkOrgId:         text('clerk_org_id'),
   orgTokenHash:       text('org_token_hash').notNull(),
   adminTokenHash:     text('admin_token_hash').notNull(),
   paymentProvider:    text('payment_provider').notNull(),
@@ -117,6 +118,7 @@ export const rules = pgTable('rules', {
   action:              ruleActionEnum('action').notNull(),
   message:             text('message'),
   active:              boolean('active').notNull().default(true),
+  reportLevel:         reportLevelEnum('report_level').notNull().default('none'),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   subjectIdx: index().on(t.subjectId),
@@ -147,6 +149,21 @@ export const siteConfigs = pgTable('site_configs', {
   tenantDomainUniq: unique().on(t.tenantId, t.domain),
 }))
 
+// ── Events (analytics) ───────────────────────────────────────────────────────
+export const events = pgTable('events', {
+  id:          uuid('id').primaryKey().defaultRandom(),
+  tenantId:    uuid('tenant_id').notNull().references(() => tenants.id),
+  ruleId:      uuid('rule_id').notNull().references(() => rules.id),
+  memberId:    uuid('member_id').references(() => members.id),
+  action:      ruleActionEnum('action').notNull(),
+  siteUrl:     text('site_url').notNull(),
+  matchedTerm: text('matched_term'),
+  occurredAt:  timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+  ruleIdx:       index().on(t.ruleId),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Tenant    = typeof tenants.$inferSelect
 export type NewTenant = typeof tenants.$inferInsert
@@ -172,3 +189,6 @@ export type NewDestinationGroup = typeof destinationGroups.$inferInsert
 
 export type SiteConfig    = typeof siteConfigs.$inferSelect
 export type NewSiteConfig = typeof siteConfigs.$inferInsert
+
+export type Event    = typeof events.$inferSelect
+export type NewEvent = typeof events.$inferInsert
