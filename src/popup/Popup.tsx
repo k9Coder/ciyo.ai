@@ -8,34 +8,26 @@ import { getTheme, setTheme } from "@/shared/theme";
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
   const color = danger ? "var(--status-danger)" : "var(--brand-primary)";
   return (
-    <svg width={size} height={size} viewBox="0 0 80 80" fill="none">
-      <rect x="8" y="24" width="64" height="32" rx="10"
-            fill="var(--bg-surface)" stroke={color} strokeWidth="2"/>
-      <rect x="17" y="36" width="26" height="2.5" rx="1.25"
-            fill={color} opacity="0.5"/>
-      <rect x="17" y="41.5" width="16" height="2.5" rx="1.25"
-            fill={color} opacity="0.3"/>
-      <circle cx="60" cy="40" r="11" fill={color} opacity="0.12"/>
-      <circle cx="60" cy="40" r="11" stroke={color} strokeWidth="2"/>
-      {danger ? (
-        <>
-          <path d="M60 33v8" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
-          <circle cx="60" cy="46" r="1.5" fill={color}/>
-        </>
-      ) : (
-        <path d="M55.5 40L59 43.5L65.5 37"
-              stroke={color} strokeWidth="2.5"
-              strokeLinecap="round" strokeLinejoin="round"/>
-      )}
+    <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
+      <rect width="56" height="56" rx="14" fill="var(--bg-surface)"/>
+      <path d="M20 14 L14 14 L14 42 L20 42"
+            stroke={color} strokeWidth="3"
+            strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="34" cy="28" r="5" fill={color}/>
+      <path d="M30 18 L38 18 L38 24"
+            stroke={color} strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
     </svg>
   );
 }
 
 function Wordmark({ danger = false }: { danger?: boolean }) {
+  const accent = danger ? "var(--status-danger)" : "var(--brand-primary)";
   return (
-    <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.5px" }}>
-      <span style={{ color: "var(--text-primary)" }}>safe</span>
-      <span style={{ color: danger ? "var(--status-danger)" : "var(--brand-primary)" }}>input</span>
+    <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.5px" }}>
+      <span style={{ color: "var(--text-primary)" }}>c</span>
+      <span style={{ color: accent }}>i</span>
+      <span style={{ color: "var(--text-primary)" }}>yo</span>
     </span>
   );
 }
@@ -241,7 +233,7 @@ function SignedInView() {
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
-          {user?.organizationMemberships?.[0]?.organization?.name ?? "SafeInput"}
+          {user?.organizationMemberships?.[0]?.organization?.name ?? "ciyo"}
         </span>
         <button
           onClick={() => chrome.runtime.openOptionsPage()}
