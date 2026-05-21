@@ -97,3 +97,19 @@ export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: Fas
   }
   return resolveClerkJwt(req, reply, token)
 }
+
+export async function requireAdminTokenOrClerkAdmin(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  const token = auth.slice(7)
+  if (token.startsWith('ps_')) {
+    return resolveOrgToken(req, reply, true)
+  }
+  await resolveClerkJwt(req, reply, token)
+  if (reply.sent) return
+  if (req.member?.role !== 'super_admin') {
+    return reply.status(403).send({ error: 'Admin access required' })
+  }
+}

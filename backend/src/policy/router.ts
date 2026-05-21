@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { requireOrgTokenOrClerkAuth, requireAdminToken } from '../auth/middleware.js'
+import { requireOrgTokenOrClerkAuth, requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import { getVersionOnly, getLatestPolicy, publishPolicy, getHistory, rollback } from './service.js'
 import { compilePolicy, type PolicyDoc } from './compiler.js'
 import { resolveMemberPolicy } from './resolver.js'
@@ -41,23 +41,23 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     return response
   })
 
-  fastify.post('/policy/publish', { preHandler: requireAdminToken }, async (req) => {
+  fastify.post('/policy/publish', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
     const policy = await compilePolicy(req.tenant.id)
     const version = await publishPolicy(req.tenant.id, policy)
     return { version }
   })
 
-  fastify.get('/policy/history', { preHandler: requireAdminToken }, async (req) => {
+  fastify.get('/policy/history', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
     return getHistory(req.tenant.id)
   })
 
-  fastify.post('/policy/rollback/:version', { preHandler: requireAdminToken }, async (req, reply) => {
+  fastify.post('/policy/rollback/:version', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { version } = req.params as { version: string }
     const newVersion = await rollback(req.tenant.id, parseInt(version, 10))
     return { version: newVersion }
   })
 
-  fastify.get('/tenant', { preHandler: requireAdminToken }, async (req) => {
+  fastify.get('/tenant', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
     const { id, name, slug, plan, subscriptionStatus } = req.tenant
     return { id, name, slug, plan, subscriptionStatus }
   })
