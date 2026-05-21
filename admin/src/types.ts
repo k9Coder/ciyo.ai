@@ -95,3 +95,41 @@ export interface TenantInfo {
   plan: string
   subscriptionStatus: string
 }
+
+export interface AnalyticsSummary {
+  scansTotal:       number
+  blocked:          number
+  warned:           number
+  activeUsers:      number
+  totalMembers:     number
+  activeRulesCount: number
+}
+
+export interface AnalyticsDailyEntry {
+  day:     string
+  date:    string
+  blocked: number
+  warned:  number
+  scanned: number
+}
+
+export interface AnalyticsIncident {
+  id:          string
+  memberEmail: string | null
+  subjectName: string
+  ruleKind:    string
+  action:      'warn' | 'block'
+  siteUrl:     string
+  occurredAt:  string
+}
+
+export interface AnalyticsTopSiteEntry {
+  domain: string
+  count:  number
+}
+
+export interface AnalyticsBySubjectEntry {
+  subjectName: string
+  count:       number
+  pct:         number
+}

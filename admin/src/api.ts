@@ -1,6 +1,8 @@
 import type {
   Subject, Rule, Division, Team, Member,
   DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, TenantInfo,
+  AnalyticsSummary, AnalyticsDailyEntry, AnalyticsIncident,
+  AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
 } from './types'
 
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.['VITE_API_BASE'])
@@ -118,5 +120,17 @@ export const api = {
   },
   tenant: {
     get: () => request<TenantInfo>('GET', '/v1/tenant'),
+  },
+  analytics: {
+    summary:   (days: 7 | 30 | 90) =>
+      request<AnalyticsSummary>('GET', `/v1/analytics/summary?days=${days}`),
+    daily: () =>
+      request<AnalyticsDailyEntry[]>('GET', '/v1/analytics/daily'),
+    incidents: () =>
+      request<AnalyticsIncident[]>('GET', '/v1/analytics/incidents'),
+    topSites: (days: 7 | 30 | 90) =>
+      request<AnalyticsTopSiteEntry[]>('GET', `/v1/analytics/top-sites?days=${days}`),
+    bySubject: (days: 7 | 30 | 90) =>
+      request<AnalyticsBySubjectEntry[]>('GET', `/v1/analytics/by-subject?days=${days}`),
   },
 }
