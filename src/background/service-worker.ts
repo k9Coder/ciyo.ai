@@ -1,6 +1,7 @@
 import { detectPrompt } from "@/detection/engine";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
+import { dispatchScan } from "@/scans/dispatch";
 import { syncPolicy } from "@/policy/sync";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
@@ -47,6 +48,7 @@ async function handleMessage(message: Message): Promise<unknown> {
       const policy = await loadPolicy();
       const result = await detectPrompt(text, policy, hostname, pasteDetected ?? false);
       void dispatchEvents(result, hostname);
+      void dispatchScan();
       return result;
     }
 
