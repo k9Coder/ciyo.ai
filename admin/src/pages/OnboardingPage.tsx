@@ -31,6 +31,7 @@ export function OnboardingPage() {
     setSubmitting(true)
     setError(null)
     try {
+      if (!createOrganization) return
       await createOrganization({ name: name.trim(), slug: slug.trim() })
       navigate('/dashboard', { replace: true })
     } catch (err) {

@@ -11,7 +11,7 @@ vi.mock('react-router-dom', async () => {
 import { useAuth } from '@clerk/react'
 import { RequireAuth } from '../src/components/layout/RequireAuth'
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => { vi.clearAllMocks() })
 
 describe('RequireAuth', () => {
   it('shows loading when Clerk is not ready', () => {
