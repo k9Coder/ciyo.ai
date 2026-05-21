@@ -10,7 +10,7 @@ export function AboutPage() {
 
       <div className="prose prose-sm text-gray-700 space-y-4">
         <p>
-          SafeInput is a browser extension that inspects your prompts before they are sent
+          ciyo is a browser extension that inspects your prompts before they are sent
           to LLM chat interfaces. It detects credentials, PII, and other sensitive content
           using a configurable policy, then warns you before anything leaves your browser.
         </p>
@@ -21,7 +21,7 @@ export function AboutPage() {
 
       <div className="space-y-2 text-sm">
         <a
-          href="https://github.com/your-org/safeinput"
+          href="https://github.com/your-org/ciyo"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-2 text-blue-600 hover:underline"
@@ -29,10 +29,10 @@ export function AboutPage() {
           Documentation &amp; source code
         </a>
         <a
-          href="mailto:support@safeinput.ai"
+          href="mailto:support@ciyo.ai"
           className="flex items-center gap-2 text-blue-600 hover:underline"
         >
-          support@safeinput.ai
+          support@ciyo.ai
         </a>
       </div>
     </div>

@@ -12,7 +12,7 @@ import { logger } from "@/shared/logger";
   try {
     await bootstrap();
   } catch (err) {
-    logger.error("SafeInput bootstrap failed:", err);
+    logger.error("ciyo bootstrap failed:", err);
   }
 })();
 
@@ -20,7 +20,7 @@ async function bootstrap() {
   const hostname = location.hostname;
   const adapter = getAdapter(hostname);
 
-  logger.info("SafeInput active on", adapter.name);
+  logger.info("ciyo active on", adapter.name);
 
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });

@@ -16,7 +16,7 @@ let reactRoot: Root | null = null;
 function ensureShadowHost(): ShadowRoot {
   if (!shadowHost) {
     shadowHost = document.createElement("div");
-    shadowHost.id = "safeinput-overlay-host";
+    shadowHost.id = "ciyo-overlay-host";
     Object.assign(shadowHost.style, {
       position: "fixed",
       top: "0",

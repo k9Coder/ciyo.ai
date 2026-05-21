@@ -18,7 +18,7 @@ export function LoginPage() {
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white font-bold">SI</div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">SafeInput Admin</h1>
+            <h1 className="text-xl font-semibold text-gray-900">ciyo Admin</h1>
             <p className="text-sm text-gray-500">Sign in with your organization account</p>
           </div>
         </div>
