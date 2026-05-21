@@ -1,108 +1,93 @@
+import { useState } from 'react'
 import { useOrganization } from '@clerk/react'
+import { useQuery } from '@tanstack/react-query'
+import {
+  useAnalyticsSummary, useAnalyticsDaily, useAnalyticsIncidents,
+  useAnalyticsTopSites, useAnalyticsBySubject,
+} from '../hooks/useAnalytics'
+import { api } from '../api'
 
-const MOCK_STATS = {
-  scanned: 48291,
-  blocked: 1042,
-  activeUsers: 312,
-  totalUsers: 340,
-  coverage: 94,
-  activeRules: 21,
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
 }
 
-const MOCK_INCIDENTS = [
-  { user: 'j.smith@acme.com',  type: 'API Key — OpenAI',    status: 'BLOCKED', when: '2m ago' },
-  { user: 'm.lee@acme.com',    type: 'PII — Credit Card',   status: 'WARNED',  when: '14m ago' },
-  { user: 'r.patel@acme.com',  type: 'Internal IP',         status: 'BLOCKED', when: '1h ago' },
-  { user: 'a.chen@acme.com',   type: 'SSH Private Key',     status: 'BLOCKED', when: '2h ago' },
-  { user: 't.garcia@acme.com', type: 'High-entropy token',  status: 'WARNED',  when: '3h ago' },
-]
-
-const MOCK_CHART = [
-  { day: 'Mon', blocked: 22, warned: 14 },
-  { day: 'Tue', blocked: 32, warned: 18 },
-  { day: 'Wed', blocked: 18, warned: 10 },
-  { day: 'Thu', blocked: 42, warned: 22 },
-  { day: 'Fri', blocked: 28, warned: 16 },
-  { day: 'Sat', blocked: 12, warned:  8 },
-  { day: 'Sun', blocked: 10, warned:  6 },
-]
-
-const MOCK_THREATS = [
-  { label: 'API Keys',     pct: 48, color: 'var(--status-danger)' },
-  { label: 'PII',          pct: 27, color: 'var(--status-warn)' },
-  { label: 'Private Keys', pct: 14, color: 'var(--brand-primary)' },
-  { label: 'Internal IPs', pct: 11, color: 'var(--text-muted)' },
-]
-
-const MAX_CHART = 50
-
 function StatusBadge({ status }: { status: string }) {
-  const isBlocked = status === 'BLOCKED'
+  const isBlocked = status === 'block'
   return (
     <span style={{
       fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 3,
       background: isBlocked ? 'rgba(224,48,80,0.12)' : 'rgba(204,136,0,0.12)',
       color: isBlocked ? 'var(--status-danger)' : 'var(--status-warn)',
     }}>
-      {status}
+      {isBlocked ? 'BLOCKED' : 'WARNED'}
     </span>
   )
 }
 
 export function DashboardPage() {
   const { organization } = useOrganization()
+  const [days, setDays] = useState<7 | 30 | 90>(30)
+
+  const { data: summary, isLoading: summaryLoading } = useAnalyticsSummary(days)
+  const { data: daily = [] }                          = useAnalyticsDaily()
+  const { data: incidents = [], isLoading: incidentsLoading } = useAnalyticsIncidents()
+  const { data: topSites = [] }                       = useAnalyticsTopSites(days)
+  const { data: bySubject = [] }                      = useAnalyticsBySubject(days)
+  const { data: policyInfo }                          = useQuery({
+    queryKey: ['policy'], queryFn: api.policy.get, staleTime: 60_000,
+  })
+
+  const maxChart = Math.max(...daily.map(d => d.blocked + d.warned), 10)
+  const dash = (v: number | undefined) => summaryLoading ? '—' : (v ?? 0).toLocaleString()
 
   return (
-    <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column',
-                  gap: 14, minHeight: '100%' }}>
+    <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 14, minHeight: '100%' }}>
 
-      {/* Page title */}
-      <div>
-        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>
-          Dashboard
-        </h1>
-        <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
-          Last 30 days · {organization?.name ?? 'All teams'}
-        </p>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>Dashboard</h1>
+          <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
+            Last {days} days · {organization?.name ?? 'All teams'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {([7, 30, 90] as const).map(d => (
+            <button key={d} onClick={() => setDays(d)} style={{
+              padding: '4px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: 'none',
+              background: days === d ? 'var(--brand-primary)' : 'var(--bg-surface-raised)',
+              color: days === d ? '#fff' : 'var(--text-muted)',
+            }}>{d}d</button>
+          ))}
+        </div>
       </div>
 
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
-          { label: 'Prompts Scanned', value: MOCK_STATS.scanned.toLocaleString(),
-            sub: '↑ 12% vs last month', subColor: 'var(--status-safe)' },
-          { label: 'Threats Blocked', value: MOCK_STATS.blocked.toLocaleString(),
-            sub: '↑ 8% vs last month', subColor: 'var(--status-danger)',
-            valColor: 'var(--status-danger)' },
-          { label: 'Active Users', value: MOCK_STATS.activeUsers.toString(),
-            sub: `of ${MOCK_STATS.totalUsers} licensed`, subColor: 'var(--brand-primary)' },
-          { label: 'Policy Coverage', value: `${MOCK_STATS.coverage}%`,
-            sub: `${MOCK_STATS.activeRules} rules active`, subColor: 'var(--text-muted)',
-            valColor: 'var(--brand-primary)' },
+          { label: 'Prompts Scanned',  value: dash(summary?.scansTotal),       sub: `${dash(summary?.activeUsers)} active users`,      subColor: 'var(--brand-primary)' },
+          { label: 'Threats Blocked',  value: dash(summary?.blocked),           sub: `+ ${dash(summary?.warned)} warned`,                subColor: 'var(--status-danger)', valColor: 'var(--status-danger)' },
+          { label: 'Active Users',     value: dash(summary?.activeUsers),       sub: `of ${dash(summary?.totalMembers)} members`,         subColor: 'var(--brand-primary)' },
+          { label: 'Active Rules',     value: dash(summary?.activeRulesCount),  sub: 'rules enforced',                                   subColor: 'var(--text-muted)', valColor: 'var(--brand-primary)' },
         ].map(({ label, value, sub, subColor, valColor }) => (
-          <div key={label} style={{
-            background: 'var(--bg-surface)', borderRadius: 10,
-            padding: 16, border: '1px solid var(--border)',
-          }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: 9,
-                          textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
-            <div style={{ color: valColor ?? 'var(--text-primary)',
-                          fontSize: 26, fontWeight: 700, margin: '6px 0 4px', lineHeight: 1 }}>
-              {value}
-            </div>
+          <div key={label} style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: 16, border: '1px solid var(--border)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
+            <div style={{ color: valColor ?? 'var(--text-primary)', fontSize: 26, fontWeight: 700, margin: '6px 0 4px', lineHeight: 1 }}>{value}</div>
             <div style={{ color: subColor, fontSize: 10 }}>{sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Activity chart */}
-      <div style={{ background: 'var(--bg-surface)', borderRadius: 10,
-                    border: '1px solid var(--border)', overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>
-            Threat Activity — Last 7 Days
-          </span>
+      {/* Activity chart — always last 7 days */}
+      <div style={{ background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>Threat Activity — Last 7 Days</span>
           <div style={{ display: 'flex', gap: 16 }}>
             {[['var(--status-danger)', 'Blocked'], ['var(--status-warn)', 'Warned']].map(([c, l]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -112,20 +97,15 @@ export function DashboardPage() {
             ))}
           </div>
         </div>
-        <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'flex-end',
-                      gap: 8, height: 120 }}>
-          {MOCK_CHART.map(({ day, blocked, warned }) => {
-            const blockedH = Math.round((blocked / MAX_CHART) * 80)
-            const warnedH  = Math.round((warned  / MAX_CHART) * 80)
+        <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
+          {(daily.length ? daily : Array.from({ length: 7 }, () => ({ day: '', date: '', blocked: 0, warned: 0, scanned: 0 }))).map(({ day, blocked, warned }, i) => {
+            const blockedH = Math.round((blocked / maxChart) * 80)
+            const warnedH  = Math.round((warned  / maxChart) * 80)
             return (
-              <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column',
-                                      alignItems: 'center', gap: 2 }}>
-                <div style={{ width: '50%', display: 'flex', flexDirection: 'column',
-                              gap: 1, alignItems: 'center' }}>
-                  <div style={{ width: '100%', height: warnedH,
-                                background: 'var(--status-warn)', borderRadius: '2px 2px 0 0' }}/>
-                  <div style={{ width: '100%', height: blockedH,
-                                background: 'var(--status-danger)', borderRadius: '0 0 2px 2px' }}/>
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                  <div style={{ width: '100%', height: warnedH,  background: 'var(--status-warn)',   borderRadius: '2px 2px 0 0' }}/>
+                  <div style={{ width: '100%', height: blockedH, background: 'var(--status-danger)', borderRadius: '0 0 2px 2px' }}/>
                 </div>
                 <span style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 6 }}>{day}</span>
               </div>
@@ -138,107 +118,97 @@ export function DashboardPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 12, flex: 1 }}>
 
         {/* Incidents table */}
-        <div style={{ background: 'var(--bg-surface)', borderRadius: 10,
-                      border: '1px solid var(--border)', overflow: 'hidden',
-                      display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>
-              Recent Incidents
-            </span>
-            <span style={{ color: 'var(--brand-primary)', fontSize: 11, cursor: 'pointer' }}>
-              View all →
-            </span>
+        <div style={{ background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>Recent Incidents</span>
           </div>
-          <div style={{ padding: '6px 16px', display: 'grid',
-                        gridTemplateColumns: '2fr 1.5fr 1fr 0.8fr', gap: 8,
-                        background: 'var(--bg-surface-raised)',
-                        borderBottom: '1px solid var(--border)' }}>
-            {['User', 'Type', 'Status', 'When'].map(h => (
-              <span key={h} style={{ color: 'var(--text-muted)', fontSize: 9,
-                                     textTransform: 'uppercase', letterSpacing: '0.8px' }}>{h}</span>
+          <div style={{ padding: '6px 16px', display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 0.8fr', gap: 8, background: 'var(--bg-surface-raised)', borderBottom: '1px solid var(--border)' }}>
+            {['User', 'Subject', 'Status', 'When'].map(h => (
+              <span key={h} style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{h}</span>
             ))}
           </div>
-          {MOCK_INCIDENTS.map((row, i) => (
-            <div key={i} style={{
-              padding: '9px 16px', display: 'grid',
-              gridTemplateColumns: '2fr 1.5fr 1fr 0.8fr', gap: 8, alignItems: 'center',
-              borderBottom: i < MOCK_INCIDENTS.length - 1 ? '1px solid var(--border)' : 'none',
-            }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{row.user}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{row.type}</span>
-              <StatusBadge status={row.status} />
-              <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{row.when}</span>
+          {incidentsLoading ? (
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Loading…</div>
+          ) : incidents.length === 0 ? (
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+              No incidents recorded — set a report level above None on any rule to start collecting data
             </div>
-          ))}
+          ) : (
+            incidents.map((row, i) => (
+              <div key={row.id} style={{ padding: '9px 16px', display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 0.8fr', gap: 8, alignItems: 'center', borderBottom: i < incidents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{row.memberEmail ?? 'Anonymous'}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{row.subjectName}</span>
+                <StatusBadge status={row.action} />
+                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>{timeAgo(row.occurredAt)}</span>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Right widgets */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
           {/* Threat breakdown */}
-          <div style={{ background: 'var(--bg-surface)', borderRadius: 10,
-                        border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>
-                Threat Breakdown
-              </span>
+              <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>Threat Breakdown</span>
             </div>
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {MOCK_THREATS.map(({ label, pct, color }) => (
-                <div key={label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{label}</span>
-                    <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 600 }}>{pct}%</span>
+              {bySubject.length === 0 ? (
+                <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>No data yet</span>
+              ) : bySubject.map(({ subjectName, pct }, i) => {
+                const colors = ['var(--status-danger)', 'var(--status-warn)', 'var(--brand-primary)', 'var(--text-muted)', 'var(--border)']
+                return (
+                  <div key={subjectName}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{subjectName}</span>
+                      <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 600 }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, background: 'var(--bg-surface-raised)', borderRadius: 3 }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: colors[i % colors.length], borderRadius: 3 }}/>
+                    </div>
                   </div>
-                  <div style={{ height: 6, background: 'var(--bg-surface-raised)', borderRadius: 3 }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 3 }}/>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
           {/* Top sites + Policy health */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, flex: 1 }}>
-            <div style={{ background: 'var(--bg-surface)', borderRadius: 10,
-                          border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
               <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 600 }}>Top Sites</span>
               </div>
               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { site: 'chatgpt.com',    count: '21.4k', color: 'var(--brand-primary)' },
-                  { site: 'claude.ai',      count: '18.2k', color: 'var(--text-muted)' },
-                  { site: 'gemini.google',  count: '8.6k',  color: 'var(--border)' },
-                ].map(({ site, count, color }) => (
-                  <div key={site} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: color }}/>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>{site}</span>
+                {topSites.length === 0 ? (
+                  <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>No data yet</span>
+                ) : topSites.map(({ domain, count }, i) => {
+                  const colors = ['var(--brand-primary)', 'var(--text-muted)', 'var(--border)', 'var(--status-warn)', 'var(--status-safe)']
+                  return (
+                    <div key={domain} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: colors[i % colors.length] }}/>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>{domain}</span>
+                      </div>
+                      <span style={{ color: 'var(--text-primary)', fontSize: 10, fontWeight: 600 }}>{count.toLocaleString()}</span>
                     </div>
-                    <span style={{ color: 'var(--text-primary)', fontSize: 10, fontWeight: 600 }}>{count}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
-            <div style={{ background: 'var(--bg-surface)', borderRadius: 10,
-                          border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
               <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 600 }}>Policy Health</span>
               </div>
               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { label: 'Teams',    val: '8/9',  color: 'var(--brand-primary)' },
-                  { label: 'Rules on', val: '21/24', color: 'var(--brand-primary)' },
-                  { label: 'Last sync', val: '4m ago', color: 'var(--status-safe)' },
+                  { label: 'Members',      val: dash(summary?.totalMembers),     color: 'var(--brand-primary)' },
+                  { label: 'Active rules', val: dash(summary?.activeRulesCount), color: 'var(--brand-primary)' },
+                  { label: 'Policy',       val: policyInfo ? `v${policyInfo.version}` : '—', color: 'var(--status-safe)' },
                 ].map(({ label, val, color }) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>{label}</span>
-                    <span style={{
-                      background: color === 'var(--status-safe)' ? 'transparent' : 'rgba(0,212,255,0.12)',
-                      color, fontSize: 9, padding: '2px 6px', borderRadius: 3, fontWeight: 600,
-                    }}>{val}</span>
+                    <span style={{ background: color === 'var(--status-safe)' ? 'transparent' : 'rgba(0,212,255,0.12)', color, fontSize: 9, padding: '2px 6px', borderRadius: 3, fontWeight: 600 }}>{val}</span>
                   </div>
                 ))}
               </div>
