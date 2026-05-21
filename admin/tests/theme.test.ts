@@ -14,18 +14,18 @@ describe('admin theme', () => {
   it('setTheme light sets attribute and persists', () => {
     setTheme('light')
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
-    expect(localStorage.getItem('safeinput-theme')).toBe('light')
+    expect(localStorage.getItem('ciyo-theme')).toBe('light')
   })
 
   it('setTheme dark removes attribute and persists', () => {
     document.documentElement.setAttribute('data-theme', 'light')
     setTheme('dark')
     expect(document.documentElement.getAttribute('data-theme')).toBeNull()
-    expect(localStorage.getItem('safeinput-theme')).toBe('dark')
+    expect(localStorage.getItem('ciyo-theme')).toBe('dark')
   })
 
   it('initTheme restores light from localStorage', () => {
-    localStorage.setItem('safeinput-theme', 'light')
+    localStorage.setItem('ciyo-theme', 'light')
     initTheme()
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
   })

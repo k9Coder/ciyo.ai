@@ -1,6 +1,6 @@
 export type Theme = 'dark' | 'light'
 
-const STORAGE_KEY = 'safeinput-theme'
+const STORAGE_KEY = 'ciyo-theme'
 
 export function getTheme(): Theme {
   return document.documentElement.getAttribute('data-theme') === 'light'
