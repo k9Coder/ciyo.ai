@@ -21,7 +21,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Confidential',
-        rules: [{ id: 'r1', kind: 'keyword', keywords: ['secret', 'classified'], pattern: null, destinations: [], action: 'warn', message: null }],
+        rules: [{ id: 'r1', kind: 'keyword', keywords: ['secret', 'classified'], pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])
@@ -37,7 +37,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Keys',
-        rules: [{ id: 'r2', kind: 'pattern', keywords: null, pattern: 'sk-[A-Za-z0-9]{20,}', destinations: [], action: 'block', message: 'API key' }],
+        rules: [{ id: 'r2', kind: 'pattern', keywords: null, pattern: 'sk-[A-Za-z0-9]{20,}', destinations: [], action: 'block', message: 'API key', reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])
@@ -51,7 +51,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Entropy',
-        rules: [{ id: 'r3', kind: 'entropy', keywords: null, pattern: null, destinations: [], action: 'warn', message: null }],
+        rules: [{ id: 'r3', kind: 'entropy', keywords: null, pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])

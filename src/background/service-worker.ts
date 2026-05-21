@@ -1,5 +1,6 @@
 import { detectPrompt } from "@/detection/engine";
 import { loadPolicy } from "@/policy/loader";
+import { dispatchEvents } from "@/events/dispatch";
 import { syncPolicy } from "@/policy/sync";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
@@ -44,7 +45,9 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "DETECT": {
       const { text, hostname, pasteDetected } = message.payload;
       const policy = await loadPolicy();
-      return detectPrompt(text, policy, hostname, pasteDetected ?? false);
+      const result = await detectPrompt(text, policy, hostname, pasteDetected ?? false);
+      void dispatchEvents(result, hostname);
+      return result;
     }
 
     case "GET_POLICY": {
