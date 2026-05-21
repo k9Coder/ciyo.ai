@@ -11,14 +11,15 @@ export interface SiteConfig {
 }
 
 export interface RulePolicy {
-  id: string
-  kind: 'keyword' | 'pattern' | 'entropy' | 'score'
-  keywords: string[] | null
-  pattern: string | null
-  destinations: string[]
+  id:                  string
+  kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+  keywords:            string[] | null
+  pattern:             string | null
+  destinations:        string[]
   destinationGroupIds: string[]
-  action: 'warn' | 'block'
-  message: string | null
+  action:              'warn' | 'block'
+  message:             string | null
+  reportLevel:         'none' | 'minimal' | 'medium' | 'rich'
 }
 
 export interface SubjectPolicy {
@@ -46,6 +47,7 @@ function toRulePolicy(r: Rule): RulePolicy {
     destinationGroupIds: r.destinationGroupIds ?? [],
     action:              r.action,
     message:             r.message ?? null,
+    reportLevel:         r.reportLevel,
   }
 }
 
