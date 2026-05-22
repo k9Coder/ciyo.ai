@@ -133,3 +133,19 @@ export interface AnalyticsBySubjectEntry {
   count:       number
   pct:         number
 }
+
+export interface AuditLogEntry {
+  id:          string
+  memberEmail: string | null
+  subjectName: string
+  ruleKind:    string
+  action:      'warn' | 'block'
+  siteUrl:     string
+  matchedTerm: string | null
+  occurredAt:  string
+}
+
+export interface AuditLogPage {
+  entries:    AuditLogEntry[]
+  nextBefore: string | null
+}

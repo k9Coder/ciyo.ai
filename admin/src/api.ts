@@ -3,6 +3,7 @@ import type {
   DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, TenantInfo,
   AnalyticsSummary, AnalyticsDailyEntry, AnalyticsIncident,
   AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
+  AuditLogPage,
 } from './types'
 
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.['VITE_API_BASE'])
@@ -120,6 +121,16 @@ export const api = {
   },
   tenant: {
     get: () => request<TenantInfo>('GET', '/v1/tenant'),
+  },
+  auditLog: {
+    list: (opts?: { limit?: number; before?: string; action?: 'warn' | 'block' }) => {
+      const params = new URLSearchParams()
+      if (opts?.limit)  params.set('limit',  String(opts.limit))
+      if (opts?.before) params.set('before', opts.before)
+      if (opts?.action) params.set('action', opts.action)
+      const qs = params.toString()
+      return request<AuditLogPage>('GET', `/v1/audit-log${qs ? `?${qs}` : ''}`)
+    },
   },
   analytics: {
     summary:   (days: 7 | 30 | 90) =>
