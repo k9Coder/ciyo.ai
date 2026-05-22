@@ -14,6 +14,7 @@ import { clerkWebhookRouter } from './webhooks/clerk.js'
 import { eventsRouter } from './events/router.js'
 import { scansRouter } from './scans/router.js'
 import { analyticsRouter } from './analytics/router.js'
+import { auditLogRouter } from './audit-log/router.js'
 import { handleStripeEvent } from './billing/stripe.js'
 import { handlePayPalEvent } from './billing/paypal.js'
 
@@ -52,6 +53,7 @@ export function buildApp() {
   void app.register(eventsRouter, { prefix: '/v1' })
   void app.register(scansRouter, { prefix: '/v1' })
   void app.register(analyticsRouter, { prefix: '/v1' })
+  void app.register(auditLogRouter,  { prefix: '/v1' })
   void app.register(clerkWebhookRouter)
 
   app.setErrorHandler((err, _req, reply) => {
