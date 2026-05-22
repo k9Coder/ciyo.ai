@@ -8,7 +8,9 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config playwright.config.ts",
+    "test:e2e:admin": "playwright test --config playwright.config.ts --project=admin",
+    "test:e2e:extension": "playwright test --config playwright.config.ts --project=extension",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx"
   },
@@ -21,8 +23,11 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@clerk/testing": "^1.4.4",
     "@crxjs/vite-plugin": "^2.0.0-beta.26",
     "@playwright/test": "^1.47.0",
+    "dotenv": "^16.4.5",
+    "wait-on": "^8.0.1",
     "@types/chrome": "^0.0.268",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
