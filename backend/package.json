@@ -10,7 +10,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file=.env src/db/migrate.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed:e2e":     "tsx --env-file=.env src/scripts/seed-e2e.ts",
+    "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.4.9",
