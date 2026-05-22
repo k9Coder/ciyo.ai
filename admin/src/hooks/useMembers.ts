@@ -1,8 +1,44 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { useToast } from './useToast'
+import type { Member } from '../types'
 
-export function useMemberMutations(teamId: string | null) {
+// Members page — list all members in the tenant.
+export function useMembers() {
+  return useQuery({ queryKey: ['members'], queryFn: api.members.list })
+}
+
+// Members page — create, update role, remove.
+export function useMemberActions() {
+  const qc = useQueryClient()
+  const { toast } = useToast()
+  const inv = () => qc.invalidateQueries({ queryKey: ['members'] })
+
+  const create = useMutation({
+    mutationFn: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
+      api.members.create(data),
+    onSuccess: () => { inv(); toast('Member added') },
+    onError: (e: Error) => toast(e.message, 'error'),
+  })
+
+  const update = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role'] }> }) =>
+      api.members.update(id, data),
+    onSuccess: () => { inv(); toast('Member updated') },
+    onError: (e: Error) => toast(e.message, 'error'),
+  })
+
+  const remove = useMutation({
+    mutationFn: (id: string) => api.members.remove(id),
+    onSuccess: () => { inv(); toast('Member removed') },
+    onError: (e: Error) => toast(e.message, 'error'),
+  })
+
+  return { create, update, remove }
+}
+
+// OrgPage (Teams section) — scoped to a specific team.
+export function useTeamMemberMutations(teamId: string | null) {
   const qc = useQueryClient()
   const { toast } = useToast()
   const inv = () => qc.invalidateQueries({ queryKey: ['team-members', teamId] })
@@ -16,6 +52,7 @@ export function useMemberMutations(teamId: string | null) {
     onSuccess: () => { inv(); toast('Member added') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
+
   const remove = useMutation({
     mutationFn: (memberId: string) => teamId
       ? api.members.removeTeam(memberId, teamId)
@@ -23,5 +60,6 @@ export function useMemberMutations(teamId: string | null) {
     onSuccess: () => { inv(); toast('Member removed') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
+
   return { create, remove }
 }

@@ -5,18 +5,22 @@ import { EntityModal } from '../components/ui/EntityModal'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useDivisions, useDivisionMutations } from '../hooks/useDivisions'
 import { useTeams, useTeamMembers, useTeamMutations } from '../hooks/useTeams'
-import { useMemberMutations } from '../hooks/useMembers'
+import { useTeamMemberMutations } from '../hooks/useMembers'
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
+  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
+  color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box',
+}
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+}
 
 function NameForm({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        autoFocus
-      />
+      <label style={labelStyle}>{label}</label>
+      <input style={inputStyle} value={value} onChange={e => onChange(e.target.value)} autoFocus />
     </div>
   )
 }
@@ -30,22 +34,14 @@ function MemberForm({
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input
-          type="email"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          value={value.email}
-          onChange={e => onChange({ ...value, email: e.target.value })}
-          autoFocus
-        />
+        <label style={labelStyle}>Email</label>
+        <input type="email" style={inputStyle} value={value.email}
+          onChange={e => onChange({ ...value, email: e.target.value })} autoFocus />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Display name (optional)</label>
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          value={value.displayName}
-          onChange={e => onChange({ ...value, displayName: e.target.value })}
-        />
+        <label style={labelStyle}>Display name (optional)</label>
+        <input style={inputStyle} value={value.displayName}
+          onChange={e => onChange({ ...value, displayName: e.target.value })} />
       </div>
     </>
   )
@@ -75,7 +71,7 @@ export function OrgPage() {
 
   const divMutations = useDivisionMutations()
   const teamMutations = useTeamMutations(selectedDivisionId)
-  const memberMutations = useMemberMutations(selectedTeamId)
+  const memberMutations = useTeamMemberMutations(selectedTeamId)
 
   function closeModal() { setModal({ type: 'none' }) }
   function closeConfirm() { setConfirm({ type: 'none' }) }
@@ -172,9 +168,12 @@ export function OrgPage() {
     confirm.type === 'member'   ? `Remove "${confirm.label}" from this team?` : ''
 
   return (
-    <>
+    <div style={{ padding: '16px 24px' }}>
       <PageHeader title="Org Structure" />
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
+      <div style={{
+        background: 'var(--bg-surface)', border: '1px solid var(--border)',
+        borderRadius: 12, overflow: 'hidden', height: 'calc(100vh - 232px)',
+      }}>
         <MillerColumns columns={columns} />
       </div>
 
@@ -206,6 +205,6 @@ export function OrgPage() {
         onConfirm={handleConfirmDelete}
         confirming={isDeleting}
       />
-    </>
+    </div>
   )
 }
