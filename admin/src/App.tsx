@@ -12,9 +12,10 @@ import { DestinationsPage } from './pages/DestinationsPage'
 import { SitesPage } from './pages/SitesPage'
 import { PublishPage } from './pages/PublishPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { MembersPage } from './pages/MembersPage'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
 })
 
 export function App() {
@@ -40,6 +41,7 @@ export function App() {
             <Route path="/sites"        element={<SitesPage />} />
             <Route path="/publish"      element={<PublishPage />} />
             <Route path="/settings"     element={<SettingsPage />} />
+            <Route path="/members"      element={<MembersPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
