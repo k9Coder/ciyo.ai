@@ -4,19 +4,21 @@ export function UnauthorizedPage() {
   const { signOut } = useClerk()
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="text-center max-w-md">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-red-600 text-2xl">⊘</span>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}>
+      <div style={{ textAlign: 'center', maxWidth: 400 }}>
+        <div style={{ width: 64, height: 64, background: 'rgba(224,48,80,0.12)', borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+          <span style={{ color: 'var(--status-danger)', fontSize: 24 }}>⊘</span>
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">Access denied</h1>
-        <p className="text-sm text-gray-500 mb-6">
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>Access denied</h1>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
           Your account doesn't have admin permissions for this organization.
           Contact your organization owner to get access.
         </p>
         <button
           onClick={() => signOut()}
-          className="text-sm text-blue-600 hover:text-blue-800"
+          style={{ fontSize: 13, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           Sign out
         </button>

@@ -1,13 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
+import { AdminApiError } from '../api'
 import { useToast } from './useToast'
+import type { PolicyInfo } from '../types'
+
+async function fetchPolicy(): Promise<PolicyInfo | null> {
+  try { return await api.policy.get() }
+  catch (e) { if (e instanceof AdminApiError && e.status === 404) return null; throw e }
+}
 
 export function usePolicy() {
-  return useQuery({ queryKey: ['policy'], queryFn: api.policy.get })
+  return useQuery({ queryKey: ['policy'], queryFn: fetchPolicy, staleTime: 60_000, refetchOnMount: false })
 }
 
 export function usePolicyHistory() {
-  return useQuery({ queryKey: ['policy-history'], queryFn: api.policy.history })
+  return useQuery({ queryKey: ['policy-history'], queryFn: api.policy.history, staleTime: 60_000, refetchOnMount: false })
 }
 
 export function usePolicyMutations() {

@@ -6,13 +6,15 @@ interface Props {
 
 export function EmptyState({ title, description, action }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
-      {description && <p className="text-xs text-gray-400 mt-1">{description}</p>}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  padding: '64px 0', textAlign: 'center' }}>
+      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', margin: 0 }}>{title}</p>
+      {description && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, marginBottom: 0 }}>{description}</p>}
       {action && (
         <button
           onClick={action.onClick}
-          className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+          style={{ marginTop: 16, fontSize: 13, fontWeight: 500, color: 'var(--brand-primary)',
+                   background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           {action.label}
         </button>

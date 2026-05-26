@@ -120,7 +120,10 @@ export const api = {
     rollback: (version: number) => request<{ version: number }>('POST', `/v1/policy/rollback/${version}`),
   },
   tenant: {
-    get: () => request<TenantInfo>('GET', '/v1/tenant'),
+    get:              ()             => request<TenantInfo>('GET', '/v1/tenant'),
+    update:           (name: string) => request<TenantInfo>('PATCH', '/v1/tenant', { name }),
+    rotateOrgToken:   ()             => request<{ token: string }>('POST', '/v1/tenant/rotate-org-token'),
+    rotateAdminToken: ()             => request<{ token: string }>('POST', '/v1/tenant/rotate-admin-token'),
   },
   auditLog: {
     list: (opts?: { limit?: number; before?: string; action?: 'warn' | 'block' }) => {

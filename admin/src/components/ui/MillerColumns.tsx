@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { EmptyState } from './EmptyState'
 
 export interface MillerColumnItem {
@@ -17,77 +18,101 @@ export interface MillerColumnDef {
   loading?: boolean
 }
 
+function ColumnRow({ item, col }: { item: MillerColumnItem; col: MillerColumnDef }) {
+  const [hovered, setHovered] = useState(false)
+  const isSelected = col.selectedId === item.id
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 12px', cursor: 'pointer',
+        background: isSelected || hovered ? 'var(--bg-surface-raised)' : 'transparent',
+        borderLeft: isSelected ? '2px solid var(--brand-primary)' : '2px solid transparent',
+      }}
+    >
+      <button
+        style={{ flex: 1, textAlign: 'left', minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        onClick={() => col.onSelect(item.id)}
+      >
+        <div style={{
+          fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          color: isSelected ? 'var(--brand-primary)' : 'var(--text-primary)',
+          fontWeight: isSelected ? 600 : 400,
+        }}>
+          {item.label}
+        </div>
+        {item.sublabel && (
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {item.sublabel}
+          </div>
+        )}
+      </button>
+      {hovered && (col.onEdit || col.onDelete) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8, flexShrink: 0 }}>
+          {col.onEdit && (
+            <button
+              onClick={e => { e.stopPropagation(); col.onEdit!(item.id) }}
+              style={{ padding: 4, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 13 }}
+              title="Edit"
+            >
+              ✎
+            </button>
+          )}
+          {col.onDelete && (
+            <button
+              onClick={e => { e.stopPropagation(); col.onDelete!(item.id) }}
+              style={{ padding: 4, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 11 }}
+              title="Delete"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface Props {
   columns: MillerColumnDef[]
 }
 
 export function MillerColumns({ columns }: Props) {
   return (
-    <div className="flex h-full divide-x divide-gray-200">
+    <div style={{ display: 'flex', height: '100%' }}>
       {columns.map((col, i) => (
-        <div key={i} className="flex flex-col w-64 min-w-0 overflow-y-auto">
-          <div className="px-4 py-3 border-b border-gray-100 shrink-0">
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <div key={i} style={{
+          display: 'flex', flexDirection: 'column', width: 220, minWidth: 0,
+          overflowY: 'auto', borderRight: i < columns.length - 1 ? '1px solid var(--border)' : undefined,
+          flex: i === columns.length - 1 ? 1 : undefined,
+        }}>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
+                           textTransform: 'uppercase', color: 'var(--text-muted)' }}>
               {col.title}
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div style={{ flex: 1, overflowY: 'auto' }}>
             {col.loading ? (
-              <div className="p-4 text-sm text-gray-400">Loading…</div>
+              <div style={{ padding: 16, fontSize: 12, color: 'var(--text-muted)' }}>Loading…</div>
             ) : col.items.length === 0 ? (
               <EmptyState title={`No ${col.title.toLowerCase()}`} />
             ) : (
-              col.items.map(item => (
-                <div
-                  key={item.id}
-                  className={`group flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-gray-50 ${
-                    col.selectedId === item.id ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <button
-                    className="flex-1 text-left min-w-0"
-                    onClick={() => col.onSelect(item.id)}
-                  >
-                    <div className={`text-sm truncate ${col.selectedId === item.id ? 'text-blue-700 font-medium' : 'text-gray-800'}`}>
-                      {item.label}
-                    </div>
-                    {item.sublabel && (
-                      <div className="text-xs text-gray-400 truncate">{item.sublabel}</div>
-                    )}
-                  </button>
-                  {(col.onEdit || col.onDelete) && (
-                    <div className="hidden group-hover:flex items-center gap-1 ml-2 shrink-0">
-                      {col.onEdit && (
-                        <button
-                          onClick={e => { e.stopPropagation(); col.onEdit!(item.id) }}
-                          className="p-1 text-gray-400 hover:text-blue-600 rounded"
-                          title="Edit"
-                        >
-                          ✎
-                        </button>
-                      )}
-                      {col.onDelete && (
-                        <button
-                          onClick={e => { e.stopPropagation(); col.onDelete!(item.id) }}
-                          className="p-1 text-gray-400 hover:text-red-600 rounded"
-                          title="Delete"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))
+              col.items.map(item => <ColumnRow key={item.id} item={item} col={col} />)
             )}
           </div>
 
           {col.onAdd && (
-            <div className="border-t border-gray-100 p-2 shrink-0">
+            <div style={{ borderTop: '1px solid var(--border)', padding: 8, flexShrink: 0 }}>
               <button
                 onClick={col.onAdd}
-                className="w-full text-left text-sm text-blue-600 hover:text-blue-800 px-2 py-1.5 rounded hover:bg-blue-50"
+                style={{
+                  width: '100%', textAlign: 'left', fontSize: 12, color: 'var(--brand-primary)',
+                  padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4,
+                }}
               >
                 + Add
               </button>

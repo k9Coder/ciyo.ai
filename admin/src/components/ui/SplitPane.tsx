@@ -6,14 +6,12 @@ interface Props {
 
 export function SplitPane({ left, right, leftWidth = 260 }: Props) {
   return (
-    <div className="flex h-full min-h-0">
-      <div
-        style={{ width: leftWidth, minWidth: leftWidth }}
-        className="flex flex-col border-r border-gray-200 overflow-y-auto"
-      >
+    <div style={{ display: 'flex', height: '100%', minHeight: 0 }}>
+      <div style={{ width: leftWidth, minWidth: leftWidth, display: 'flex', flexDirection: 'column',
+                    borderRight: '1px solid var(--border)', overflowY: 'auto' }}>
         {left}
       </div>
-      <div className="flex-1 overflow-y-auto">{right}</div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>{right}</div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useOrganization, useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
 import { getTheme, setTheme } from '../../utils/theme'
@@ -44,9 +44,10 @@ export function AppLayout() {
         borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
       }}>
         {/* Logo */}
-        <div style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', gap: 10 }}>
-          <svg width="22" height="22" viewBox="0 0 56 56" fill="none">
+        <Link to="/dashboard" style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      textDecoration: 'none', cursor: 'pointer' }}>
+          <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
             <rect width="56" height="56" rx="14" fill="var(--bg-base)"/>
             <path d="M20 14 L14 14 L14 42 L20 42"
                   stroke="var(--brand-primary)" strokeWidth="3"
@@ -56,12 +57,12 @@ export function AppLayout() {
                   stroke="var(--brand-primary)" strokeWidth="2.5"
                   strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
           </svg>
-          <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.5px' }}>
+          <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.5px' }}>
             <span style={{ color: 'var(--text-primary)' }}>c</span>
             <span style={{ color: 'var(--brand-primary)' }}>i</span>
             <span style={{ color: 'var(--text-primary)' }}>yo</span>
           </span>
-        </div>
+        </Link>
 
         {/* Org badge */}
         {organization && (
@@ -119,7 +120,7 @@ export function AppLayout() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
-          padding: '14px 24px', borderBottom: '1px solid var(--border)',
+          padding: '21px 24px', borderBottom: '1px solid var(--border)',
           background: 'var(--bg-surface)', display: 'flex',
           justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
         }}>
@@ -129,6 +130,24 @@ export function AppLayout() {
         {/* Page content */}
         <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-base)' }}>
           <Outlet />
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          height: 54.5, flexShrink: 0, borderTop: '1px solid var(--border)',
+          background: 'var(--bg-surface)', display: 'flex',
+          alignItems: 'center', justifyContent: 'space-between', padding: '0 24px',
+        }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>c</span>
+            <span style={{ color: 'var(--brand-primary)', fontWeight: 700 }}>i</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>yo</span>
+            <span style={{ marginLeft: 6 }}>© {new Date().getFullYear()} · DLP for the AI era</span>
+          </span>
+          <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+             style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
+            ciyo.ai
+          </a>
         </div>
       </div>
 

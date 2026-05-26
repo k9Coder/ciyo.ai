@@ -6,38 +6,37 @@ import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useSiteConfigs, useSiteConfigMutations } from '../hooks/useSiteConfigs'
 import type { SiteConfig } from '../types'
 
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
+  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
+  color: 'var(--text-primary)', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box',
+}
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+}
+
 const blank = { domain: '', inputSelector: '', sendButtonSelector: '' }
 
 function SiteForm({ value, onChange }: { value: typeof blank; onChange: (v: typeof blank) => void }) {
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Domain</label>
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
-          value={value.domain}
+        <label style={labelStyle}>Domain</label>
+        <input style={inputStyle} value={value.domain}
           onChange={e => onChange({ ...value, domain: e.target.value })}
-          placeholder="chat.openai.com"
-          autoFocus
-        />
+          placeholder="chat.openai.com" autoFocus />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Input selector (CSS)</label>
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
-          value={value.inputSelector}
+        <label style={labelStyle}>Input selector (CSS)</label>
+        <input style={inputStyle} value={value.inputSelector}
           onChange={e => onChange({ ...value, inputSelector: e.target.value })}
-          placeholder="#prompt-textarea"
-        />
+          placeholder="#prompt-textarea" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Send button selector (CSS)</label>
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
-          value={value.sendButtonSelector}
+        <label style={labelStyle}>Send button selector (CSS)</label>
+        <input style={inputStyle} value={value.sendButtonSelector}
           onChange={e => onChange({ ...value, sendButtonSelector: e.target.value })}
-          placeholder="button[data-testid='send-button']"
-        />
+          placeholder="button[data-testid='send-button']" />
       </div>
     </>
   )
@@ -72,14 +71,18 @@ export function SitesPage() {
       <PageHeader
         title="Site Configs"
         action={
-          <button onClick={openNew} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          <button
+            onClick={openNew}
+            style={{ padding: '7px 16px', fontSize: 13, fontWeight: 600, color: 'var(--bg-base)',
+                     background: 'var(--brand-primary)', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+          >
             + New site
           </button>
         }
       />
 
       {isLoading ? (
-        <div className="text-sm text-gray-400">Loading…</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading…</div>
       ) : configs.length === 0 ? (
         <EmptyState
           title="No site configs"
@@ -87,26 +90,28 @@ export function SitesPage() {
           action={{ label: '+ New site', onClick: openNew }}
         />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                <th className="px-4 py-3">Domain</th>
-                <th className="px-4 py-3">Input selector</th>
-                <th className="px-4 py-3">Send button selector</th>
-                <th className="px-4 py-3" />
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {['Domain', 'Input selector', 'Send button selector', ''].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700,
+                                       letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {configs.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono font-medium text-gray-900">{c.domain}</td>
-                  <td className="px-4 py-3 font-mono text-gray-600 max-w-xs truncate">{c.inputSelector}</td>
-                  <td className="px-4 py-3 font-mono text-gray-600 max-w-xs truncate">{c.sendButtonSelector}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3 justify-end">
-                      <button onClick={() => openEdit(c)} className="text-blue-600 hover:text-blue-800">Edit</button>
-                      <button onClick={() => setDeleting(c)} className="text-red-500 hover:text-red-700">Delete</button>
+            <tbody>
+              {configs.map((c, i) => (
+                <tr key={c.id} style={{ borderTop: i > 0 ? '1px solid var(--border)' : undefined }}>
+                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-primary)' }}>{c.domain}</td>
+                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: 'var(--text-secondary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.inputSelector}</td>
+                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: 'var(--text-secondary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.sendButtonSelector}</td>
+                  <td style={{ padding: '10px 16px' }}>
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                      <button onClick={() => openEdit(c)} style={{ fontSize: 13, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                      <button onClick={() => setDeleting(c)} style={{ fontSize: 13, color: 'var(--status-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
                     </div>
                   </td>
                 </tr>

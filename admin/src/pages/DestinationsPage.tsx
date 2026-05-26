@@ -6,24 +6,29 @@ import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useDestinationGroups, useDestinationGroupMutations } from '../hooks/useDestinationGroups'
 import type { DestinationGroup } from '../types'
 
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
+  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
+  color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box',
+}
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+}
+
 const blank = { name: '', domains: '' }
 
 function GroupForm({ value, onChange }: { value: typeof blank; onChange: (v: typeof blank) => void }) {
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-        <input
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          value={value.name}
-          onChange={e => onChange({ ...value, name: e.target.value })}
-          autoFocus
-        />
+        <label style={labelStyle}>Name</label>
+        <input style={inputStyle} value={value.name}
+          onChange={e => onChange({ ...value, name: e.target.value })} autoFocus />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Domains (one per line)</label>
+        <label style={labelStyle}>Domains (one per line)</label>
         <textarea
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
+          style={{ ...inputStyle, fontFamily: 'monospace', resize: 'vertical' }}
           rows={4}
           value={value.domains}
           onChange={e => onChange({ ...value, domains: e.target.value })}
@@ -59,18 +64,22 @@ export function DestinationsPage() {
   }
 
   return (
-    <>
+    <div style={{ padding: '16px 24px' }}>
       <PageHeader
         title="Destination Groups"
         action={
-          <button onClick={openNew} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+          <button
+            onClick={openNew}
+            style={{ padding: '7px 16px', fontSize: 13, fontWeight: 600, color: 'var(--bg-base)',
+                     background: 'var(--brand-primary)', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+          >
             + New group
           </button>
         }
       />
 
       {isLoading ? (
-        <div className="text-sm text-gray-400">Loading…</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading…</div>
       ) : groups.length === 0 ? (
         <EmptyState
           title="No destination groups"
@@ -78,16 +87,21 @@ export function DestinationsPage() {
           action={{ label: '+ New group', onClick: openNew }}
         />
       ) : (
-        <div className="grid gap-3">
+        <div style={{ display: 'grid', gap: 12 }}>
           {groups.map(g => (
-            <div key={g.id} className="flex items-start justify-between p-4 bg-white border border-gray-200 rounded-xl">
+            <div key={g.id} style={{
+              display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+              padding: 16, background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+            }}>
               <div>
-                <div className="font-medium text-gray-900">{g.name}</div>
-                <div className="text-sm text-gray-500 mt-0.5">{g.domains.join(', ') || 'No domains'}</div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{g.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                  {g.domains.join(', ') || 'No domains'}
+                </div>
               </div>
-              <div className="flex gap-3 shrink-0 ml-4">
-                <button onClick={() => openEdit(g)} className="text-sm text-blue-600 hover:text-blue-800">Edit</button>
-                <button onClick={() => setDeleting(g)} className="text-sm text-red-500 hover:text-red-700">Delete</button>
+              <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 16 }}>
+                <button onClick={() => openEdit(g)} style={{ fontSize: 13, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                <button onClick={() => setDeleting(g)} style={{ fontSize: 13, color: 'var(--status-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
               </div>
             </div>
           ))}
@@ -111,6 +125,6 @@ export function DestinationsPage() {
         onConfirm={async () => { await mutations.remove.mutateAsync(deleting!.id); setDeleting(null) }}
         confirming={mutations.remove.isPending}
       />
-    </>
+    </div>
   )
 }

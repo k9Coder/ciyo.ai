@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useOrganization } from '@clerk/react'
-import { useQuery } from '@tanstack/react-query'
 import {
   useAnalyticsSummary, useAnalyticsDaily, useAnalyticsIncidents,
   useAnalyticsTopSites, useAnalyticsBySubject,
 } from '../hooks/useAnalytics'
-import { api } from '../api'
+import { usePolicy } from '../hooks/usePolicy'
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -39,9 +38,7 @@ export function DashboardPage() {
   const { data: incidents = [], isLoading: incidentsLoading } = useAnalyticsIncidents()
   const { data: topSites = [] }                       = useAnalyticsTopSites(days)
   const { data: bySubject = [] }                      = useAnalyticsBySubject(days)
-  const { data: policyInfo }                          = useQuery({
-    queryKey: ['policy'], queryFn: api.policy.get, staleTime: 60_000,
-  })
+  const { data: policyInfo }                          = usePolicy()
 
   const maxChart = Math.max(...daily.map(d => d.blocked + d.warned), 10)
   const dash = (v: number | undefined) => summaryLoading ? '—' : (v ?? 0).toLocaleString()

@@ -20,16 +20,24 @@ export function EntityModal({ open, title, onClose, onSave, saving, children }: 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="space-y-4">{children}</div>
-        <div className="flex justify-end gap-2 mt-6">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
+      <div style={{
+        position: 'relative', background: 'var(--bg-surface)', borderRadius: 12,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.4)', width: '100%', maxWidth: 448,
+        margin: '0 16px', padding: 24, border: '1px solid var(--border)',
+      }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 16px' }}>{title}</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            style={{
+              padding: '7px 16px', fontSize: 13, color: 'var(--text-secondary)',
+              background: 'var(--bg-surface-raised)', border: '1px solid var(--border)',
+              borderRadius: 6, cursor: 'pointer',
+            }}
           >
             Cancel
           </button>
@@ -37,7 +45,12 @@ export function EntityModal({ open, title, onClose, onSave, saving, children }: 
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            style={{
+              padding: '7px 16px', fontSize: 13, fontWeight: 600,
+              color: 'var(--bg-base)', background: 'var(--brand-primary)',
+              border: 'none', borderRadius: 6, cursor: 'pointer',
+              opacity: saving ? 0.5 : 1,
+            }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>

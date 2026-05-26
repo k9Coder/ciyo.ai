@@ -13,15 +13,20 @@ export function Toggle({ checked, onChange, disabled, label }: Props) {
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 ${
-        checked ? 'bg-blue-600' : 'bg-gray-300'
-      }`}
+      style={{
+        position: 'relative', display: 'inline-flex', height: 20, width: 36,
+        alignItems: 'center', borderRadius: 10, border: 'none', cursor: 'pointer',
+        transition: 'background 0.15s', outline: 'none',
+        background: checked ? 'var(--brand-primary)' : 'var(--bg-surface-raised)',
+        opacity: disabled ? 0.5 : 1,
+      }}
     >
-      <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-4' : 'translate-x-0.5'
-        }`}
-      />
+      <span style={{
+        display: 'inline-block', height: 14, width: 14, borderRadius: '50%',
+        background: 'white', boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+        transition: 'transform 0.15s',
+        transform: checked ? 'translateX(18px)' : 'translateX(2px)',
+      }} />
     </button>
   )
 }

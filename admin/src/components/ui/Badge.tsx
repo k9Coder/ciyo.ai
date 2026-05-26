@@ -1,15 +1,15 @@
 type BadgeVariant = 'keyword' | 'pattern' | 'entropy' | 'score' | 'warn' | 'block' | 'global' | 'division' | 'team'
 
-const STYLES: Record<BadgeVariant, string> = {
-  keyword:  'bg-amber-100 text-amber-800',
-  pattern:  'bg-red-100 text-red-800',
-  entropy:  'bg-violet-100 text-violet-800',
-  score:    'bg-blue-100 text-blue-800',
-  warn:     'bg-yellow-100 text-yellow-800',
-  block:    'bg-red-200 text-red-900',
-  global:   'bg-gray-100 text-gray-700',
-  division: 'bg-indigo-100 text-indigo-800',
-  team:     'bg-teal-100 text-teal-800',
+const COLORS: Record<BadgeVariant, { bg: string; color: string }> = {
+  keyword:  { bg: 'rgba(245,158,11,0.15)',  color: '#f59e0b' },
+  pattern:  { bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
+  entropy:  { bg: 'rgba(139,92,246,0.15)',  color: '#8b5cf6' },
+  score:    { bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6' },
+  warn:     { bg: 'rgba(234,179,8,0.15)',   color: '#eab308' },
+  block:    { bg: 'rgba(239,68,68,0.2)',    color: '#dc2626' },
+  global:   { bg: 'var(--bg-surface-raised)', color: 'var(--text-secondary)' },
+  division: { bg: 'rgba(99,102,241,0.15)',  color: '#6366f1' },
+  team:     { bg: 'rgba(20,184,166,0.15)',  color: '#14b8a6' },
 }
 
 interface Props {
@@ -18,8 +18,13 @@ interface Props {
 }
 
 export function Badge({ variant, children }: Props) {
+  const { bg, color } = COLORS[variant]
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STYLES[variant]}`}>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', padding: '2px 8px',
+      borderRadius: 4, fontSize: 11, fontWeight: 600,
+      background: bg, color,
+    }}>
       {children}
     </span>
   )
