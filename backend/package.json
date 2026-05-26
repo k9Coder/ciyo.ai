@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:e2e":     "tsx --env-file=.env src/scripts/seed-e2e.ts",
-    "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts"
+    "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts",
+    "seed:fintech":  "tsx --env-file=.env src/scripts/seed-fintech.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.4.9",
