@@ -43,6 +43,10 @@ async function bootstrap() {
 
       await writeAuditEvent(result, promptText, hostname, "sent");
 
+      if (result.signInNudge) {
+        showSignInNudge();
+      }
+
       if (result.highestAction === "log") {
         return { proceed: true };
       }
@@ -64,6 +68,58 @@ async function bootstrap() {
       return { proceed: true };
     }
   });
+}
+
+// ─── Sign-in nudge ───────────────────────────────────────────────────────────
+
+function showSignInNudge(): void {
+  if (document.getElementById("ciyo-signin-nudge")) return;
+
+  const banner = document.createElement("div");
+  banner.id = "ciyo-signin-nudge";
+  Object.assign(banner.style, {
+    position: "fixed",
+    bottom: "24px",
+    right: "24px",
+    zIndex: "2147483647",
+    background: "#16213e",
+    color: "#f0f0f0",
+    borderRadius: "10px",
+    padding: "12px 14px",
+    fontSize: "13px",
+    lineHeight: "1.4",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.35)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    maxWidth: "300px",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+  });
+
+  const msg = document.createElement("span");
+  msg.style.flex = "1";
+  msg.textContent = "Sign in to Ciyo to start protecting your prompts.";
+
+  const dismiss = document.createElement("button");
+  dismiss.textContent = "×";
+  Object.assign(dismiss.style, {
+    background: "none",
+    border: "none",
+    color: "rgba(255,255,255,0.45)",
+    cursor: "pointer",
+    fontSize: "18px",
+    lineHeight: "1",
+    padding: "0",
+    flexShrink: "0",
+  });
+  dismiss.addEventListener("click", () => banner.remove());
+
+  banner.appendChild(msg);
+  banner.appendChild(dismiss);
+  document.body.appendChild(banner);
+
+  setTimeout(() => banner.remove(), 8000);
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

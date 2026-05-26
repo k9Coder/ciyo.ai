@@ -2,6 +2,7 @@ import { detectPrompt } from "@/detection/engine";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
 import { dispatchScan } from "@/scans/dispatch";
+import type { DetectionResult } from "@/detection/types";
 import { syncPolicy } from "@/policy/sync";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
@@ -35,6 +36,31 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+async function isAuthenticated(): Promise<boolean> {
+  const clerk = await chrome.storage.local.get("clerkSessionToken") as Record<string, unknown>;
+  if (typeof clerk["clerkSessionToken"] === "string") return true;
+  const managed = await chrome.storage.managed.get("orgToken").catch(() => ({})) as Record<string, unknown>;
+  if (typeof managed["orgToken"] === "string") return true;
+  const local = await chrome.storage.local.get("orgToken") as Record<string, unknown>;
+  return typeof local["orgToken"] === "string";
+}
+
+const NUDGE_EVERY = 10;
+
+async function unauthResult(): Promise<DetectionResult> {
+  const stored = await chrome.storage.local.get("unauthPromptCount") as Record<string, unknown>;
+  const count = (typeof stored["unauthPromptCount"] === "number" ? stored["unauthPromptCount"] : 0) + 1;
+  await chrome.storage.local.set({ unauthPromptCount: count });
+  return {
+    findings: [],
+    highestAction: "log",
+    promptHash: "",
+    detectedAtMs: Date.now(),
+    durationMs: 0,
+    signInNudge: count % NUDGE_EVERY === 1 ? true : undefined,
+  };
+}
+
 async function getDisabledSites(): Promise<string[]> {
   const result = await chrome.storage.local.get(STORAGE_SITE_OVERRIDES_KEY) as Record<string, unknown>;
   const raw = result[STORAGE_SITE_OVERRIDES_KEY];
@@ -45,6 +71,7 @@ async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
       const { text, hostname, pasteDetected } = message.payload;
+      if (!await isAuthenticated()) return unauthResult();
       const policy = await loadPolicy();
       const result = await detectPrompt(text, policy, hostname, pasteDetected ?? false);
       void dispatchEvents(result, hostname);

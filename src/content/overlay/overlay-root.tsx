@@ -65,10 +65,21 @@ function getReactRoot(): Root {
  * Show the warning modal and resolve with the user's decision.
  * Returns a promise that resolves once the user clicks an action.
  */
-export function showWarningModal(
+async function applyTheme(): Promise<void> {
+  try {
+    const stored = await chrome.storage.sync.get("theme") as Record<string, unknown>;
+    const theme = stored["theme"] === "light" ? "light" : "dark";
+    if (shadowHost) shadowHost.setAttribute("data-theme", theme);
+  } catch {
+    if (shadowHost) shadowHost.setAttribute("data-theme", "dark");
+  }
+}
+
+export async function showWarningModal(
   result: DetectionResult,
   promptText: string
 ): Promise<ModalDecision> {
+  await applyTheme();
   return new Promise((resolve) => {
     try {
       const root = getReactRoot();

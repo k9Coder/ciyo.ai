@@ -24,7 +24,7 @@ function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: numb
 function Wordmark({ danger = false }: { danger?: boolean }) {
   const accent = danger ? "var(--status-danger)" : "var(--brand-primary)";
   return (
-    <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.5px" }}>
+    <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.5px" }}>
       <span style={{ color: "var(--text-primary)" }}>c</span>
       <span style={{ color: accent }}>i</span>
       <span style={{ color: "var(--text-primary)" }}>yo</span>
@@ -56,10 +56,13 @@ function SignedOutView() {
         padding: "14px 16px", display: "flex", alignItems: "center",
         justifyContent: "space-between", borderBottom: "1px solid var(--border)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <LogoIcon size={24} />
+        <button onClick={() => chrome.runtime.openOptionsPage()} style={{
+          display: "flex", alignItems: "center", gap: 10,
+          background: "none", border: "none", cursor: "pointer", padding: 0,
+        }}>
+          <LogoIcon size={28} />
           <Wordmark />
-        </div>
+        </button>
         <ThemeToggle />
       </div>
       <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
@@ -142,10 +145,13 @@ function SignedInView() {
         padding: "14px 16px", display: "flex", alignItems: "center",
         justifyContent: "space-between", borderBottom: "1px solid var(--border)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <LogoIcon size={24} danger={hasEvents} />
+        <button onClick={() => chrome.runtime.openOptionsPage()} style={{
+          display: "flex", alignItems: "center", gap: 10,
+          background: "none", border: "none", cursor: "pointer", padding: 0,
+        }}>
+          <LogoIcon size={28} danger={hasEvents} />
           <Wordmark danger={hasEvents} />
-        </div>
+        </button>
         <ThemeToggle />
       </div>
 

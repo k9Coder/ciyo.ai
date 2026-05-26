@@ -20,6 +20,8 @@ export interface DetectionResult {
   promptHash: string;
   detectedAtMs: number;
   durationMs: number;
+  /** Set when the user is not signed in and it's time to show the sign-in nudge. */
+  signInNudge?: true;
 }
 
 /** Ordered severity levels for comparison. */
