@@ -10,7 +10,7 @@ const NAV = [
   { to: '/org',        label: 'Teams',      icon: '⊞',  ai: false, dividerAbove: false },
   { to: '/members',    label: 'Members',    icon: '◎',  ai: false, dividerAbove: false },
   { to: '/audit',      label: 'Audit Log',  icon: '≡',  ai: false, dividerAbove: false },
-  { to: '/assistant',  label: 'Ask AI',     icon: null, ai: true,  dividerAbove: true  },
+  { to: '/assistant',  label: 'AI Assistant', icon: null, ai: true,  dividerAbove: true  },
   { to: '/settings',   label: 'Settings',   icon: '⚙',  ai: false, dividerAbove: false },
 ]
 
@@ -131,7 +131,7 @@ export function AppLayout() {
                     borderRadius: 4, padding: '1px 5px',
                     lineHeight: 1.6,
                   }}>
-                    AI
+                    NEW
                   </span>
                 )}
               </NavLink>
