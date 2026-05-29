@@ -5,14 +5,25 @@ import { getTheme, setTheme } from '../../utils/theme'
 import { useState } from 'react'
 
 const NAV = [
-  { to: '/dashboard',  label: 'Dashboard',  icon: '▦' },
-  { to: '/subjects',   label: 'Policies',   icon: '⊡' },
-  { to: '/org',        label: 'Teams',      icon: '⊞' },
-  { to: '/members',    label: 'Members',    icon: '◎' },
-  { to: '/audit',      label: 'Audit Log',  icon: '≡' },
-  { to: '/assistant',  label: 'Assistant',  icon: '*' },
-  { to: '/settings',   label: 'Settings',   icon: '⚙' },
+  { to: '/dashboard',  label: 'Dashboard',  icon: '▦',  ai: false, dividerAbove: false },
+  { to: '/subjects',   label: 'Policies',   icon: '⊡',  ai: false, dividerAbove: false },
+  { to: '/org',        label: 'Teams',      icon: '⊞',  ai: false, dividerAbove: false },
+  { to: '/members',    label: 'Members',    icon: '◎',  ai: false, dividerAbove: false },
+  { to: '/audit',      label: 'Audit Log',  icon: '≡',  ai: false, dividerAbove: false },
+  { to: '/assistant',  label: 'Ask AI',     icon: null, ai: true,  dividerAbove: true  },
+  { to: '/settings',   label: 'Settings',   icon: '⚙',  ai: false, dividerAbove: false },
 ]
+
+function SparkleIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path
+        d="M8 1 L9.2 6.2 L14 8 L9.2 9.8 L8 15 L6.8 9.8 L2 8 L6.8 6.2 Z"
+        fill={color}
+      />
+    </svg>
+  )
+}
 
 function ThemeToggle() {
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => getTheme())
@@ -84,19 +95,47 @@ export function AppLayout() {
 
         {/* Nav */}
         <nav style={{ padding: 8, flex: 1 }}>
-          {NAV.map(({ to, label, icon }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: 9,
-              padding: '8px 12px', borderRadius: 6, marginBottom: 2,
-              textDecoration: 'none', fontSize: 12, transition: 'all 0.1s',
-              background: isActive ? 'var(--bg-surface-raised)' : 'transparent',
-              color: isActive ? 'var(--brand-primary)' : 'var(--text-muted)',
-              fontWeight: isActive ? 600 : 400,
-              border: isActive ? '1px solid var(--border)' : '1px solid transparent',
-            })}>
-              <span style={{ fontSize: 13 }}>{icon}</span>
-              {label}
-            </NavLink>
+          {NAV.map(({ to, label, icon, ai, dividerAbove }) => (
+            <div key={to}>
+              {dividerAbove && (
+                <div style={{ margin: '6px 4px 8px', borderTop: '1px solid var(--border)' }} />
+              )}
+              <NavLink to={to} style={({ isActive }) => ({
+                display: 'flex', alignItems: 'center', gap: 9,
+                padding: '8px 12px', borderRadius: 6, marginBottom: 2,
+                textDecoration: 'none', fontSize: 12, transition: 'all 0.1s',
+                background: isActive
+                  ? (ai ? 'linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 15%, var(--bg-surface-raised)))' : 'var(--bg-surface-raised)')
+                  : (ai ? 'color-mix(in srgb, var(--brand-primary) 6%, transparent)' : 'transparent'),
+                color: isActive
+                  ? 'var(--brand-primary)'
+                  : (ai ? 'var(--brand-primary)' : 'var(--text-muted)'),
+                fontWeight: isActive ? 600 : (ai ? 500 : 400),
+                border: isActive
+                  ? '1px solid var(--border)'
+                  : (ai ? '1px solid color-mix(in srgb, var(--brand-primary) 20%, transparent)' : '1px solid transparent'),
+                opacity: isActive ? 1 : (ai ? 0.85 : 1),
+              })}>
+                {ai
+                  ? <SparkleIcon size={13} color="var(--brand-primary)" />
+                  : <span style={{ fontSize: 13 }}>{icon}</span>
+                }
+                {label}
+                {ai && (
+                  <span style={{
+                    marginLeft: 'auto',
+                    fontSize: 8, fontWeight: 700, letterSpacing: '0.5px',
+                    color: 'var(--brand-primary)',
+                    background: 'color-mix(in srgb, var(--brand-primary) 12%, transparent)',
+                    border: '1px solid color-mix(in srgb, var(--brand-primary) 25%, transparent)',
+                    borderRadius: 4, padding: '1px 5px',
+                    lineHeight: 1.6,
+                  }}>
+                    AI
+                  </span>
+                )}
+              </NavLink>
+            </div>
           ))}
         </nav>
 
