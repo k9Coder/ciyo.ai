@@ -149,3 +149,33 @@ export interface AuditLogPage {
   entries:    AuditLogEntry[]
   nextBefore: string | null
 }
+
+export interface ChatSession {
+  id:        string
+  tenantId:  string
+  memberId:  string | null
+  title:     string
+  createdAt: string
+}
+
+export interface ChatMessage {
+  id:          string
+  sessionId:   string
+  role:        'user' | 'assistant'
+  content:     string
+  actionsJson: unknown[] | null
+  appliedAt:   string | null
+  createdAt:   string
+}
+
+export interface AssistantChatResponse {
+  sessionId: string
+  messageId: string
+  reply:     string
+  actions:   unknown[]
+}
+
+export interface AssistantApplyResponse {
+  applied: unknown[]
+  errors:  string[]
+}
