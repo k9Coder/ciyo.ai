@@ -2,7 +2,7 @@ import { ActionItem } from './ActionItem'
 
 interface PreviewPaneProps {
   actions:    unknown[]
-  messageId:  string | null
+  messageId:  string
   onApply:    (messageId: string) => void
   onDiscard:  () => void
   isApplying: boolean
@@ -38,7 +38,7 @@ export function PreviewPane({ actions, messageId, onApply, onDiscard, isApplying
         )}
       </div>
 
-      {actions.length > 0 && messageId && (
+      {actions.length > 0 && (
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)',
                       background: 'var(--bg-surface)', display: 'flex', gap: 8 }}>
           <button

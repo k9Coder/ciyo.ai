@@ -39,13 +39,15 @@ export function AssistantPage() {
         onNewSession={() => { startNewSession(); setDiscarded(null) }}
         pendingMessageId={pendingMsg?.id ?? null}
       />
-      <PreviewPane
-        actions={pendingMsg?.actionsJson ?? []}
-        messageId={pendingMsg?.id ?? null}
-        onApply={handleApply}
-        onDiscard={() => setDiscarded(latestAssistantMsg?.id ?? null)}
-        isApplying={applyMutation.isPending}
-      />
+      {pendingMsg && (
+        <PreviewPane
+          actions={pendingMsg.actionsJson ?? []}
+          messageId={pendingMsg.id}
+          onApply={handleApply}
+          onDiscard={() => setDiscarded(latestAssistantMsg?.id ?? null)}
+          isApplying={applyMutation.isPending}
+        />
+      )}
     </div>
   )
 }
