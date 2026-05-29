@@ -12,6 +12,10 @@ async function makeLlmService(): Promise<LlmService> {
     const { OpenAiLlmService } = await import('./llm/openai.js')
     return new OpenAiLlmService()
   }
+  if (process.env.LLM_PROVIDER === 'groq') {
+    const { GroqLlmService } = await import('./llm/groq.js')
+    return new GroqLlmService()
+  }
   const { AnthropicLlmService } = await import('./llm/anthropic.js')
   return new AnthropicLlmService()
 }
