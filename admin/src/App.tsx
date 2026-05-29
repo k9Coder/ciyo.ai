@@ -14,6 +14,7 @@ import { PublishPage } from './pages/PublishPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
+import { AssistantPage } from './pages/AssistantPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
@@ -44,6 +45,7 @@ export function App() {
             <Route path="/settings"     element={<SettingsPage />} />
             <Route path="/members"      element={<MembersPage />} />
             <Route path="/audit"        element={<AuditLogPage />} />
+            <Route path="/assistant"    element={<AssistantPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

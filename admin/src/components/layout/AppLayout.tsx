@@ -10,6 +10,7 @@ const NAV = [
   { to: '/org',        label: 'Teams',      icon: '⊞' },
   { to: '/members',    label: 'Members',    icon: '◎' },
   { to: '/audit',      label: 'Audit Log',  icon: '≡' },
+  { to: '/assistant',  label: 'Assistant',  icon: '*' },
   { to: '/settings',   label: 'Settings',   icon: '⚙' },
 ]
 
