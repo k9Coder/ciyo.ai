@@ -174,6 +174,32 @@ export const scans = pgTable('scans', {
   tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
 }))
 
+// ── Chat Sessions ─────────────────────────────────────────────────────────────
+export const chatMessageRoleEnum = pgEnum('chat_message_role', ['user', 'assistant'])
+
+export const chatSessions = pgTable('chat_sessions', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  tenantId:  uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:  uuid('member_id').references(() => members.id),
+  title:     text('title').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantIdx: index().on(t.tenantId),
+}))
+
+// ── Chat Messages ─────────────────────────────────────────────────────────────
+export const chatMessages = pgTable('chat_messages', {
+  id:          uuid('id').primaryKey().defaultRandom(),
+  sessionId:   uuid('session_id').notNull().references(() => chatSessions.id),
+  role:        chatMessageRoleEnum('role').notNull(),
+  content:     text('content').notNull(),
+  actionsJson: jsonb('actions_json'),
+  appliedAt:   timestamp('applied_at', { withTimezone: true }),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  sessionIdx: index().on(t.sessionId),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Tenant    = typeof tenants.$inferSelect
 export type NewTenant = typeof tenants.$inferInsert
@@ -205,3 +231,8 @@ export type NewEvent = typeof events.$inferInsert
 
 export type Scan    = typeof scans.$inferSelect
 export type NewScan = typeof scans.$inferInsert
+
+export type ChatSession    = typeof chatSessions.$inferSelect
+export type NewChatSession = typeof chatSessions.$inferInsert
+export type ChatMessage    = typeof chatMessages.$inferSelect
+export type NewChatMessage = typeof chatMessages.$inferInsert
