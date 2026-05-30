@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useClerk } from '@clerk/react'
+import { Spinner } from '../components/ui/Spinner'
 
 export function LoginPage() {
   const { isLoaded, isSignedIn, orgId, orgRole } = useAuth()
@@ -24,7 +25,9 @@ export function LoginPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           {!isLoaded ? (
-            <p className="text-sm text-gray-500 text-center">Loading…</p>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+              <Spinner size="md" />
+            </div>
           ) : (
             <button
               onClick={() => openSignIn()}

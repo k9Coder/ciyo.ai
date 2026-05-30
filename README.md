@@ -23,38 +23,136 @@ AI prompt protection — detects secrets and PII before they leave your browser.
 
 ### Prerequisites
 
-- Node.js ≥ 18
-- pnpm ≥ 9
+- Node.js ≥ 20
+- npm ≥ 10
+- [Docker](https://www.docker.com/) (for local Postgres)
+- A [Clerk](https://clerk.com/) account
 
-```bash
-pnpm install
-pnpm dev
+### 1. Install dependencies
+
+```sh
+npm install
+cd backend && npm install && cd ..
+cd admin && npm install && cd ..
+```
+
+### 2. Configure environment variables
+
+```sh
+cp backend/.env.example backend/.env
+```
+
+Fill in your keys in `backend/.env`:
+
+| Variable | Where to get it |
+|---|---|
+| `CLERK_SECRET_KEY` | Clerk Dashboard → API Keys |
+| `CLERK_WEBHOOK_SECRET` | Clerk Dashboard → Webhooks |
+| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
+
+### 3. Start the database
+
+Creates a local Postgres container with a **named volume** (data survives container deletion), runs migrations, and seeds demo data:
+
+```sh
+npm run db:setup
+```
+
+Re-run any time you want a clean slate — it wipes and reseeds automatically.
+
+### 4. Start the services
+
+In three separate terminals:
+
+```sh
+# Backend API — http://localhost:3000
+cd backend && npm run dev
+
+# Admin dashboard — http://localhost:5173
+cd admin && npm run dev
+
+# Extension hot-reload build
+npm run dev
 ```
 
 Then load the extension in Chrome:
 1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top right)
-3. Click **Load unpacked**
-4. Select the `dist/` directory
+3. Click **Load unpacked** → select the `dist/` directory
 
 ### Production Build
 
-```bash
-pnpm build
+```sh
+npm run build
 ```
 
-The extension is packaged to `dist/`. Load unpacked as above.
+---
+
+## Useful commands
+
+| Command | What it does |
+|---|---|
+| `npm run db:setup` | Recreate DB container, migrate, seed demo data |
+| `npm run check-db` | Query DB to verify your user/tenant rows |
+| `cd backend && npm run db:migrate` | Run pending migrations only |
+| `cd backend && npm run seed:fintech` | Reseed demo data (container must be running) |
+
+---
+
+## Querying the local database
+
+Use `npm run check-db` to run SQL against the local Postgres container without needing any extra tools installed.
+
+**Default** — shows the `tenants` and `members` tables (useful for auth debugging):
+
+```sh
+npm run check-db
+```
+
+**Custom query** — pass any SQL after `--`:
+
+```sh
+# Check which members are missing a clerk_id
+npm run check-db -- "SELECT id, email, role, clerk_id FROM members WHERE clerk_id IS NULL;"
+
+# Inspect rules
+npm run check-db -- "SELECT id, kind, action, active FROM rules LIMIT 20;"
+
+# List all tables
+npm run check-db -- "SELECT table_name FROM information_schema.tables WHERE table_schema='public';"
+
+# Count rows in every table
+npm run check-db -- "SELECT relname AS table, n_live_tup AS rows FROM pg_stat_user_tables ORDER BY rows DESC;"
+```
+
+> The `--` is npm's argument separator — everything after it is passed directly to the script.
+
+---
+
+## Auth troubleshooting
+
+If you see 401 errors in the admin dashboard, your DB rows are likely out of sync with Clerk. Run:
+
+```sh
+npm run check-db
+```
+
+This shows your `tenants` and `members` tables. You need:
+- A row in `tenants` with `clerk_org_id` matching your Clerk org
+- A row in `members` with `clerk_id` matching your Clerk user ID
+
+If either is missing, re-run `npm run db:setup` — the seed script resolves this by looking up your Clerk org automatically.
 
 ---
 
 ## Running Tests
 
-```bash
+```sh
 # Unit tests (Vitest)
-pnpm test
+npm test
 
 # E2E tests (Playwright) — requires a production build first
-pnpm build && pnpm test:e2e
+npm run build && npm run test:e2e
 ```
 
 ---

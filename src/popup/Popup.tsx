@@ -4,6 +4,7 @@ import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { getTheme, setTheme } from "@/shared/theme";
+import { Spinner } from "../options/components/loading";
 
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
   const color = danger ? "var(--status-danger)" : "var(--brand-primary)";
@@ -131,7 +132,7 @@ function SignedInView() {
     return (
       <div style={{ background: "var(--bg-base)", width: 320, padding: 24,
                     display: "flex", justifyContent: "center" }}>
-        <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Loading…</span>
+        <Spinner size="md" />
       </div>
     );
   }
@@ -269,7 +270,7 @@ export function Popup() {
     return (
       <div style={{ background: "var(--bg-base)", width: 320, padding: 24,
                     display: "flex", justifyContent: "center" }}>
-        <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Loading…</span>
+        <Spinner size="md" />
       </div>
     );
   }

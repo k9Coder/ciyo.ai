@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
+import { InlineLoader } from '../components/ui/Spinner'
 import { EmptyState } from '../components/ui/EmptyState'
 import { EntityModal } from '../components/ui/EntityModal'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -82,7 +83,7 @@ export function SitesPage() {
       />
 
       {isLoading ? (
-        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading…</div>
+        <InlineLoader />
       ) : configs.length === 0 ? (
         <EmptyState
           title="No site configs"

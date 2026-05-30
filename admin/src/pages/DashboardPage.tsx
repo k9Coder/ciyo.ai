@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useOrganization } from '@clerk/react'
+import { InlineLoader, Spinner } from '../components/ui/Spinner'
 import {
   useAnalyticsSummary, useAnalyticsDaily, useAnalyticsIncidents,
   useAnalyticsTopSites, useAnalyticsBySubject,
@@ -68,14 +69,16 @@ export function DashboardPage() {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
-          { label: 'Prompts Scanned',  value: dash(summary?.scansTotal),       sub: `${dash(summary?.activeUsers)} active users`,      subColor: 'var(--brand-primary)' },
-          { label: 'Threats Blocked',  value: dash(summary?.blocked),           sub: `+ ${dash(summary?.warned)} warned`,                subColor: 'var(--status-danger)', valColor: 'var(--status-danger)' },
-          { label: 'Active Users',     value: dash(summary?.activeUsers),       sub: `of ${dash(summary?.totalMembers)} members`,         subColor: 'var(--brand-primary)' },
-          { label: 'Active Rules',     value: dash(summary?.activeRulesCount),  sub: 'rules enforced',                                   subColor: 'var(--text-muted)', valColor: 'var(--brand-primary)' },
-        ].map(({ label, value, sub, subColor, valColor }) => (
+          { label: 'Prompts Scanned', raw: summary?.scansTotal,      sub: `${dash(summary?.activeUsers)} active users`, subColor: 'var(--brand-primary)' },
+          { label: 'Threats Blocked', raw: summary?.blocked,          sub: `+ ${dash(summary?.warned)} warned`,          subColor: 'var(--status-danger)', valColor: 'var(--status-danger)' },
+          { label: 'Active Users',    raw: summary?.activeUsers,      sub: `of ${dash(summary?.totalMembers)} members`,  subColor: 'var(--brand-primary)' },
+          { label: 'Active Rules',    raw: summary?.activeRulesCount, sub: 'rules enforced',                             subColor: 'var(--text-muted)', valColor: 'var(--brand-primary)' },
+        ].map(({ label, raw, sub, subColor, valColor }) => (
           <div key={label} style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: 16, border: '1px solid var(--border)' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
-            <div style={{ color: valColor ?? 'var(--text-primary)', fontSize: 26, fontWeight: 700, margin: '6px 0 4px', lineHeight: 1 }}>{value}</div>
+            <div style={{ color: valColor ?? 'var(--text-primary)', fontSize: 26, fontWeight: 700, margin: '8px 0 4px', lineHeight: 1, minHeight: 32, display: 'flex', alignItems: 'center' }}>
+              {summaryLoading ? <Spinner size="sm" /> : (raw ?? 0).toLocaleString()}
+            </div>
             <div style={{ color: subColor, fontSize: 10 }}>{sub}</div>
           </div>
         ))}
@@ -125,7 +128,7 @@ export function DashboardPage() {
             ))}
           </div>
           {incidentsLoading ? (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Loading…</div>
+            <InlineLoader size="sm" />
           ) : incidents.length === 0 ? (
             <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
               No incidents recorded — set a report level above None on any rule to start collecting data

@@ -20,6 +20,7 @@ import {
   tenants, divisions, teams, members, memberTeams,
   subjects, rules, siteConfigs, events, scans,
 } from '../db/schema.js'
+import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
 import { publishPolicy } from '../policy/service.js'
 
@@ -76,7 +77,8 @@ async function main() {
   if (!clerkSecretKey) throw new Error('CLERK_SECRET_KEY is not set in .env')
   const clerk = createClerkClient({ secretKey: clerkSecretKey })
 
-  // 2. Find tenant (by admin email, then fallback to first tenant)
+  // 2. Find or create tenant
+  //    Priority: member row by admin email → first tenant row → create from Clerk org
   const [adminRow] = await db
     .select({ tenantId: members.tenantId, clerkId: members.clerkId })
     .from(members)
@@ -85,26 +87,56 @@ async function main() {
 
   let tenantId: string
   let savedClerkId: string | null = null
+  let clerkOrgId: string
 
   if (adminRow) {
     tenantId     = adminRow.tenantId
     savedClerkId = adminRow.clerkId ?? null
+    const [row]  = await db.select({ clerkOrgId: tenants.clerkOrgId }).from(tenants).where(eq(tenants.id, tenantId)).limit(1)
+    if (!row?.clerkOrgId) throw new Error('Tenant has no clerkOrgId — something is wrong with your tenant row.')
+    clerkOrgId = row.clerkOrgId
   } else {
-    const [t] = await db.select({ id: tenants.id }).from(tenants).limit(1)
-    if (!t) throw new Error('No tenant found. Start the app and sign in through Clerk first.')
-    tenantId = t.id
+    const [existing] = await db.select({ id: tenants.id, clerkOrgId: tenants.clerkOrgId }).from(tenants).limit(1)
+    if (existing?.clerkOrgId) {
+      tenantId   = existing.id
+      clerkOrgId = existing.clerkOrgId
+    } else {
+      // No tenant in DB at all — look up admin's Clerk org and create the tenant row
+      console.log('  No tenant in DB — looking up Clerk org for admin user…')
+      const clerkUsers = await clerk.users.getUserList({ emailAddress: [ADMIN_EMAIL] })
+      const adminClerkUser = clerkUsers.data[0]
+      if (!adminClerkUser) throw new Error(`No Clerk user found for ${ADMIN_EMAIL}`)
+      savedClerkId = adminClerkUser.id
+
+      const memberships = await clerk.users.getOrganizationMembershipList({ userId: adminClerkUser.id })
+      const orgMembership = memberships.data[0]
+      if (!orgMembership) throw new Error(`${ADMIN_EMAIL} has no Clerk org — create an org in Clerk Dashboard first.`)
+
+      const clerkOrg = orgMembership.organization
+      clerkOrgId     = clerkOrg.id
+      const orgSlug  = (clerkOrg.slug ?? clerkOrg.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')).slice(0, 50)
+
+      const orgSecret   = generateSecret()
+      const adminSecret = generateSecret()
+      const [newTenant] = await db.insert(tenants).values({
+        name:               clerkOrg.name,
+        slug:               orgSlug,
+        clerkOrgId,
+        orgTokenHash:       await hashToken(orgSecret),
+        adminTokenHash:     await hashToken(adminSecret),
+        paymentProvider:    'stripe',
+        externalSubId:      'sub_seed_fintech',
+        subscriptionStatus: 'active',
+      }).returning({ id: tenants.id })
+      tenantId = newTenant!.id
+
+      console.log(`  ✓ Created tenant "${clerkOrg.name}" (${tenantId})`)
+      console.log(`  org token:   ${formatToken('ps_live', orgSlug, orgSecret)}`)
+      console.log(`  admin token: ${formatToken('ps_adm',  orgSlug, adminSecret)}`)
+    }
   }
 
-  // Resolve the Clerk org ID for this tenant
-  const [tenantRow] = await db
-    .select({ clerkOrgId: tenants.clerkOrgId })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
-    .limit(1)
-  const clerkOrgId = tenantRow?.clerkOrgId
-  if (!clerkOrgId) throw new Error('Tenant has no clerkOrgId — sign in through the admin once to link it.')
-
-  console.log(`✓ Tenant ${tenantId} · Clerk org ${clerkOrgId} (admin clerkId preserved: ${savedClerkId ?? 'none'})`)
+  console.log(`✓ Tenant ${tenantId} · Clerk org ${clerkOrgId} (admin clerkId: ${savedClerkId ?? 'none'})`)
 
   // 2. Clear existing seed data for this tenant (preserve tenant row + policies)
   await db.delete(events).where(eq(events.tenantId, tenantId))
@@ -183,17 +215,12 @@ async function main() {
 
   // 6. Dummy members — created in Clerk + added to the org + linked in DB
   //    Sign in via the extension with: email below · password: Fincorp2026!
+  // 4 members — one per key division (Clerk free plan: 5 org members total incl. admin)
   const dummyDefs = [
-    { email: 'alice.chen@fincorp.dev',     displayName: 'Alice Chen',     firstName: 'Alice',   lastName: 'Chen',     teamSlug: 'core-platform'    },
-    { email: 'david.ross@fincorp.dev',     displayName: 'David Ross',     firstName: 'David',   lastName: 'Ross',     teamSlug: 'mobile'           },
-    { email: 'nina.park@fincorp.dev',      displayName: 'Nina Park',      firstName: 'Nina',    lastName: 'Park',     teamSlug: 'data-engineering' },
-    { email: 'marcus.johnson@fincorp.dev', displayName: 'Marcus Johnson', firstName: 'Marcus',  lastName: 'Johnson',  teamSlug: 'regulatory'       },
-    { email: 'emily.watson@fincorp.dev',   displayName: 'Emily Watson',   firstName: 'Emily',   lastName: 'Watson',   teamSlug: 'contracts'        },
-    { email: 'priya.patel@fincorp.dev',    displayName: 'Priya Patel',    firstName: 'Priya',   lastName: 'Patel',    teamSlug: 'treasury'         },
-    { email: 'james.ford@fincorp.dev',     displayName: 'James Ford',     firstName: 'James',   lastName: 'Ford',     teamSlug: 'risk'             },
-    { email: 'tom.bradley@fincorp.dev',    displayName: 'Tom Bradley',    firstName: 'Tom',     lastName: 'Bradley',  teamSlug: 'consumer-banking' },
-    { email: 'sarah.kim@fincorp.dev',      displayName: 'Sarah Kim',      firstName: 'Sarah',   lastName: 'Kim',      teamSlug: 'appsec'           },
-    { email: 'raj.mehta@fincorp.dev',      displayName: 'Raj Mehta',      firstName: 'Raj',     lastName: 'Mehta',    teamSlug: 'threat-intel'     },
+    { email: 'alice.chen@fincorp.dev',     displayName: 'Alice Chen',     firstName: 'Alice',  lastName: 'Chen',    teamSlug: 'core-platform' },
+    { email: 'marcus.johnson@fincorp.dev', displayName: 'Marcus Johnson', firstName: 'Marcus', lastName: 'Johnson', teamSlug: 'regulatory'    },
+    { email: 'priya.patel@fincorp.dev',    displayName: 'Priya Patel',    firstName: 'Priya',  lastName: 'Patel',   teamSlug: 'treasury'      },
+    { email: 'sarah.kim@fincorp.dev',      displayName: 'Sarah Kim',      firstName: 'Sarah',  lastName: 'Kim',     teamSlug: 'appsec'        },
   ]
 
   for (const m of dummyDefs) {
@@ -215,15 +242,23 @@ async function main() {
       console.log(`  · ${m.email} — created Clerk user ${clerkUserId}`)
     }
 
-    // Add to the Clerk org (ignore if already a member)
+    // Add to the Clerk org (skip if already a member or quota exceeded)
     const memberships = await clerk.organizations.getOrganizationMembershipList({ organizationId: clerkOrgId })
     const alreadyMember = memberships.data.some(ms => ms.publicUserData?.userId === clerkUserId)
     if (!alreadyMember) {
-      await clerk.organizations.createOrganizationMembership({
-        organizationId: clerkOrgId,
-        userId: clerkUserId,
-        role: 'org:member',
-      })
+      try {
+        await clerk.organizations.createOrganizationMembership({
+          organizationId: clerkOrgId,
+          userId: clerkUserId,
+          role: 'org:member',
+        })
+      } catch (e: any) {
+        if (e?.errors?.[0]?.code === 'organization_membership_quota_exceeded') {
+          console.warn(`  ⚠ Clerk org quota reached — ${m.email} added to DB only (upgrade plan for extension sign-in)`)
+        } else {
+          throw e
+        }
+      }
     }
 
     // Insert into DB with clerkId set
@@ -233,7 +268,7 @@ async function main() {
       .returning({ id: members.id })
     await db.insert(memberTeams).values({ memberId: row!.id, teamId: team[m.teamSlug]! })
   }
-  console.log('✓ Created 10 dummy members in Clerk + DB')
+  console.log('✓ Created 4 dummy members in Clerk + DB')
 
   // 7. Subjects + Rules ────────────────────────────────────────────────────────
 
@@ -628,7 +663,7 @@ async function main() {
 ╔════════════════════════════════════════════════════════════╗
 ║  FinCorp seed complete!                                    ║
 ╠════════════════════════════════════════════════════════════╣
-║  5 divisions · 15 teams · 10 members · 18 subjects        ║
+║  5 divisions · 15 teams · 4 members · 18 subjects         ║
 ║  Policy v${version} published ✓                                  ║
 ╠════════════════════════════════════════════════════════════╣
 ║  Sign in to the extension as any member:                  ║

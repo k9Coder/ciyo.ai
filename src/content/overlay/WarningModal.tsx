@@ -78,7 +78,11 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
         <div className="ciyo-modal-header">
           <div className="ciyo-brand-row">
             <CiyoLogo />
-            <span className="ciyo-brand-label">Ciyo</span>
+            <span className="ciyo-brand-label">
+            <span style={{ color: "var(--text-primary)" }}>c</span>
+            <span style={{ color: "var(--brand)" }}>i</span>
+            <span style={{ color: "var(--text-primary)" }}>yo</span>
+          </span>
           </div>
           <div className="ciyo-title-row">
             <div className="ciyo-warn-icon">

@@ -4,6 +4,7 @@
   "description": "Browser-based DLP for LLM chat interfaces",
   "private": true,
   "scripts": {
+    "db:setup": "node scripts/db-setup.mjs",
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
@@ -12,7 +13,8 @@
     "test:e2e:admin": "playwright test --config playwright.config.ts --project=admin",
     "test:e2e:extension": "playwright test --config playwright.config.ts --project=extension",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "check-db": "node scripts/check-db.mjs"
   },
   "dependencies": {
     "@clerk/chrome-extension": "^3.1.26",

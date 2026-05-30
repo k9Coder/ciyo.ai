@@ -26,3 +26,41 @@
   --status-warn:       #cc8800;
   --status-safe:       #00aa66;
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00d4ff33 0%, #00d4ff1a 100%);
+  border-radius: 100px;
+  border: 1px solid #00d4ff22;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ffaa 0%, #00d4ff55 100%);
+  border-color: #00d4ff66;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00d4ff33 transparent;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0077aa33 0%, #0077aa1a 100%);
+  border-color: #0077aa22;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0077aaaa 0%, #0077aa55 100%);
+  border-color: #0077aa66;
+}
+[data-theme="light"] * {
+  scrollbar-color: #0077aa33 transparent;
+}

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@clerk/react'
 import { setTokenGetter } from '../../api'
+import { PageLoader } from '../ui/Spinner'
 
 const AuthReadyContext = createContext(false)
 export const useAuthReady = () => useContext(AuthReadyContext)
@@ -23,9 +24,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => () => setTokenGetter(null), [])
 
   if (!isLoaded) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, color: 'var(--text-muted)', background: 'var(--bg-base)' }}>
-      Loading…
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
+      <PageLoader label="Authenticating" />
     </div>
   )
   if (!isSignedIn) return <Navigate to="/login" replace />

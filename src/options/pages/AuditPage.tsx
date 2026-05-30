@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { queryAuditEvents, exportAuditCSV } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
+import { InlineLoader } from "../components/loading";
 
 const PAGE_SIZE = 50;
 
@@ -85,7 +86,7 @@ export function AuditPage() {
 
       {/* Table */}
       {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <InlineLoader size="sm" />
       ) : events.length === 0 ? (
         <p className="text-sm text-gray-500">No audit events found.</p>
       ) : (

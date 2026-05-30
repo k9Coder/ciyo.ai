@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useTenant, useTenantMutations } from '../hooks/useTenant'
+import { InlineLoader } from '../components/ui/Spinner'
 
 export function SettingsPage() {
   const { data: tenant, isLoading, isError } = useTenant()
@@ -56,7 +57,7 @@ export function SettingsPage() {
       <div style={sectionStyle}>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Organisation</h2>
 
-        {isLoading && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Loading…</p>}
+        {isLoading && <InlineLoader />}
         {isError   && <p style={{ fontSize: 13, color: 'var(--status-danger)', margin: 0 }}>Could not load tenant info.</p>}
 
         {tenant && (

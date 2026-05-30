@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { EmptyState } from './EmptyState'
+import { InlineLoader } from './Spinner'
 
 export interface MillerColumnItem {
   id: string
@@ -97,7 +98,7 @@ export function MillerColumns({ columns }: Props) {
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {col.loading ? (
-              <div style={{ padding: 16, fontSize: 12, color: 'var(--text-muted)' }}>Loading…</div>
+              <InlineLoader />
             ) : col.items.length === 0 ? (
               <EmptyState title={`No ${col.title.toLowerCase()}`} />
             ) : (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useAuditLog } from '../hooks/useAuditLog'
+import { InlineLoader, Spinner } from '../components/ui/Spinner'
 
 type ActionFilter = 'all' | 'warn' | 'block'
 
@@ -41,9 +42,7 @@ export function AuditLogPage() {
       </div>
 
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-        {isLoading && (
-          <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>Loading…</p>
-        )}
+        {isLoading && <InlineLoader />}
         {!isLoading && entries.length === 0 && (
           <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
             No events recorded yet.
@@ -107,7 +106,7 @@ export function AuditLogPage() {
                 padding: '6px 16px', fontSize: 13, cursor: 'pointer', color: 'var(--text-secondary)',
               }}
             >
-              {isFetchingNextPage ? 'Loading…' : 'Load more'}
+              {isFetchingNextPage ? <Spinner size="sm" /> : 'Load more'}
             </button>
           </div>
         )}

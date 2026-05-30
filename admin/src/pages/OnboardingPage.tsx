@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useOrganizationList } from '@clerk/react'
+import { PageLoader } from '../components/ui/Spinner'
 import { toSlug } from '../api'
 
 export function OnboardingPage() {
@@ -42,7 +43,11 @@ export function OnboardingPage() {
   }
 
   if (!isLoaded || !listLoaded) {
-    return <div className="min-h-screen flex items-center justify-center text-sm text-gray-500">Loading…</div>
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
+        <PageLoader label="Authenticating" />
+      </div>
+    )
   }
 
   return (

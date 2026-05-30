@@ -42,23 +42,21 @@ export function App() {
         background: "var(--bg-surface)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
-            <rect x="8" y="24" width="64" height="32" rx="10"
-                  fill="var(--bg-base)" stroke="var(--brand-primary)" strokeWidth="2"/>
-            <rect x="17" y="36" width="26" height="2.5" rx="1.25"
-                  fill="var(--brand-primary)" opacity="0.5"/>
-            <circle cx="60" cy="40" r="11"
-                    fill="var(--brand-primary)" opacity="0.12"/>
-            <circle cx="60" cy="40" r="11"
-                    stroke="var(--brand-primary)" strokeWidth="2"/>
-            <path d="M55.5 40L59 43.5L65.5 37"
-                  stroke="var(--brand-primary)" strokeWidth="2.5"
+          <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
+            <rect width="56" height="56" rx="14" fill="var(--bg-surface)"/>
+            <path d="M20 14 L14 14 L14 42 L20 42"
+                  stroke="var(--brand-primary)" strokeWidth="3"
                   strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="34" cy="28" r="5" fill="var(--brand-primary)"/>
+            <path d="M30 18 L38 18 L38 24"
+                  stroke="var(--brand-primary)" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
           </svg>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: "-0.5px" }}>
-              <span style={{ color: "var(--text-primary)" }}>safe</span>
-              <span style={{ color: "var(--brand-primary)" }}>input</span>
+            <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.5px" }}>
+              <span style={{ color: "var(--text-primary)" }}>c</span>
+              <span style={{ color: "var(--brand-primary)" }}>i</span>
+              <span style={{ color: "var(--text-primary)" }}>yo</span>
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)",
                           letterSpacing: "2.5px", textTransform: "uppercase", marginTop: 2 }}>

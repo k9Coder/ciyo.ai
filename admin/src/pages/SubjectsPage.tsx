@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SplitPane } from '../components/ui/SplitPane'
+import { InlineLoader } from '../components/ui/Spinner'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Badge } from '../components/ui/Badge'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -283,7 +284,7 @@ export function SubjectsPage() {
         <button onClick={openNew} style={{ fontSize: 12, fontWeight: 500, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>+ New</button>
       </div>
       {isLoading ? (
-        <div style={{ padding: 16, fontSize: 13, color: 'var(--text-muted)' }}>Loading…</div>
+        <InlineLoader />
       ) : subjects.length === 0 ? (
         <EmptyState title="No subjects" action={{ label: '+ New subject', onClick: openNew }} />
       ) : (

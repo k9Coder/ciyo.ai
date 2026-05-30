@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
+import { InlineLoader } from '../components/ui/Spinner'
 import { EmptyState } from '../components/ui/EmptyState'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { usePolicy, usePolicyHistory, usePolicyMutations } from '../hooks/usePolicy'
@@ -21,7 +22,7 @@ export function PublishPage() {
               Current published policy
             </h2>
             {loadingPolicy ? (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Loading…</p>
+              <InlineLoader />
             ) : policy ? (
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
                 Version {policy.version} · {policy.tenantName} · {policy.plan}
@@ -53,7 +54,7 @@ export function PublishPage() {
           <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Published versions</h2>
         </div>
         {loadingHistory ? (
-          <div style={{ padding: 24, fontSize: 13, color: 'var(--text-muted)' }}>Loading…</div>
+          <InlineLoader />
         ) : history.length === 0 ? (
           <EmptyState title="No versions yet" description="Publish your first policy to see history here." />
         ) : (

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
+import { InlineLoader } from '../components/ui/Spinner'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useMembers, useMemberActions } from '../hooks/useMembers'
 import type { Member } from '../types'
@@ -127,9 +128,7 @@ export function MembersPage() {
       )}
 
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-        {isLoading && (
-          <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>Loading…</p>
-        )}
+        {isLoading && <InlineLoader />}
         {!isLoading && members.length === 0 && (
           <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
             No members yet. Click <strong>+ Add Member</strong> to invite your first member.

@@ -1,10 +1,11 @@
 import { useAuth, useUser, SignIn, SignOutButton } from "@clerk/chrome-extension";
+import { PageLoader } from "../components/loading";
 
 export function AccountPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
-  if (!isLoaded) return <div className="p-6 text-sm text-gray-500">Loading…</div>;
+  if (!isLoaded) return <PageLoader label="Authenticating" />;
 
   if (!isSignedIn || !user) {
     return (

@@ -13,6 +13,34 @@
   --status-safe:       #00cc88;
 }
 
+/* Custom scrollbar — dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00d4ff33 0%, #00d4ff22 100%);
+  border-radius: 100px;
+  border: 1px solid #00d4ff22;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ffaa 0%, #00d4ff66 100%);
+  border-color: #00d4ff55;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00d4ff33 transparent;
+}
+
 /* Light mode */
 [data-theme="light"] {
   --brand-primary:     #0077aa;
@@ -26,4 +54,16 @@
   --status-danger:     #e03050;
   --status-warn:       #cc8800;
   --status-safe:       #00aa66;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0077aa33 0%, #0077aa22 100%);
+  border-color: #0077aa22;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0077aaaa 0%, #0077aa66 100%);
+  border-color: #0077aa55;
+}
+[data-theme="light"] * {
+  scrollbar-color: #0077aa44 transparent;
 }
