@@ -10,7 +10,7 @@ test.describe('Analytics API', () => {
 
     expect(res.status()).toBe(200)
     const body = await res.json() as Record<string, unknown>
-    expect(typeof body['total']).toBe('number')
+    expect(typeof body['scansTotal']).toBe('number')
     expect(typeof body['blocked']).toBe('number')
     expect(typeof body['warned']).toBe('number')
     await api.dispose()
@@ -70,7 +70,7 @@ test.describe('Analytics API', () => {
 
     expect(res.status()).toBe(200)
     const body = await res.json() as Record<string, unknown>
-    expect(typeof body['total']).toBe('number')
+    expect(typeof body['scansTotal']).toBe('number')
     await api.dispose()
   })
 })

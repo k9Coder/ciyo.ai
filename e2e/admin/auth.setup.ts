@@ -18,7 +18,7 @@ setup('authenticate as org admin', async ({ page }) => {
   await page.getByRole('button', { name: /continue/i }).click()
 
   // Clerk modal: fill password
-  await page.getByLabel(/password/i).fill(process.env.E2E_CLERK_USER_PASSWORD!)
+  await page.locator('input[type="password"]').fill(process.env.E2E_CLERK_USER_PASSWORD!)
   await page.getByRole('button', { name: /continue/i }).click()
 
   // Wait for redirect to dashboard

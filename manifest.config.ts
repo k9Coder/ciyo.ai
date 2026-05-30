@@ -5,6 +5,8 @@ const LLM_HOSTS = [
   "https://chat.openai.com/*",
   "https://claude.ai/*",
   "https://gemini.google.com/*",
+  // localhost:9876 used by E2E extension tests (fixture pages)
+  "http://localhost:9876/*",
 ];
 
 export default defineManifest({

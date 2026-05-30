@@ -9,6 +9,12 @@ const DIST_PATH = path.resolve(__dirname, 'dist')
 export default defineConfig({
   globalSetup:    './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
+  webServer: {
+    command: 'node e2e/fixtures-server.mjs',
+    url: 'http://localhost:9876',
+    reuseExistingServer: true,
+    timeout: 10_000,
+  },
   timeout: 30_000,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',

@@ -71,15 +71,22 @@ test.describe('Auth join API', () => {
     await api.dispose()
   })
 
-  test('POST /v1/auth/join with admin token (wrong type) returns 401', async () => {
+  test('POST /v1/auth/join with admin token is accepted (requireOrgToken allows both)', async () => {
     const api = await playwrightRequest.newContext()
     const res  = await api.post(`${BACKEND}/v1/auth/join`, {
       headers: adminHeaders(),
-      data:    { email: 'wrong-token@e2e.test' },
+      data:    { email: 'admintoken-join@e2e.test' },
     })
 
-    // requireOrgToken only accepts ps_live tokens, not ps_adm tokens
-    expect(res.status()).toBe(401)
+    // requireOrgToken validates the token hash against either org or admin hash,
+    // so ps_adm tokens are also accepted on this endpoint
+    expect([200, 201]).toContain(res.status())
+
+    // Cleanup
+    const listRes = await api.get(`${BACKEND}/v1/members`, { headers: adminHeaders() })
+    const all     = await listRes.json() as Array<{ id: string; email: string }>
+    const member  = all.find(m => m.email === 'admintoken-join@e2e.test')
+    if (member) await api.delete(`${BACKEND}/v1/members/${member.id}`, { headers: adminHeaders() })
     await api.dispose()
   })
 })

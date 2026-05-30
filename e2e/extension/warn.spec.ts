@@ -1,49 +1,77 @@
 import { test, expect, chromium } from '@playwright/test'
 import path from 'path'
-import { getSeedState } from '../helpers/seed-state.js'
 
-const EXTENSION_PATH = path.resolve(__dirname, '../../dist')
-const MOCK_PAGE      = path.resolve(__dirname, '../fixtures/chatgpt-mock.html')
+const FIXTURES = 'http://localhost:9876'
+const EXT_PATH = path.resolve(__dirname, '../../dist')
 
-async function launchWithOrgToken() {
-  const { orgToken } = getSeedState()
-  const backendUrl   = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
+// Minimal policyDoc injected directly into storage — no backend sync required.
+// Mirrors what seed-e2e.ts seeds: one subject with ACME_SECRET (block) + ACME_WARN (warn).
+const TEST_POLICY_DOC = {
+  version:     1,
+  tenantId:    'e2etenant',
+  subjects: [
+    {
+      id:   'acme-confidential',
+      name: 'ACME Confidential',
+      rules: [
+        {
+          id:          'acme-secret-block',
+          kind:        'keyword',
+          keywords:    ['ACME_SECRET'],
+          pattern:     null,
+          destinations: [],
+          action:      'block',
+          message:     null,
+          reportLevel: 'medium',
+        },
+        {
+          id:          'acme-warn-rule',
+          kind:        'keyword',
+          keywords:    ['ACME_WARN'],
+          pattern:     null,
+          destinations: [],
+          action:      'warn',
+          message:     null,
+          reportLevel: 'medium',
+        },
+      ],
+    },
+  ],
+  siteConfigs: {},
+}
 
-  const context = await chromium.launchPersistentContext('', {
+async function launchWithPolicy() {
+  const extPath  = EXT_PATH
+  const context  = await chromium.launchPersistentContext('', {
     headless: false,
     args: [
       '--headless=new',
-      `--disable-extensions-except=${EXTENSION_PATH}`,
-      `--load-extension=${EXTENSION_PATH}`,
+      `--disable-extensions-except=${extPath}`,
+      `--load-extension=${extPath}`,
     ],
   })
 
+  // Inject token + policyDoc directly so the extension enforces the seeded rules
+  // without needing to sync from the backend.
   const background = context.serviceWorkers()[0]
     ?? await context.waitForEvent('serviceworker')
-
-  await background.evaluate(
-    ([token, url]) => {
-      chrome.storage.local.set({ orgToken: token, backendUrl: url })
-    },
-    [orgToken, backendUrl] as [string, string]
-  )
-
-  // Wait for the extension to sync the seeded policy from the test backend
-  await new Promise(r => setTimeout(r, 3_000))
+  await background.evaluate((doc) => {
+    void chrome.storage.local.set({ orgToken: 'e2e-fake-token', policyDoc: doc })
+  }, TEST_POLICY_DOC)
 
   return context
 }
 
 test.describe('Warn vs block modal behaviour (seeded policy)', () => {
   test('ACME_WARN rule shows "Looks fine, send it" button', async () => {
-    const context = await launchWithOrgToken()
+    const context = await launchWithPolicy()
     const page    = await context.newPage()
-    await page.goto(`file://${MOCK_PAGE}`)
+    await page.goto(`${FIXTURES}/chatgpt-mock.html`)
 
     await page.locator('#prompt-textarea').fill('Please review ACME_WARN data')
     await page.locator('#send-button').click()
 
-    const modal = page.locator('pierce/#ps-react-root')
+    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Warn action — "Looks fine, send it" must be present
@@ -53,14 +81,14 @@ test.describe('Warn vs block modal behaviour (seeded policy)', () => {
   })
 
   test('ACME_SECRET block rule does NOT show "Looks fine, send it"', async () => {
-    const context = await launchWithOrgToken()
+    const context = await launchWithPolicy()
     const page    = await context.newPage()
-    await page.goto(`file://${MOCK_PAGE}`)
+    await page.goto(`${FIXTURES}/chatgpt-mock.html`)
 
     await page.locator('#prompt-textarea').fill('This contains ACME_SECRET credentials')
     await page.locator('#send-button').click()
 
-    const modal = page.locator('pierce/#ps-react-root')
+    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Block action — "Looks fine, send it" must NOT appear

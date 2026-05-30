@@ -12,7 +12,7 @@ import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const SEED_STATE_PATH = path.resolve(__dirname, '../../../../e2e/.seed-state.json')
+const SEED_STATE_PATH = path.resolve(__dirname, '../../../e2e/.seed-state.json')
 
 async function main() {
   console.log('[seed-e2e] Truncating test DB...')
@@ -33,12 +33,12 @@ async function main() {
 
   const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
-  const orgToken    = formatToken('ps_live', 'e2e-tenant', orgSecret)
-  const adminToken  = formatToken('ps_adm',  'e2e-tenant', adminSecret)
+  const orgToken    = formatToken('ps_live', 'e2etenant', orgSecret)
+  const adminToken  = formatToken('ps_adm',  'e2etenant', adminSecret)
 
   const [tenant] = await db.insert(tenants).values({
     name:               'E2E Test Org',
-    slug:               'e2e-tenant',
+    slug:               'e2etenant',
     clerkOrgId:         process.env.E2E_CLERK_ORG_ID!,
     orgTokenHash:       await hashToken(orgSecret),
     adminTokenHash:     await hashToken(adminSecret),
