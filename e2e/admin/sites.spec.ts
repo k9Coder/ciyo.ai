@@ -11,6 +11,42 @@ test.describe('Site configs', () => {
     await api.dispose()
   })
 
+  test('can edit site config selectors', async ({ page }) => {
+    const EDIT_DOMAIN = 'e2e-edit-site.internal'
+
+    // Create the config via API first
+    const api = await playwrightRequest.newContext()
+    await api.post(`${BACKEND}/v1/site-configs`, {
+      headers: adminHeaders(),
+      data: { domain: EDIT_DOMAIN, inputSelector: '#old-input', sendButtonSelector: '#old-btn' },
+    })
+    await api.dispose()
+
+    await page.goto('/sites')
+    await page.getByText(EDIT_DOMAIN).waitFor()
+
+    // Edit button is a plain <button> in each row's action cell
+    await page.getByRole('button', { name: 'Edit' }).first().click()
+
+    const inputField  = page.getByRole('dialog').getByLabel(/input selector/i)
+    const buttonField = page.getByRole('dialog').getByLabel(/send.?button selector/i)
+
+    await inputField.clear()
+    await inputField.fill('#new-input')
+    await buttonField.clear()
+    await buttonField.fill('#new-btn')
+
+    await page.getByRole('dialog').getByRole('button', { name: /save/i }).click()
+
+    // Domain row is still visible with updated config
+    await expect(page.getByText(EDIT_DOMAIN)).toBeVisible()
+
+    // Cleanup
+    const cleanupApi = await playwrightRequest.newContext()
+    await cleanupApi.delete(`${BACKEND}/v1/site-configs/${EDIT_DOMAIN}`, { headers: adminHeaders() })
+    await cleanupApi.dispose()
+  })
+
   test('can create a site config', async ({ page }) => {
     await page.goto('/sites')
 

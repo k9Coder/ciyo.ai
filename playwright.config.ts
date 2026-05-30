@@ -45,5 +45,10 @@ export default defineConfig({
       },
       testMatch: 'e2e/extension/**/*.spec.ts',
     },
+    {
+      name: 'api',
+      use: { baseURL: process.env.E2E_BACKEND_URL ?? 'http://localhost:3000' },
+      testMatch: 'e2e/api/**/*.spec.ts',
+    },
   ],
 })

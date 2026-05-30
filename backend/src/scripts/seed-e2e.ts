@@ -1,6 +1,7 @@
 import path from 'path'
 import { writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
+import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import {
   tenants, divisions, teams, members, memberTeams,
@@ -79,19 +80,21 @@ async function main() {
   await db.insert(rules).values([
     {
       tenantId,
-      subjectId: subject!.id,
-      kind:      'keyword',
-      keywords:  ['ACME_SECRET'],
-      action:    'block',
-      active:    true,
+      subjectId:   subject!.id,
+      kind:        'keyword',
+      keywords:    ['ACME_SECRET'],
+      action:      'block',
+      active:      true,
+      reportLevel: 'medium',
     },
     {
       tenantId,
-      subjectId: subject!.id,
-      kind:      'keyword',
-      keywords:  ['ACME_WARN'],
-      action:    'warn',
-      active:    true,
+      subjectId:   subject!.id,
+      kind:        'keyword',
+      keywords:    ['ACME_WARN'],
+      action:      'warn',
+      active:      true,
+      reportLevel: 'medium',
     },
   ])
 
@@ -102,6 +105,37 @@ async function main() {
     policyJson,
     publishedAt: new Date(),
   })
+
+  // Seed 15 audit events (8 block + 7 warn) so audit.spec.ts has data for filters/pagination
+  const ruleRows = await db
+    .select({ id: rules.id, action: rules.action })
+    .from(rules)
+    .where(eq(rules.tenantId, tenantId))
+
+  const blockRuleId = ruleRows.find(r => r.action === 'block')!.id
+  const warnRuleId  = ruleRows.find(r => r.action === 'warn')!.id
+  const now = new Date()
+
+  await db.insert(events).values([
+    ...Array.from({ length: 8 }, (_, i) => ({
+      tenantId,
+      ruleId:      blockRuleId,
+      memberId:    member!.id,
+      action:      'block' as const,
+      siteUrl:     'https://chatgpt.com/',
+      matchedTerm: 'ACME_SECRET',
+      occurredAt:  new Date(now.getTime() - i * 60_000),
+    })),
+    ...Array.from({ length: 7 }, (_, i) => ({
+      tenantId,
+      ruleId:      warnRuleId,
+      memberId:    member!.id,
+      action:      'warn' as const,
+      siteUrl:     'https://claude.ai/',
+      matchedTerm: 'ACME_WARN',
+      occurredAt:  new Date(now.getTime() - (8 + i) * 60_000),
+    })),
+  ])
 
   const seedState = { tenantId, orgToken, adminToken }
   writeFileSync(SEED_STATE_PATH, JSON.stringify(seedState, null, 2))

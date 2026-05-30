@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gemini (Mock)</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; background: #1c1b1f; color: #e6e0e9; }
+      .input-area { display: flex; gap: 8px; align-items: flex-end; margin-top: 2rem;
+                    background: #2b2930; padding: 12px; border-radius: 12px; }
+      .ql-editor { flex: 1; min-height: 48px; padding: 8px; color: #e6e0e9; outline: none; }
+      button[aria-label="Send message"] { background: #8ab4f8; color: #1c1b1f; border: none;
+                                          border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: bold; }
+      #output { margin-top: 1rem; font-size: 14px; color: #aaa; }
+    </style>
+  </head>
+  <body>
+    <h2>Gemini (Mock)</h2>
+    <p id="output">No message sent yet.</p>
+
+    <div class="input-area">
+      <div
+        class="ql-editor"
+        contenteditable="true"
+        role="textbox"
+        data-placeholder="Message Gemini"
+      ></div>
+      <button aria-label="Send message">Send</button>
+    </div>
+
+    <script>
+      const composer = document.querySelector('.ql-editor')
+      const sendBtn  = document.querySelector('button[aria-label="Send message"]')
+      const output   = document.getElementById('output')
+
+      sendBtn.addEventListener('click', () => {
+        output.textContent = 'SENT: ' + composer.innerText
+        composer.innerText = ''
+      })
+    </script>
+  </body>
+</html>

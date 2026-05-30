@@ -1,6 +1,7 @@
-import { test, expect, chromium } from '@playwright/test'
+import { test, expect, chromium, request as playwrightRequest } from '@playwright/test'
 import path from 'path'
 import { getSeedState } from '../helpers/seed-state.js'
+import { adminHeaders } from '../helpers/admin-headers.js'
 
 const EXTENSION_PATH = path.resolve(__dirname, '../../dist')
 const MOCK_PAGE      = path.resolve(__dirname, '../fixtures/chatgpt-mock.html')
@@ -42,6 +43,16 @@ test('extension fetches seeded policy and enforces ACME_SECRET block rule', asyn
   // Block modal should appear — proves the extension fetched the live seeded policy
   const modal = page.locator('pierce/#ps-react-root')
   await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
+
+  // Give extension time to dispatch the event to the backend (fire-and-forget)
+  await new Promise(r => setTimeout(r, 2_000))
+
+  // Verify that the event was recorded in the audit log
+  const api = await playwrightRequest.newContext()
+  const res  = await api.get(`${backendUrl}/v1/audit-log?action=block&limit=5`, { headers: adminHeaders() })
+  const body = await res.json() as { entries: Array<{ action: string; matchedTerm: string | null }> }
+  expect(body.entries.some(e => e.action === 'block')).toBe(true)
+  await api.dispose()
 
   await context.close()
 })

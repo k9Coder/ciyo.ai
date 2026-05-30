@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Claude (Mock)</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; background: #1a1a2e; color: #e0e0e0; }
+      .composer-wrapper { display: flex; gap: 8px; align-items: flex-end; margin-top: 2rem;
+                          background: #16213e; padding: 12px; border-radius: 12px; }
+      .ProseMirror { flex: 1; min-height: 48px; padding: 8px; color: #e0e0e0; outline: none; }
+      button[aria-label="Send Message"] { background: #e05a2b; color: white; border: none;
+                                          border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: bold; }
+      #output { margin-top: 1rem; font-size: 14px; color: #aaa; }
+    </style>
+  </head>
+  <body>
+    <h2>Claude (Mock)</h2>
+    <p id="output">No message sent yet.</p>
+
+    <div class="composer-wrapper">
+      <div
+        class="ProseMirror"
+        contenteditable="true"
+        role="textbox"
+        data-placeholder="Message Claude"
+      ></div>
+      <button aria-label="Send Message">Send</button>
+    </div>
+
+    <script>
+      const composer = document.querySelector('.ProseMirror')
+      const sendBtn  = document.querySelector('button[aria-label="Send Message"]')
+      const output   = document.getElementById('output')
+
+      sendBtn.addEventListener('click', () => {
+        output.textContent = 'SENT: ' + composer.innerText
+        composer.innerText = ''
+      })
+    </script>
+  </body>
+</html>

@@ -69,4 +69,65 @@ test.describe('Subjects', () => {
     if (created) await api.delete(`${BACKEND}/v1/rules/${created.id}`, { headers: adminHeaders() })
     await api.dispose()
   })
+
+  test('can rename a subject', async ({ page }) => {
+    await page.goto('/subjects')
+
+    const subjectRow = page.locator('button', { hasText: 'ACME Confidential' })
+    await subjectRow.locator('span', { hasText: 'Edit' }).click()
+
+    await page.getByRole('dialog').getByLabel('Name').clear()
+    await page.getByRole('dialog').getByLabel('Name').fill('ACME Confidential Renamed')
+    await page.getByRole('dialog').getByRole('button', { name: /save/i }).click()
+
+    await expect(page.getByText('ACME Confidential Renamed')).toBeVisible()
+
+    // Restore original name so downstream tests still find it
+    const api = await playwrightRequest.newContext()
+    const subRes = await api.get(`${BACKEND}/v1/subjects`, { headers: adminHeaders() })
+    const subs = await subRes.json() as Array<{ id: string; name: string }>
+    const sub = subs.find(s => s.name === 'ACME Confidential Renamed')
+    if (sub) {
+      await api.patch(`${BACKEND}/v1/subjects/${sub.id}`, {
+        headers: adminHeaders(),
+        data: { name: 'ACME Confidential' },
+      })
+    }
+    await api.dispose()
+  })
+
+  test('can edit a rule action', async ({ page }) => {
+    // Create a throwaway rule so we never modify the seeded ACME rules permanently
+    const api = await playwrightRequest.newContext()
+    const subRes = await api.get(`${BACKEND}/v1/subjects`, { headers: adminHeaders() })
+    const subs = await subRes.json() as Array<{ id: string; name: string }>
+    const subId = subs.find(s => s.name === 'ACME Confidential')!.id
+
+    const ruleRes = await api.post(`${BACKEND}/v1/subjects/${subId}/rules`, {
+      headers: adminHeaders(),
+      data: { kind: 'keyword', action: 'warn', keywords: ['EDIT_RULE_E2E'], reportLevel: 'none' },
+    })
+    const rule = await ruleRes.json() as { id: string }
+    await api.dispose()
+
+    await page.goto('/subjects')
+    await page.locator('button', { hasText: 'ACME Confidential' }).click()
+
+    // Walk up 2 levels from the keyword span to the card div, then click Edit
+    const keywordSpan = page.locator('span').filter({ hasText: /^EDIT_RULE_E2E$/ })
+    await keywordSpan.locator('../..').getByRole('button', { name: 'Edit' }).click()
+
+    // Change action to block
+    await page.getByRole('dialog').getByRole('combobox', { name: /action/i }).selectOption('block')
+    await page.getByRole('dialog').getByRole('button', { name: /save/i }).click()
+
+    // Badge in the rule card updates to "block"
+    const updatedCard = page.locator('span').filter({ hasText: /^EDIT_RULE_E2E$/ }).locator('../..')
+    await expect(updatedCard.getByText('block')).toBeVisible()
+
+    // Cleanup
+    const cleanupApi = await playwrightRequest.newContext()
+    await cleanupApi.delete(`${BACKEND}/v1/rules/${rule.id}`, { headers: adminHeaders() })
+    await cleanupApi.dispose()
+  })
 })
