@@ -2,9 +2,12 @@ import { readFileSync } from 'fs'
 import path from 'path'
 
 interface SeedState {
-  tenantId:   string
-  orgToken:   string
-  adminToken: string
+  tenantId:               string
+  orgToken:               string
+  adminToken:             string
+  assistantSessionId:     string
+  assistantMessageId:     string
+  assistantFlowMessageId: string
 }
 
 let _cache: SeedState | null = null

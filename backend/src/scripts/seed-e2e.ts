@@ -7,6 +7,7 @@ import {
   tenants, divisions, teams, members, memberTeams,
   subjects, rules, policies,
   destinationGroups, siteConfigs, events, scans,
+  chatSessions, chatMessages,
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
@@ -16,6 +17,8 @@ const SEED_STATE_PATH = path.resolve(__dirname, '../../../e2e/.seed-state.json')
 
 async function main() {
   console.log('[seed-e2e] Truncating test DB...')
+  await db.delete(chatMessages)
+  await db.delete(chatSessions)
   await db.delete(events)
   await db.delete(scans)
   await db.delete(memberTeams)
@@ -137,7 +140,59 @@ async function main() {
     })),
   ])
 
-  const seedState = { tenantId, orgToken, adminToken }
+  // Seed chat sessions + messages for assistant E2E tests
+  const [chatSession1] = await db.insert(chatSessions).values({
+    tenantId,
+    memberId: member!.id,
+    title:    'E2E Assistant API Test Session',
+  }).returning({ id: chatSessions.id })
+
+  const [chatMessage1] = await db.insert(chatMessages).values({
+    sessionId:   chatSession1!.id,
+    role:        'assistant',
+    content:     'I can add a keyword rule to block E2E_API_RULE.',
+    actionsJson: [
+      {
+        op:          'create_rule',
+        subjectId:   subject!.id,
+        kind:        'keyword',
+        keywords:    ['E2E_API_RULE'],
+        action:      'block',
+        reportLevel: 'medium',
+      },
+    ],
+  }).returning({ id: chatMessages.id })
+
+  const [chatSession2] = await db.insert(chatSessions).values({
+    tenantId,
+    memberId: member!.id,
+    title:    'E2E Assistant Full-Flow Test Session',
+  }).returning({ id: chatSessions.id })
+
+  const [chatMessage2] = await db.insert(chatMessages).values({
+    sessionId:   chatSession2!.id,
+    role:        'assistant',
+    content:     'I can add a keyword rule to block E2E_AI_FLOW.',
+    actionsJson: [
+      {
+        op:          'create_rule',
+        subjectId:   subject!.id,
+        kind:        'keyword',
+        keywords:    ['E2E_AI_FLOW'],
+        action:      'block',
+        reportLevel: 'medium',
+      },
+    ],
+  }).returning({ id: chatMessages.id })
+
+  const seedState = {
+    tenantId,
+    orgToken,
+    adminToken,
+    assistantSessionId:      chatSession1!.id,
+    assistantMessageId:      chatMessage1!.id,
+    assistantFlowMessageId:  chatMessage2!.id,
+  }
   writeFileSync(SEED_STATE_PATH, JSON.stringify(seedState, null, 2))
   console.log('[seed-e2e] Done. Seed state written to', SEED_STATE_PATH)
   process.exit(0)
