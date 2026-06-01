@@ -15,7 +15,7 @@ import { eq, inArray } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import {
   tenants, divisions, teams, users, members, memberTeams,
-  subjects, rules, siteConfigs, events, scans,
+  subjects, rules, siteConfigs, events, scans, invites,
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
@@ -87,6 +87,10 @@ async function main() {
       .from(members).where(eq(members.userId, adminUserRow.id)).limit(1)
     if (adminMemberRow) {
       tenantId = adminMemberRow.tenantId
+      // Rename to FinCorp in case this tenant was auto-provisioned with a different name/slug
+      await db.update(tenants)
+        .set({ name: 'FinCorp', slug: 'fincorp' })
+        .where(eq(tenants.id, tenantId))
     } else {
       // User exists but has no tenant yet — create one
       const orgSecret   = generateSecret()
@@ -146,6 +150,7 @@ async function main() {
   console.log(`✓ Tenant ${tenantId} (admin clerkId: ${adminClerkId ?? 'none'})`)
 
   // 3. Clear existing seed data for this tenant (preserve tenant row + policies + users)
+  await db.delete(invites).where(eq(invites.tenantId, tenantId))
   await db.delete(events).where(eq(events.tenantId, tenantId))
   await db.delete(scans).where(eq(scans.tenantId, tenantId))
 

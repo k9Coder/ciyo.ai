@@ -7,7 +7,7 @@ import {
   tenants, divisions, teams, users, members, memberTeams,
   subjects, rules, policies,
   destinationGroups, siteConfigs, events, scans,
-  chatSessions, chatMessages,
+  chatSessions, chatMessages, invites,
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
@@ -17,6 +17,7 @@ const SEED_STATE_PATH = path.resolve(__dirname, '../../../e2e/.seed-state.json')
 
 async function main() {
   console.log('[seed-e2e] Truncating test DB...')
+  await db.delete(invites)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
   await db.delete(events)
