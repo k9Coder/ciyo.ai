@@ -5,6 +5,7 @@ import type {
   AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
   AuditLogPage,
   ChatSession, ChatMessage, AssistantChatResponse, AssistantApplyResponse,
+  InvitePreview, InviteCreated,
 } from './types'
 
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.['VITE_API_BASE'])
@@ -36,7 +37,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -157,5 +158,13 @@ export const api = {
       request<{ sessions: ChatSession[] }>('GET', '/v1/assistant/sessions'),
     messages: (sessionId: string) =>
       request<{ messages: ChatMessage[] }>('GET', `/v1/assistant/sessions/${sessionId}/messages`),
+  },
+  invites: {
+    create: (opts: { email?: string; role?: Member['role'] }) =>
+      request<InviteCreated>('POST', '/v1/invites', opts),
+    preview: (token: string) =>
+      request<InvitePreview>('GET', `/v1/invites/${token}`),
+    accept: (token: string) =>
+      request<Member>('POST', `/v1/invites/${token}/accept`, {}),
   },
 }

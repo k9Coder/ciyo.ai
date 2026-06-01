@@ -179,3 +179,17 @@ export interface AssistantApplyResponse {
   applied: unknown[]
   errors:  string[]
 }
+
+export interface InvitePreview {
+  tenantName: string
+  role:       string
+  email:      string | null
+  expiresAt:  string
+  valid:      boolean
+}
+
+export interface InviteCreated {
+  token:     string
+  url:       string
+  expiresAt: string
+}
