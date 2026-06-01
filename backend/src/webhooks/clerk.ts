@@ -1,14 +1,15 @@
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { Webhook } from 'svix'
 import { db } from '../db/client.js'
 import { tenants, members } from '../db/schema.js'
+import { generateSecret, hashToken } from '../auth/tokens.js'
+import { createUser, updateUserProfile, nullifyClerkId, claimPendingMembers } from '../users/service.js'
 import type { FastifyInstance } from 'fastify'
 
 type ClerkWebhookEvent =
-  | { type: 'organization.created'; data: { id: string; name: string; slug: string; created_by: string } }
-  | { type: 'organizationMembership.created'; data: { organization: { id: string }; public_user_data: { user_id: string; first_name: string | null; last_name: string | null; image_url: string; identifier: string }; role: string } }
+  | { type: 'user.created'; data: { id: string; first_name: string | null; last_name: string | null; image_url: string; email_addresses: Array<{ email_address: string }> } }
   | { type: 'user.updated'; data: { id: string; first_name: string | null; last_name: string | null; image_url: string; email_addresses: Array<{ email_address: string }> } }
-  | { type: 'organizationMembership.deleted'; data: { organization: { id: string }; public_user_data: { user_id: string; identifier: string } } }
+  | { type: 'user.deleted'; data: { id: string; deleted?: boolean } }
 
 export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void> {
   fastify.post('/webhooks/clerk', async (req, reply) => {
@@ -28,56 +29,70 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
     }
 
     switch (event.type) {
-      case 'organization.created': {
-        const { id, name, slug } = event.data
-        await db.insert(tenants).values({
-          name,
-          slug:               slug.slice(0, 50),
-          clerkOrgId:         id,
-          orgTokenHash:       '',
-          adminTokenHash:     '',
-          paymentProvider:    'clerk',
-          externalSubId:      id,
-          subscriptionStatus: 'active',
-          plan:               'pro',
-        }).onConflictDoNothing()
-        break
-      }
+      case 'user.created': {
+        const { id, first_name, last_name, image_url, email_addresses } = event.data
+        const email = email_addresses[0]?.email_address ?? ''
+        if (!email) break
 
-      case 'organizationMembership.created': {
-        const { organization, public_user_data: u, role } = event.data
-        const [tenant] = await db.select({ id: tenants.id })
-          .from(tenants)
-          .where(eq(tenants.clerkOrgId, organization.id))
-        if (!tenant) break
-        await db.insert(members).values({
-          tenantId:  tenant.id,
-          email:     u.identifier,
-          clerkId:   u.user_id,
-          firstName: u.first_name ?? undefined,
-          lastName:  u.last_name ?? undefined,
-          avatarUrl: u.image_url,
-          role:      role === 'org:admin' ? 'super_admin' : 'member',
-        }).onConflictDoNothing()
+        const user = await createUser({
+          clerkId:   id,
+          email,
+          firstName: first_name ?? undefined,
+          lastName:  last_name  ?? undefined,
+          avatarUrl: image_url  || undefined,
+        })
+        if (!user) break
+
+        // Check for pre-enrolled members (userId = null) matching this email
+        const pending = await db.select({ id: members.id })
+          .from(members)
+          .where(and(eq(members.email, email), isNull(members.userId)))
+
+        if (pending.length > 0) {
+          await claimPendingMembers(email, user.id)
+        } else {
+          // No pre-enrollment — auto-provision a tenant for this user
+          const localPart = email.split('@')[0] ?? email
+          const base = localPart.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
+          const suffix = Math.random().toString(36).slice(2, 7)
+          const slug = `${base}-${suffix}`
+
+          const orgSecret   = generateSecret()
+          const adminSecret = generateSecret()
+
+          const [tenant] = await db.insert(tenants).values({
+            name:               `${first_name ?? localPart}'s Organization`,
+            slug,
+            orgTokenHash:       await hashToken(orgSecret),
+            adminTokenHash:     await hashToken(adminSecret),
+            paymentProvider:    'stripe',
+            externalSubId:      `sub_auto_${slug}`,
+            subscriptionStatus: 'active',
+            plan:               'pro',
+          }).returning({ id: tenants.id })
+
+          await db.insert(members).values({
+            tenantId: tenant!.id,
+            userId:   user.id,
+            email,
+            role:     'super_admin',
+          })
+        }
         break
       }
 
       case 'user.updated': {
         const { id, first_name, last_name, image_url } = event.data
-        await db.update(members)
-          .set({ firstName: first_name ?? undefined, lastName: last_name ?? undefined, avatarUrl: image_url })
-          .where(eq(members.clerkId, id))
+        await updateUserProfile(id, {
+          firstName: first_name ?? undefined,
+          lastName:  last_name  ?? undefined,
+          avatarUrl: image_url  || undefined,
+        })
         break
       }
 
-      case 'organizationMembership.deleted': {
-        const { organization, public_user_data: u } = event.data
-        const [tenant] = await db.select({ id: tenants.id })
-          .from(tenants)
-          .where(eq(tenants.clerkOrgId, organization.id))
-        if (!tenant) break
-        await db.delete(members)
-          .where(eq(members.clerkId, u.user_id))
+      case 'user.deleted': {
+        await nullifyClerkId(event.data.id)
         break
       }
     }

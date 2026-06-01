@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest'
 import supertest from 'supertest'
+import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { buildApp } from '../src/app.js'
 import { db } from '../src/db/client.js'
-import { tenants, members } from '../src/db/schema.js'
-import { eq } from 'drizzle-orm'
+import { tenants, members, users } from '../src/db/schema.js'
 import type { FastifyInstance } from 'fastify'
 
 vi.mock('svix', () => ({
@@ -14,15 +14,9 @@ vi.mock('svix', () => ({
 }))
 
 let app: FastifyInstance
-let tenantId: string
 
 beforeAll(async () => { app = buildApp(); await app.ready() })
-beforeEach(async () => {
-  await truncateAll()
-  const result = await buildTestTenant()
-  tenantId = result.tenantId
-  await db.update(tenants).set({ clerkOrgId: 'org_test123' }).where(eq(tenants.id, tenantId))
-})
+beforeEach(async () => { await truncateAll() })
 afterAll(async () => { await app.close() })
 
 function makeWebhookRequest(payload: object) {
@@ -35,83 +29,107 @@ function makeWebhookRequest(payload: object) {
     .send(JSON.stringify(payload))
 }
 
-describe('POST /webhooks/clerk', () => {
-  it('organization.created creates a new tenant', async () => {
-    await truncateAll()
+describe('POST /webhooks/clerk — user.created', () => {
+  it('auto-provisions tenant + super_admin member when no pre-enrolled member exists', async () => {
     const res = await makeWebhookRequest({
-      type: 'organization.created',
-      data: { id: 'org_new999', name: 'New Law Firm', slug: 'new-law-firm', created_by: 'user_admin1' },
-    })
-    expect(res.status).toBe(200)
-    const rows = await db.select().from(tenants).where(eq(tenants.clerkOrgId, 'org_new999'))
-    expect(rows).toHaveLength(1)
-    expect(rows[0]!.name).toBe('New Law Firm')
-  })
-
-  it('organizationMembership.created creates a member row', async () => {
-    const res = await makeWebhookRequest({
-      type: 'organizationMembership.created',
+      type: 'user.created',
       data: {
-        organization: { id: 'org_test123' },
-        public_user_data: {
-          user_id: 'user_alice1',
-          first_name: 'Alice',
-          last_name: 'Smith',
-          image_url: 'https://example.com/alice.jpg',
-          identifier: 'alice@acme.com',
-        },
-        role: 'org:member',
+        id: 'user_new123',
+        first_name: 'Alice',
+        last_name: 'Chen',
+        image_url: 'https://img.example.com/alice.jpg',
+        email_addresses: [{ email_address: 'alice@newco.com' }],
       },
     })
     expect(res.status).toBe(200)
-    const rows = await db.select().from(members).where(eq(members.clerkId, 'user_alice1'))
-    expect(rows).toHaveLength(1)
-    expect(rows[0]!.email).toBe('alice@acme.com')
-    expect(rows[0]!.firstName).toBe('Alice')
+
+    const userRows = await db.select().from(users).where(eq(users.clerkId, 'user_new123'))
+    expect(userRows).toHaveLength(1)
+    expect(userRows[0]!.email).toBe('alice@newco.com')
+    expect(userRows[0]!.firstName).toBe('Alice')
+
+    const memberRows = await db.select().from(members).where(eq(members.email, 'alice@newco.com'))
+    expect(memberRows).toHaveLength(1)
+    expect(memberRows[0]!.role).toBe('super_admin')
+    expect(memberRows[0]!.userId).toBe(userRows[0]!.id)
+
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
   })
 
-  it('user.updated syncs name and avatar to member row', async () => {
-    await db.insert(members).values({
-      tenantId, email: 'bob@acme.com', clerkId: 'user_bob1', firstName: 'Bobby', role: 'member',
+  it('connects a pre-enrolled member instead of auto-provisioning a new tenant', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.insert(members).values({ tenantId, email: 'bob@acme.com', role: 'member' })
+
+    const res = await makeWebhookRequest({
+      type: 'user.created',
+      data: {
+        id: 'user_bob99',
+        first_name: 'Bob',
+        last_name: 'Smith',
+        image_url: '',
+        email_addresses: [{ email_address: 'bob@acme.com' }],
+      },
     })
+    expect(res.status).toBe(200)
+
+    const userRows = await db.select().from(users).where(eq(users.clerkId, 'user_bob99'))
+    expect(userRows).toHaveLength(1)
+
+    const memberRows = await db.select().from(members).where(eq(members.email, 'bob@acme.com'))
+    expect(memberRows[0]!.userId).toBe(userRows[0]!.id)
+
+    // Must NOT have created an extra tenant
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
+  })
+})
+
+describe('POST /webhooks/clerk — user.updated', () => {
+  it('syncs name and avatar to the users table', async () => {
+    await db.insert(users).values({ clerkId: 'user_bob1', email: 'bob@acme.com' })
+
     const res = await makeWebhookRequest({
       type: 'user.updated',
       data: {
         id: 'user_bob1',
         first_name: 'Robert',
         last_name: 'Jones',
-        image_url: 'https://example.com/bob.jpg',
-        email_addresses: [{ email_address: 'bob@acme.com', id: 'idn_1' }],
+        image_url: 'https://example.com/bob-new.jpg',
+        email_addresses: [{ email_address: 'bob@acme.com' }],
       },
     })
     expect(res.status).toBe(200)
-    const rows = await db.select().from(members).where(eq(members.clerkId, 'user_bob1'))
+
+    const rows = await db.select().from(users).where(eq(users.clerkId, 'user_bob1'))
     expect(rows[0]!.firstName).toBe('Robert')
     expect(rows[0]!.lastName).toBe('Jones')
+    expect(rows[0]!.avatarUrl).toBe('https://example.com/bob-new.jpg')
   })
+})
 
-  it('organizationMembership.deleted removes the member row', async () => {
-    await db.insert(members).values({
-      tenantId, email: 'del@acme.com', clerkId: 'user_del1', role: 'member',
-    })
+describe('POST /webhooks/clerk — user.deleted', () => {
+  it('nulls clerkId on the users row', async () => {
+    await db.insert(users).values({ clerkId: 'user_del1', email: 'del@acme.com' })
+
     const res = await makeWebhookRequest({
-      type: 'organizationMembership.deleted',
-      data: {
-        organization: { id: 'org_test123' },
-        public_user_data: { user_id: 'user_del1', identifier: 'del@acme.com' },
-      },
+      type: 'user.deleted',
+      data: { id: 'user_del1', deleted: true },
     })
     expect(res.status).toBe(200)
-    const rows = await db.select().from(members).where(eq(members.clerkId, 'user_del1'))
-    expect(rows).toHaveLength(0)
-  })
 
-  it('returns 400 when Svix signature is invalid', async () => {
+    const rows = await db.select().from(users).where(eq(users.email, 'del@acme.com'))
+    expect(rows[0]!.clerkId).toBeNull()
+  })
+})
+
+describe('POST /webhooks/clerk — invalid signature', () => {
+  it('returns 400 when Svix signature check fails', async () => {
     const { Webhook } = await import('svix')
     ;(Webhook as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
       verify: () => { throw new Error('Invalid signature') },
     }))
-    const res = await makeWebhookRequest({ type: 'organization.created', data: {} })
+    const res = await makeWebhookRequest({ type: 'user.created', data: {} })
     expect(res.status).toBe(400)
   })
 })
