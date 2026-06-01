@@ -10,12 +10,24 @@ export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'en
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 
+// ── Users (global identity, not tenant-scoped) ────────────────────────────────
+export const users = pgTable('users', {
+  id:              uuid('id').primaryKey().defaultRandom(),
+  clerkId:         text('clerk_id').unique(),          // nullable — nulled on Clerk account deletion
+  email:           text('email').notNull().unique(),
+  firstName:       text('first_name'),
+  lastName:        text('last_name'),
+  avatarUrl:       text('avatar_url'),
+  isPlatformAdmin: boolean('is_platform_admin').notNull().default(false),
+  createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:       timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 // ── Tenants ──────────────────────────────────────────────────────────────────
 export const tenants = pgTable('tenants', {
   id:                 uuid('id').primaryKey().defaultRandom(),
   name:               text('name').notNull(),
   slug:               text('slug').notNull(),
-  clerkOrgId:         text('clerk_org_id'),
   orgTokenHash:       text('org_token_hash').notNull(),
   adminTokenHash:     text('admin_token_hash').notNull(),
   paymentProvider:    text('payment_provider').notNull(),
@@ -26,11 +38,10 @@ export const tenants = pgTable('tenants', {
   gracePeriodEndsAt:  timestamp('grace_period_ends_at', { withTimezone: true }),
   createdAt:          timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
-  slugUniq:     unique().on(t.slug),
-  clerkOrgUniq: unique().on(t.clerkOrgId),
+  slugUniq: unique().on(t.slug),
 }))
 
-// ── Policies (versioned snapshots — unchanged) ────────────────────────────────
+// ── Policies (versioned snapshots) ───────────────────────────────────────────
 export const policies = pgTable('policies', {
   id:          uuid('id').primaryKey().defaultRandom(),
   tenantId:    uuid('tenant_id').notNull().references(() => tenants.id),
@@ -66,15 +77,14 @@ export const teams = pgTable('teams', {
 }))
 
 // ── Members ──────────────────────────────────────────────────────────────────
+// userId is nullable for pre-enrolled members (admin added by email before sign-up).
+// Stamped by the user.created webhook once the user creates a Clerk account.
 export const members = pgTable('members', {
   id:              uuid('id').primaryKey().defaultRandom(),
   tenantId:        uuid('tenant_id').notNull().references(() => tenants.id),
+  userId:          uuid('user_id').references(() => users.id),
   email:           text('email').notNull(),
   displayName:     text('display_name'),
-  firstName:       text('first_name'),
-  lastName:        text('last_name'),
-  avatarUrl:       text('avatar_url'),
-  clerkId:         text('clerk_id').unique(),
   role:            memberRoleEnum('role').notNull().default('member'),
   adminDivisionId: uuid('admin_division_id').references(() => divisions.id),
   createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -90,7 +100,7 @@ export const memberTeams = pgTable('member_teams', {
   pk: primaryKey({ columns: [t.memberId, t.teamId] }),
 }))
 
-// ── Subjects (replaces matters) ───────────────────────────────────────────────
+// ── Subjects ──────────────────────────────────────────────────────────────────
 // Scope: teamId set = team-scoped; divisionId set + teamId null = division-scoped; both null = global
 export const subjects = pgTable('subjects', {
   id:          uuid('id').primaryKey().defaultRandom(),
@@ -164,7 +174,7 @@ export const events = pgTable('events', {
   ruleIdx:       index().on(t.ruleId),
 }))
 
-// ── Scans (prompt-level count) ────────────────────────────────────────────────
+// ── Scans ─────────────────────────────────────────────────────────────────────
 export const scans = pgTable('scans', {
   id:         uuid('id').primaryKey().defaultRandom(),
   tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
@@ -201,6 +211,9 @@ export const chatMessages = pgTable('chat_messages', {
 }))
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+export type User       = typeof users.$inferSelect
+export type NewUser    = typeof users.$inferInsert
+
 export type Tenant    = typeof tenants.$inferSelect
 export type NewTenant = typeof tenants.$inferInsert
 export type PolicyRow = typeof policies.$inferSelect
