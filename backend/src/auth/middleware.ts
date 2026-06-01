@@ -4,7 +4,7 @@ import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { parseToken, compareToken } from './tokens.js'
 import { getTenantBySlug } from '../tenants/service.js'
 import { db } from '../db/client.js'
-import { tenants, members } from '../db/schema.js'
+import { tenants, members, users } from '../db/schema.js'
 
 async function resolveOrgToken(
   request: FastifyRequest,
@@ -30,7 +30,7 @@ async function resolveOrgToken(
   if (requireAdmin && parsed.prefix !== 'ps_adm') {
     return reply.status(403).send({ error: 'Admin token required' })
   }
-  request.tenant = tenant
+  request.tenant      = tenant
   request.tokenPrefix = parsed.prefix as 'ps_live' | 'ps_adm'
 }
 
@@ -43,32 +43,44 @@ async function resolveClerkJwt(
   if (!secretKey) {
     return reply.status(500).send({ error: 'Clerk not configured' })
   }
+
   let clerkUserId: string
-  let clerkOrgId: string
   try {
     const payload = await clerkVerifyToken(token, { secretKey })
     clerkUserId = payload.sub
-    clerkOrgId  = (payload as Record<string, unknown>)['org_id'] as string
   } catch {
     return reply.status(401).send({ error: 'Invalid Clerk token' })
   }
 
-  if (!clerkOrgId) {
-    return reply.status(401).send({ error: 'Token missing org_id' })
+  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  if (!user) {
+    return reply.status(401).send({ error: 'User not found — sign up first' })
   }
 
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.clerkOrgId, clerkOrgId))
-  if (!tenant) {
-    return reply.status(401).send({ error: 'Unknown organisation' })
+  const memberRows = await db.select().from(members).where(eq(members.userId, user.id))
+  if (memberRows.length === 0) {
+    return reply.status(401).send({ error: 'Not enrolled in any organisation — contact your admin' })
   }
 
-  const [member] = await db.select().from(members)
-    .where(eq(members.clerkId, clerkUserId))
-  if (!member) {
-    return reply.status(401).send({ error: 'Member not enrolled — contact your admin' })
+  let member = memberRows[0]!
+  if (memberRows.length > 1) {
+    const slugHint = request.headers['x-tenant-slug'] as string | undefined
+    if (!slugHint) {
+      return reply.status(400).send({ error: 'Multiple organisations found — specify X-Tenant-Slug header' })
+    }
+    const [t] = await db.select().from(tenants).where(eq(tenants.slug, slugHint))
+    if (!t) return reply.status(401).send({ error: 'Unknown tenant' })
+    const found = memberRows.find(m => m.tenantId === t.id)
+    if (!found) return reply.status(401).send({ error: 'Not a member of that organisation' })
+    member = found
+    request.tenant = t
+  } else {
+    const [t] = await db.select().from(tenants).where(eq(tenants.id, member.tenantId))
+    if (!t) return reply.status(401).send({ error: 'Tenant not found' })
+    request.tenant = t
   }
 
-  request.tenant      = tenant
+  request.user        = user
   request.member      = member
   request.tokenPrefix = 'clerk'
 }
@@ -111,5 +123,36 @@ export async function requireAdminTokenOrClerkAdmin(req: FastifyRequest, reply: 
   if (reply.sent) return
   if (req.member?.role !== 'super_admin') {
     return reply.status(403).send({ error: 'Admin access required' })
+  }
+}
+
+export async function requirePlatformAdmin(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+
+  const secretKey = process.env.CLERK_SECRET_KEY
+  if (!secretKey) return reply.status(500).send({ error: 'Clerk not configured' })
+
+  let clerkUserId: string
+  try {
+    const payload = await clerkVerifyToken(auth.slice(7), { secretKey })
+    clerkUserId = payload.sub
+  } catch {
+    return reply.status(401).send({ error: 'Invalid Clerk token' })
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  if (!user) return reply.status(401).send({ error: 'User not found' })
+  if (!user.isPlatformAdmin) return reply.status(403).send({ error: 'Platform admin access required' })
+
+  req.platformUser = user
+
+  const tenantId = (req.params as Record<string, string | undefined>)['tenantId']
+  if (tenantId) {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, tenantId))
+    if (!tenant) return reply.status(404).send({ error: 'Tenant not found' })
+    req.tenant = tenant
   }
 }
