@@ -210,6 +210,23 @@ export const chatMessages = pgTable('chat_messages', {
   sessionIdx: index().on(t.sessionId),
 }))
 
+// ── Invites ───────────────────────────────────────────────────────────────────
+export const invites = pgTable('invites', {
+  id:           uuid('id').primaryKey().defaultRandom(),
+  tenantId:     uuid('tenant_id').notNull().references(() => tenants.id),
+  token:        text('token').notNull(),
+  email:        text('email'),                              // null = open link
+  role:         memberRoleEnum('role').notNull().default('member'),
+  createdById:  uuid('created_by_id').references(() => members.id),
+  expiresAt:    timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:       timestamp('used_at', { withTimezone: true }),
+  usedByUserId: uuid('used_by_user_id').references(() => users.id),
+  createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tokenUniq: unique().on(t.token),
+  tenantIdx: index().on(t.tenantId),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type User       = typeof users.$inferSelect
 export type NewUser    = typeof users.$inferInsert
@@ -249,3 +266,6 @@ export type ChatSession    = typeof chatSessions.$inferSelect
 export type NewChatSession = typeof chatSessions.$inferInsert
 export type ChatMessage    = typeof chatMessages.$inferSelect
 export type NewChatMessage = typeof chatMessages.$inferInsert
+
+export type Invite    = typeof invites.$inferSelect
+export type NewInvite = typeof invites.$inferInsert
