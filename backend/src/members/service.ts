@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { members, users, memberTeams, type Member, type NewMember, type User } from '../db/schema.js'
+import { getUserByEmail } from '../users/service.js'
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
@@ -31,7 +32,12 @@ export async function createMember(
   tenantId: string,
   data: Pick<NewMember, 'email' | 'displayName' | 'role'>
 ): Promise<Member> {
-  const [row] = await db.insert(members).values({ tenantId, ...data }).returning()
+  const existingUser = await getUserByEmail(data.email)
+  const [row] = await db.insert(members).values({
+    tenantId,
+    ...data,
+    userId: existingUser?.id ?? null,
+  }).returning()
   return row!
 }
 
@@ -68,11 +74,15 @@ export async function importMembers(
   rows: Array<{ email: string; displayName?: string }>
 ): Promise<Member[]> {
   if (rows.length === 0) return []
-  const toInsert = rows.map(r => ({
-    tenantId,
-    email:       r.email,
-    displayName: r.displayName ?? null,
-    role:        'member' as const,
+  const toInsert = await Promise.all(rows.map(async r => {
+    const existingUser = await getUserByEmail(r.email)
+    return {
+      tenantId,
+      email:       r.email,
+      displayName: r.displayName ?? null,
+      role:        'member' as const,
+      userId:      existingUser?.id ?? null,
+    }
   }))
   return db.insert(members).values(toInsert).onConflictDoNothing().returning()
 }
