@@ -43,6 +43,14 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
         })
         if (!user) break
 
+        // If the user already has any membership (e.g. from seed-fintech), skip
+        // both the pending-claim and auto-provision paths entirely.
+        const [alreadyEnrolled] = await db.select({ id: members.id })
+          .from(members)
+          .where(eq(members.userId, user.id))
+          .limit(1)
+        if (alreadyEnrolled) break
+
         // Check for pre-enrolled members (userId = null) matching this email
         const pending = await db.select({ id: members.id })
           .from(members)
