@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import {
-  tenants, divisions, teams, members, memberTeams,
+  tenants, divisions, teams, users, members, memberTeams,
   subjects, rules, policies,
   destinationGroups, siteConfigs, events, scans,
   chatSessions, chatMessages,
@@ -31,6 +31,7 @@ async function main() {
   await db.delete(divisions)
   await db.delete(policies)
   await db.delete(tenants)
+  await db.delete(users)
 
   console.log('[seed-e2e] Seeding test tenant...')
 
@@ -42,7 +43,6 @@ async function main() {
   const [tenant] = await db.insert(tenants).values({
     name:               'E2E Test Org',
     slug:               'e2etenant',
-    clerkOrgId:         process.env.E2E_CLERK_ORG_ID!,
     orgTokenHash:       await hashToken(orgSecret),
     adminTokenHash:     await hashToken(adminSecret),
     paymentProvider:    'stripe',
@@ -65,11 +65,17 @@ async function main() {
     slug: 'e2e-team',
   }).returning({ id: teams.id })
 
+  // Create the users row so JWT-based auth works during E2E tests
+  const [e2eUser] = await db.insert(users).values({
+    clerkId: process.env.E2E_CLERK_USER_ID!,
+    email:   process.env.E2E_CLERK_USER_EMAIL!,
+  }).returning({ id: users.id })
+
   const [member] = await db.insert(members).values({
     tenantId,
-    email:   process.env.E2E_CLERK_USER_EMAIL!,
-    clerkId: process.env.E2E_CLERK_USER_ID!,
-    role:    'super_admin',
+    userId: e2eUser!.id,
+    email:  process.env.E2E_CLERK_USER_EMAIL!,
+    role:   'super_admin',
   }).returning({ id: members.id })
 
   await db.insert(memberTeams).values({ memberId: member!.id, teamId: team!.id })
@@ -109,7 +115,6 @@ async function main() {
     publishedAt: new Date(),
   })
 
-  // Seed 15 audit events (8 block + 7 warn) so audit.spec.ts has data for filters/pagination
   const ruleRows = await db
     .select({ id: rules.id, action: rules.action })
     .from(rules)
@@ -140,7 +145,6 @@ async function main() {
     })),
   ])
 
-  // Seed chat sessions + messages for assistant E2E tests
   const [chatSession1] = await db.insert(chatSessions).values({
     tenantId,
     memberId: member!.id,
@@ -189,9 +193,9 @@ async function main() {
     tenantId,
     orgToken,
     adminToken,
-    assistantSessionId:      chatSession1!.id,
-    assistantMessageId:      chatMessage1!.id,
-    assistantFlowMessageId:  chatMessage2!.id,
+    assistantSessionId:     chatSession1!.id,
+    assistantMessageId:     chatMessage1!.id,
+    assistantFlowMessageId: chatMessage2!.id,
   }
   writeFileSync(SEED_STATE_PATH, JSON.stringify(seedState, null, 2))
   console.log('[seed-e2e] Done. Seed state written to', SEED_STATE_PATH)
