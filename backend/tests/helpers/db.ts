@@ -1,8 +1,11 @@
 import { db } from '../../src/db/client.js'
-import { tenants, policies, divisions, teams, members, memberTeams, subjects, rules,
-         destinationGroups, siteConfigs, events, scans,
-         chatMessages, chatSessions } from '../../src/db/schema.js'
+import {
+  tenants, policies, divisions, teams, users, members, memberTeams,
+  subjects, rules, destinationGroups, siteConfigs, events, scans,
+  chatMessages, chatSessions,
+} from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
+import type { User } from '../../src/db/schema.js'
 
 export async function truncateAll(): Promise<void> {
   await db.delete(events)
@@ -19,6 +22,7 @@ export async function truncateAll(): Promise<void> {
   await db.delete(divisions)
   await db.delete(policies)
   await db.delete(tenants)
+  await db.delete(users)
 }
 
 export interface TestTenantResult {
@@ -31,7 +35,7 @@ export async function buildTestTenant(slug = 'testfirm'): Promise<TestTenantResu
   const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
   const orgToken    = formatToken('ps_live', slug, orgSecret)
-  const adminToken  = formatToken('ps_adm', slug, adminSecret)
+  const adminToken  = formatToken('ps_adm',  slug, adminSecret)
 
   const [row] = await db.insert(tenants).values({
     name:               'Test Firm LLP',
@@ -46,12 +50,20 @@ export async function buildTestTenant(slug = 'testfirm'): Promise<TestTenantResu
   return { tenantId: row!.id, orgToken, adminToken }
 }
 
-export async function buildTestMember(tenantId: string, clerkId = 'clerk_test_user'): Promise<string> {
+export async function buildTestUser(clerkId = 'clerk_test_user', email?: string): Promise<User> {
+  const [row] = await db.insert(users).values({
+    clerkId,
+    email: email ?? `${clerkId}@test.com`,
+  }).returning()
+  return row!
+}
+
+export async function buildTestMember(tenantId: string, user: User): Promise<string> {
   const [row] = await db.insert(members).values({
     tenantId,
-    email:   `${clerkId}@test.com`,
-    clerkId,
-    role:    'member',
+    userId: user.id,
+    email:  user.email,
+    role:   'member',
   }).returning({ id: members.id })
   return row!.id
 }

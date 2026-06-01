@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import supertest from 'supertest'
-import { truncateAll, buildTestTenant, buildTestMember } from './helpers/db.js'
+import { truncateAll, buildTestTenant, buildTestMember, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { scans, events, subjects, rules } from '../src/db/schema.js'
 import { buildApp } from '../src/app.js'
@@ -20,7 +20,8 @@ beforeEach(async () => {
   const t = await buildTestTenant()
   tenantId = t.tenantId
   adminToken = t.adminToken
-  memberId = await buildTestMember(tenantId)
+  const testUser = await buildTestUser('clerk_analytics', 'analytics@test.com')
+  memberId = await buildTestMember(tenantId, testUser)
 
   const [subj] = await db.insert(subjects)
     .values({ tenantId, name: 'API Keys', active: true })

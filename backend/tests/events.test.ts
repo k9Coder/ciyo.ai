@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import supertest from 'supertest'
-import { truncateAll, buildTestTenant, buildTestMember } from './helpers/db.js'
+import { truncateAll, buildTestTenant, buildTestMember, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { subjects, rules, events } from '../src/db/schema.js'
 import { buildApp } from '../src/app.js'
@@ -18,7 +18,8 @@ beforeEach(async () => {
   await truncateAll()
   const t = await buildTestTenant()
   tenantId = t.tenantId
-  memberId = await buildTestMember(tenantId)
+  const testUser = await buildTestUser('clerk_events', 'events@test.com')
+  memberId = await buildTestMember(tenantId, testUser)
 
   const [subject] = await db.insert(subjects).values({
     tenantId, name: 'Test Subject', active: true,
