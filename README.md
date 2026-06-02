@@ -137,11 +137,13 @@ If you see 401 errors in the admin dashboard, your DB rows are likely out of syn
 npm run check-db
 ```
 
-This shows your `tenants` and `members` tables. You need:
-- A row in `tenants` with `clerk_org_id` matching your Clerk org
-- A row in `members` with `clerk_id` matching your Clerk user ID
+This shows your `tenants`, `users`, and `members` tables. You need:
+- A row in `users` with `clerk_id` matching your Clerk user ID
+- A row in `members` linking that user to a tenant
 
-If either is missing, re-run `npm run db:setup` — the seed script resolves this by looking up your Clerk org automatically.
+If either is missing, re-run `npm run db:setup` — the seed script creates both rows automatically when it detects your Clerk user.
+
+> **Note:** The system no longer uses Clerk organisations. Identity is managed via the `users` table (keyed on `clerk_id`) and tenant membership via the `members` table.
 
 ---
 
