@@ -22,6 +22,9 @@ async function bootstrap() {
 
   logger.info("ciyo active on", adapter.name);
 
+  const limitStatus = await sendMessage<{ scanLimitReached: boolean }>({ type: "GET_SCAN_LIMIT_STATUS" }).catch(() => null);
+  if (limitStatus?.scanLimitReached) showScanLimitBanner();
+
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
   function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
@@ -68,6 +71,58 @@ async function bootstrap() {
       return { proceed: true };
     }
   });
+}
+
+// ─── Scan limit banner ───────────────────────────────────────────────────────
+
+function showScanLimitBanner(): void {
+  if (document.getElementById("ciyo-scan-limit-banner")) return;
+
+  const banner = document.createElement("div");
+  banner.id = "ciyo-scan-limit-banner";
+  Object.assign(banner.style, {
+    position: "fixed",
+    bottom: "24px",
+    right: "24px",
+    zIndex: "2147483647",
+    background: "#1a0a0a",
+    color: "#f0f0f0",
+    borderRadius: "10px",
+    padding: "12px 14px",
+    fontSize: "13px",
+    lineHeight: "1.4",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.35)",
+    border: "1px solid rgba(239,68,68,0.4)",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    maxWidth: "320px",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+  });
+
+  const msg = document.createElement("span");
+  msg.style.flex = "1";
+  msg.innerHTML = "<strong style='color:#ef4444'>Scan limit reached.</strong> Protection is still active but scan usage has hit the monthly cap. Upgrade your plan in the admin console.";
+
+  const dismiss = document.createElement("button");
+  dismiss.textContent = "×";
+  Object.assign(dismiss.style, {
+    background: "none",
+    border: "none",
+    color: "rgba(255,255,255,0.45)",
+    cursor: "pointer",
+    fontSize: "18px",
+    lineHeight: "1",
+    padding: "0",
+    flexShrink: "0",
+  });
+  dismiss.addEventListener("click", () => banner.remove());
+
+  banner.appendChild(msg);
+  banner.appendChild(dismiss);
+  document.body.appendChild(banner);
+
+  setTimeout(() => banner.remove(), 12000);
 }
 
 // ─── Sign-in nudge ───────────────────────────────────────────────────────────

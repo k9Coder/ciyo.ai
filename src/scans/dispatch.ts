@@ -9,11 +9,26 @@ async function getAuthToken(): Promise<string | null> {
   return typeof local["orgToken"] === "string" ? local["orgToken"] : null;
 }
 
+export async function isScanLimitReached(): Promise<boolean> {
+  const stored = await chrome.storage.local.get("scanLimitReached") as Record<string, unknown>;
+  return stored["scanLimitReached"] === true;
+}
+
 export async function dispatchScan(): Promise<void> {
   const token = await getAuthToken();
   if (!token) return;
-  fetch(`${API_BASE}/v1/scans`, {
-    method:  "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  }).catch(() => {}); // fire-and-forget
+  try {
+    const res = await fetch(`${API_BASE}/v1/scans`, {
+      method:  "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 402) {
+      await chrome.storage.local.set({ scanLimitReached: true });
+    } else if (res.ok) {
+      // Clear the flag if a scan succeeds (limit may have reset)
+      await chrome.storage.local.remove("scanLimitReached");
+    }
+  } catch {
+    // Network error — don't clear the flag
+  }
 }

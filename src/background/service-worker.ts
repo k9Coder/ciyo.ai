@@ -1,7 +1,7 @@
 import { detectPrompt } from "@/detection/engine";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
-import { dispatchScan } from "@/scans/dispatch";
+import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@/detection/types";
 import { syncPolicy } from "@/policy/sync";
 import type { Message } from "@/shared/messages";
@@ -75,7 +75,8 @@ async function handleMessage(message: Message): Promise<unknown> {
       const policy = await loadPolicy();
       const result = await detectPrompt(text, policy, hostname, pasteDetected ?? false);
       void dispatchEvents(result, hostname);
-      void dispatchScan();
+      const limitReached = await isScanLimitReached();
+      if (!limitReached) void dispatchScan();
       return result;
     }
 
@@ -107,6 +108,11 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "GET_SUBSCRIPTION_STATUS": {
       const result = await chrome.storage.local.get("subscriptionExpired") as Record<string, unknown>;
       return { expired: result["subscriptionExpired"] === true };
+    }
+
+    case "GET_SCAN_LIMIT_STATUS": {
+      const result = await chrome.storage.local.get("scanLimitReached") as Record<string, unknown>;
+      return { scanLimitReached: result["scanLimitReached"] === true };
     }
 
     default:

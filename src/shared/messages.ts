@@ -13,7 +13,8 @@ export type Message =
   | { type: "SITE_STATUS"; payload: { hostname: string; enabled: boolean } }
   | { type: "SYNC_NOW"; payload?: never }
   | { type: "GET_ROLE"; payload?: never }
-  | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never };
+  | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never }
+  | { type: "GET_SCAN_LIMIT_STATUS"; payload?: never };
 
 /** Send a message to the background service worker from a content script or popup. */
 export function sendMessage<T>(message: Message): Promise<T> {
