@@ -31,18 +31,18 @@ function SubjectForm({
 }) {
   return (
     <>
-      <div>
-        <label style={labelStyle}>Name</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Name</span>
         <input style={inputStyle} value={value.name}
           onChange={e => onChange({ ...value, name: e.target.value })}
           placeholder="e.g. Litigation Docs" autoFocus />
-      </div>
-      <div>
-        <label style={labelStyle}>Description (optional)</label>
+      </label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Description (optional)</span>
         <textarea style={{ ...inputStyle, resize: 'vertical' }} rows={2}
           value={value.description}
           onChange={e => onChange({ ...value, description: e.target.value })} />
-      </div>
+      </label>
     </>
   )
 }
@@ -61,8 +61,8 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div>
-          <label style={labelStyle}>Kind</label>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Kind</span>
           <select style={selectStyle} value={value.kind}
             onChange={e => onChange({ ...value, kind: e.target.value as Rule['kind'] })}>
             <option value="keyword">keyword</option>
@@ -70,55 +70,55 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
             <option value="entropy">entropy</option>
             <option value="score">score</option>
           </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Action</label>
+        </label>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Action</span>
           <select style={selectStyle} value={value.action}
             onChange={e => onChange({ ...value, action: e.target.value as Rule['action'] })}>
             <option value="warn">warn</option>
             <option value="block">block</option>
           </select>
-        </div>
+        </label>
       </div>
 
       {value.kind === 'keyword' && (
-        <div>
-          <label style={labelStyle}>Keywords (comma-separated)</label>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Keywords (comma-separated)</span>
           <textarea style={{ ...monoInputStyle, resize: 'vertical' }} rows={3}
             value={value.keywords}
             onChange={e => onChange({ ...value, keywords: e.target.value })}
             placeholder="attorney-client, privileged, confidential" />
-        </div>
+        </label>
       )}
 
       {value.kind === 'pattern' && (
-        <div>
-          <label style={labelStyle}>Regex pattern</label>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Regex pattern</span>
           <input style={monoInputStyle} value={value.pattern}
             onChange={e => onChange({ ...value, pattern: e.target.value })}
             placeholder="sk-[A-Za-z0-9]{20,}" />
-        </div>
+        </label>
       )}
 
       {(value.kind === 'entropy' || value.kind === 'score') && (
-        <div>
-          <label style={labelStyle}>Config JSON (advanced — stored as JSONB)</label>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Config JSON (advanced — stored as JSONB)</span>
           <textarea style={{ ...monoInputStyle, resize: 'vertical' }} rows={4}
             value={value.keywords}
             onChange={e => onChange({ ...value, keywords: e.target.value })}
             placeholder='{"threshold": 4.5}' />
-        </div>
+        </label>
       )}
 
-      <div>
-        <label style={labelStyle}>Message (optional)</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Message (optional)</span>
         <input style={inputStyle} value={value.message}
           onChange={e => onChange({ ...value, message: e.target.value })}
           placeholder="Sensitive content detected" />
-      </div>
+      </label>
 
-      <div>
-        <label style={labelStyle}>Report to analytics</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Report to analytics</span>
         <select style={selectStyle} value={value.reportLevel}
           onChange={e => onChange({ ...value, reportLevel: e.target.value as Rule['reportLevel'] })}>
           <option value="none">None — don&apos;t report</option>
@@ -126,14 +126,14 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
           <option value="medium">Medium — + who triggered it</option>
           <option value="rich">Rich — + matched term/pattern</option>
         </select>
-      </div>
+      </label>
 
-      <div>
-        <label style={labelStyle}>Destination Group IDs (comma-separated UUIDs, optional)</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Destination Group IDs (comma-separated UUIDs, optional)</span>
         <input style={monoInputStyle} value={value.destinationGroupIds}
           onChange={e => onChange({ ...value, destinationGroupIds: e.target.value })}
           placeholder="uuid1, uuid2" />
-      </div>
+      </label>
     </>
   )
 }

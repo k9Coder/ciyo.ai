@@ -3,6 +3,8 @@ import { test, expect, type Page } from '@playwright/test'
 const MOCK_SESSION_ID = '11111111-1111-1111-1111-111111111111'
 const MOCK_MESSAGE_ID = '22222222-2222-2222-2222-222222222222'
 
+const CHAT_PLACEHOLDER = /ask me to create/i
+
 // Intercepts all /v1/assistant/* API calls so the test runs without a real LLM.
 async function mockAssistantApi(page: Page) {
   await page.route('**/v1/assistant/sessions', route => {
@@ -49,7 +51,7 @@ async function mockAssistantApi(page: Page) {
 }
 
 test.describe('Assistant page', () => {
-  test('loads with empty state — split layout visible', async ({ page }) => {
+  test('loads with empty state — chat pane visible', async ({ page }) => {
     await page.route('**/v1/assistant/sessions', route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ sessions: [] }),
@@ -57,9 +59,8 @@ test.describe('Assistant page', () => {
 
     await page.goto('/assistant')
 
-    await expect(page.getByText('Assistant')).toBeVisible()
-    await expect(page.getByText('Proposed Changes')).toBeVisible()
-    await expect(page.getByPlaceholder(/describe what you want/i)).toBeVisible()
+    await expect(page.getByText('How can I help you today?')).toBeVisible()
+    await expect(page.getByPlaceholder(CHAT_PLACEHOLDER)).toBeVisible()
     await expect(page.getByRole('button', { name: /send/i })).toBeVisible()
   })
 
@@ -73,7 +74,7 @@ test.describe('Assistant page', () => {
 
     const sendBtn = page.getByRole('button', { name: /send/i })
     await expect(sendBtn).toBeDisabled()
-    await page.getByPlaceholder(/describe what you want/i).fill('hello')
+    await page.getByPlaceholder(CHAT_PLACEHOLDER).fill('hello')
     await expect(sendBtn).not.toBeDisabled()
   })
 
@@ -81,7 +82,7 @@ test.describe('Assistant page', () => {
     await mockAssistantApi(page)
     await page.goto('/assistant')
 
-    await page.getByPlaceholder(/describe what you want/i).fill('Block prompts with API keys')
+    await page.getByPlaceholder(CHAT_PLACEHOLDER).fill('Block prompts with API keys')
     await page.getByRole('button', { name: /send/i }).click()
 
     await expect(page.getByText(/I can create a rule to block/i)).toBeVisible()
@@ -91,11 +92,11 @@ test.describe('Assistant page', () => {
     await mockAssistantApi(page)
     await page.goto('/assistant')
 
-    await page.getByPlaceholder(/describe what you want/i).fill('Block prompts with API keys')
+    await page.getByPlaceholder(CHAT_PLACEHOLDER).fill('Block prompts with API keys')
     await page.getByRole('button', { name: /send/i }).click()
 
     await expect(page.getByText(/CREATE RULE/i)).toBeVisible()
-    await expect(page.getByText('API_KEY')).toBeVisible()
+    await expect(page.getByText('["API_KEY"]')).toBeVisible()
     await expect(page.getByRole('button', { name: /apply changes/i })).toBeVisible()
     await expect(page.getByRole('button', { name: /discard/i })).toBeVisible()
   })
@@ -104,14 +105,15 @@ test.describe('Assistant page', () => {
     await mockAssistantApi(page)
     await page.goto('/assistant')
 
-    await page.getByPlaceholder(/describe what you want/i).fill('Block prompts with API keys')
+    await page.getByPlaceholder(CHAT_PLACEHOLDER).fill('Block prompts with API keys')
     await page.getByRole('button', { name: /send/i }).click()
 
     await expect(page.getByRole('button', { name: /apply changes/i })).toBeVisible()
     await page.getByRole('button', { name: /discard/i }).click()
 
     await expect(page.getByRole('button', { name: /apply changes/i })).not.toBeVisible()
-    await expect(page.getByText('Proposed changes will appear here')).toBeVisible()
+    await expect(page.getByRole('button', { name: /discard/i })).not.toBeVisible()
+    await expect(page.getByPlaceholder(CHAT_PLACEHOLDER)).toBeVisible()
   })
 
   test('clicking Apply calls the apply endpoint', async ({ page }) => {
@@ -128,7 +130,7 @@ test.describe('Assistant page', () => {
 
     await page.goto('/assistant')
 
-    await page.getByPlaceholder(/describe what you want/i).fill('Block prompts with API keys')
+    await page.getByPlaceholder(CHAT_PLACEHOLDER).fill('Block prompts with API keys')
     await page.getByRole('button', { name: /send/i }).click()
 
     await expect(page.getByRole('button', { name: /apply changes/i })).toBeVisible()
@@ -142,6 +144,6 @@ test.describe('Assistant page', () => {
     await page.goto('/assistant')
 
     await expect(page.getByTitle('Test session')).toBeVisible()
-    await expect(page.getByRole('button', { name: /\+ new chat/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /\+ new/i })).toBeVisible()
   })
 })

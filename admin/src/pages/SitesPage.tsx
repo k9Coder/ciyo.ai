@@ -21,24 +21,24 @@ const blank = { domain: '', inputSelector: '', sendButtonSelector: '' }
 function SiteForm({ value, onChange }: { value: typeof blank; onChange: (v: typeof blank) => void }) {
   return (
     <>
-      <div>
-        <label style={labelStyle}>Domain</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Domain</span>
         <input style={inputStyle} value={value.domain}
           onChange={e => onChange({ ...value, domain: e.target.value })}
           placeholder="chat.openai.com" autoFocus />
-      </div>
-      <div>
-        <label style={labelStyle}>Input selector (CSS)</label>
+      </label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Input selector (CSS)</span>
         <input style={inputStyle} value={value.inputSelector}
           onChange={e => onChange({ ...value, inputSelector: e.target.value })}
           placeholder="#prompt-textarea" />
-      </div>
-      <div>
-        <label style={labelStyle}>Send button selector (CSS)</label>
+      </label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Send button selector (CSS)</span>
         <input style={inputStyle} value={value.sendButtonSelector}
           onChange={e => onChange({ ...value, sendButtonSelector: e.target.value })}
           placeholder="button[data-testid='send-button']" />
-      </div>
+      </label>
     </>
   )
 }

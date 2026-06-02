@@ -22,7 +22,7 @@ export function EntityModal({ open, title, onClose, onSave, saving, children }: 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
-      <div style={{
+      <div role="dialog" aria-modal="true" style={{
         position: 'relative', background: 'var(--bg-surface)', borderRadius: 12,
         boxShadow: '0 20px 60px rgba(0,0,0,0.4)', width: '100%', maxWidth: 448,
         margin: '0 16px', padding: 24, border: '1px solid var(--border)',

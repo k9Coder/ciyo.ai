@@ -18,10 +18,10 @@ const labelStyle: React.CSSProperties = {
 
 function NameForm({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div>
-      <label style={labelStyle}>{label}</label>
+    <label style={{ display: 'block' }}>
+      <span style={labelStyle}>{label}</span>
       <input style={inputStyle} value={value} onChange={e => onChange(e.target.value)} autoFocus />
-    </div>
+    </label>
   )
 }
 

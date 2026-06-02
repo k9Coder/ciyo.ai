@@ -14,7 +14,7 @@ test.describe('Org — divisions and teams', () => {
   test('can create and delete a division', async ({ page }) => {
     await page.goto('/org')
 
-    await page.getByRole('button', { name: /new division|add division|\+/i }).first().click()
+    await page.getByRole('button', { name: /new division|add division/i }).click()
     await page.getByLabel('Name').fill('E2E Temp Division')
     await page.getByRole('button', { name: /create|save/i }).click()
 
@@ -35,7 +35,7 @@ test.describe('Org — divisions and teams', () => {
     // Select the seeded division to reveal its teams column
     await page.getByText('E2E Division').click()
 
-    await page.getByRole('button', { name: /new team|add team|\+/i }).first().click()
+    await page.getByRole('button', { name: /new team|add team/i }).click()
     await page.getByLabel('Name').fill('E2E Temp Team')
     await page.getByRole('button', { name: /create|save/i }).click()
 

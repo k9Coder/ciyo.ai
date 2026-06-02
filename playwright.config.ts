@@ -15,6 +15,7 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 10_000,
   },
+  workers: 1,
   timeout: 30_000,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',

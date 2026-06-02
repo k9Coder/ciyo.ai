@@ -17,7 +17,7 @@ test.describe('Subjects', () => {
   test('can create a subject', async ({ page }) => {
     await page.goto('/subjects')
 
-    await page.getByRole('button', { name: /new subject|add subject|\+/i }).click()
+    await page.getByRole('button', { name: /new subject|add subject/i }).click()
 
     await page.getByLabel(/name/i).fill('E2E Test Subject')
     await page.getByRole('button', { name: /create|save/i }).click()
@@ -35,7 +35,7 @@ test.describe('Subjects', () => {
 
   test('empty subject name is blocked by form validation', async ({ page }) => {
     await page.goto('/subjects')
-    await page.getByRole('button', { name: /new subject|add subject|\+/i }).click()
+    await page.getByRole('button', { name: /new subject|add subject/i }).click()
 
     // Leave name empty, attempt to save
     await page.getByRole('button', { name: /create|save/i }).click()
@@ -50,7 +50,7 @@ test.describe('Subjects', () => {
     // Select the seeded subject
     await page.getByText('ACME Confidential').click()
 
-    await page.getByRole('button', { name: /add rule|\+/i }).click()
+    await page.getByRole('button', { name: /add rule/i }).click()
 
     await page.getByLabel(/keywords/i).fill('TEST_KEYWORD_E2E')
     await page.getByRole('combobox', { name: /action/i }).selectOption('block')

@@ -2,11 +2,12 @@ import { db } from '../db/client.js'
 import {
   events, scans, memberTeams, rules, subjects,
   destinationGroups, siteConfigs, members, teams, divisions, policies, tenants,
-  chatMessages, chatSessions,
+  chatMessages, chatSessions, invites,
 } from '../db/schema.js'
 
 async function main() {
   console.log('[teardown-e2e] Truncating test DB...')
+  await db.delete(invites)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
   await db.delete(events)

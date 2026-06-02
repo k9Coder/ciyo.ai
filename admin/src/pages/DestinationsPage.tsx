@@ -21,13 +21,13 @@ const blank = { name: '', domains: '' }
 function GroupForm({ value, onChange }: { value: typeof blank; onChange: (v: typeof blank) => void }) {
   return (
     <>
-      <div>
-        <label style={labelStyle}>Name</label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Name</span>
         <input style={inputStyle} value={value.name}
           onChange={e => onChange({ ...value, name: e.target.value })} autoFocus />
-      </div>
-      <div>
-        <label style={labelStyle}>Domains (one per line)</label>
+      </label>
+      <label style={{ display: 'block' }}>
+        <span style={labelStyle}>Domains (one per line)</span>
         <textarea
           style={{ ...inputStyle, fontFamily: 'monospace', resize: 'vertical' }}
           rows={4}
@@ -35,7 +35,7 @@ function GroupForm({ value, onChange }: { value: typeof blank; onChange: (v: typ
           onChange={e => onChange({ ...value, domains: e.target.value })}
           placeholder={"chatgpt.com\nclaude.ai\ngemini.google.com"}
         />
-      </div>
+      </label>
     </>
   )
 }

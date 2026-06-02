@@ -110,6 +110,7 @@ export function MillerColumns({ columns }: Props) {
             <div style={{ borderTop: '1px solid var(--border)', padding: 8, flexShrink: 0 }}>
               <button
                 onClick={col.onAdd}
+                aria-label={`Add ${col.title}`}
                 style={{
                   width: '100%', textAlign: 'left', fontSize: 12, color: 'var(--brand-primary)',
                   padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4,
