@@ -19,6 +19,7 @@ import { tenantsRouter } from './tenants/router.js'
 import { assistantRouter } from './assistant/router.js'
 import { platformRouter } from './platform/router.js'
 import { invitesRouter } from './invites/router.js'
+import { billingRouter } from './billing/router.js'
 import { handleStripeEvent } from './billing/stripe.js'
 import { handlePayPalEvent } from './billing/paypal.js'
 
@@ -61,6 +62,7 @@ export function buildApp() {
   void app.register(tenantsRouter,   { prefix: '/v1' })
   void app.register(assistantRouter, { prefix: '/v1' })
   void app.register(invitesRouter,   { prefix: '/v1' })
+  void app.register(billingRouter,   { prefix: '/v1' })
   void app.register(platformRouter,  { prefix: '/platform/v1' })
   void app.register(clerkWebhookRouter)
 
