@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly PROD: boolean;
   readonly VITE_API_BASE: string | undefined;
   readonly VITE_CLERK_PUBLISHABLE_KEY: string;
+  readonly VITE_SENTRY_DSN_EXTENSION: string | undefined;
 }
 
 interface ImportMeta {

@@ -17,6 +17,7 @@ import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
 import { PlanGate } from './components/billing/PlanGate'
+import { Sentry } from './lib/sentry'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
@@ -24,6 +25,7 @@ const queryClient = new QueryClient({
 
 export function App() {
   return (
+    <Sentry.ErrorBoundary fallback={<p style={{ padding: 40, color: 'var(--text-muted)' }}>Something went wrong. The error has been reported.</p>}>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
@@ -53,5 +55,6 @@ export function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   )
 }

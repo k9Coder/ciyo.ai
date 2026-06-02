@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/browser";
 import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
@@ -13,6 +14,7 @@ import { logger } from "@/shared/logger";
     await bootstrap();
   } catch (err) {
     logger.error("ciyo bootstrap failed:", err);
+    Sentry.captureException(err, { tags: { context: 'bootstrap' } });
   }
 })();
 
@@ -68,6 +70,7 @@ async function bootstrap() {
       }
     } catch (err) {
       logger.error("Send-intent handler error:", err);
+      Sentry.captureException(err, { tags: { context: 'send-intent', hostname } });
       return { proceed: true };
     }
   });

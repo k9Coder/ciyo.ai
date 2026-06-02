@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/browser";
 import { detectPrompt } from "@/detection/engine";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
@@ -7,6 +8,15 @@ import { syncPolicy } from "@/policy/sync";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
+
+if (import.meta.env['VITE_SENTRY_DSN_EXTENSION']) {
+  Sentry.init({
+    dsn: import.meta.env['VITE_SENTRY_DSN_EXTENSION'] as string,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 0,
+    integrations: [],
+  })
+}
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -30,6 +40,7 @@ chrome.runtime.onMessage.addListener(
       .then(sendResponse)
       .catch((err) => {
         logger.error("Message handler error:", err);
+        Sentry.captureException(err, { extra: { messageType: (message as Message)?.type } });
         sendResponse(null);
       });
     return true; // keep channel open for async response
