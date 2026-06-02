@@ -22,10 +22,13 @@ import { invitesRouter } from './invites/router.js'
 import { billingRouter } from './billing/router.js'
 import { handleStripeEvent } from './billing/stripe.js'
 import { handlePayPalEvent } from './billing/paypal.js'
+import { requestLoggingPlugin } from './logger/request-logging.js'
+import { logger } from './logger/index.js'
 
 export function buildApp() {
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' })
   void app.register(cors)
+  void app.register(requestLoggingPlugin)
 
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
     if (req.url?.startsWith('/webhooks/stripe') || req.url?.startsWith('/webhooks/clerk')) {
@@ -67,7 +70,7 @@ export function buildApp() {
   void app.register(clerkWebhookRouter)
 
   app.setErrorHandler((err, _req, reply) => {
-    app.log.error(err)
+    logger.error('Unhandled error', { message: err.message, stack: err.stack })
     return reply.status((err as { statusCode?: number }).statusCode ?? 500).send({ error: err.message })
   })
 
