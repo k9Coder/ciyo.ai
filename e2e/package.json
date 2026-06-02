@@ -4,10 +4,11 @@
   "description": "Cross-service system contract tests",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test --config ../playwright.config.ts --project=cross-service"
+    "test:e2e": "playwright test --config playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",
+    "@types/node": "^20.0.0",
     "dotenv": "^16.4.5"
   }
 }
