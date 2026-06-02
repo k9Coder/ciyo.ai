@@ -1,7 +1,7 @@
 # Design: Isolate Monorepo Packages (Option A)
 
 **Date:** 2026-06-02  
-**Status:** Approved
+**Status:** Done
 
 ## Goal
 
