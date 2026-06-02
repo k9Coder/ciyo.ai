@@ -1,0 +1,9 @@
+node_modules
+dist
+.env*
+e2e
+*.md
+.vscode
+.github
+playwright.config.ts
+vitest.config.ts
