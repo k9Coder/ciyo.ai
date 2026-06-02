@@ -16,6 +16,7 @@ import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
+import { PlanGate } from './components/billing/PlanGate'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
@@ -47,7 +48,7 @@ export function App() {
             <Route path="/settings"     element={<SettingsPage />} />
             <Route path="/members"      element={<MembersPage />} />
             <Route path="/audit"        element={<AuditLogPage />} />
-            <Route path="/assistant"    element={<AssistantPage />} />
+            <Route path="/assistant"    element={<PlanGate feature="assistantEnabled"><AssistantPage /></PlanGate>} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -3,6 +3,7 @@ import { useOrganization, useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
 import { getTheme, setTheme } from '../../utils/theme'
 import { useState } from 'react'
+import { UpgradeBanner, PlanBadge } from '../billing/UpgradeBanner'
 
 const NAV = [
   { to: '/dashboard',  label: 'Dashboard',  icon: '▦',  ai: false, dividerAbove: false },
@@ -93,6 +94,8 @@ export function AppLayout() {
           </div>
         )}
 
+        <UpgradeBanner />
+
         {/* Nav */}
         <nav style={{ padding: 8, flex: 1 }}>
           {NAV.map(({ to, label, icon, ai, dividerAbove }) => (
@@ -122,16 +125,8 @@ export function AppLayout() {
                 }
                 {label}
                 {ai && (
-                  <span style={{
-                    marginLeft: 'auto',
-                    fontSize: 8, fontWeight: 700, letterSpacing: '0.5px',
-                    color: 'var(--brand-primary)',
-                    background: 'color-mix(in srgb, var(--brand-primary) 12%, transparent)',
-                    border: '1px solid color-mix(in srgb, var(--brand-primary) 25%, transparent)',
-                    borderRadius: 4, padding: '1px 5px',
-                    lineHeight: 1.6,
-                  }}>
-                    NEW
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
+                    <PlanBadge />
                   </span>
                 )}
               </NavLink>
@@ -144,7 +139,7 @@ export function AppLayout() {
           padding: '12px 16px', borderTop: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <UserButton afterSignOutUrl="/login" />
+          <UserButton />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ color: 'var(--text-primary)', fontSize: 11,
                           fontWeight: 600, overflow: 'hidden',
