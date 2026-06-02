@@ -1,6 +1,9 @@
 import { initSentry } from './lib/sentry'
 initSentry()
 
+import LogRocket from 'logrocket'
+LogRocket.init('ciyoai/pretzel-console')
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ClerkProvider } from '@clerk/react'
