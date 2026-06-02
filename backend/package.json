@@ -9,6 +9,8 @@
     "start": "node --env-file=.env dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file=.env src/db/migrate.ts",
+    "db:setup": "node scripts/db-setup.mjs",
+    "check-db": "node scripts/check-db.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:e2e": "tsx --env-file=.env src/scripts/seed-e2e.ts",
