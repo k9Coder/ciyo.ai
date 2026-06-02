@@ -20,7 +20,7 @@ function loadDotEnv(file: string): Record<string, string> {
 
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
     environment: 'node',
     globals: true,
     testTimeout: 30000,
