@@ -5,7 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:staging": "vite --mode staging",
+    "dev:prod": "vite --mode prod",
     "build": "vite build",
+    "build:staging": "vite build --mode staging",
+    "build:prod": "vite build --mode prod",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
