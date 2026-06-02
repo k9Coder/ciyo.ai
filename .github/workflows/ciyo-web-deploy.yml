@@ -1,0 +1,48 @@
+name: Deploy ciyo-web
+
+on:
+  push:
+    branches: [master, staging]
+    paths:
+      - 'ciyo-web/**'
+      - '.github/workflows/ciyo-web-deploy.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: ciyo-web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ciyo-web
+
+      - name: Lint
+        run: pnpm lint
+        working-directory: ciyo-web
+
+      - name: Build (type-check)
+        run: pnpm build
+        working-directory: ciyo-web
+        env:
+          NEXT_PUBLIC_API_BASE: http://localhost:3000
+          NEXT_PUBLIC_ENV: staging
+
+      - name: Notify Discord
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          title: "ciyo-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
+          description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"

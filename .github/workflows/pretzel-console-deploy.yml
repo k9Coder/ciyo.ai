@@ -1,0 +1,54 @@
+name: Deploy pretzel-console
+
+on:
+  push:
+    branches: [master, staging]
+    paths:
+      - 'pretzel-console/**'
+      - '.github/workflows/pretzel-console-deploy.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pretzel-console/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: pretzel-console
+
+      - name: Run tests
+        run: pnpm test
+        working-directory: pretzel-console
+
+      - name: Typecheck
+        run: pnpm typecheck
+        working-directory: pretzel-console
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          DEPLOY_HOOK: ${{ github.ref_name == 'master' && secrets.RENDER_CONSOLE_PROD_DEPLOY_HOOK || secrets.RENDER_CONSOLE_STAGING_DEPLOY_HOOK }}
+        run: curl -f -X POST "$DEPLOY_HOOK"
+
+      - name: Notify Discord
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          title: "pretzel-console → ${{ github.ref_name == 'master' && 'production' || 'staging' }}"
+          description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"
