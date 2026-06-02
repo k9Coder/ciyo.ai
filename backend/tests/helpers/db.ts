@@ -45,6 +45,8 @@ export async function buildTestTenant(slug = 'testfirm'): Promise<TestTenantResu
     paymentProvider:    'stripe',
     externalSubId:      `sub_test_${slug}`,
     subscriptionStatus: 'active',
+    plan:               'business',
+    seatCount:          10,
   }).returning({ id: tenants.id })
 
   return { tenantId: row!.id, orgToken, adminToken }

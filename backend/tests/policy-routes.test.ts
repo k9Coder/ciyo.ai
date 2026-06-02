@@ -60,7 +60,7 @@ describe('GET /v1/policy', () => {
     expect(res.body.version).toBe(1)
     expect(res.body.policy).toBeDefined()
     expect(res.body.tenantName).toBe('Test Firm LLP')
-    expect(res.body.plan).toBe('pro')
+    expect(res.body.plan).toBe('business')
   })
 
   it('returns 402 for cancelled subscription', async () => {
