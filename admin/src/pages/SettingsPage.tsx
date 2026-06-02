@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useTenant, useTenantMutations } from '../hooks/useTenant'
+import { useBilling, useBillingMutations } from '../hooks/useBilling'
 import { InlineLoader } from '../components/ui/Spinner'
 
 export function SettingsPage() {
   const { data: tenant, isLoading, isError } = useTenant()
   const { updateName, rotateOrgToken, rotateAdminToken } = useTenantMutations()
+  const { data: billing } = useBilling()
+  const { openPortal } = useBillingMutations()
 
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue]     = useState('')
@@ -137,6 +140,111 @@ export function SettingsPage() {
           </>
         )}
       </div>
+
+      {/* Billing */}
+      {billing && (
+        <div style={sectionStyle}>
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Billing</h2>
+
+          {/* Plan + status */}
+          <div style={rowStyle}>
+            <span style={{ color: 'var(--text-secondary)' }}>Plan</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600, textTransform: 'capitalize' }}>
+              {billing.plan}
+            </span>
+          </div>
+          <div style={rowStyle}>
+            <span style={{ color: 'var(--text-secondary)' }}>Status</span>
+            <span style={{
+              fontWeight: 600, textTransform: 'capitalize',
+              color: billing.subscriptionStatus === 'active'   ? 'var(--status-safe)'   :
+                     billing.subscriptionStatus === 'past_due' ? 'var(--status-warn)'   : 'var(--status-danger)',
+            }}>
+              {billing.subscriptionStatus.replace('_', ' ')}
+            </span>
+          </div>
+
+          {/* Trial countdown */}
+          {billing.trialEndsAt && new Date(billing.trialEndsAt) > new Date() && (
+            <div style={{
+              background: 'color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface-raised))',
+              border: '1px solid color-mix(in srgb, var(--brand-primary) 20%, transparent)',
+              borderRadius: 8, padding: '8px 12px', fontSize: 12,
+            }}>
+              <span style={{ color: 'var(--brand-primary)', fontWeight: 600 }}>Trial active</span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>
+                Ends {new Date(billing.trialEndsAt).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+
+          {/* Seat usage */}
+          <div>
+            <div style={{ ...rowStyle, marginBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Seats used</span>
+              <span style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 500 }}>
+                {billing.seatCount} / {billing.seatLimit === -1 ? '∞' : billing.seatLimit}
+              </span>
+            </div>
+          </div>
+
+          {/* Scan usage */}
+          <div>
+            <div style={{ ...rowStyle, marginBottom: 6 }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Scans this month</span>
+              <span style={{
+                color: billing.scanBlocked ? 'var(--status-danger)' : 'var(--text-primary)',
+                fontSize: 12, fontWeight: 500,
+              }}>
+                {billing.monthlyScans.toLocaleString()} / {billing.scanLimit === -1 ? '∞' : billing.scanLimit.toLocaleString()}
+              </span>
+            </div>
+            {billing.scanLimit > 0 && (
+              <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: 3, transition: 'width 0.3s',
+                  width: `${Math.min(100, Math.round((billing.monthlyScans / billing.scanLimit) * 100))}%`,
+                  background: billing.scanBlocked ? 'var(--status-danger)' :
+                               billing.monthlyScans / billing.scanLimit >= 0.8 ? '#f59e0b' : 'var(--status-safe)',
+                }} />
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          {billing.paymentProvider === 'stripe' && (
+            <button
+              onClick={() => openPortal.mutate(window.location.href)}
+              disabled={openPortal.isPending}
+              style={{
+                padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                color: 'var(--brand-primary)',
+                background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
+                borderRadius: 7, alignSelf: 'flex-start',
+              }}
+            >
+              {openPortal.isPending ? 'Redirecting…' : 'Manage subscription →'}
+            </button>
+          )}
+          {!billing.paymentProvider && billing.plan === 'free' && (
+            <a
+              href="https://ciyo.ai/pricing"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: '8px 16px', fontSize: 13, fontWeight: 600,
+                color: 'var(--brand-primary)',
+                background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
+                borderRadius: 7, alignSelf: 'flex-start', textDecoration: 'none',
+              }}
+            >
+              Upgrade plan →
+            </a>
+          )}
+        </div>
+      )}
 
       {/* API Tokens */}
       <div style={sectionStyle}>
