@@ -1,7 +1,8 @@
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { members, users, memberTeams, type Member, type NewMember, type User } from '../db/schema.js'
+import { members, users, memberTeams, tenants, type Member, type NewMember, type User } from '../db/schema.js'
 import { getUserByEmail } from '../users/service.js'
+import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
@@ -32,6 +33,27 @@ export async function createMember(
   tenantId: string,
   data: Pick<NewMember, 'email' | 'displayName' | 'role'>
 ): Promise<Member> {
+  const [tenant] = await db
+    .select({ plan: tenants.plan })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+
+  if (tenant) {
+    const plan = tenant.plan as Plan
+    const [countRow] = await db
+      .select({ n: count() })
+      .from(members)
+      .where(eq(members.tenantId, tenantId))
+    const currentSeats = countRow?.n ?? 0
+    if (isOverSeatLimit(plan, currentSeats)) {
+      const limit = getSeatLimit(plan)
+      throw Object.assign(
+        new Error(`Seat limit reached (${limit} seats on ${plan} plan). Upgrade to add more members.`),
+        { statusCode: 402 }
+      )
+    }
+  }
+
   const existingUser = await getUserByEmail(data.email)
   const [row] = await db.insert(members).values({
     tenantId,

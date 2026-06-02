@@ -5,6 +5,7 @@ import { db } from '../db/client.js'
 import { chatMessages } from '../db/schema.js'
 import { sendMessage, getSessions, getMessages } from './service.js'
 import { executeActions } from './apply.js'
+import { PLAN_LIMITS, type Plan } from '../billing/limits.js'
 import type { LlmService } from './llm/interface.js'
 
 async function makeLlmService(): Promise<LlmService> {
@@ -24,6 +25,12 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
   const llm = await makeLlmService()
 
   fastify.post('/assistant/chat', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
+    const plan = req.tenant.plan as Plan
+    if (!PLAN_LIMITS[plan]?.assistantEnabled) {
+      return reply.status(402).send({
+        error: 'The AI Assistant is available on the Business plan. Upgrade to access it.',
+      })
+    }
     const { message, sessionId } = req.body as { message: string; sessionId?: string }
     if (!message || typeof message !== 'string') {
       return reply.status(400).send({ error: 'message is required' })
