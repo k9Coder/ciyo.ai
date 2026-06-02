@@ -8,7 +8,5 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true
-  },
-  "include": ["playwright.config.ts", "e2e"],
-  "exclude": ["node_modules", "extension", "admin", "backend"]
+  }
 }
