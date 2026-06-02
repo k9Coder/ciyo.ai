@@ -15,6 +15,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
+import { InvitePage } from './pages/InvitePage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
@@ -25,9 +26,10 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/login"        element={<LoginPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route path="/onboarding"   element={<OnboardingPage />} />
+          <Route path="/login"          element={<LoginPage />} />
+          <Route path="/unauthorized"   element={<UnauthorizedPage />} />
+          <Route path="/onboarding"     element={<OnboardingPage />} />
+          <Route path="/invite/:token"  element={<InvitePage />} />
           <Route
             element={
               <RequireAuth>

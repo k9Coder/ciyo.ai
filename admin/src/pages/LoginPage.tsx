@@ -4,14 +4,16 @@ import { useAuth, useClerk } from '@clerk/react'
 import { Spinner } from '../components/ui/Spinner'
 
 export function LoginPage() {
-  const { isLoaded, isSignedIn, orgId, orgRole } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth()
   const { openSignIn } = useClerk()
   const navigate = useNavigate()
 
+  const redirectTo = new URLSearchParams(window.location.search).get('redirect') ?? '/dashboard'
+
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return
-    navigate(!orgId ? '/onboarding' : orgRole === 'org:admin' ? '/dashboard' : '/unauthorized', { replace: true })
-  }, [isLoaded, isSignedIn, orgId, orgRole, navigate])
+    navigate(redirectTo, { replace: true })
+  }, [isLoaded, isSignedIn, navigate, redirectTo])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
