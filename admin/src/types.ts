@@ -193,3 +193,19 @@ export interface InviteCreated {
   url:       string
   expiresAt: string
 }
+
+export interface BillingStatus {
+  plan:               string
+  subscriptionStatus: string
+  trialEndsAt:        string | null
+  seatCount:          number
+  seatLimit:          number
+  monthlyScans:       number
+  scanLimit:          number
+  scanBlocked:        boolean
+  paymentProvider:    'stripe' | 'paypal' | null
+  features: {
+    assistantEnabled:  boolean
+    advancedAnalytics: boolean
+  }
+}

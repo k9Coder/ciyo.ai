@@ -6,6 +6,7 @@ import type {
   AuditLogPage,
   ChatSession, ChatMessage, AssistantChatResponse, AssistantApplyResponse,
   InvitePreview, InviteCreated,
+  BillingStatus,
 } from './types'
 
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.['VITE_API_BASE'])
@@ -166,5 +167,11 @@ export const api = {
       request<InvitePreview>('GET', `/v1/invites/${token}`),
     accept: (token: string) =>
       request<Member>('POST', `/v1/invites/${token}/accept`, {}),
+  },
+  billing: {
+    status: () =>
+      request<BillingStatus>('GET', '/v1/billing/status'),
+    stripePortal: (returnUrl?: string) =>
+      request<{ url: string }>('POST', '/v1/billing/stripe/portal', { returnUrl }),
   },
 }
