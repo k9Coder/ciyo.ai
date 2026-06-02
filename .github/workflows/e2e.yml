@@ -29,9 +29,9 @@ jobs:
         run: pnpm install
         working-directory: backend
 
-      - name: Install admin dependencies
+      - name: Install pretzel-console dependencies
         run: pnpm install
-        working-directory: admin
+        working-directory: pretzel-console
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium --with-deps
@@ -39,9 +39,9 @@ jobs:
       - name: Build extension
         run: pnpm run build
 
-      - name: Build admin app
-        run: pnpm run build
-        working-directory: admin
+      - name: Build pretzel-console
+        run: pnpm run build:staging
+        working-directory: pretzel-console
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           VITE_API_BASE: http://localhost:3000
@@ -63,9 +63,9 @@ jobs:
           CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
           PORT: 3000
 
-      - name: Serve admin app
+      - name: Serve pretzel-console
         run: pnpm run preview -- --port 5173 &
-        working-directory: admin
+        working-directory: pretzel-console
 
       - name: Wait for services to be ready
         run: npx wait-on http://localhost:3000/health http://localhost:5173 --timeout 30000
