@@ -47,3 +47,16 @@ NEXT_PUBLIC_ENV=production
 ```
 
 Add any additional `NEXT_PUBLIC_` vars here as the site grows.
+
+---
+
+## Deployment
+
+ciyo-web deploys automatically via **Vercel** when you push to `master` or `staging`.
+
+- `staging` branch → Vercel preview URL
+- `master` branch → production (`ciyo.ai` or your configured domain)
+
+`.github/workflows/ciyo-web-deploy.yml` runs lint + build as a test gate before Vercel deploys. If the build fails in CI, Vercel still deploys — fix the failure and push again.
+
+Vercel environment variables (`NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_ENV`) are configured in the Vercel dashboard.

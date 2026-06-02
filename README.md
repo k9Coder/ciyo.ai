@@ -139,3 +139,39 @@ npx playwright test --project=cross-service
 ```
 
 See root `CLAUDE.md` for the full E2E prerequisites and regression rules.
+
+---
+
+## Running the full stack with Docker
+
+One command starts everything — postgres, backend, pretzel-console, and ciyo-web:
+
+```bash
+# First time only
+cp backend/.env.example backend/.env
+# Fill in backend/.env with Clerk, Stripe, and LLM keys
+
+docker-compose up --build
+```
+
+| Service | URL |
+|---|---|
+| Backend API | http://localhost:3000 |
+| pretzel-console | http://localhost:5173 |
+| ciyo-web | http://localhost:3001 |
+| Postgres | localhost:5432 |
+
+> For daily development, run `pnpm dev` per package instead — Docker is for full-stack demos and integration testing.
+
+---
+
+## CI/CD & Releases
+
+| What | How |
+|---|---|
+| Backend deploy | Push to `staging` or `master` → `.github/workflows/backend-deploy.yml` |
+| pretzel-console deploy | Push to `staging` or `master` → `.github/workflows/pretzel-console-deploy.yml` |
+| ciyo-web deploy | Push to `staging` or `master` → Vercel auto-deploys (workflow adds lint gate + Discord) |
+| Extension release | `git tag pretzel-vX.Y.Z && git push --tags` → zip attached to GitHub Release |
+
+See each package README for full deployment details and required GitHub Secrets.

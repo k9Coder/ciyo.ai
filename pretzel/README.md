@@ -80,3 +80,42 @@ pnpm test:watch      # watch mode
 # E2E — loads the built extension in real Chromium
 pnpm build && pnpm test:e2e
 ```
+
+---
+
+## Releasing a New Version
+
+1. **Bump the version** in `manifest.config.ts`:
+   ```ts
+   version: "2.1.0",
+   ```
+
+2. **Commit and push to `master`:**
+   ```bash
+   git add pretzel/manifest.config.ts
+   git commit -m "chore(pretzel): bump version to 2.1.0"
+   git push origin master
+   ```
+
+3. **Tag the release** (this triggers the build):
+   ```bash
+   git tag pretzel-v2.1.0
+   git push --tags
+   ```
+
+4. **GitHub Actions builds the extension** and creates a GitHub Release with `pretzel-v2.1.0.zip` attached. You will get a Discord notification when it's ready.
+
+5. **Upload to Chrome Web Store:**
+   - Open [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+   - Select the Pretzel extension
+   - "Upload new package" → download and upload the `.zip` from GitHub Releases
+   - Fill in release notes
+   - Submit for review (Google typically reviews in 1–3 business days)
+
+### GitHub Secrets required
+
+| Secret | Value |
+|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY_PROD` | `pk_live_...` (production Clerk publishable key) |
+| `VITE_API_BASE_PROD` | `https://api.ciyo.ai` (or wherever the prod backend lives) |
+| `DISCORD_WEBHOOK_URL` | Discord channel webhook URL |

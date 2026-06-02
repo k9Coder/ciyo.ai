@@ -72,3 +72,33 @@ pnpm teardown:e2e
 ```
 
 See `CLAUDE.md` for the full regression rules.
+
+---
+
+## Deployment
+
+Pushes to `staging` or `master` trigger `.github/workflows/backend-deploy.yml` automatically.
+
+| Branch | Environment |
+|---|---|
+| `staging` | Render staging service |
+| `master` | Render production service |
+
+**Pipeline:** run tests → build Docker image → push to `ghcr.io` → run DB migrations → deploy to Render → Discord notification.
+
+### Running migrations manually
+
+```bash
+DATABASE_URL=<your-db-url> pnpm exec tsx src/db/migrate.ts
+```
+
+### GitHub Secrets required
+
+| Secret | Where to get it |
+|---|---|
+| `RENDER_API_KEY` | Render → Account Settings → API Keys |
+| `RENDER_BACKEND_STAGING_SERVICE_ID` | Render service URL: `dashboard.render.com/web/srv-XXXX` |
+| `RENDER_BACKEND_PROD_SERVICE_ID` | Same, for prod service |
+| `STAGING_DATABASE_URL` | Staging Postgres connection string |
+| `PROD_DATABASE_URL` | Production Postgres connection string |
+| `DISCORD_WEBHOOK_URL` | Discord channel → Integrations → Webhooks |

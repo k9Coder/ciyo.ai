@@ -62,3 +62,26 @@ cd pretzel-console && pnpm test:e2e
 ```
 
 See `CLAUDE.md` for full E2E prerequisites.
+
+---
+
+## Deployment
+
+Pushes to `staging` or `master` trigger `.github/workflows/pretzel-console-deploy.yml` automatically.
+
+| Branch | Environment | Build command |
+|---|---|---|
+| `staging` | Render Static Site (staging) | `pnpm build:staging` |
+| `master` | Render Static Site (production) | `pnpm build:prod` |
+
+**Pipeline:** run tests + typecheck → trigger Render deploy hook → Render builds from source → Discord notification.
+
+Environment variables (`VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_BASE`) are set in the Render dashboard per environment.
+
+### GitHub Secrets required
+
+| Secret | Where to get it |
+|---|---|
+| `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` | Render staging Static Site → Settings → Deploy Hooks |
+| `RENDER_CONSOLE_PROD_DEPLOY_HOOK` | Render prod Static Site → Settings → Deploy Hooks |
+| `DISCORD_WEBHOOK_URL` | Discord channel → Integrations → Webhooks |
