@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ciyo-web
 
-## Getting Started
+Marketing / landing site. Next.js 16, React 19, Tailwind CSS.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js ≥ 20
+- pnpm
+
+## Running
+
+### Staging
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# From monorepo root — copies .env.staging to .env.local
+pnpm set-env:staging
+
+cd ciyo-web && pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3001` (Next.js picks a free port if 3000 is taken by the backend).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# From monorepo root
+pnpm set-env:prod
 
-## Learn More
+cd ciyo-web && pnpm build && pnpm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment files
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| File | Purpose |
+|---|---|
+| `.env.staging` | Staging vars — committed, safe to share |
+| `.env.prod` | Prod vars — **gitignored**, fill in locally before deploying |
+| `.env.local` | Active config — written by `pnpm set-env:*`, gitignored |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`pnpm set-env:staging` copies `.env.staging` → `.env.local`. Next.js loads `.env.local` at the highest priority so plain `pnpm dev` picks it up automatically.
 
-## Deploy on Vercel
+### What goes in `.env.prod`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```dotenv
+NEXT_PUBLIC_API_BASE=https://api.ciyo.ai
+NEXT_PUBLIC_ENV=production
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Add any additional `NEXT_PUBLIC_` vars here as the site grows.

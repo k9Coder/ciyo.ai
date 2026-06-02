@@ -1,206 +1,141 @@
-# ciyo
+# Prompt Saviour — Monorepo
 
-AI prompt protection — detects secrets and PII before they leave your browser. ciyo is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the ciyo Admin Console.
+Browser-based AI prompt DLP. Detects secrets and PII before they leave the browser, enforced by an admin-configurable policy.
 
-## Supported Sites
+**Four packages:**
 
-- ChatGPT (chatgpt.com, chat.openai.com)
-- Claude (claude.ai) — adapter stub, selectors require verification
-- Gemini (gemini.google.com) — adapter stub, selectors require verification
-
-## What It Detects
-
-- API keys: OpenAI, Anthropic, AWS, GitHub, Slack, Google
-- Credentials: PEM private keys, SSH private keys, JWTs, .env assignments
-- PII: Credit card numbers (Luhn-validated), US SSNs
-- Network: RFC 1918 internal IP addresses
-- Entropy: Long high-entropy tokens (configurable threshold)
-- Dictionary: Custom terms and fuzzy variants (configurable)
-
----
-
-## Quick Start (Development)
-
-### Prerequisites
-
-- Node.js ≥ 20
-- npm ≥ 10
-- [Docker](https://www.docker.com/) (for local Postgres)
-- A [Clerk](https://clerk.com/) account
-
-### 1. Install dependencies
-
-```sh
-npm install
-cd backend && npm install && cd ..
-cd admin && npm install && cd ..
-```
-
-### 2. Configure environment variables
-
-```sh
-cp backend/.env.example backend/.env
-```
-
-Fill in your keys in `backend/.env`:
-
-| Variable | Where to get it |
+| Package | What it is |
 |---|---|
-| `CLERK_SECRET_KEY` | Clerk Dashboard → API Keys |
-| `CLERK_WEBHOOK_SECRET` | Clerk Dashboard → Webhooks |
-| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
+| `backend/` | Fastify REST API, Drizzle ORM, PostgreSQL |
+| `pretzel/` | Chrome extension (MV3) — intercepts prompts, enforces policy |
+| `pretzel-console/` | Admin web app — manage policy, members, billing |
+| `ciyo-web/` | Marketing / landing site (Next.js) |
 
-### 3. Start the database
+---
 
-Creates a local Postgres container with a **named volume** (data survives container deletion), runs migrations, and seeds demo data:
+## Environments
 
-```sh
-npm run db:setup
+| | Staging | Production |
+|---|---|---|
+| **Who** | Developers & testers | Real customers |
+| **Clerk instance** | Development (`pk_test_` / `sk_test_`) | Production (`pk_live_` / `sk_live_`) |
+| **Database** | `promptshield_staging` | `promptshield` |
+| **Backend URL** | `http://localhost:3000` | `https://api.ciyo.ai` |
+
+---
+
+## Switching environments
+
+Run once from the monorepo root before starting any package:
+
+```bash
+pnpm set-env:staging   # backend + ciyo-web point at staging
+pnpm set-env:prod      # backend + ciyo-web point at prod
 ```
 
-Re-run any time you want a clean slate — it wipes and reseeds automatically.
+`pretzel` and `pretzel-console` use `--mode` flags in their scripts directly — no copy needed.
 
-### 4. Start the services
+---
 
-In three separate terminals:
+## Running in staging
 
-```sh
-# Backend API — http://localhost:3000
-cd backend && npm run dev
+```bash
+# Step 0 — switch (only needed once, or after switching from prod)
+pnpm set-env:staging
 
-# Admin dashboard — http://localhost:5173
-cd admin && npm run dev
+# Terminal 1 — API
+cd backend && pnpm dev
 
-# Extension hot-reload build
-npm run dev
+# Terminal 2 — admin console
+cd pretzel-console && pnpm dev:staging
+
+# Terminal 3 — marketing site
+cd ciyo-web && pnpm dev
+
+# Extension — build once, load in Chrome as unpacked
+cd pretzel && pnpm build:staging
+# Then: Chrome → chrome://extensions → Developer mode → Load unpacked → select pretzel/dist/
 ```
 
-Then load the extension in Chrome:
-1. Go to `chrome://extensions`
-2. Enable **Developer mode** (top right)
-3. Click **Load unpacked** → select the `dist/` directory
+## Running in production (deploy)
 
-### Production Build
+```bash
+pnpm set-env:prod
 
-```sh
-npm run build
+# API
+cd backend && pnpm build && pnpm start
+
+# Admin console (static build → deploy to hosting)
+cd pretzel-console && pnpm build:prod
+
+# Extension (submit dist/ to Chrome Web Store)
+cd pretzel && pnpm build:prod
+
+# Marketing site
+cd ciyo-web && pnpm build && pnpm start
 ```
 
 ---
 
-## Useful commands
+## First-time setup
 
-| Command | What it does |
-|---|---|
-| `npm run db:setup` | Recreate DB container, migrate, seed demo data |
-| `npm run check-db` | Query DB to verify your user/tenant rows |
-| `cd backend && npm run db:migrate` | Run pending migrations only |
-| `cd backend && npm run seed:fintech` | Reseed demo data (container must be running) |
+### Install dependencies
+
+```bash
+cd backend        && pnpm install
+cd pretzel        && pnpm install
+cd pretzel-console && pnpm install
+cd ciyo-web       && pnpm install
+```
+
+### Create the staging database (one-time)
+
+```bash
+psql -U postgres -c "CREATE DATABASE promptshield_staging;"
+pnpm set-env:staging
+cd backend && pnpm db:migrate
+```
+
+### Fill in production secrets (when ready to deploy)
+
+These files are gitignored — create them locally and fill in real values:
+
+- `backend/.env.prod` — prod DB URL, `sk_live_` Clerk key, Stripe live keys, LLM keys
+- `pretzel/.env.prod` — `pk_live_` Clerk publishable key, prod API base URL
+- `pretzel-console/.env.prod` — `pk_live_` Clerk publishable key, prod API base URL
+
+See `backend/.env.example` for all required variable names.
 
 ---
 
-## Querying the local database
+## Env file reference
 
-Use `npm run check-db` to run SQL against the local Postgres container without needing any extra tools installed.
-
-**Default** — shows the `tenants` and `members` tables (useful for auth debugging):
-
-```sh
-npm run check-db
-```
-
-**Custom query** — pass any SQL after `--`:
-
-```sh
-# Check which members are missing a clerk_id
-npm run check-db -- "SELECT id, email, role, clerk_id FROM members WHERE clerk_id IS NULL;"
-
-# Inspect rules
-npm run check-db -- "SELECT id, kind, action, active FROM rules LIMIT 20;"
-
-# List all tables
-npm run check-db -- "SELECT table_name FROM information_schema.tables WHERE table_schema='public';"
-
-# Count rows in every table
-npm run check-db -- "SELECT relname AS table, n_live_tup AS rows FROM pg_stat_user_tables ORDER BY rows DESC;"
-```
-
-> The `--` is npm's argument separator — everything after it is passed directly to the script.
+| File | Committed | Contains |
+|---|---|---|
+| `*/.env.staging` | Yes | Test keys — safe to share |
+| `*/.env.prod` | No (gitignored) | Real secrets — fill in locally |
 
 ---
 
-## Auth troubleshooting
+## Tests
 
-If you see 401 errors in the admin dashboard, your DB rows are likely out of sync with Clerk. Run:
+```bash
+# Unit tests — run inside each package
+pnpm test
 
-```sh
-npm run check-db
+# API E2E (backend must be running)
+cd backend && pnpm test:e2e
+
+# Extension E2E (requires a build first)
+cd pretzel && pnpm build && pnpm test:e2e
+
+# Admin E2E (backend + console must be running)
+cd pretzel-console && pnpm test:e2e
+
+# Full cross-cutting suite (from root)
+npx playwright test
+npx playwright test --project=api
+npx playwright test --project=cross-service
 ```
 
-This shows your `tenants`, `users`, and `members` tables. You need:
-- A row in `users` with `clerk_id` matching your Clerk user ID
-- A row in `members` linking that user to a tenant
-
-If either is missing, re-run `npm run db:setup` — the seed script creates both rows automatically when it detects your Clerk user.
-
-> **Note:** The system no longer uses Clerk organisations. Identity is managed via the `users` table (keyed on `clerk_id`) and tenant membership via the `members` table.
-
----
-
-## Running Tests
-
-```sh
-# Unit tests (Vitest)
-npm test
-
-# E2E tests (Playwright) — requires a production build first
-npm run build && npm run test:e2e
-```
-
----
-
-## Policy Format
-
-The detection policy is a JSON document validated with Zod. You can import/export it from the Options page.
-
-See [docs/policy-format.md](docs/policy-format.md) for the full schema reference.
-
-Example enterprise policy: [`src/policy/examples/enterprise.json`](src/policy/examples/enterprise.json)
-
-### Minimal custom rule example
-
-```json
-{
-  "version": 1,
-  "baseline": [],
-  "custom": [
-    {
-      "id": "my-codename",
-      "name": "Project Codename",
-      "description": "Prevent leaking internal project name",
-      "severity": "high",
-      "action": "require_confirmation",
-      "enabled": true,
-      "tags": ["confidential"],
-      "kind": "dictionary",
-      "terms": ["ProjectX", "project-x"],
-      "caseSensitive": false
-    }
-  ],
-  "perSite": {
-    "chatgpt.com": { "enabled": true }
-  },
-  "allowSendAnywayWithReason": true,
-  "auditRetentionDays": 30
-}
-```
-
----
-
-## Architecture
-
-See [docs/architecture.md](docs/architecture.md).
-
-## Adding a New Site Adapter
-
-See [docs/adding-a-site-adapter.md](docs/adding-a-site-adapter.md).
+See root `CLAUDE.md` for the full E2E prerequisites and regression rules.
