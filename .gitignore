@@ -5,6 +5,10 @@ dist/
 .DS_Store
 .superpowers/
 
+# Prod env files across all packages — contain real secrets
+# .env.staging files are safe to commit (test keys only)
+**/.env.prod
+
 # E2E
 e2e/.auth/
 e2e/.seed-state.json
