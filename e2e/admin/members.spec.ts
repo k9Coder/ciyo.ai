@@ -4,44 +4,31 @@ import { adminHeaders } from '../helpers/admin-headers.js'
 const BACKEND = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
 
 test.describe('Members', () => {
-  let createdMemberId: string | undefined
-
-  test.afterEach(async () => {
-    if (!createdMemberId) return
-    const api = await playwrightRequest.newContext()
-    await api.delete(`${BACKEND}/v1/members/${createdMemberId}`, { headers: adminHeaders() })
-    await api.dispose()
-    createdMemberId = undefined
-  })
-
-  test('can invite a member', async ({ page }) => {
+  test('can generate an invite link for a specific email', async ({ page }) => {
     await page.goto('/members')
 
-    await page.getByRole('button', { name: /invite|add member/i }).click()
+    await page.getByRole('button', { name: /invite member/i }).click()
 
-    await page.getByLabel(/email/i).fill('e2e-invited@example.com')
-    await page.getByLabel(/display name/i).fill('E2E Invited User')
-    await page.getByRole('button', { name: /invite|send|save/i }).click()
+    await page.getByPlaceholder(/alice@/i).fill('e2e-invited@example.com')
+    await page.locator('form').getByRole('button', { name: /generate link/i }).click()
 
-    await expect(page.getByText('e2e-invited@example.com')).toBeVisible({ timeout: 5_000 })
-
-    // Capture created ID for cleanup
-    const api  = await playwrightRequest.newContext()
-    const res   = await api.get(`${BACKEND}/v1/members`, { headers: adminHeaders() })
-    const body  = await res.json() as Array<{ id: string; email: string }>
-    createdMemberId = body.find(m => m.email === 'e2e-invited@example.com')?.id
-    await api.dispose()
+    // URL input with the invite link appears
+    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 5_000 })
+    const urlInput = page.locator('input[readonly]')
+    await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
+    // No member row yet — invite must be accepted first
   })
 
-  test('invite with empty email is blocked', async ({ page }) => {
+  test('can generate an open invite link with no email', async ({ page }) => {
     await page.goto('/members')
-    await page.getByRole('button', { name: /invite|add member/i }).click()
+    await page.getByRole('button', { name: /invite member/i }).click()
 
-    // Leave email empty, submit
-    await page.getByRole('button', { name: /invite|send|save/i }).click()
+    // Leave email blank — open link (anyone with it can join)
+    await page.locator('form').getByRole('button', { name: /generate link/i }).click()
 
-    // Form stays visible — no member created
-    await expect(page.getByLabel(/email/i)).toBeVisible()
+    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 5_000 })
+    const urlInput = page.locator('input[readonly]')
+    await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
   })
 
   test('can change a member role', async ({ page }) => {
