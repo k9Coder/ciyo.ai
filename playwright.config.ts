@@ -4,13 +4,13 @@ import { config } from 'dotenv'
 
 config({ path: path.join(__dirname, 'e2e/.env.e2e') })
 
-const DIST_PATH = path.resolve(__dirname, 'dist')
+const DIST_PATH = path.resolve(__dirname, 'extension/dist')
 
 export default defineConfig({
   globalSetup:    './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
   webServer: {
-    command: 'node e2e/fixtures-server.mjs',
+    command: 'node extension/e2e/fixtures-server.mjs',
     url: 'http://localhost:9876',
     reuseExistingServer: true,
     timeout: 10_000,
@@ -32,10 +32,10 @@ export default defineConfig({
       dependencies: ['admin-setup'],
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'e2e/.auth/admin.json',
+        storageState: 'admin/.auth/admin.json',
         baseURL: process.env.E2E_ADMIN_URL ?? 'http://localhost:5173',
       },
-      testMatch: 'e2e/admin/**/*.spec.ts',
+      testMatch: 'admin/e2e/**/*.spec.ts',
     },
     {
       name: 'extension',
@@ -50,12 +50,27 @@ export default defineConfig({
           ],
         },
       },
-      testMatch: 'e2e/extension/**/*.spec.ts',
+      testMatch: 'extension/e2e/**/*.spec.ts',
     },
     {
       name: 'api',
       use: { baseURL: process.env.E2E_BACKEND_URL ?? 'http://localhost:3000' },
-      testMatch: 'e2e/api/**/*.spec.ts',
+      testMatch: 'backend/e2e/**/*.spec.ts',
+    },
+    {
+      name: 'cross-service',
+      use: {
+        channel: 'chromium',
+        headless: false,
+        launchOptions: {
+          args: [
+            '--headless=new',
+            `--disable-extensions-except=${DIST_PATH}`,
+            `--load-extension=${DIST_PATH}`,
+          ],
+        },
+      },
+      testMatch: 'e2e/extension/**/*.spec.ts',
     },
   ],
 })

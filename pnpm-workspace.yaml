@@ -1,0 +1,5 @@
+packages:
+  - 'extension'
+  - 'admin'
+  - 'backend'
+  - 'e2e'

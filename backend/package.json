@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "seed:e2e": "tsx --env-file=.env src/scripts/seed-e2e.ts",
     "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts",
-    "seed:fintech": "tsx --env-file=.env src/scripts/seed-fintech.ts"
+    "seed:fintech": "tsx --env-file=.env src/scripts/seed-fintech.ts",
+    "test:e2e": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
@@ -38,6 +39,8 @@
     "supertest": "^7.0.0",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "@playwright/test": "^1.47.0",
+    "dotenv": "^16.4.5"
   }
 }

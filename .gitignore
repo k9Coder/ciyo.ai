@@ -11,3 +11,10 @@ e2e/.seed-state.json
 e2e/.env.e2e
 e2e/test-results/
 e2e/playwright-report/
+admin/.auth/
+admin/e2e/test-results/
+admin/e2e/playwright-report/
+backend/e2e/test-results/
+backend/e2e/playwright-report/
+extension/e2e/test-results/
+extension/e2e/playwright-report/

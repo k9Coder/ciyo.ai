@@ -6,7 +6,7 @@ import { getSeedState } from '../helpers/seed-state.js'
 
 const BACKEND  = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
 const FIXTURES = 'http://localhost:9876'
-const EXT_PATH = path.resolve(__dirname, '../../dist')
+const EXT_PATH = path.resolve(__dirname, '../../extension/dist')
 
 test('AI-created rule is enforced by the extension after policy publish', async () => {
   const { assistantFlowMessageId } = getSeedState()

@@ -17,7 +17,7 @@ describe('RequireAuth', () => {
   it('shows loading when Clerk is not ready', () => {
     vi.mocked(useAuth).mockReturnValue({ isLoaded: false, isSignedIn: false, orgId: null, orgRole: null, getToken: vi.fn() } as any)
     render(<MemoryRouter><RequireAuth><div>child</div></RequireAuth></MemoryRouter>)
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('redirects to /login when not signed in', () => {

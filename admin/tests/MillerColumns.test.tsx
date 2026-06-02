@@ -44,7 +44,7 @@ describe('MillerColumns', () => {
     expect(onSelect).toHaveBeenCalledWith('div-1')
   })
 
-  it('highlights selected item with blue text', () => {
+  it('highlights selected item with brand color', () => {
     const c: MillerColumnDef[] = [{
       title: 'Divisions',
       items: [{ id: 'div-1', label: 'Legal' }],
@@ -53,6 +53,6 @@ describe('MillerColumns', () => {
     }]
     render(<MillerColumns columns={c} />)
     const textEl = screen.getByText('Legal')
-    expect(textEl.className).toMatch(/text-blue/)
+    expect(textEl).toHaveStyle({ color: 'var(--brand-primary)' })
   })
 })
