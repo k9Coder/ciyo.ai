@@ -64,6 +64,13 @@
       "when": 1748995202000,
       "tag": "0008_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1749081600000,
+      "tag": "0009_billing_v2",
+      "breakpoints": true
     }
   ]
 }

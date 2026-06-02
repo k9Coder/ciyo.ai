@@ -30,10 +30,13 @@ export const tenants = pgTable('tenants', {
   slug:               text('slug').notNull(),
   orgTokenHash:       text('org_token_hash').notNull(),
   adminTokenHash:     text('admin_token_hash').notNull(),
-  paymentProvider:    text('payment_provider').notNull(),
-  externalSubId:      text('external_sub_id').notNull(),
+  paymentProvider:    text('payment_provider'),            // nullable — free tier has no provider
+  externalSubId:      text('external_sub_id'),             // nullable — free tier has no sub
   subscriptionStatus: text('subscription_status').notNull().default('active'),
-  plan:               text('plan').notNull().default('pro'),
+  plan:               text('plan').notNull().default('free'),
+  seatCount:          integer('seat_count').notNull().default(1),
+  trialEndsAt:        timestamp('trial_ends_at', { withTimezone: true }),
+  stripeCustomerId:   text('stripe_customer_id'),
   gracePeriodDays:    integer('grace_period_days').notNull().default(7),
   gracePeriodEndsAt:  timestamp('grace_period_ends_at', { withTimezone: true }),
   createdAt:          timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
