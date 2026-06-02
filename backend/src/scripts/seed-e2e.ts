@@ -49,6 +49,8 @@ async function main() {
     paymentProvider:    'stripe',
     externalSubId:      'sub_e2e_test',
     subscriptionStatus: 'active',
+    plan:               'business',
+    seatCount:          10,
   }).returning({ id: tenants.id })
 
   const tenantId = tenant!.id
@@ -190,6 +192,54 @@ async function main() {
     ],
   }).returning({ id: chatMessages.id })
 
+  // ── Free-tier tenant for billing limit tests ─────────────────────────────
+  const freeOrgSecret   = generateSecret()
+  const freeAdminSecret = generateSecret()
+  const freeOrgToken    = formatToken('ps_live', 'e2efree', freeOrgSecret)
+  const freeAdminToken  = formatToken('ps_adm',  'e2efree', freeAdminSecret)
+
+  const [freeTenant] = await db.insert(tenants).values({
+    name:               'E2E Free Org',
+    slug:               'e2efree',
+    orgTokenHash:       await hashToken(freeOrgSecret),
+    adminTokenHash:     await hashToken(freeAdminSecret),
+    paymentProvider:    null,
+    externalSubId:      null,
+    subscriptionStatus: 'active',
+    plan:               'free',
+    seatCount:          1,
+  }).returning({ id: tenants.id })
+
+  const freeTenantId = freeTenant!.id
+
+  // Seed 3 members (free plan allows 3)
+  const freeUsers = await db.insert(users).values([
+    { clerkId: 'free_user_1', email: 'free1@example.com' },
+    { clerkId: 'free_user_2', email: 'free2@example.com' },
+    { clerkId: 'free_user_3', email: 'free3@example.com' },
+  ]).returning({ id: users.id })
+
+  await db.insert(members).values(
+    freeUsers.map((u, i) => ({
+      tenantId: freeTenantId,
+      userId:   u.id,
+      email:    `free${i + 1}@example.com`,
+      role:     'member' as const,
+    }))
+  )
+
+  // Seed 500 scans (at the free plan limit)
+  const scanStart = new Date()
+  scanStart.setUTCDate(1)
+  scanStart.setUTCHours(0, 0, 0, 0)
+  await db.insert(scans).values(
+    Array.from({ length: 500 }, (_, i) => ({
+      tenantId:   freeTenantId,
+      memberId:   null,
+      occurredAt: new Date(scanStart.getTime() + i * 1000),
+    }))
+  )
+
   const seedState = {
     tenantId,
     orgToken,
@@ -197,6 +247,9 @@ async function main() {
     assistantSessionId:     chatSession1!.id,
     assistantMessageId:     chatMessage1!.id,
     assistantFlowMessageId: chatMessage2!.id,
+    freeTenantId,
+    freeOrgToken,
+    freeAdminToken,
   }
   writeFileSync(SEED_STATE_PATH, JSON.stringify(seedState, null, 2))
   console.log('[seed-e2e] Done. Seed state written to', SEED_STATE_PATH)

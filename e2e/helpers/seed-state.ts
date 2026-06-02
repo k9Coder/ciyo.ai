@@ -8,6 +8,9 @@ interface SeedState {
   assistantSessionId:     string
   assistantMessageId:     string
   assistantFlowMessageId: string
+  freeTenantId:           string
+  freeOrgToken:           string
+  freeAdminToken:         string
 }
 
 let _cache: SeedState | null = null
