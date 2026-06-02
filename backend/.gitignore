@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+# Environment files — .env.staging is safe to commit (test keys only)
+.env
+.env.prod
+.env.test
+
+# Test artifacts
+.seed-state.json
+test-results/
+playwright-report/
