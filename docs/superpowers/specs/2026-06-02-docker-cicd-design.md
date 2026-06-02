@@ -55,7 +55,7 @@ The image also supports a `SERVICE_MODE` environment variable (initially unused,
 ```
 Stage 1 — node:20-alpine
   - pnpm install --frozen-lockfile
-  - pnpm build (accepts VITE_MODE build arg: staging | production)
+  - pnpm build:prod  (Vite --mode prod; env vars injected at build time)
 
 Stage 2 — nginx:alpine
   - COPY dist/ → /usr/share/nginx/html
@@ -64,6 +64,8 @@ Stage 2 — nginx:alpine
 ```
 
 nginx:alpine base is 7MB. Final image is almost entirely static files.
+
+Note: this Dockerfile is used only for local `docker-compose`. Render Static Site builds from source using `pnpm build:staging` or `pnpm build:prod` depending on which deploy hook is triggered — Render handles the mode selection itself.
 
 ### ciyo-web (~200MB, local dev only)
 
@@ -119,7 +121,11 @@ RENDER_CONSOLE_PROD_DEPLOY_HOOK
 DISCORD_WEBHOOK_URL
 VITE_CLERK_PUBLISHABLE_KEY_PROD
 VITE_API_BASE_PROD
+STAGING_DATABASE_URL          ← used by CI to run migrations before staging deploy
+PROD_DATABASE_URL             ← used by CI to run migrations before production deploy
 ```
+
+In workflow YAML, `{repo}` resolves to `${{ github.repository }}` (e.g. `your-org/prompt-saviour`).
 
 ---
 

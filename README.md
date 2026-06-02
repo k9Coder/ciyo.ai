@@ -1,4 +1,4 @@
-# Prompt Saviour — Monorepo
+# ciyo.ai — Monorepo
 
 Browser-based AI prompt DLP. Detects secrets and PII before they leave the browser, enforced by an admin-configurable policy.
 
