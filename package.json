@@ -1,7 +1,7 @@
 {
-  "name": "ciyo",
+  "name": "pretzel",
   "version": "0.1.0",
-  "description": "Browser-based DLP for LLM chat interfaces",
+  "description": "Pretzel by ciyo.ai — AI prompt DLP monorepo",
   "private": true,
   "scripts": {
     "dev": "pnpm --dir extension dev",

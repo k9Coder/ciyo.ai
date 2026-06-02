@@ -3,3 +3,8 @@ packages:
   - 'admin'
   - 'backend'
   - 'e2e'
+  - 'ciyo-web'
+
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

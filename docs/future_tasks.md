@@ -5,7 +5,7 @@ Items deferred for later — not in current scope but should not be forgotten.
 ---
 ## Think about adding a storage of 
 
-## Loading Indicator of Ciyo
+## Loading Indicator
 - add Loading Indicator nice UI-UX for users in the system.
 
 
