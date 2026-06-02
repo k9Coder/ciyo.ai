@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "set-env:staging": "node scripts/set-env.mjs staging",
+    "set-env:prod": "node scripts/set-env.mjs prod"
+  }
+}
