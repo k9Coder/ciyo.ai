@@ -71,6 +71,16 @@ export function AppLayout() {
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
               by ciyo.ai
             </div>
+            {import.meta.env['VITE_APP_ENV'] === 'staging' && (
+              <div style={{
+                display: 'inline-block', marginTop: 5,
+                background: '#f59e0b', color: '#fff',
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
+                padding: '2px 6px', borderRadius: 4,
+              }}>
+                STAGING
+              </div>
+            )}
           </div>
         </Link>
 
