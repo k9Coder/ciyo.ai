@@ -9,21 +9,21 @@ export function useDivisions() {
 export function useDivisionMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['divisions'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['divisions'] })
 
   const create = useMutation({
     mutationFn: (name: string) => api.divisions.create(name),
-    onSuccess: () => { inv(); toast('Division created') },
+    onSuccess: () => { invalidate(); toast('Division created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => api.divisions.update(id, name),
-    onSuccess: () => { inv(); toast('Division updated') },
+    onSuccess: () => { invalidate(); toast('Division updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.divisions.remove,
-    onSuccess: () => { inv(); toast('Division deleted') },
+    onSuccess: () => { invalidate(); toast('Division deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }

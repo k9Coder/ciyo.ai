@@ -2,16 +2,11 @@ import Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { tenants } from '../db/schema.js'
-import { activateTenant, updateSubscriptionStatus } from './service.js'
+import { activateTenant, updateSubscriptionStatus, tenantIdBySubId } from './service.js'
 import { sendWelcomeEmail } from './email.js'
 
 function stripe(): Stripe {
   return new Stripe(process.env['STRIPE_SECRET_KEY']!)
-}
-
-async function tenantIdBySubId(subId: string): Promise<string | null> {
-  const [row] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.externalSubId, subId))
-  return row?.id ?? null
 }
 
 export async function createCheckoutSession(opts: {
@@ -21,13 +16,13 @@ export async function createCheckoutSession(opts: {
   tenantSlug: string
   email:      string
 }): Promise<{ url: string }> {
-  const s       = stripe()
+  const stripeClient = stripe()
   const priceId = opts.plan === 'business'
     ? process.env['STRIPE_BUSINESS_PRICE_ID']!
     : process.env['STRIPE_STARTER_PRICE_ID']!
   const trialDays = opts.plan === 'business' ? 14 : 0
 
-  const session = await s.checkout.sessions.create({
+  const session = await stripeClient.checkout.sessions.create({
     mode:                      'subscription',
     payment_method_collection: trialDays > 0 ? 'if_required' : 'always',
     customer_email:            opts.email,
@@ -61,8 +56,8 @@ export async function createPortalSession(opts: {
   stripeCustomerId: string
   returnUrl:        string
 }): Promise<{ url: string }> {
-  const s = stripe()
-  const session = await s.billingPortal.sessions.create({
+  const stripeClient = stripe()
+  const session = await stripeClient.billingPortal.sessions.create({
     customer:   opts.stripeCustomerId,
     return_url: opts.returnUrl,
   })
@@ -74,8 +69,8 @@ export async function handleStripeEvent(rawBody: string, sig: string): Promise<v
   if (process.env['STRIPE_SKIP_SIG_VERIFY'] === 'true') {
     event = JSON.parse(rawBody) as Stripe.Event
   } else {
-    const s = stripe()
-    event = s.webhooks.constructEvent(rawBody, sig, process.env['STRIPE_WEBHOOK_SECRET']!)
+    const stripeClient = stripe()
+    event = stripeClient.webhooks.constructEvent(rawBody, sig, process.env['STRIPE_WEBHOOK_SECRET']!)
   }
 
   switch (event.type) {
@@ -104,15 +99,15 @@ export async function handleStripeEvent(rawBody: string, sig: string): Promise<v
     }
 
     case 'invoice.paid': {
-      const inv = event.data.object as Stripe.Invoice
-      const id  = await tenantIdBySubId((inv.subscription as string) ?? '')
+      const invoice = event.data.object as Stripe.Invoice
+      const id      = await tenantIdBySubId((invoice.subscription as string) ?? '')
       if (id) await updateSubscriptionStatus(id, 'active')
       break
     }
 
     case 'invoice.payment_failed': {
-      const inv = event.data.object as Stripe.Invoice
-      const id  = await tenantIdBySubId((inv.subscription as string) ?? '')
+      const invoice = event.data.object as Stripe.Invoice
+      const id      = await tenantIdBySubId((invoice.subscription as string) ?? '')
       if (id) await updateSubscriptionStatus(id, 'past_due')
       break
     }

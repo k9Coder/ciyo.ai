@@ -9,22 +9,22 @@ export function useSubjects() {
 export function useSubjectMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['subjects'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['subjects'] })
 
   const create = useMutation({
     mutationFn: api.subjects.create,
-    onSuccess: () => { inv(); toast('Subject created') },
+    onSuccess: () => { invalidate(); toast('Subject created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof api.subjects.update>[1] }) =>
       api.subjects.update(id, data),
-    onSuccess: () => { inv(); toast('Subject updated') },
+    onSuccess: () => { invalidate(); toast('Subject updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.subjects.remove,
-    onSuccess: () => { inv(); toast('Subject deleted') },
+    onSuccess: () => { invalidate(); toast('Subject deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }

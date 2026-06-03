@@ -21,21 +21,21 @@ export function useTeamMembers(teamId: string | null) {
 export function useTeamMutations(divisionId: string | null) {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['teams', divisionId] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['teams', divisionId] })
 
   const create = useMutation({
     mutationFn: (name: string) => api.teams.create(divisionId!, name),
-    onSuccess: () => { inv(); toast('Team created') },
+    onSuccess: () => { invalidate(); toast('Team created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => api.teams.update(id, name),
-    onSuccess: () => { inv(); toast('Team updated') },
+    onSuccess: () => { invalidate(); toast('Team updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.teams.remove,
-    onSuccess: () => { inv(); toast('Team deleted') },
+    onSuccess: () => { invalidate(); toast('Team deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }

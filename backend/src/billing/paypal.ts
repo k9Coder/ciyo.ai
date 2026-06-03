@@ -1,7 +1,4 @@
-import { eq } from 'drizzle-orm'
-import { db } from '../db/client.js'
-import { tenants } from '../db/schema.js'
-import { activateTenant, updateSubscriptionStatus } from './service.js'
+import { activateTenant, updateSubscriptionStatus, tenantIdBySubId } from './service.js'
 import { sendWelcomeEmail } from './email.js'
 
 const PAYPAL_API = process.env['PAYPAL_SANDBOX'] === 'true'
@@ -50,7 +47,7 @@ export async function createPayPalSubscriptionUrl(opts: {
     }),
   })
   const sub = await res.json() as { links: Array<{ rel: string; href: string }> }
-  const approvalLink = sub.links.find(l => l.rel === 'approve')
+  const approvalLink = sub.links.find(link => link.rel === 'approve')
   if (!approvalLink) throw new Error('PayPal did not return an approval link')
   return { url: approvalLink.href }
 }
@@ -68,11 +65,6 @@ function parseCustomId(raw: string): {
     plan:      (plan as 'starter' | 'business') ?? 'business',
     seatCount: parseInt(seats ?? '1', 10),
   }
-}
-
-async function tenantIdBySubId(subId: string): Promise<string | null> {
-  const [row] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.externalSubId, subId))
-  return row?.id ?? null
 }
 
 export async function handlePayPalEvent(body: Record<string, unknown>): Promise<void> {

@@ -78,9 +78,9 @@ export async function resolveMemberPolicy(
       if (!existing) {
         byKey.set(key, { rule, scope, subjectId: subject.id, subjectName: subject.name })
       } else {
-        const ep = SCOPE_PRIORITY[existing.scope]
-        const np = SCOPE_PRIORITY[scope]
-        if (np > ep || (np === ep && rule.action === 'block')) {
+        const existingPriority = SCOPE_PRIORITY[existing.scope]
+        const newPriority = SCOPE_PRIORITY[scope]
+        if (newPriority > existingPriority || (newPriority === existingPriority && rule.action === 'block')) {
           byKey.set(key, { rule, scope, subjectId: subject.id, subjectName: subject.name })
         }
       }

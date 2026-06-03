@@ -27,7 +27,7 @@ export class OpenAiLlmService implements LlmService {
   }
 }
 
-function parseResponse(text: string): LlmResponse {
+export function parseResponse(text: string): LlmResponse {
   try {
     const parsed = JSON.parse(text) as { reply?: string; actions?: unknown[] }
     return {

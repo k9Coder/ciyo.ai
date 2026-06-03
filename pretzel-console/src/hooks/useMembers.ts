@@ -12,25 +12,25 @@ export function useMembers() {
 export function useMemberActions() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['members'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['members'] })
 
   const create = useMutation({
     mutationFn: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
       api.members.create(data),
-    onSuccess: () => { inv(); toast('Member added') },
+    onSuccess: () => { invalidate(); toast('Member added') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
   const update = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role'] }> }) =>
       api.members.update(id, data),
-    onSuccess: () => { inv(); toast('Member updated') },
+    onSuccess: () => { invalidate(); toast('Member updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
   const remove = useMutation({
     mutationFn: (id: string) => api.members.remove(id),
-    onSuccess: () => { inv(); toast('Member removed') },
+    onSuccess: () => { invalidate(); toast('Member removed') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
@@ -41,7 +41,7 @@ export function useMemberActions() {
 export function useTeamMemberMutations(teamId: string | null) {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['team-members', teamId] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['team-members', teamId] })
 
   const create = useMutation({
     mutationFn: async (data: { email: string; displayName?: string }) => {
@@ -49,7 +49,7 @@ export function useTeamMemberMutations(teamId: string | null) {
       if (teamId) await api.members.assignTeam(member.id, teamId)
       return member
     },
-    onSuccess: () => { inv(); toast('Member added') },
+    onSuccess: () => { invalidate(); toast('Member added') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
@@ -57,7 +57,7 @@ export function useTeamMemberMutations(teamId: string | null) {
     mutationFn: (memberId: string) => teamId
       ? api.members.removeTeam(memberId, teamId)
       : api.members.remove(memberId),
-    onSuccess: () => { inv(); toast('Member removed') },
+    onSuccess: () => { invalidate(); toast('Member removed') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 

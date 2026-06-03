@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
-import type { LlmService, LlmMessage, LlmResponse, Action } from './interface.js'
+import type { LlmService, LlmMessage, LlmResponse } from './interface.js'
+import { parseResponse } from './openai.js'
 
 export class GroqLlmService implements LlmService {
   private client: OpenAI
@@ -27,17 +28,5 @@ export class GroqLlmService implements LlmService {
 
     const text = response.choices[0]?.message?.content ?? ''
     return parseResponse(text)
-  }
-}
-
-function parseResponse(text: string): LlmResponse {
-  try {
-    const parsed = JSON.parse(text) as { reply?: string; actions?: unknown[] }
-    return {
-      reply:   typeof parsed.reply === 'string' ? parsed.reply : 'Done.',
-      actions: Array.isArray(parsed.actions) ? (parsed.actions as Action[]) : [],
-    }
-  } catch {
-    return { reply: text, actions: [] }
   }
 }

@@ -13,22 +13,22 @@ export function useRules(subjectId: string | null) {
 export function useRuleMutations(subjectId: string | null) {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['rules', subjectId] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['rules', subjectId] })
 
   const create = useMutation({
     mutationFn: (data: Parameters<typeof api.rules.create>[1]) => api.rules.create(subjectId!, data),
-    onSuccess: () => { inv(); toast('Rule created') },
+    onSuccess: () => { invalidate(); toast('Rule created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof api.rules.update>[1] }) =>
       api.rules.update(id, data),
-    onSuccess: () => { inv(); toast('Rule updated') },
+    onSuccess: () => { invalidate(); toast('Rule updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.rules.remove,
-    onSuccess: () => { inv(); toast('Rule deleted') },
+    onSuccess: () => { invalidate(); toast('Rule deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }
