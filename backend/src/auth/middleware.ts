@@ -156,3 +156,14 @@ export async function requirePlatformAdmin(req: FastifyRequest, reply: FastifyRe
     req.tenant = tenant
   }
 }
+
+export async function requireActiveSubscription(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const { subscriptionStatus, gracePeriodEndsAt } = req.tenant
+  if (subscriptionStatus === 'cancelled') {
+    return reply.status(402).send({ error: 'subscription_cancelled' })
+  }
+  if (subscriptionStatus === 'past_due') {
+    const expired = gracePeriodEndsAt && gracePeriodEndsAt < new Date()
+    if (expired) return reply.status(402).send({ error: 'subscription_expired' })
+  }
+}
