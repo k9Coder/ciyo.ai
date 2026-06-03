@@ -159,13 +159,14 @@ export interface ChatSession {
 }
 
 export interface ChatMessage {
-  id:          string
-  sessionId:   string
-  role:        'user' | 'assistant'
-  content:     string
-  actionsJson: unknown[] | null
-  appliedAt:   string | null
-  createdAt:   string
+  id:                 string
+  sessionId:          string
+  role:               'user' | 'assistant'
+  content:            string
+  actionsJson:        unknown[] | null
+  appliedAt:          string | null
+  createdAt:          string
+  hasVersionSnapshot: boolean
 }
 
 export interface AssistantChatResponse {

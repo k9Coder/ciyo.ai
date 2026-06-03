@@ -159,6 +159,8 @@ export const api = {
       request<{ sessions: ChatSession[] }>('GET', '/v1/assistant/sessions'),
     messages: (sessionId: string) =>
       request<{ messages: ChatMessage[] }>('GET', `/v1/assistant/sessions/${sessionId}/messages`),
+    revertMessage: (messageId: string) =>
+      request<{ reverted: number }>('POST', `/v1/assistant/messages/${messageId}/revert`),
   },
   invites: {
     create: (opts: { email?: string; role?: Member['role'] }) =>

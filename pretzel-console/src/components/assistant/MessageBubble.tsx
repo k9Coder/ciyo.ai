@@ -1,4 +1,5 @@
 import type { ChatMessage } from '../../types'
+import { useRevertMessage } from '../../hooks/useAssistant'
 
 interface MessageBubbleProps {
   message:   ChatMessage
@@ -26,6 +27,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const hasActions = Array.isArray(message.actionsJson) && message.actionsJson.length > 0
   const isApplied  = !!message.appliedAt
   const count      = hasActions ? (message.actionsJson as unknown[]).length : 0
+  const revert     = useRevertMessage()
 
   return (
     <div style={{
@@ -74,14 +76,29 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {isApplied && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: 'rgba(74,222,128,0.08)',
-            border: '1px solid rgba(74,222,128,0.28)',
-            borderRadius: 20, padding: '3px 10px',
-            fontSize: 11, color: '#4ade80', fontWeight: 500,
-          }}>
-            ✓ {count} change{count !== 1 ? 's' : ''} applied
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(74,222,128,0.08)',
+              border: '1px solid rgba(74,222,128,0.28)',
+              borderRadius: 20, padding: '3px 10px',
+              fontSize: 11, color: '#4ade80', fontWeight: 500,
+            }}>
+              ✓ {count} change{count !== 1 ? 's' : ''} applied
+            </div>
+            {message.hasVersionSnapshot && (
+              <button
+                onClick={() => revert.mutate(message.id)}
+                disabled={revert.isPending}
+                style={{
+                  background: 'none', border: 'none', padding: '2px 4px',
+                  fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer',
+                  textDecoration: 'underline', opacity: revert.isPending ? 0.5 : 1,
+                }}
+              >
+                {revert.isPending ? 'Reverting…' : 'Revert changes from this message'}
+              </button>
+            )}
           </div>
         )}
       </div>

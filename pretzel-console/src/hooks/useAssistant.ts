@@ -48,3 +48,15 @@ export function useApplyActions() {
     },
   })
 }
+
+export function useRevertMessage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (messageId: string) => api.assistant.revertMessage(messageId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subjects'] })
+      qc.invalidateQueries({ queryKey: ['rules'] })
+      qc.invalidateQueries({ queryKey: ['assistant-messages'] })
+    },
+  })
+}
