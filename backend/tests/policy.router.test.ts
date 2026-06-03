@@ -58,6 +58,16 @@ async function makeRegisteredApp(tenantOverrides: Record<string, unknown> = {}) 
   return app
 }
 
+// ── Stub db for last-updates queries ────────────────────────────────────────
+vi.mock('../src/db/client.js', () => {
+  const mockWhere = vi.fn().mockResolvedValue([{ publishedAt: new Date('2026-01-01T00:00:00Z') }])
+  return {
+    db: {
+      select:  vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: mockWhere }) }),
+    },
+  }
+})
+
 describe('requireActiveSubscription preHandler', () => {
   it('returns 402 subscription_cancelled', async () => {
     const app = await makeRegisteredApp({ subscriptionStatus: 'cancelled' })
@@ -90,5 +100,20 @@ describe('requireActiveSubscription preHandler', () => {
     const app = await makeRegisteredApp()
     const res = await app.inject({ method: 'GET', url: '/policy' })
     expect(res.statusCode).toBe(200)
+  })
+})
+
+describe('GET /policy/last-updates', () => {
+  it('returns { ts } with the last publishedAt epoch', async () => {
+    const app = await makeRegisteredApp()
+    const res = await app.inject({ method: 'GET', url: '/policy/last-updates' })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().ts).toBe(new Date('2026-01-01T00:00:00Z').getTime())
+  })
+
+  it('returns 402 for cancelled subscription', async () => {
+    const app = await makeRegisteredApp({ subscriptionStatus: 'cancelled' })
+    const res = await app.inject({ method: 'GET', url: '/policy/last-updates' })
+    expect(res.statusCode).toBe(402)
   })
 })

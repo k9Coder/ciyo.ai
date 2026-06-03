@@ -1,6 +1,7 @@
 import { eq, desc, max, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { policies, type PolicyRow } from '../db/schema.js'
+import { policyBus, policyUpdatedEvent } from '../events/policy-bus.js'
 
 export async function getVersionOnly(tenantId: string): Promise<number | null> {
   const [row] = await db
@@ -21,9 +22,10 @@ export async function getLatestPolicy(tenantId: string): Promise<PolicyRow | nul
 }
 
 export async function publishPolicy(tenantId: string, policyJson: unknown): Promise<number> {
-  const current = await getVersionOnly(tenantId)
+  const current     = await getVersionOnly(tenantId)
   const nextVersion = (current ?? 0) + 1
   await db.insert(policies).values({ tenantId, version: nextVersion, policyJson })
+  policyBus.emit(policyUpdatedEvent(tenantId))
   return nextVersion
 }
 
