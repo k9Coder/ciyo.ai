@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { max, eq } from 'drizzle-orm'
 import {
+  resolveClerkJwt,
   requireOrgTokenOrClerkAuth,
   requireAdminTokenOrClerkAdmin,
   requireActiveSubscription,
@@ -56,44 +57,34 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
   )
 
   fastify.get('/events', async (req, reply) => {
-    // Auth: token from ?token= query param (EventSource cannot send custom headers)
     const { token } = req.query as { token?: string }
-    if (!token) return reply.status(401).send({ error: 'Missing token' })
+    if (!token) return reply.status(401).send({ error: 'Missing token query param' })
 
-    // Validate by passing as Bearer header to existing middleware
-    const fakeReq = Object.assign(Object.create(req), {
-      headers: { ...req.headers, authorization: `Bearer ${token}` },
-    })
-    let authError = false
-    const fakeReply = {
-      status: () => ({ send: () => { authError = true } }),
-      sent: false,
-    }
-    await requireOrgTokenOrClerkAuth(fakeReq as any, fakeReply as any)
-    if (authError || !(fakeReq as any).tenant) return reply.status(401).send({ error: 'Unauthorized' })
+    await resolveClerkJwt(req, reply, token)
+    if (reply.sent) return  // 401 already written by the helper
 
-    const tenant = (fakeReq as any).tenant
-    if (tenant.subscriptionStatus === 'cancelled') {
-      return reply.status(402).send({ error: 'subscription_cancelled' })
-    }
-
+    reply.hijack()
     const res = reply.raw
+
     res.writeHead(200, {
-      'Content-Type':  'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection':    'keep-alive',
+      'Content-Type':                     'text/event-stream',
+      'Cache-Control':                    'no-cache',
+      'Connection':                       'keep-alive',
+      'X-Accel-Buffering':                'no',
+      'Access-Control-Allow-Origin':      req.headers.origin ?? '*',
+      'Access-Control-Allow-Credentials': 'true',
     })
+    res.write(': connected\n\n')
 
-    const send     = () => { if (!req.raw.destroyed) res.write('data: policy_updated\n\n') }
-    const keepAlive = setInterval(() => { if (!req.raw.destroyed) res.write(': keep-alive\n\n') }, 25_000)
+    const send      = () => { if (!req.raw.destroyed) res.write('data: {}\n\n') }
+    const event     = policyUpdatedEvent(req.member!.tenantId)
+    const heartbeat = setInterval(() => { if (!req.raw.destroyed) res.write(': ping\n\n') }, 25_000)
 
-    policyBus.on(policyUpdatedEvent(tenant.id), send)
+    policyBus.on(event, send)
     req.raw.on('close', () => {
-      policyBus.off(policyUpdatedEvent(tenant.id), send)
-      clearInterval(keepAlive)
+      policyBus.off(event, send)
+      clearInterval(heartbeat)
     })
-
-    return new Promise(() => {}) // hold the connection open
   })
 
   fastify.post('/policy/publish', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {

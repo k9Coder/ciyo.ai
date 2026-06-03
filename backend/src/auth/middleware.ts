@@ -34,7 +34,7 @@ async function resolveOrgToken(
   request.tokenPrefix = parsed.prefix as 'ps_live' | 'ps_adm'
 }
 
-async function resolveClerkJwt(
+export async function resolveClerkJwt(
   request: FastifyRequest,
   reply: FastifyReply,
   token: string
