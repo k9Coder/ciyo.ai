@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify'
+import { eq, and, desc } from 'drizzle-orm'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
+import { db } from '../db/client.js'
+import { subjects, subjectVersions } from '../db/schema.js'
 import { listSubjects, createSubject, updateSubject, deleteSubject } from './service.js'
 
 export async function subjectsRouter(fastify: FastifyInstance): Promise<void> {
@@ -23,5 +26,29 @@ export async function subjectsRouter(fastify: FastifyInstance): Promise<void> {
   fastify.delete('/subjects/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     await deleteSubject(req.tenant.id, (req.params as { id: string }).id)
     return reply.status(204).send()
+  })
+
+  fastify.get('/subjects/:subjectId/versions', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
+    const { subjectId } = req.params as { subjectId: string }
+
+    const [subject] = await db
+      .select({ id: subjects.id })
+      .from(subjects)
+      .where(and(eq(subjects.id, subjectId), eq(subjects.tenantId, req.tenant.id)))
+    if (!subject) return reply.status(404).send({ error: 'Subject not found' })
+
+    const versions = await db
+      .select({
+        id:                subjectVersions.id,
+        version:           subjectVersions.version,
+        source:            subjectVersions.source,
+        conversationMsgId: subjectVersions.conversationMsgId,
+        createdAt:         subjectVersions.createdAt,
+      })
+      .from(subjectVersions)
+      .where(eq(subjectVersions.subjectId, subjectId))
+      .orderBy(desc(subjectVersions.version))
+
+    return { versions }
   })
 }
