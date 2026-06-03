@@ -19,14 +19,27 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0f0f13]/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
-          <span className="text-[#a78bfa]">🥨</span>
-          <span className="text-[15px] tracking-tight">Pretzel</span>
+          <svg width="26" height="26" viewBox="0 0 56 56" fill="none" aria-label="ciyo.ai logo">
+            <rect width="56" height="56" rx="14" fill="rgba(167,139,250,0.08)"/>
+            <path d="M20 14 L14 14 L14 42 L20 42"
+                  stroke="#a78bfa" strokeWidth="3"
+                  strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="34" cy="28" r="5" fill="#a78bfa"/>
+            <path d="M30 18 L38 18 L38 24"
+                  stroke="#a78bfa" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+          </svg>
+          <span className="text-[15px] tracking-tight">
+            <span className="text-white font-bold">c</span>
+            <span className="text-[#a78bfa] font-bold">i</span>
+            <span className="text-white font-bold">yo</span>
+            <span className="text-[#94a3b8] font-normal text-[12px]">.ai</span>
+          </span>
           {process.env.NEXT_PUBLIC_ENV === 'staging' && (
             <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider bg-amber-500 text-white">
               STAGING
             </span>
           )}
-          <span className="text-[11px] font-normal text-[#94a3b8]">by ciyo.ai</span>
         </Link>
 
         <nav className="hidden gap-1 md:flex">
