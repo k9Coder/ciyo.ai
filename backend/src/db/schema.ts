@@ -213,6 +213,49 @@ export const chatMessages = pgTable('chat_messages', {
   sessionIdx: index().on(t.sessionId),
 }))
 
+// ── Subject Snapshot (stored in subject_versions.snapshot) ───────────────────
+export interface SubjectSnapshot {
+  name:        string
+  description: string | null
+  divisionId:  string | null
+  teamId:      string | null
+  active:      boolean
+  rules: Array<{
+    id:                  string
+    kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+    keywords:            string[] | null
+    pattern:             string | null
+    destinations:        string[]
+    destinationGroupIds: string[]
+    action:              'warn' | 'block'
+    message:             string | null
+    reportLevel:         'none' | 'minimal' | 'medium' | 'rich'
+    active:              boolean
+  }>
+}
+
+// ── Subject Versions ──────────────────────────────────────────────────────────
+// One row per subject per version snapshot. Source 'pre_ai_apply' is taken
+// BEFORE executeActions runs — restoring it undoes what the AI message did.
+export const subjectVersionSourceEnum = pgEnum('subject_version_source', [
+  'pre_ai_apply',
+  'rollback',
+])
+
+export const subjectVersions = pgTable('subject_versions', {
+  id:                uuid('id').primaryKey().defaultRandom(),
+  tenantId:          uuid('tenant_id').notNull().references(() => tenants.id),
+  subjectId:         uuid('subject_id').notNull().references(() => subjects.id, { onDelete: 'cascade' }),
+  version:           integer('version').notNull(),
+  snapshot:          jsonb('snapshot').notNull().$type<SubjectSnapshot>(),
+  source:            subjectVersionSourceEnum('source').notNull(),
+  conversationMsgId: uuid('conversation_msg_id').references(() => chatMessages.id, { onDelete: 'set null' }),
+  createdAt:         timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  subjectVersionUniq: unique().on(t.subjectId, t.version),
+  conversationMsgIdx: index().on(t.conversationMsgId),
+}))
+
 // ── Invites ───────────────────────────────────────────────────────────────────
 export const invites = pgTable('invites', {
   id:           uuid('id').primaryKey().defaultRandom(),
@@ -272,3 +315,6 @@ export type NewChatMessage = typeof chatMessages.$inferInsert
 
 export type Invite    = typeof invites.$inferSelect
 export type NewInvite = typeof invites.$inferInsert
+
+export type SubjectVersion    = typeof subjectVersions.$inferSelect
+export type NewSubjectVersion = typeof subjectVersions.$inferInsert
