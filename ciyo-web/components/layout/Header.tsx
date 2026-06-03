@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { APP_URL } from '@/lib/config'
 
 const NAV = [
   { href: '/product',   label: 'Product' },
@@ -20,6 +21,11 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
           <span className="text-[#a78bfa]">🥨</span>
           <span className="text-[15px] tracking-tight">Pretzel</span>
+          {process.env.NEXT_PUBLIC_ENV === 'staging' && (
+            <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider bg-amber-500 text-white">
+              STAGING
+            </span>
+          )}
           <span className="text-[11px] font-normal text-[#94a3b8]">by ciyo.ai</span>
         </Link>
 
@@ -33,11 +39,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="https://app.ciyo.ai"
+          <Link href={APP_URL}
             className="hidden text-[13px] text-[#94a3b8] hover:text-white md:block">
             Sign in
           </Link>
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href={`${APP_URL}/onboarding`}
             className="rounded-lg bg-[#7c6aff] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#6b59ee]">
             Start Free
           </Link>
