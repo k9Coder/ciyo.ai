@@ -5,6 +5,7 @@ import { dispatchEvents } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@/detection/types";
 import { syncPolicy } from "@/policy/sync";
+import { checkForUpdates } from "@/background/update-check";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
@@ -22,13 +23,13 @@ if (import.meta.env['VITE_SENTRY_DSN_EXTENSION']) {
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   logger.info("ciyo installed. Reason:", reason);
-  void syncPolicy();
-  chrome.alarms.create("policy-sync", { periodInMinutes: 30 });
+  void syncPolicy();                                            // full sync on first install
+  chrome.alarms.create("policy-sync", { periodInMinutes: 2 }); // reduced from 30
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "policy-sync") {
-    void syncPolicy();
+    void checkForUpdates(); // lightweight timestamp check; falls back to syncPolicy internally
   }
 });
 
