@@ -5,6 +5,7 @@ import { getTheme, setTheme } from '../../utils/theme'
 import { useState } from 'react'
 import { UpgradeBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
+import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 
 const NAV = [
   { to: '/dashboard',  label: 'Dashboard',  icon: '▦',  ai: false, dividerAbove: false },
@@ -47,6 +48,7 @@ function ThemeToggle() {
 export function AppLayout() {
   const { organization } = useOrganization()
   const { user } = useUser()
+  usePolicyRealtime()
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-base)',
