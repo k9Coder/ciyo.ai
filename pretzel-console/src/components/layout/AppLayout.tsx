@@ -63,7 +63,7 @@ export function AppLayout() {
         <Link to="/dashboard" style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', gap: 10,
                       textDecoration: 'none', cursor: 'pointer' }}>
-          <PretzelLogo size={28} />
+          <PretzelLogo size={22} />
           <div style={{ lineHeight: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-primary)' }}>
               Pretzel
