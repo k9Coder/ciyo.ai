@@ -3,8 +3,7 @@ export function PretzelLogo({ size = 28 }: { size?: number }) {
     <img
       src="/pretzel-logo.png"
       alt="Pretzel logo"
-      height={size}
-      style={{ display: 'block', width: 'auto', flexShrink: 0 }}
+      style={{ display: 'block', height: size, width: 'auto', flexShrink: 0 }}
     />
   )
 }
