@@ -9,22 +9,22 @@ export function useDestinationGroups() {
 export function useDestinationGroupMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['destination-groups'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['destination-groups'] })
 
   const create = useMutation({
     mutationFn: api.destinationGroups.create,
-    onSuccess: () => { inv(); toast('Group created') },
+    onSuccess: () => { invalidate(); toast('Group created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof api.destinationGroups.update>[1] }) =>
       api.destinationGroups.update(id, data),
-    onSuccess: () => { inv(); toast('Group updated') },
+    onSuccess: () => { invalidate(); toast('Group updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.destinationGroups.remove,
-    onSuccess: () => { inv(); toast('Group deleted') },
+    onSuccess: () => { invalidate(); toast('Group deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }

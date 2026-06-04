@@ -9,22 +9,22 @@ export function useSiteConfigs() {
 export function useSiteConfigMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['site-configs'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['site-configs'] })
 
   const create = useMutation({
     mutationFn: api.siteConfigs.create,
-    onSuccess: () => { inv(); toast('Site config created') },
+    onSuccess: () => { invalidate(); toast('Site config created') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({
     mutationFn: ({ domain, data }: { domain: string; data: Parameters<typeof api.siteConfigs.update>[1] }) =>
       api.siteConfigs.update(domain, data),
-    onSuccess: () => { inv(); toast('Site config updated') },
+    onSuccess: () => { invalidate(); toast('Site config updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const remove = useMutation({
     mutationFn: api.siteConfigs.remove,
-    onSuccess: () => { inv(); toast('Site config deleted') },
+    onSuccess: () => { invalidate(); toast('Site config deleted') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   return { create, update, remove }

@@ -76,88 +76,46 @@ async function bootstrap() {
   });
 }
 
-// ─── Scan limit banner ───────────────────────────────────────────────────────
+// ─── Notification banners ────────────────────────────────────────────────────
 
-function showScanLimitBanner(): void {
-  if (document.getElementById("ciyo-scan-limit-banner")) return;
-
-  const banner = document.createElement("div");
-  banner.id = "ciyo-scan-limit-banner";
-  Object.assign(banner.style, {
-    position: "fixed",
-    bottom: "24px",
-    right: "24px",
-    zIndex: "2147483647",
-    background: "#1a0a0a",
-    color: "#f0f0f0",
-    borderRadius: "10px",
-    padding: "12px 14px",
-    fontSize: "13px",
-    lineHeight: "1.4",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.35)",
-    border: "1px solid rgba(239,68,68,0.4)",
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "10px",
-    maxWidth: "320px",
-    fontFamily: "system-ui, -apple-system, sans-serif",
-  });
-
-  const msg = document.createElement("span");
-  msg.style.flex = "1";
-  msg.innerHTML = "<strong style='color:#ef4444'>Scan limit reached.</strong> Protection is still active but scan usage has hit the monthly cap. Upgrade your plan in the admin console.";
-
-  const dismiss = document.createElement("button");
-  dismiss.textContent = "×";
-  Object.assign(dismiss.style, {
-    background: "none",
-    border: "none",
-    color: "rgba(255,255,255,0.45)",
-    cursor: "pointer",
-    fontSize: "18px",
-    lineHeight: "1",
-    padding: "0",
-    flexShrink: "0",
-  });
-  dismiss.addEventListener("click", () => banner.remove());
-
-  banner.appendChild(msg);
-  banner.appendChild(dismiss);
-  document.body.appendChild(banner);
-
-  setTimeout(() => banner.remove(), 12000);
+interface BannerOpts {
+  id:            string
+  background:    string
+  border:        string
+  alignItems:    string
+  maxWidth:      string
+  setContent:    (span: HTMLSpanElement) => void
+  autoDismissMs: number
 }
 
-// ─── Sign-in nudge ───────────────────────────────────────────────────────────
-
-function showSignInNudge(): void {
-  if (document.getElementById("ciyo-signin-nudge")) return;
+function showBanner(opts: BannerOpts): void {
+  if (document.getElementById(opts.id)) return;
 
   const banner = document.createElement("div");
-  banner.id = "ciyo-signin-nudge";
+  banner.id = opts.id;
   Object.assign(banner.style, {
     position: "fixed",
     bottom: "24px",
     right: "24px",
     zIndex: "2147483647",
-    background: "#16213e",
+    background: opts.background,
     color: "#f0f0f0",
     borderRadius: "10px",
     padding: "12px 14px",
     fontSize: "13px",
     lineHeight: "1.4",
     boxShadow: "0 4px 24px rgba(0,0,0,0.35)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    border: opts.border,
     display: "flex",
-    alignItems: "center",
+    alignItems: opts.alignItems,
     gap: "10px",
-    maxWidth: "300px",
+    maxWidth: opts.maxWidth,
     fontFamily: "system-ui, -apple-system, sans-serif",
   });
 
   const msg = document.createElement("span");
   msg.style.flex = "1";
-  msg.textContent = "Sign in to Ciyo to start protecting your prompts.";
+  opts.setContent(msg);
 
   const dismiss = document.createElement("button");
   dismiss.textContent = "×";
@@ -177,7 +135,35 @@ function showSignInNudge(): void {
   banner.appendChild(dismiss);
   document.body.appendChild(banner);
 
-  setTimeout(() => banner.remove(), 8000);
+  setTimeout(() => banner.remove(), opts.autoDismissMs);
+}
+
+function showScanLimitBanner(): void {
+  showBanner({
+    id:         "ciyo-scan-limit-banner",
+    background: "#1a0a0a",
+    border:     "1px solid rgba(239,68,68,0.4)",
+    alignItems: "flex-start",
+    maxWidth:   "320px",
+    setContent: (span) => {
+      span.innerHTML = "<strong style='color:#ef4444'>Scan limit reached.</strong> Protection is still active but scan usage has hit the monthly cap. Upgrade your plan in the admin console.";
+    },
+    autoDismissMs: 12000,
+  });
+}
+
+function showSignInNudge(): void {
+  showBanner({
+    id:         "ciyo-signin-nudge",
+    background: "#16213e",
+    border:     "1px solid rgba(255,255,255,0.1)",
+    alignItems: "center",
+    maxWidth:   "300px",
+    setContent: (span) => {
+      span.textContent = "Sign in to Ciyo to start protecting your prompts.";
+    },
+    autoDismissMs: 8000,
+  });
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

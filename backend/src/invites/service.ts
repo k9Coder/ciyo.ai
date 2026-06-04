@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { invites, members, tenants, users, type Invite } from '../db/schema.js'
 

@@ -8,10 +8,7 @@ import type {
   InvitePreview, InviteCreated,
   BillingStatus,
 } from './types'
-
-const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.['VITE_API_BASE'])
-  ? (import.meta.env['VITE_API_BASE'] as string)
-  : 'http://localhost:3000'
+import { API_BASE } from './lib/api'
 
 const TOKEN_KEY = 'ps_admin_token'
 
