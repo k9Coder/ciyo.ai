@@ -90,4 +90,34 @@ test.describe('Assistant API', () => {
     expect(res.status()).toBe(401)
     await api.dispose()
   })
+
+  test('POST /v1/assistant/apply executes create_division action', async () => {
+    const api = await playwrightRequest.newContext()
+    const { assistantOrgMessageId } = getSeedState()
+
+    const res = await api.post(`${BACKEND}/v1/assistant/apply`, {
+      headers: adminHeaders(),
+      data:    { messageId: assistantOrgMessageId },
+    })
+
+    expect(res.status()).toBe(200)
+    const body = await res.json() as { applied: Array<{ op: string }>; errors: string[] }
+    expect(body.errors).toHaveLength(0)
+    expect(body.applied).toHaveLength(1)
+    expect(body.applied[0]!.op).toBe('create_division')
+    await api.dispose()
+  })
+
+  test('POST /v1/assistant/apply create_division is idempotent on second apply (409)', async () => {
+    const api = await playwrightRequest.newContext()
+    const { assistantOrgMessageId } = getSeedState()
+
+    const res = await api.post(`${BACKEND}/v1/assistant/apply`, {
+      headers: adminHeaders(),
+      data:    { messageId: assistantOrgMessageId },
+    })
+
+    expect(res.status()).toBe(409)
+    await api.dispose()
+  })
 })

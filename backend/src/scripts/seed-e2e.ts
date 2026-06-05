@@ -240,13 +240,29 @@ async function main() {
     }))
   )
 
+  const [chatSession3] = await db.insert(chatSessions).values({
+    tenantId,
+    memberId: member!.id,
+    title:    'E2E Org Management Test Session',
+  }).returning({ id: chatSessions.id })
+
+  const [chatMessage3] = await db.insert(chatMessages).values({
+    sessionId:   chatSession3!.id,
+    role:        'assistant',
+    content:     'I will create the E2E Legal division.',
+    actionsJson: [
+      { op: 'create_division', name: 'E2E Legal' },
+    ],
+  }).returning({ id: chatMessages.id })
+
   const seedState = {
     tenantId,
     orgToken,
     adminToken,
-    assistantSessionId:     chatSession1!.id,
-    assistantMessageId:     chatMessage1!.id,
-    assistantFlowMessageId: chatMessage2!.id,
+    assistantSessionId:      chatSession1!.id,
+    assistantMessageId:      chatMessage1!.id,
+    assistantFlowMessageId:  chatMessage2!.id,
+    assistantOrgMessageId:   chatMessage3!.id,
     freeTenantId,
     freeOrgToken,
     freeAdminToken,

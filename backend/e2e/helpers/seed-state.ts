@@ -11,6 +11,7 @@ interface SeedState {
   assistantSessionId:     string
   assistantMessageId:     string
   assistantFlowMessageId: string
+  assistantOrgMessageId:  string
   freeTenantId:           string
   freeOrgToken:           string
   freeAdminToken:         string
