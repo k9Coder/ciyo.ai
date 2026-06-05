@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     '/', '/product', '/pricing', '/solutions',
     '/solutions/healthcare', '/solutions/legal', '/solutions/fintech', '/solutions/engineering',
-    '/security', '/about', '/blog',
+    '/security', '/about', '/blog', '/accessibility',
   ]
   const posts = getAllPosts().map(p => ({
     url: `https://ciyo.ai/blog/${p.slug}`,

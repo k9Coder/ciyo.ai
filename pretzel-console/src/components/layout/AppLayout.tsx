@@ -8,13 +8,13 @@ import { PretzelLogo } from './PretzelLogo'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 
 const NAV = [
-  { to: '/dashboard',  label: 'Dashboard',  icon: '▦',  ai: false, dividerAbove: false },
-  { to: '/subjects',   label: 'Policies',   icon: '⊡',  ai: false, dividerAbove: false },
-  { to: '/org',        label: 'Teams',      icon: '⊞',  ai: false, dividerAbove: false },
-  { to: '/members',    label: 'Members',    icon: '◎',  ai: false, dividerAbove: false },
-  { to: '/audit',      label: 'Audit Log',  icon: '≡',  ai: false, dividerAbove: false },
-  { to: '/assistant',  label: 'AI Assistant', icon: null, ai: true,  dividerAbove: true  },
-  { to: '/settings',   label: 'Settings',   icon: '⚙',  ai: false, dividerAbove: false },
+  { to: '/dashboard', label: 'Dashboard', icon: '▦', ai: false, dividerAbove: false },
+  { to: '/subjects', label: 'Policies', icon: '⊡', ai: false, dividerAbove: false },
+  { to: '/org', label: 'Teams', icon: '⊞', ai: false, dividerAbove: false },
+  { to: '/members', label: 'Members', icon: '◎', ai: false, dividerAbove: false },
+  { to: '/audit', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
+  { to: '/assistant', label: 'AI Assistant', icon: null, ai: true, dividerAbove: true },
+  { to: '/settings', label: 'Settings', icon: '⚙', ai: false, dividerAbove: false },
 ]
 
 function SparkleIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
@@ -51,8 +51,10 @@ export function AppLayout() {
   usePolicyRealtime()
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-base)',
-                  fontFamily: "'Segoe UI', system-ui, sans-serif", overflow: 'hidden' }}>
+    <div style={{
+      display: 'flex', height: '100vh', background: 'var(--bg-base)',
+      fontFamily: "'Segoe UI', system-ui, sans-serif", overflow: 'hidden'
+    }}>
 
       {/* Sidebar */}
       <aside style={{
@@ -60,9 +62,11 @@ export function AppLayout() {
         borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
       }}>
         {/* Logo */}
-        <Link to="/dashboard" style={{ padding: '18px 16px', borderBottom: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      textDecoration: 'none', cursor: 'pointer' }}>
+        <Link to="/dashboard" style={{
+          padding: '18px 16px', borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          textDecoration: 'none', cursor: 'pointer'
+        }}>
           <PretzelLogo size={22} />
           <div style={{ lineHeight: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-primary)' }}>
@@ -90,12 +94,16 @@ export function AppLayout() {
             margin: '10px 10px 4px', background: 'var(--bg-surface-raised)',
             borderRadius: 8, padding: '8px 12px', border: '1px solid var(--border)',
           }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: 9,
-                          letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+            <div style={{
+              color: 'var(--text-muted)', fontSize: 9,
+              letterSpacing: '1.5px', textTransform: 'uppercase'
+            }}>
               Organization
             </div>
-            <div style={{ color: 'var(--text-primary)', fontSize: 12,
-                          fontWeight: 600, marginTop: 3 }}>
+            <div style={{
+              color: 'var(--text-primary)', fontSize: 12,
+              fontWeight: 600, marginTop: 3
+            }}>
               {organization.name}
             </div>
           </div>
@@ -148,9 +156,11 @@ export function AppLayout() {
         }}>
           <UserButton />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ color: 'var(--text-primary)', fontSize: 11,
-                          fontWeight: 600, overflow: 'hidden',
-                          textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{
+              color: 'var(--text-primary)', fontSize: 11,
+              fontWeight: 600, overflow: 'hidden',
+              textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+            }}>
               {user?.fullName ?? user?.primaryEmailAddress?.emailAddress}
             </div>
             <div style={{ color: 'var(--text-muted)', fontSize: 9 }}>Admin</div>
@@ -184,10 +194,16 @@ export function AppLayout() {
             <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>Pretzel</span>
             <span style={{ marginLeft: 6 }}>© {new Date().getFullYear()} · DLP for the AI era</span>
           </span>
-          <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
-             style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-            ciyo.ai
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Link to="/accessibility"
+              style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
+              נגישות
+            </Link>
+            <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+              style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
+              ciyo.ai
+            </a>
+          </div>
         </div>
       </div>
 

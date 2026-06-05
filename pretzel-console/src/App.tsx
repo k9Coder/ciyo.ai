@@ -16,6 +16,7 @@ import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
+import { AccessibilityPage } from './pages/AccessibilityPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
 
@@ -33,6 +34,7 @@ export function App() {
           <Route path="/unauthorized"   element={<UnauthorizedPage />} />
           <Route path="/onboarding"     element={<OnboardingPage />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
+          <Route path="/accessibility"  element={<AccessibilityPage />} />
           <Route
             element={
               <RequireAuth>
