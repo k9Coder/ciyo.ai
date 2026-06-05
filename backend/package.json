@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file=.env --import tsx/esm --watch src/index.ts",
+    "dev:debug": "node --inspect --env-file=.env --import tsx/esm --watch src/index.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
     "db:generate": "drizzle-kit generate",
@@ -13,7 +14,7 @@
     "check-db": "node scripts/check-db.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:e2e": "tsx --env-file=.env src/scripts/seed-e2e.ts",
+    "seed:e2e": "tsx --env-file=.env --env-file=../e2e/.env.e2e src/scripts/seed-e2e.ts",
     "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts",
     "seed:fintech": "tsx --env-file=.env src/scripts/seed-fintech.ts",
     "test:e2e": "playwright test --config playwright.config.ts"
