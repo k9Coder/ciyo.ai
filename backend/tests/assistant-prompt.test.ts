@@ -74,4 +74,42 @@ describe('buildSystemPrompt', () => {
     const prompt = buildSystemPrompt(empty)
     expect(prompt).toContain('Members: []')
   })
+
+  // security guardrails
+  it('contains SECURITY GUARDRAILS section', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('SECURITY GUARDRAILS')
+  })
+
+  it('enforces tenant isolation — no cross-tenant data', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('TENANT ISOLATION')
+    expect(prompt).toContain('complete and only dataset')
+  })
+
+  it('instructs refusal of prompt injection attempts', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('PROMPT INJECTION')
+    expect(prompt).toContain('ignore previous instructions')
+  })
+
+  it('instructs scope lock for out-of-scope requests', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('SCOPE LOCK')
+  })
+
+  it('instructs system prompt confidentiality', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('SYSTEM PROMPT CONFIDENTIALITY')
+  })
+
+  it('instructs data exfiltration guard', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('DATA EXFILTRATION GUARD')
+  })
+
+  it('instructs action integrity — no invented IDs or ops', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('ACTION INTEGRITY')
+  })
 })
