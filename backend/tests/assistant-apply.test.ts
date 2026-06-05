@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { buildApp } from '../src/app.js'
 import { db } from '../src/db/client.js'
-import { subjects, rules } from '../src/db/schema.js'
-import { eq } from 'drizzle-orm'
+import { subjects, rules, divisions, teams, members, memberTeams } from '../src/db/schema.js'
+import { eq, and } from 'drizzle-orm'
 import { executeActions } from '../src/assistant/apply.js'
 import type { FastifyInstance } from 'fastify'
 
@@ -65,5 +65,123 @@ describe('executeActions', () => {
     expect(errors[0]).toContain('create_rule')
     expect(applied).toHaveLength(1)
     expect(applied[0]!.op).toBe('create_subject')
+  })
+
+  // --- divisions ---
+
+  it('creates a division', async () => {
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'create_division', name: 'Legal' },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(divisions).where(eq(divisions.tenantId, tenantId))
+    expect(rows.some(d => d.name === 'Legal')).toBe(true)
+    expect(rows.find(d => d.name === 'Legal')?.slug).toBe('legal')
+  })
+
+  it('creates a division and auto-slugifies the name', async () => {
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'create_division', name: 'Research & Development' },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(divisions).where(eq(divisions.tenantId, tenantId))
+    expect(rows.find(d => d.name === 'Research & Development')?.slug).toBe('research-development')
+  })
+
+  it('deletes a division', async () => {
+    const [div] = await db.insert(divisions).values({ tenantId, name: 'ToDelete', slug: 'todelete' }).returning()
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'delete_division', divisionId: div!.id },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(divisions).where(eq(divisions.id, div!.id))
+    expect(rows).toHaveLength(0)
+  })
+
+  // --- teams ---
+
+  it('creates a team inside a division', async () => {
+    const [div] = await db.insert(divisions).values({ tenantId, name: 'Eng', slug: 'eng' }).returning()
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'create_team', name: 'Backend', divisionId: div!.id },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(teams).where(eq(teams.tenantId, tenantId))
+    expect(rows.some(t => t.name === 'Backend')).toBe(true)
+    expect(rows.find(t => t.name === 'Backend')?.slug).toBe('backend')
+  })
+
+  it('deletes a team', async () => {
+    const [div] = await db.insert(divisions).values({ tenantId, name: 'Eng', slug: 'eng' }).returning()
+    const [team] = await db.insert(teams).values({ tenantId, divisionId: div!.id, name: 'Backend', slug: 'backend' }).returning()
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'delete_team', teamId: team!.id },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(teams).where(eq(teams.id, team!.id))
+    expect(rows).toHaveLength(0)
+  })
+
+  // --- members ---
+
+  it('creates a member', async () => {
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'create_member', email: 'jane@example.com', role: 'member' },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(members).where(eq(members.tenantId, tenantId))
+    expect(rows.some(m => m.email === 'jane@example.com')).toBe(true)
+  })
+
+  it('creates a division_admin member and sets adminDivisionId', async () => {
+    const [div] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning()
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'create_member', email: 'admin@example.com', role: 'division_admin', adminDivisionId: div!.id },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(members).where(eq(members.tenantId, tenantId))
+    const created = rows.find(m => m.email === 'admin@example.com')
+    expect(created?.role).toBe('division_admin')
+    expect(created?.adminDivisionId).toBe(div!.id)
+  })
+
+  it('deletes a member', async () => {
+    const [mem] = await db.insert(members).values({ tenantId, email: 'del@example.com', role: 'member' }).returning()
+    const { applied, errors } = await executeActions(tenantId, [
+      { op: 'delete_member', memberId: mem!.id },
+    ])
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const rows = await db.select().from(members).where(eq(members.id, mem!.id))
+    expect(rows).toHaveLength(0)
+  })
+
+  it('assigns and removes a member from a team', async () => {
+    const [div]  = await db.insert(divisions).values({ tenantId, name: 'Eng', slug: 'eng' }).returning()
+    const [team] = await db.insert(teams).values({ tenantId, divisionId: div!.id, name: 'Backend', slug: 'backend' }).returning()
+    const [mem]  = await db.insert(members).values({ tenantId, email: 'dev@example.com', role: 'member' }).returning()
+
+    const assign = await executeActions(tenantId, [
+      { op: 'assign_member_team', memberId: mem!.id, teamId: team!.id },
+    ])
+    expect(assign.errors).toHaveLength(0)
+    const afterAssign = await db.select().from(memberTeams)
+      .where(and(eq(memberTeams.memberId, mem!.id), eq(memberTeams.teamId, team!.id)))
+    expect(afterAssign).toHaveLength(1)
+
+    const remove = await executeActions(tenantId, [
+      { op: 'remove_member_team', memberId: mem!.id, teamId: team!.id },
+    ])
+    expect(remove.errors).toHaveLength(0)
+    const afterRemove = await db.select().from(memberTeams)
+      .where(and(eq(memberTeams.memberId, mem!.id), eq(memberTeams.teamId, team!.id)))
+    expect(afterRemove).toHaveLength(0)
   })
 })
