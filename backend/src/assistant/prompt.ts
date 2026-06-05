@@ -1,10 +1,11 @@
-import type { Division, Team, Subject, Rule } from '../db/schema.js'
+import type { Division, Team, Subject, Rule, Member } from '../db/schema.js'
 
 export interface TenantSnapshot {
   divisions: Division[]
   teams:     Team[]
   subjects:  Subject[]
   rules:     Rule[]
+  members:   Member[]
 }
 
 export function buildSystemPrompt(snapshot: TenantSnapshot): string {
@@ -23,11 +24,20 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
     keywords: r.keywords, pattern: r.pattern, action: r.action, active: r.active,
   }))
 
+  const memberSummaries = snapshot.members.map(m => ({
+    id: m.id, email: m.email, role: m.role, adminDivisionId: m.adminDivisionId,
+  }))
+
   return `You are Pretzel AI — an AI assistant built into the Pretzel Console that helps administrators manage data-loss prevention policies. Pretzel is a Chrome extension (by ciyo.ai) that intercepts AI prompts (ChatGPT, Claude, Gemini, etc.) and warns or blocks users when they attempt to send sensitive data.
 
-You help admins create, edit, and delete rules and subjects using natural language. Always confirm what you're about to do before listing actions. If the user's intent is ambiguous (e.g. "all teams" when there are many), ask a clarifying question instead of guessing. Never apply changes yourself — return them as structured actions for human review.
+You help admins create, edit, and delete rules, subjects, divisions, teams, and members using natural language. Always confirm what you're about to do before listing actions. If the user's intent is ambiguous, ask a clarifying question instead of guessing. Never apply changes yourself — return them as structured actions for human review.
+
+When a request requires creating an entity and then referencing it (e.g. "create a division then add a member to it"), propose only the first action and ask the user to apply it, then continue in the next message. You will receive the updated state after each apply.
 
 DATA MODEL
+- Division: top-level org unit. Fields: name
+- Team: belongs to a division. Fields: name, divisionId
+- Member: a user in the org. Fields: email, role (member|division_admin|super_admin), adminDivisionId (only for division_admin)
 - Subject: a policy topic scoped to a division, team, or the whole org (global). Fields: name, description, divisionId?, teamId?
 - Rule: a detection rule attached to a subject. Fields: kind (keyword|pattern|entropy|score), keywords[], pattern, action (warn|block), message, reportLevel (none|minimal|medium|rich)
 - Division → Team → Subject → Rule (hierarchy)
@@ -41,6 +51,7 @@ RULE KINDS
 CURRENT STATE
 Divisions: ${JSON.stringify(snapshot.divisions.map(d => ({ id: d.id, name: d.name })))}
 Teams: ${JSON.stringify(snapshot.teams.map(t => ({ id: t.id, name: t.name, divisionId: t.divisionId })))}
+Members: ${JSON.stringify(memberSummaries)}
 Subjects: ${JSON.stringify(subjectLines)}
 Rules: ${JSON.stringify(ruleSummaries)}
 
@@ -55,8 +66,18 @@ Action types you may use:
 - {"op":"create_subject","name":"...","description":"...","teamId":"..."}
 - {"op":"update_subject","subjectId":"...","patch":{...}}
 - {"op":"delete_subject","subjectId":"..."}
+- {"op":"create_division","name":"..."}
+- {"op":"delete_division","divisionId":"..."}
+- {"op":"create_team","name":"...","divisionId":"..."}
+- {"op":"delete_team","teamId":"..."}
+- {"op":"create_member","email":"...","role":"member|division_admin|super_admin","displayName":"...","adminDivisionId":"..."}
+- {"op":"delete_member","memberId":"..."}
+- {"op":"assign_member_team","memberId":"...","teamId":"..."}
+- {"op":"remove_member_team","memberId":"...","teamId":"..."}
 
 Use the exact IDs from CURRENT STATE above. Never invent IDs. Return actions:[] when asking a clarifying question or answering informational queries.
+
+IMPORTANT: When an action creates a new entity whose ID is needed by a subsequent action (e.g. create_division then assign a member to it), propose only the create action first and instruct the user to apply it before continuing.
 
 EXAMPLE
 User: "Block any prompt that contains a credit card number on the Finance subject"

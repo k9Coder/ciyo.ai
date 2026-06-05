@@ -4,17 +4,25 @@ import { chatSessions, chatMessages, teams, type ChatSession, type ChatMessage }
 import { listDivisions } from '../divisions/service.js'
 import { listSubjects } from '../subjects/service.js'
 import { listAllActiveRules } from '../rules/service.js'
+import { listMembers } from '../members/service.js'
 import { buildSystemPrompt, type TenantSnapshot } from './prompt.js'
 import type { LlmService, Action } from './llm/interface.js'
 
 async function fetchSnapshot(tenantId: string): Promise<TenantSnapshot> {
-  const [divisions, allTeams, subjects, rules] = await Promise.all([
+  const [divisions, allTeams, subjects, rules, membersRaw] = await Promise.all([
     listDivisions(tenantId),
     db.select().from(teams).where(eq(teams.tenantId, tenantId)),
     listSubjects(tenantId),
     listAllActiveRules(tenantId),
+    listMembers(tenantId),
   ])
-  return { divisions, teams: allTeams, subjects, rules }
+  return {
+    divisions,
+    teams: allTeams,
+    subjects,
+    rules,
+    members: membersRaw.map(({ user: _user, ...m }) => m),
+  }
 }
 
 export async function sendMessage(opts: {
