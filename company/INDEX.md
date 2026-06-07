@@ -2,6 +2,8 @@
 
 > **For any LLM agent:** Read this file first when given a task at ciyo.ai.
 > It tells you who to invoke, how to choose, and where their skill file lives.
+>
+> **Development pipeline** (feature → commit/push flow, QA gates): [`PIPELINE.md`](PIPELINE.md)
 
 ---
 
@@ -48,7 +50,8 @@ Use this to skip the division head and go straight to the right person.
 | Admin console SPA, React, Zustand, ChatPane, billing gates, component library | Chloe Dubois | `staff:chloe-dubois` |
 | Detection rules, regex patterns, entropy, PII classification, fuzzy matching | Omar Hassan | `staff:omar-hassan` |
 | AWS infra, CI/CD, Docker, PostgreSQL ops, SOC 2 controls, monitoring, secrets | Ryan Kowalski | `staff:ryan-kowalski` |
-| E2E test suite, Playwright, release QA, regression, detection bypass testing | Natasha Ivanova | `staff:natasha-ivanova` |
+| E2E test suite, Playwright automation, release gate, detection bypass testing, QA team lead | Natasha Ivanova (QA Lead) | `staff:natasha-ivanova` |
+| Manual test plans, Playwright runs against test DB, exploratory testing, UX regression | Lena Hartmann (QA Analyst) | `staff:lena-hartmann` |
 | Product roadmap, feature specs, sprint planning, user research, success metrics | Ben Cho | `staff:ben-cho` |
 | All engineering — unclear which layer, or cross-cutting (backend + frontend + extension) | Marcus Webb (CTO) | `staff:marcus-webb` |
 
@@ -119,7 +122,8 @@ Use this to skip the division head and go straight to the right person.
 | Chloe Dubois | Frontend Engineer (Console) | Engineering | `staff:chloe-dubois` |
 | Omar Hassan | Detection Engineer | Engineering | `staff:omar-hassan` |
 | Ryan Kowalski | DevOps / Platform Engineer | Engineering | `staff:ryan-kowalski` |
-| Natasha Ivanova | QA Engineer | Engineering | `staff:natasha-ivanova` |
+| Natasha Ivanova | QA Lead | Engineering | `staff:natasha-ivanova` |
+| Lena Hartmann | QA Analyst | Engineering | `staff:lena-hartmann` |
 | Ben Cho | Product Manager | Product | `staff:ben-cho` |
 | Alexei Petrov | Head of Security Research | Security Research | `staff:alexei-petrov` |
 | Isabella Torres | Threat Intelligence Analyst | Security Research | `staff:isabella-torres` |
@@ -146,7 +150,7 @@ company/staff/
 ├── executive/          ethan-cole.md
 ├── engineering/        marcus-webb.md  yuki-tanaka.md  arjun-mehta.md
 │                       chloe-dubois.md  omar-hassan.md  ryan-kowalski.md
-│                       natasha-ivanova.md
+│                       natasha-ivanova.md  lena-hartmann.md
 ├── product/            ben-cho.md
 ├── security-research/  alexei-petrov.md  isabella-torres.md
 ├── go-to-market/       sofia-reyes.md  priya-nair.md  jake-morrison.md

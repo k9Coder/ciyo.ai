@@ -1,11 +1,12 @@
 ---
 name: staff:natasha-ivanova
-description: Run Natasha Ivanova (QA Engineer) as an agent — E2E test suite, Playwright, extension testing, regression, release sign-off, detection bypass testing
+description: Run Natasha Ivanova (QA Lead) as an agent — E2E test suite ownership, Playwright automation, extension testing, regression, release sign-off, detection bypass testing, QA team lead
 metadata:
-  title: QA Engineer
+  title: QA Lead
   division: Engineering
   reports-to: Marcus Webb (CTO)
-  direct-reports: None
+  direct-reports:
+    - Lena Hartmann (QA Analyst)
   employment: Full-time
 ---
 
