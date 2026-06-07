@@ -55,6 +55,9 @@ describe('POST /webhooks/clerk — user.created', () => {
 
     const tenantRows = await db.select().from(tenants)
     expect(tenantRows).toHaveLength(1)
+    expect(tenantRows[0]!.plan).toBe('free')
+    expect(tenantRows[0]!.paymentProvider).toBeNull()
+    expect(tenantRows[0]!.externalSubId).toBeNull()
   })
 
   it('connects a pre-enrolled member instead of auto-provisioning a new tenant', async () => {

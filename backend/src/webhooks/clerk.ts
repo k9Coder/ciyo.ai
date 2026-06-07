@@ -69,14 +69,11 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
           const adminSecret = generateSecret()
 
           const [tenant] = await db.insert(tenants).values({
-            name:               `${first_name ?? localPart}'s Organization`,
+            name:          `${first_name ?? localPart}'s Organization`,
             slug,
-            orgTokenHash:       await hashToken(orgSecret),
-            adminTokenHash:     await hashToken(adminSecret),
-            paymentProvider:    'stripe',
-            externalSubId:      `sub_auto_${slug}`,
-            subscriptionStatus: 'active',
-            plan:               'pro',
+            orgTokenHash:  await hashToken(orgSecret),
+            adminTokenHash: await hashToken(adminSecret),
+            plan:          'free',
           }).returning({ id: tenants.id })
 
           await db.insert(members).values({
