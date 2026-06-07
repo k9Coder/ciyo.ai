@@ -1,6 +1,11 @@
 {
   "private": true,
   "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter pretzel-api dev",
+    "dev:extension": "pnpm --filter pretzel-extension dev",
+    "dev:console": "pnpm --filter pretzel-console dev",
+    "dev:web": "pnpm --filter ciyo-web dev",
     "set-env:staging": "node scripts/set-env.mjs staging",
     "set-env:prod": "node scripts/set-env.mjs prod"
   }
