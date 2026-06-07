@@ -7,18 +7,27 @@ import { getTheme, setTheme } from "@/shared/theme";
 import { Spinner } from "../options/components/loading";
 
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
-  const color = danger ? "var(--status-danger)" : "var(--brand-primary)";
+  const [theme, setThemeState] = useState<"dark" | "light">(() => getTheme());
+  useEffect(() => {
+    const observer = new MutationObserver(() => setThemeState(getTheme()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  const src = theme === "light"
+    ? chrome.runtime.getURL("logo-light.png")
+    : chrome.runtime.getURL("logo-dark.png");
   return (
-    <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
-      <rect width="56" height="56" rx="14" fill="var(--bg-surface)"/>
-      <path d="M20 14 L14 14 L14 42 L20 42"
-            stroke={color} strokeWidth="3"
-            strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="34" cy="28" r="5" fill={color}/>
-      <path d="M30 18 L38 18 L38 24"
-            stroke={color} strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-    </svg>
+    <span style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
+      <img src={src} alt="Pretzel logo" style={{ display: "block", height: size, width: "auto" }} />
+      {danger && (
+        <span style={{
+          position: "absolute", top: -2, right: -2,
+          width: 7, height: 7, borderRadius: "50%",
+          background: "var(--status-danger)",
+          border: "1.5px solid var(--bg-surface)",
+        }} />
+      )}
+    </span>
   );
 }
 
@@ -61,7 +70,7 @@ function SignedOutView() {
           display: "flex", alignItems: "center", gap: 10,
           background: "none", border: "none", cursor: "pointer", padding: 0,
         }}>
-          <LogoIcon size={28} />
+          <LogoIcon size={36} />
           <Wordmark />
         </button>
         <ThemeToggle />
@@ -150,7 +159,7 @@ function SignedInView() {
           display: "flex", alignItems: "center", gap: 10,
           background: "none", border: "none", cursor: "pointer", padding: 0,
         }}>
-          <LogoIcon size={28} danger={hasEvents} />
+          <LogoIcon size={36} danger={hasEvents} />
           <Wordmark danger={hasEvents} />
         </button>
         <ThemeToggle />

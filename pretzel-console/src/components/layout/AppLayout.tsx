@@ -67,7 +67,7 @@ export function AppLayout() {
           display: 'flex', alignItems: 'center', gap: 10,
           textDecoration: 'none', cursor: 'pointer'
         }}>
-          <PretzelLogo size={22} />
+          <PretzelLogo size={48} />
           <div style={{ lineHeight: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-primary)' }}>
               Pretzel

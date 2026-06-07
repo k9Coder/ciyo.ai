@@ -40,7 +40,7 @@ export default defineManifest({
   options_page: "src/options/index.html",
   web_accessible_resources: [
     {
-      resources: ["src/content/overlay/*"],
+      resources: ["src/content/overlay/*", "logo-dark.png", "logo-light.png"],
       matches: LLM_HOSTS,
     },
   ],

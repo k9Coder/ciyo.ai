@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Finding, Action } from "@/detection/types";
 import { buildSnippet } from "@/detection/engine";
 
@@ -21,18 +21,17 @@ const BADGE_CLASS: Record<string, string> = {
 };
 
 function CiyoLogo() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="56" height="56" rx="14" fill="var(--brand-dim)"/>
-      <path d="M20 14 L14 14 L14 42 L20 42"
-        stroke="var(--brand)" strokeWidth="3"
-        strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="34" cy="28" r="5" fill="var(--brand)"/>
-      <path d="M30 18 L38 18 L38 24"
-        stroke="var(--brand)" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-    </svg>
+  const [isDark, setIsDark] = useState(() =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches
   );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  const src = chrome.runtime.getURL(isDark ? "logo-dark.png" : "logo-light.png");
+  return <img src={src} alt="Pretzel" style={{ width: 20, height: 20, display: "block" }} />;
 }
 
 function FindingRow({ finding, promptText }: { finding: Finding; promptText: string }) {

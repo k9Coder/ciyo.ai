@@ -2,9 +2,11 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
+import { getTheme } from "@/shared/theme";
 import "./loading.css";
 
 interface LoadingState {
@@ -26,11 +28,16 @@ export function useLoading(): LoadingContextValue {
 }
 
 function CiyoLogo() {
+  const [theme, setThemeState] = useState(() => getTheme());
+  useEffect(() => {
+    const observer = new MutationObserver(() => setThemeState(getTheme()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  const src = chrome.runtime.getURL(theme === "light" ? "logo-light.png" : "logo-dark.png");
   return (
     <div className="ciyo-overlay-brand">
-      <span style={{ color: "var(--text-primary)" }}>c</span>
-      <span style={{ color: "var(--brand-primary)" }}>i</span>
-      <span style={{ color: "var(--text-primary)" }}>yo</span>
+      <img src={src} alt="Pretzel" style={{ height: 28, width: "auto", display: "block" }} />
     </div>
   );
 }
