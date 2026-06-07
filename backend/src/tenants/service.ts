@@ -3,8 +3,8 @@ import { db } from '../db/client.js'
 import { tenants, type Tenant } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 
-export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
-  const rows = await db.select().from(tenants).where(eq(tenants.slug, slug))
+export async function getTenantById(id: string): Promise<Tenant | null> {
+  const rows = await db.select().from(tenants).where(eq(tenants.id, id))
   return rows[0] ?? null
 }
 
@@ -40,14 +40,14 @@ export async function updateTenantName(tenantId: string, name: string): Promise<
   return row!
 }
 
-export async function rotateOrgToken(tenantId: string, slug: string): Promise<string> {
+export async function rotateOrgToken(tenantId: string): Promise<string> {
   const secret = generateSecret()
   await db.update(tenants).set({ orgTokenHash: await hashToken(secret) }).where(eq(tenants.id, tenantId))
-  return formatToken('ps_live', slug, secret)
+  return formatToken('ps_live', tenantId, secret)
 }
 
-export async function rotateAdminToken(tenantId: string, slug: string): Promise<string> {
+export async function rotateAdminToken(tenantId: string): Promise<string> {
   const secret = generateSecret()
   await db.update(tenants).set({ adminTokenHash: await hashToken(secret) }).where(eq(tenants.id, tenantId))
-  return formatToken('ps_adm', slug, secret)
+  return formatToken('ps_adm', tenantId, secret)
 }

@@ -13,7 +13,6 @@ export async function createCheckoutSession(opts: {
   plan:       'starter' | 'business'
   seatCount:  number
   tenantName: string
-  tenantSlug: string
   email:      string
 }): Promise<{ url: string }> {
   const stripeClient = stripe()
@@ -34,14 +33,12 @@ export async function createCheckoutSession(opts: {
       trial_period_days: trialDays > 0 ? trialDays : undefined,
       metadata: {
         tenantName: opts.tenantName,
-        tenantSlug: opts.tenantSlug,
         plan:       opts.plan,
         seatCount:  String(opts.seatCount),
       },
     },
     metadata: {
       tenantName: opts.tenantName,
-      tenantSlug: opts.tenantSlug,
       plan:       opts.plan,
       seatCount:  String(opts.seatCount),
     },
@@ -86,7 +83,6 @@ export async function handleStripeEvent(rawBody: string, sig: string): Promise<v
 
       const result = await activateTenant({
         name:             meta['tenantName'] ?? email,
-        slug:             meta['tenantSlug'] ?? email.split('@')[0]!.replace(/[^a-z0-9]/gi, '').toLowerCase(),
         paymentProvider:  'stripe',
         externalSubId:    (session.subscription as string) ?? '',
         plan,

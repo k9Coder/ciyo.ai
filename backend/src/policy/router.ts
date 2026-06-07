@@ -28,16 +28,16 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
       if (!row) return reply.status(404).send({ error: 'No policy published' })
 
       const snapshot = row.policyJson as PolicyDoc
-      const policy   = req.member
+      const policy = req.member
         ? await resolveMemberPolicy(req.tenant.id, req.member.id, snapshot)
         : snapshot
 
       const response: Record<string, unknown> = {
-        version:    row.version,
+        version: row.version,
         policy,
         tenantName: req.tenant.name,
-        plan:       req.tenant.plan,
-        expiresAt:  req.tenant.gracePeriodEndsAt?.toISOString() ?? null,
+        plan: req.tenant.plan,
+        expiresAt: req.tenant.gracePeriodEndsAt?.toISOString() ?? null,
       }
       if (req.tenant.subscriptionStatus === 'past_due') response['warning'] = 'subscription_expiring'
       return response
@@ -56,6 +56,7 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     }
   )
 
+  // SSE route
   fastify.get('/events', async (req, reply) => {
     const { token } = req.query as { token?: string }
     if (!token) return reply.status(401).send({ error: 'Missing token query param' })
@@ -67,17 +68,17 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     const res = reply.raw
 
     res.writeHead(200, {
-      'Content-Type':                     'text/event-stream',
-      'Cache-Control':                    'no-cache',
-      'Connection':                       'keep-alive',
-      'X-Accel-Buffering':                'no',
-      'Access-Control-Allow-Origin':      req.headers.origin ?? '*',
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': req.headers.origin ?? '*',
       'Access-Control-Allow-Credentials': 'true',
     })
     res.write(': connected\n\n')
 
-    const send      = () => { if (!req.raw.destroyed) res.write('data: {}\n\n') }
-    const event     = policyUpdatedEvent(req.member!.tenantId)
+    const send = () => { if (!req.raw.destroyed) res.write('data: {}\n\n') }
+    const event = policyUpdatedEvent(req.member!.tenantId)
     const heartbeat = setInterval(() => { if (!req.raw.destroyed) res.write(': ping\n\n') }, 25_000)
 
     policyBus.on(event, send)
@@ -88,7 +89,7 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
   })
 
   fastify.post('/policy/publish', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
-    const policy  = await compilePolicy(req.tenant.id)
+    const policy = await compilePolicy(req.tenant.id)
     const version = await publishPolicy(req.tenant.id, policy)
     return { version }
   })
@@ -99,12 +100,8 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
 
   fastify.post('/policy/rollback/:version', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { version } = req.params as { version: string }
-    const newVersion  = await rollback(req.tenant.id, parseInt(version, 10))
+    const newVersion = await rollback(req.tenant.id, parseInt(version, 10))
     return { version: newVersion }
   })
 
-  fastify.get('/tenant', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
-    const { id, name, slug, plan, subscriptionStatus } = req.tenant
-    return { id, name, slug, plan, subscriptionStatus }
-  })
 }

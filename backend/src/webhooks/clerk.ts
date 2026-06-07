@@ -61,19 +61,15 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
         } else {
           // No pre-enrollment — auto-provision a tenant for this user
           const localPart = email.split('@')[0] ?? email
-          const base = localPart.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
-          const suffix = Math.random().toString(36).slice(2, 7)
-          const slug = `${base}-${suffix}`
 
           const orgSecret   = generateSecret()
           const adminSecret = generateSecret()
 
           const [tenant] = await db.insert(tenants).values({
-            name:          `${first_name ?? localPart}'s Organization`,
-            slug,
-            orgTokenHash:  await hashToken(orgSecret),
+            name:           `${first_name ?? localPart}'s Organization`,
+            orgTokenHash:   await hashToken(orgSecret),
             adminTokenHash: await hashToken(adminSecret),
-            plan:          'free',
+            plan:           'free',
           }).returning({ id: tenants.id })
 
           await db.insert(members).values({

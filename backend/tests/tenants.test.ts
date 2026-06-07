@@ -1,22 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { getTenantBySlug, updateSubscriptionStatus } from '../src/tenants/service.js'
+import { getTenantById, updateSubscriptionStatus } from '../src/tenants/service.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
 
 beforeEach(async () => { await truncateAll() })
 
-describe('getTenantBySlug', () => {
-  it('returns tenant for known slug', async () => {
-    const { tenantId } = await buildTestTenant('acmelaw')
-    const tenant = await getTenantBySlug('acmelaw')
+describe('getTenantById', () => {
+  it('returns tenant for known id', async () => {
+    const { tenantId } = await buildTestTenant()
+    const tenant = await getTenantById(tenantId)
     expect(tenant?.id).toBe(tenantId)
-    expect(tenant?.slug).toBe('acmelaw')
   })
 
-  it('returns null for unknown slug', async () => {
-    expect(await getTenantBySlug('unknown')).toBeNull()
+  it('returns null for unknown id', async () => {
+    expect(await getTenantById('00000000-0000-0000-0000-000000000000')).toBeNull()
   })
 })
 

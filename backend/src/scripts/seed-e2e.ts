@@ -38,12 +38,9 @@ async function main() {
 
   const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
-  const orgToken    = formatToken('ps_live', 'e2etenant', orgSecret)
-  const adminToken  = formatToken('ps_adm',  'e2etenant', adminSecret)
 
   const [tenant] = await db.insert(tenants).values({
     name:               'E2E Test Org',
-    slug:               'e2etenant',
     orgTokenHash:       await hashToken(orgSecret),
     adminTokenHash:     await hashToken(adminSecret),
     paymentProvider:    'stripe',
@@ -54,6 +51,8 @@ async function main() {
   }).returning({ id: tenants.id })
 
   const tenantId = tenant!.id
+  const orgToken   = formatToken('ps_live', tenantId, orgSecret)
+  const adminToken = formatToken('ps_adm',  tenantId, adminSecret)
 
   const [division] = await db.insert(divisions).values({
     tenantId,
@@ -195,12 +194,9 @@ async function main() {
   // ── Free-tier tenant for billing limit tests ─────────────────────────────
   const freeOrgSecret   = generateSecret()
   const freeAdminSecret = generateSecret()
-  const freeOrgToken    = formatToken('ps_live', 'e2efree', freeOrgSecret)
-  const freeAdminToken  = formatToken('ps_adm',  'e2efree', freeAdminSecret)
 
   const [freeTenant] = await db.insert(tenants).values({
     name:               'E2E Free Org',
-    slug:               'e2efree',
     orgTokenHash:       await hashToken(freeOrgSecret),
     adminTokenHash:     await hashToken(freeAdminSecret),
     paymentProvider:    null,
@@ -210,7 +206,9 @@ async function main() {
     seatCount:          1,
   }).returning({ id: tenants.id })
 
-  const freeTenantId = freeTenant!.id
+  const freeTenantId  = freeTenant!.id
+  const freeOrgToken   = formatToken('ps_live', freeTenantId, freeOrgSecret)
+  const freeAdminToken = formatToken('ps_adm',  freeTenantId, freeAdminSecret)
 
   // Seed 3 members (free plan allows 3)
   const freeUsers = await db.insert(users).values([

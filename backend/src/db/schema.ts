@@ -27,7 +27,6 @@ export const users = pgTable('users', {
 export const tenants = pgTable('tenants', {
   id:                 uuid('id').primaryKey().defaultRandom(),
   name:               text('name').notNull(),
-  slug:               text('slug').notNull(),
   orgTokenHash:       text('org_token_hash').notNull(),
   adminTokenHash:     text('admin_token_hash').notNull(),
   paymentProvider:    text('payment_provider'),            // nullable — free tier has no provider
@@ -40,9 +39,7 @@ export const tenants = pgTable('tenants', {
   gracePeriodDays:    integer('grace_period_days').notNull().default(7),
   gracePeriodEndsAt:  timestamp('grace_period_ends_at', { withTimezone: true }),
   createdAt:          timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-}, (t) => ({
-  slugUniq: unique().on(t.slug),
-}))
+})
 
 // ── Policies (versioned snapshots) ───────────────────────────────────────────
 export const policies = pgTable('policies', {

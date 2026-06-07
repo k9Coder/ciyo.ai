@@ -3,7 +3,7 @@ import supertest from 'supertest'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { activateTenant } from '../src/billing/service.js'
-import { getTenantBySlug } from '../src/tenants/service.js'
+import { getTenantById } from '../src/tenants/service.js'
 import { buildApp } from '../src/app.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
@@ -15,26 +15,27 @@ describe('activateTenant', () => {
   it('creates tenant row and returns plaintext tokens', async () => {
     const result = await activateTenant({
       name: 'Acme Law LLP',
-      slug: 'acmelaw',
       paymentProvider: 'stripe',
       externalSubId: 'sub_test_001',
+      plan: 'business',
+      seatCount: 10,
     })
-    expect(result.orgToken).toMatch(/^ps_live_acmelaw_[A-Za-z0-9_-]{32}$/)
-    expect(result.adminToken).toMatch(/^ps_adm_acmelaw_[A-Za-z0-9_-]{32}$/)
+    const UUID_RE = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    expect(result.orgToken).toMatch(new RegExp(`^ps_live_${UUID_RE}_[A-Za-z0-9_-]{32}$`))
+    expect(result.adminToken).toMatch(new RegExp(`^ps_adm_${UUID_RE}_[A-Za-z0-9_-]{32}$`))
   })
 
   it('persists hashed tokens (not plaintext) in the database', async () => {
-    await activateTenant({ name: 'A', slug: 'alaw', paymentProvider: 'stripe', externalSubId: 'sub_1' })
-    const tenant = await getTenantBySlug('alaw')
+    const result = await activateTenant({
+      name: 'A',
+      paymentProvider: 'stripe',
+      externalSubId: 'sub_1',
+      plan: 'starter',
+      seatCount: 1,
+    })
+    const tenant = await getTenantById(result.tenantId)
     expect(tenant?.subscriptionStatus).toBe('active')
     expect(tenant?.orgTokenHash).not.toMatch(/^ps_live/)
-  })
-
-  it('throws if slug already exists', async () => {
-    await activateTenant({ name: 'A', slug: 'dup', paymentProvider: 'stripe', externalSubId: 'sub_1' })
-    await expect(
-      activateTenant({ name: 'B', slug: 'dup', paymentProvider: 'stripe', externalSubId: 'sub_2' })
-    ).rejects.toThrow()
   })
 })
 
@@ -58,7 +59,7 @@ describe('POST /webhooks/stripe', () => {
       data: {
         object: {
           customer_email: 'admin@acme.com',
-          metadata: { tenantName: 'Acme Law LLP', tenantSlug: 'acme2law' },
+          metadata: { tenantName: 'Acme Law LLP', plan: 'business', seatCount: '10' },
           subscription: 'sub_stripe_001',
         },
       },
@@ -69,11 +70,12 @@ describe('POST /webhooks/stripe', () => {
       .set('stripe-signature', 'test')
       .send(JSON.stringify(event))
     expect(res.status).toBe(200)
-    expect(await getTenantBySlug('acme2law')).not.toBeNull()
+    const [row] = await db.select().from(tenants).where(eq(tenants.name, 'Acme Law LLP'))
+    expect(row).not.toBeUndefined()
   })
 
   it('sets past_due on invoice.payment_failed', async () => {
-    const { tenantId } = await buildTestTenant('invoicefirm')
+    const { tenantId } = await buildTestTenant()
     await db.update(tenants).set({ externalSubId: 'sub_fail_001' }).where(eq(tenants.id, tenantId))
     const event = {
       type: 'invoice.payment_failed',
@@ -84,6 +86,7 @@ describe('POST /webhooks/stripe', () => {
       .set('Content-Type', 'application/json')
       .set('stripe-signature', 'test')
       .send(JSON.stringify(event))
-    expect((await getTenantBySlug('invoicefirm'))?.subscriptionStatus).toBe('past_due')
+    const tenant = await getTenantById(tenantId)
+    expect(tenant?.subscriptionStatus).toBe('past_due')
   })
 })

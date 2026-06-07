@@ -91,7 +91,6 @@ export interface PolicyHistoryEntry {
 export interface TenantInfo {
   id: string
   name: string
-  slug: string
   plan: string
   subscriptionStatus: string
 }

@@ -13,23 +13,28 @@ describe('schema exports', () => {
 })
 
 describe('parseToken', () => {
-  const SECRET = 'a'.repeat(32)
+  const SECRET    = 'a'.repeat(32)
+  const TENANT_ID = '3f2a1b9c-4d5e-6789-abcd-ef0123456789'
 
   it('parses a valid org token', () => {
-    const result = parseToken(`ps_live_acmelaw_${SECRET}`)
-    expect(result).toEqual({ prefix: 'ps_live', slug: 'acmelaw', secret: SECRET })
+    const result = parseToken(`ps_live_${TENANT_ID}_${SECRET}`)
+    expect(result).toEqual({ prefix: 'ps_live', tenantId: TENANT_ID, secret: SECRET })
   })
 
   it('parses a valid admin token', () => {
-    expect(parseToken(`ps_adm_acmelaw_${SECRET}`)?.prefix).toBe('ps_adm')
+    expect(parseToken(`ps_adm_${TENANT_ID}_${SECRET}`)?.prefix).toBe('ps_adm')
   })
 
   it('returns null for wrong prefix', () => {
-    expect(parseToken(`ps_test_acmelaw_${SECRET}`)).toBeNull()
+    expect(parseToken(`ps_test_${TENANT_ID}_${SECRET}`)).toBeNull()
   })
 
   it('returns null for secret shorter than 32 chars', () => {
-    expect(parseToken('ps_live_acmelaw_tooshort')).toBeNull()
+    expect(parseToken(`ps_live_${TENANT_ID}_tooshort`)).toBeNull()
+  })
+
+  it('returns null for old slug-based token format', () => {
+    expect(parseToken(`ps_live_acmelaw_${SECRET}`)).toBeNull()
   })
 
   it('returns null for malformed string', () => {

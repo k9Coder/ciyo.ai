@@ -54,7 +54,6 @@ describe('GET /platform/v1/tenants', () => {
     expect(res.status).toBe(200)
     expect(Array.isArray(res.body)).toBe(true)
     expect(res.body).toHaveLength(1)
-    expect(res.body[0].slug).toBe('acme')
     expect(res.body[0].memberCount).toBe(1)
   })
 })

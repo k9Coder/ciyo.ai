@@ -22,14 +22,13 @@ export async function createPayPalSubscriptionUrl(opts: {
   plan:       'starter' | 'business'
   seatCount:  number
   tenantName: string
-  tenantSlug: string
   email:      string
 }): Promise<{ url: string }> {
   const token   = await getAccessToken()
   const planId  = opts.plan === 'business'
     ? process.env['PAYPAL_BUSINESS_PLAN_ID']!
     : process.env['PAYPAL_STARTER_PLAN_ID']!
-  const customId = `${opts.tenantSlug}|${opts.tenantName}|${opts.email}|${opts.plan}|${opts.seatCount}`
+  const customId = `${opts.tenantName}|${opts.email}|${opts.plan}|${opts.seatCount}`
 
   const res = await fetch(`${PAYPAL_API}/v1/billing/subscriptions`, {
     method:  'POST',
@@ -53,13 +52,12 @@ export async function createPayPalSubscriptionUrl(opts: {
 }
 
 function parseCustomId(raw: string): {
-  slug: string; name: string; email: string
+  name: string; email: string
   plan: 'starter' | 'business'; seatCount: number
 } | null {
-  const [slug, name, email, plan, seats] = raw.split('|')
-  if (!slug || !name || !email) return null
+  const [name, email, plan, seats] = raw.split('|')
+  if (!name || !email) return null
   return {
-    slug,
     name,
     email,
     plan:      (plan as 'starter' | 'business') ?? 'business',
@@ -77,7 +75,6 @@ export async function handlePayPalEvent(body: Record<string, unknown>): Promise<
       if (!parsed) return
       const result = await activateTenant({
         name:            parsed.name,
-        slug:            parsed.slug,
         paymentProvider: 'paypal',
         externalSubId:   (resource['id'] as string) ?? '',
         plan:            parsed.plan,

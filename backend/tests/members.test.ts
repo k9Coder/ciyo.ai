@@ -101,21 +101,3 @@ describe('DELETE /v1/members/:id/teams/:teamId', () => {
     expect(res.status).toBe(204)
   })
 })
-
-describe('POST /v1/auth/join', () => {
-  it('auto-provisions a member via org token', async () => {
-    const res = await supertest(app.server)
-      .post('/v1/auth/join')
-      .set('Authorization', `Bearer ${orgToken}`)
-      .send({ email: 'newuser@example.com' })
-    expect(res.status).toBe(201)
-    expect(res.body.email).toBe('newuser@example.com')
-    expect(res.body.role).toBe('member')
-  })
-
-  it('returns existing member if already joined', async () => {
-    await supertest(app.server).post('/v1/auth/join').set('Authorization', `Bearer ${orgToken}`).send({ email: 'existing@example.com' })
-    const res = await supertest(app.server).post('/v1/auth/join').set('Authorization', `Bearer ${orgToken}`).send({ email: 'existing@example.com' })
-    expect(res.status).toBe(200)
-  })
-})

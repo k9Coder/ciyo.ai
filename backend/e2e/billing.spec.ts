@@ -89,24 +89,14 @@ test.describe('Billing API', () => {
   })
 
   test('POST /v1/billing/free-signup creates a new tenant', async () => {
-    const api  = await playwrightRequest.newContext()
-    const slug = `e2efree-${Date.now()}`
-    const res  = await api.post(`${BACKEND}/v1/billing/free-signup`, {
-      data: { name: 'E2E Free Test', slug, email: `${slug}@example.com` },
+    const api = await playwrightRequest.newContext()
+    const res = await api.post(`${BACKEND}/v1/billing/free-signup`, {
+      data: { name: 'E2E Free Test', email: `e2efree-${Date.now()}@example.com` },
     })
     expect(res.status()).toBe(201)
     const body = await res.json() as { orgToken: string; adminToken: string }
     expect(body.orgToken).toMatch(/^ps_live_/)
     expect(body.adminToken).toMatch(/^ps_adm_/)
-    await api.dispose()
-  })
-
-  test('POST /v1/billing/free-signup returns 400 on invalid slug', async () => {
-    const api = await playwrightRequest.newContext()
-    const res = await api.post(`${BACKEND}/v1/billing/free-signup`, {
-      data: { name: 'Test', slug: 'INVALID SLUG!', email: 'test@example.com' },
-    })
-    expect(res.status()).toBe(400)
     await api.dispose()
   })
 })

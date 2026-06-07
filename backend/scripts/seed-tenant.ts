@@ -2,9 +2,10 @@ import { activateTenant } from '../src/billing/service.js'
 
 const result = await activateTenant({
   name: 'Acme Law Firm',
-  slug: 'acmefirm',
   paymentProvider: 'stripe',
   externalSubId: 'sub_local_test',
+  plan: 'business',
+  seatCount: 10,
 })
 
 console.log('\n=== Tenant created ===')

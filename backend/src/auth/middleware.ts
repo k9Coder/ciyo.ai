@@ -2,7 +2,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { parseToken, compareToken } from './tokens.js'
-import { getTenantBySlug } from '../tenants/service.js'
+import { getTenantById } from '../tenants/service.js'
 import { db } from '../db/client.js'
 import { tenants, members, users } from '../db/schema.js'
 
@@ -19,7 +19,7 @@ async function resolveOrgToken(
   if (!parsed) {
     return reply.status(401).send({ error: 'Invalid token format' })
   }
-  const tenant = await getTenantBySlug(parsed.slug)
+  const tenant = await getTenantById(parsed.tenantId)
   if (!tenant) {
     return reply.status(401).send({ error: 'Unknown tenant' })
   }
@@ -30,7 +30,7 @@ async function resolveOrgToken(
   if (requireAdmin && parsed.prefix !== 'ps_adm') {
     return reply.status(403).send({ error: 'Admin token required' })
   }
-  request.tenant      = tenant
+  request.tenant = tenant
   request.tokenPrefix = parsed.prefix as 'ps_live' | 'ps_adm'
 }
 
@@ -64,11 +64,11 @@ export async function resolveClerkJwt(
 
   let member = memberRows[0]!
   if (memberRows.length > 1) {
-    const slugHint = request.headers['x-tenant-slug'] as string | undefined
-    if (!slugHint) {
-      return reply.status(400).send({ error: 'Multiple organisations found — specify X-Tenant-Slug header' })
+    const tenantIdHint = request.headers['x-tenant-id'] as string | undefined
+    if (!tenantIdHint) {
+      return reply.status(400).send({ error: 'Multiple organisations found — specify X-Tenant-Id header' })
     }
-    const [t] = await db.select().from(tenants).where(eq(tenants.slug, slugHint))
+    const [t] = await db.select().from(tenants).where(eq(tenants.id, tenantIdHint))
     if (!t) return reply.status(401).send({ error: 'Unknown tenant' })
     const found = memberRows.find(m => m.tenantId === t.id)
     if (!found) return reply.status(401).send({ error: 'Not a member of that organisation' })
@@ -80,17 +80,9 @@ export async function resolveClerkJwt(
     request.tenant = t
   }
 
-  request.user        = user
-  request.member      = member
+  request.user = user
+  request.member = member
   request.tokenPrefix = 'clerk'
-}
-
-export async function requireOrgToken(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  return resolveOrgToken(req, reply, false)
-}
-
-export async function requireAdminToken(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  return resolveOrgToken(req, reply, true)
 }
 
 export async function requireClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -166,4 +158,4 @@ export async function requireActiveSubscription(req: FastifyRequest, reply: Fast
     const expired = gracePeriodEndsAt && gracePeriodEndsAt < new Date()
     if (expired) return reply.status(402).send({ error: 'subscription_expired' })
   }
-}
+}           

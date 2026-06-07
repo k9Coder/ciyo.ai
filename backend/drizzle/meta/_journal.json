@@ -5,78 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1778670276012,
-      "tag": "0000_reflective_amazoness",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1778877457000,
-      "tag": "0001_org_structure",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1778877458000,
-      "tag": "0002_policy_engine",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1778954510000,
-      "tag": "0003_clerk_auth",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1748822400000,
-      "tag": "0004_analytics_pipeline",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1748908800000,
-      "tag": "0005_scans",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1748995200000,
-      "tag": "0006_assistant",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1748995201000,
-      "tag": "0007_users_platform",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1748995202000,
-      "tag": "0008_invites",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "6",
-      "when": 1749081600000,
-      "tag": "0009_billing_v2",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "6",
-      "when": 1748995300000,
-      "tag": "0010_subject_versions",
+      "when": 1780865644703,
+      "tag": "0000_sticky_queen_noir",
       "breakpoints": true
     }
   ]

@@ -112,7 +112,6 @@ export function SettingsPage() {
 
             {/* Read-only rows */}
             {([
-              ['Slug', tenant.slug,  true],
               ['Plan', tenant.plan,  false],
             ] as [string, string, boolean][]).map(([label, value, mono]) => (
               <div key={label} style={rowStyle}>

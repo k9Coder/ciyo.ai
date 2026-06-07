@@ -7,7 +7,6 @@ import { teamsRouter } from './teams/router.js'
 import { membersRouter } from './members/router.js'
 import { subjectsRouter } from './subjects/router.js'
 import { rulesRouter } from './rules/router.js'
-import { joinRouter } from './auth/join.js'
 import { destinationGroupsRouter } from './destination-groups/router.js'
 import { siteConfigsRouter } from './site-configs/router.js'
 import { clerkWebhookRouter } from './webhooks/clerk.js'
@@ -27,7 +26,10 @@ import { logger } from './logger/index.js'
 
 export function buildApp() {
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' })
-  void app.register(cors)
+  void app.register(cors, {
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true,
+    credentials: true,
+  })
   void app.register(requestLoggingPlugin)
 
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
@@ -55,7 +57,6 @@ export function buildApp() {
   void app.register(membersRouter, { prefix: '/v1' })
   void app.register(subjectsRouter, { prefix: '/v1' })
   void app.register(rulesRouter, { prefix: '/v1' })
-  void app.register(joinRouter, { prefix: '/v1' })
   void app.register(destinationGroupsRouter, { prefix: '/v1' })
   void app.register(siteConfigsRouter, { prefix: '/v1' })
   void app.register(eventsRouter, { prefix: '/v1' })

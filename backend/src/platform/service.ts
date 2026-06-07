@@ -5,7 +5,6 @@ import { tenants, members } from '../db/schema.js'
 export interface TenantSummary {
   id:          string
   name:        string
-  slug:        string
   plan:        string
   memberCount: number
   createdAt:   Date
@@ -16,7 +15,6 @@ export async function listAllTenants(): Promise<TenantSummary[]> {
     .select({
       id:          tenants.id,
       name:        tenants.name,
-      slug:        tenants.slug,
       plan:        tenants.plan,
       createdAt:   tenants.createdAt,
       memberCount: sql<number>`count(${members.id})::int`,

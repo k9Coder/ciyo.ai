@@ -41,7 +41,7 @@ function makeApp(tenantOverrides: Record<string, unknown> = {}) {
   const app = Fastify()
   app.addHook('onRequest', async (req) => {
     ;(req as any).tenant = {
-      id: 't1', name: 'Acme', slug: 'acme', plan: 'pro',
+      id: 't1', name: 'Acme', plan: 'pro',
       gracePeriodEndsAt: null, subscriptionStatus: 'active',
       ...tenantOverrides,
     }

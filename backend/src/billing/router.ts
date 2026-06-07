@@ -11,18 +11,15 @@ import { PLAN_LIMITS, getScanLimit, getSeatLimit, isOverScanLimit, type Plan } f
 export async function billingRouter(fastify: FastifyInstance): Promise<void> {
 
   // ── Free-tier self-signup ─────────────────────────────────────────────────
-  fastify.post<{ Body: { name: string; slug: string; email: string } }>(
+  fastify.post<{ Body: { name: string; email: string } }>(
     '/billing/free-signup',
     async (req, reply) => {
-      const { name, slug, email } = req.body
-      if (!name || !slug || !email) {
-        return reply.status(400).send({ error: 'name, slug, and email are required' })
-      }
-      if (!/^[a-z0-9-]{2,40}$/.test(slug)) {
-        return reply.status(400).send({ error: 'slug must be 2-40 lowercase alphanumeric/hyphen characters' })
+      const { name, email } = req.body
+      if (!name || !email) {
+        return reply.status(400).send({ error: 'name and email are required' })
       }
       try {
-        const result = await freeTierSignup({ name, slug, email })
+        const result = await freeTierSignup({ name, email })
         return reply.status(201).send(result)
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Failed to create account'
@@ -33,17 +30,17 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
 
   // ── Stripe checkout session ───────────────────────────────────────────────
   fastify.post<{
-    Body: { plan: 'starter' | 'business'; seatCount: number; tenantName: string; tenantSlug: string; email: string }
+    Body: { plan: 'starter' | 'business'; seatCount: number; tenantName: string; email: string }
   }>('/billing/stripe/checkout', async (req, reply) => {
-    const { plan, seatCount, tenantName, tenantSlug, email } = req.body
-    if (!plan || !tenantName || !tenantSlug || !email) {
-      return reply.status(400).send({ error: 'plan, tenantName, tenantSlug, and email are required' })
+    const { plan, seatCount, tenantName, email } = req.body
+    if (!plan || !tenantName || !email) {
+      return reply.status(400).send({ error: 'plan, tenantName, and email are required' })
     }
     if (plan === 'business' && (seatCount ?? 0) < 10) {
       return reply.status(400).send({ error: 'Business plan requires at least 10 seats' })
     }
     try {
-      return reply.send(await createCheckoutSession({ plan, seatCount: seatCount ?? 1, tenantName, tenantSlug, email }))
+      return reply.send(await createCheckoutSession({ plan, seatCount: seatCount ?? 1, tenantName, email }))
     } catch (err: unknown) {
       return reply.status(500).send({ error: err instanceof Error ? err.message : 'Failed to create checkout session' })
     }
@@ -70,17 +67,17 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
 
   // ── PayPal subscription checkout ──────────────────────────────────────────
   fastify.post<{
-    Body: { plan: 'starter' | 'business'; seatCount: number; tenantName: string; tenantSlug: string; email: string }
+    Body: { plan: 'starter' | 'business'; seatCount: number; tenantName: string; email: string }
   }>('/billing/paypal/checkout', async (req, reply) => {
-    const { plan, seatCount, tenantName, tenantSlug, email } = req.body
-    if (!plan || !tenantName || !tenantSlug || !email) {
-      return reply.status(400).send({ error: 'plan, tenantName, tenantSlug, and email are required' })
+    const { plan, seatCount, tenantName, email } = req.body
+    if (!plan || !tenantName || !email) {
+      return reply.status(400).send({ error: 'plan, tenantName, and email are required' })
     }
     if (plan === 'business' && (seatCount ?? 0) < 10) {
       return reply.status(400).send({ error: 'Business plan requires at least 10 seats' })
     }
     try {
-      return reply.send(await createPayPalSubscriptionUrl({ plan, seatCount: seatCount ?? 1, tenantName, tenantSlug, email }))
+      return reply.send(await createPayPalSubscriptionUrl({ plan, seatCount: seatCount ?? 1, tenantName, email }))
     } catch (err: unknown) {
       return reply.status(500).send({ error: err instanceof Error ? err.message : 'Failed to create PayPal subscription' })
     }
