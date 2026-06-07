@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { APP_URL } from '@/lib/config'
 
 export function Hero() {
   return (
@@ -23,7 +24,7 @@ export function Hero() {
       </p>
 
       <div className="mb-12 flex flex-wrap items-center justify-center gap-3">
-        <Link href="https://app.ciyo.ai/onboarding"
+        <Link href={`${APP_URL}/onboarding`}
           className="rounded-xl bg-[#7c6aff] px-7 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee] hover:shadow-[#7c6aff]/40">
           Start Free — No Credit Card
         </Link>
