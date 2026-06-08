@@ -12,8 +12,12 @@ vi.stubGlobal('chrome', {
 
 const { getRole } = await import('@/policy/role')
 
-const ORG_TOKEN = 'ps_live_acmelaw_' + 'a'.repeat(32)
-const ADMIN_TOKEN = 'ps_adm_acmelaw_' + 'b'.repeat(32)
+// Use UUID-based token format matching the current production token format:
+// ps_live_<uuid>_<32char-secret> and ps_adm_<uuid>_<32char-secret>
+// The old slug-based format (ps_live_acmelaw_...) is explicitly rejected by the backend parser.
+const MOCK_TENANT_UUID = '3f2a1b9c-4d5e-6789-abcd-ef0123456789'
+const ORG_TOKEN   = `ps_live_${MOCK_TENANT_UUID}_${'a'.repeat(32)}`
+const ADMIN_TOKEN = `ps_adm_${MOCK_TENANT_UUID}_${'b'.repeat(32)}`
 
 beforeEach(() => {
   vi.clearAllMocks()

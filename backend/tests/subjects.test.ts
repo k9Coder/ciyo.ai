@@ -41,12 +41,29 @@ describe('POST /v1/subjects', () => {
 })
 
 describe('GET /v1/subjects', () => {
-  it('lists only active subjects', async () => {
-    await supertest(app.server).post('/v1/subjects').set('Authorization', `Bearer ${adminToken}`).send({ name: 'A' })
-    await supertest(app.server).post('/v1/subjects').set('Authorization', `Bearer ${adminToken}`).send({ name: 'B' })
+  it('lists only active subjects — inactive ones are excluded', async () => {
+    // Create two active subjects and one inactive subject
+    const { body: activeA } = await supertest(app.server)
+      .post('/v1/subjects').set('Authorization', `Bearer ${adminToken}`).send({ name: 'Active A' })
+    const { body: activeB } = await supertest(app.server)
+      .post('/v1/subjects').set('Authorization', `Bearer ${adminToken}`).send({ name: 'Active B' })
+    const { body: toDeactivate } = await supertest(app.server)
+      .post('/v1/subjects').set('Authorization', `Bearer ${adminToken}`).send({ name: 'Will be inactive' })
+
+    // Deactivate the third subject so it should not appear in the list
+    await supertest(app.server)
+      .patch(`/v1/subjects/${toDeactivate.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ active: false })
+
     const res = await supertest(app.server).get('/v1/subjects').set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
+    // Should return only the 2 active subjects, not the inactive one
     expect(res.body).toHaveLength(2)
+    const ids = (res.body as Array<{ id: string }>).map(s => s.id)
+    expect(ids).toContain(activeA.id)
+    expect(ids).toContain(activeB.id)
+    expect(ids).not.toContain(toDeactivate.id)
   })
 })
 
