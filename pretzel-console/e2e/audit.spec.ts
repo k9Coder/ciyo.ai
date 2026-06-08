@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test'
 
+// Semantic selector for the action column badge.
+// The audit table renders each action as a <span data-testid="event-action"> inside
+// the action cell. Using this instead of `td:nth-child(4) span` means the selector
+// is immune to column reordering or insertion.
+const ACTION_BADGE = '[data-testid="event-action"]'
+
 test.describe('Audit Log', () => {
   test('page loads and renders event rows', async ({ page }) => {
     await page.goto('/audit')
@@ -16,7 +22,8 @@ test.describe('Audit Log', () => {
 
     await page.getByRole('button', { name: 'Blocked' }).click()
 
-    const actionCells = page.locator('tbody td:nth-child(4) span')
+    // Use semantic data-testid selector instead of fragile positional td:nth-child(4)
+    const actionCells = page.locator(ACTION_BADGE)
     await expect(actionCells.first()).toBeVisible()
     const texts = await actionCells.allTextContents()
     expect(texts.length).toBeGreaterThan(0)
@@ -28,7 +35,8 @@ test.describe('Audit Log', () => {
 
     await page.getByRole('button', { name: 'Warned' }).click()
 
-    const actionCells = page.locator('tbody td:nth-child(4) span')
+    // Use semantic data-testid selector instead of fragile positional td:nth-child(4)
+    const actionCells = page.locator(ACTION_BADGE)
     await expect(actionCells.first()).toBeVisible()
     const texts = await actionCells.allTextContents()
     expect(texts.length).toBeGreaterThan(0)
@@ -41,7 +49,8 @@ test.describe('Audit Log', () => {
     await page.getByRole('button', { name: 'Blocked' }).click()
     await page.getByRole('button', { name: 'All' }).click()
 
-    const actionCells = page.locator('tbody td:nth-child(4) span')
+    // Use semantic data-testid selector instead of fragile positional td:nth-child(4)
+    const actionCells = page.locator(ACTION_BADGE)
     await expect(actionCells.first()).toBeVisible()
     const texts = await actionCells.allTextContents()
     expect(texts).toContain('block')
@@ -59,11 +68,12 @@ test.describe('Audit Log', () => {
     await page.goto('/audit')
 
     await expect(page.getByRole('button', { name: 'Load more' })).toBeVisible()
+    // Wait for the first page to fully render before counting rows
+    await expect(page.locator('tbody tr')).toHaveCount(5, { timeout: 5_000 })
     const rowsBefore = await page.locator('tbody tr').count()
-    expect(rowsBefore).toBe(5)
 
     await page.getByRole('button', { name: 'Load more' }).click()
 
-    await expect(page.locator('tbody tr')).toHaveCount(rowsBefore + 5, { timeout: 5000 })
+    await expect(page.locator('tbody tr')).toHaveCount(rowsBefore + 5, { timeout: 5_000 })
   })
 })

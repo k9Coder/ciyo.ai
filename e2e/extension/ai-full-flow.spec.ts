@@ -6,7 +6,38 @@ import { getSeedState } from '../helpers/seed-state.js'
 
 const BACKEND  = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
 const FIXTURES = 'http://localhost:9876'
-const EXT_PATH = path.resolve(__dirname, '../../extension/dist')
+// Extension is built to pretzel/dist — two levels up from e2e/extension/
+const EXT_PATH = path.resolve(__dirname, '../../pretzel/dist')
+
+test.afterAll(async () => {
+  // Clean up the E2E_AI_FLOW rule created (or already present) from the apply step.
+  // This prevents state pollution across runs: GET /v1/policy will not contain the
+  // E2E_AI_FLOW keyword on subsequent test runs that rely on a known policy shape.
+  const api = await playwrightRequest.newContext()
+  try {
+    // Fetch the current policy to find the E2E_AI_FLOW rule
+    const policyRes = await api.get(`${BACKEND}/v1/policy`, { headers: orgHeaders() })
+    if (policyRes.status() === 200) {
+      const { policy } = await policyRes.json() as {
+        policy: {
+          subjects?: Array<{
+            rules?: Array<{ id: string; keywords?: string[] }>
+          }>
+        }
+      }
+      // Find any rule that contains the E2E_AI_FLOW keyword and delete it
+      for (const subject of policy?.subjects ?? []) {
+        for (const rule of subject.rules ?? []) {
+          if (rule.keywords?.includes('E2E_AI_FLOW')) {
+            await api.delete(`${BACKEND}/v1/rules/${rule.id}`, { headers: adminHeaders() })
+          }
+        }
+      }
+    }
+  } finally {
+    await api.dispose()
+  }
+})
 
 test('AI-created rule is enforced by the extension after policy publish', async () => {
   const { assistantFlowMessageId } = getSeedState()
@@ -42,8 +73,15 @@ test('AI-created rule is enforced by the extension after policy publish', async 
     ],
   })
 
+  // Guard against a race where the service worker is not yet registered at launch
   const background = context.serviceWorkers()[0]
-    ?? await context.waitForEvent('serviceworker')
+    ?? await context.waitForEvent('serviceworker', { timeout: 15_000 })
+
+  // Absorb fire-and-forget event POSTs so they don't hit the real backend and
+  // produce noise or auth errors in the event log during this test
+  await context.route('**/v1/events', (route: { fulfill: (opts: { status: number; body: string; contentType: string }) => Promise<void> }) =>
+    route.fulfill({ status: 200, body: '{"ok":true}', contentType: 'application/json' })
+  )
 
   await background.evaluate(({ token, doc }) => {
     void chrome.storage.local.set({ orgToken: token, policyDoc: doc })
