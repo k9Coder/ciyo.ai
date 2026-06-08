@@ -2,35 +2,37 @@ name: E2E Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [master, staging]
   push:
-    branches: [main]
+    branches: [master, staging]
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: 9
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
           cache: pnpm
 
       - name: Install root dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Install backend dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: backend
 
       - name: Install pretzel-console dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: pretzel-console
 
       - name: Install Playwright Chromium
@@ -47,8 +49,10 @@ jobs:
           VITE_API_BASE: http://localhost:3000
 
       - name: Run DB migrations on test DB
-        run: DATABASE_URL=${{ secrets.E2E_DATABASE_URL }} pnpm run db:migrate
+        run: pnpm run db:migrate
         working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
 
       - name: Build backend
         run: pnpm run build
@@ -80,11 +84,11 @@ jobs:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
           E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
-          E2E_CLERK_USER_EMAIL: testuser@gmail.com
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
           E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
 
       - name: Upload Playwright report on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
           name: playwright-report
