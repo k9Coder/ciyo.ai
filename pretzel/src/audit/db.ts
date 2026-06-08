@@ -4,21 +4,29 @@ import { AUDIT_DB_NAME, AUDIT_DB_VERSION, AUDIT_STORE_NAME } from "@/shared/cons
 
 export type AuditDB = IDBPDatabase<{ [AUDIT_STORE_NAME]: AuditEvent }>;
 
-let _db: AuditDB | null = null;
+// Promise-based singleton: if two callers await getAuditDB() concurrently
+// before the first resolves, both await the *same* Promise rather than each
+// calling openDB() independently. This prevents a race where _db could be
+// overwritten by the second openDB() result.
+let _dbPromise: Promise<AuditDB> | null = null;
 
 /** Opens (or returns the cached) audit IndexedDB connection. */
-export async function getAuditDB(): Promise<AuditDB> {
-  if (_db) return _db;
-  _db = await openDB(AUDIT_DB_NAME, AUDIT_DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(AUDIT_STORE_NAME)) {
-        const store = db.createObjectStore(AUDIT_STORE_NAME, { keyPath: "id" });
-        store.createIndex("timestamp", "timestamp");
-        store.createIndex("hostname", "hostname");
-        store.createIndex("action", "action");
-        store.createIndex("userDecision", "userDecision");
-      }
-    },
-  });
-  return _db;
+export function getAuditDB(): Promise<AuditDB> {
+  if (!_dbPromise) {
+    _dbPromise = openDB(AUDIT_DB_NAME, AUDIT_DB_VERSION, {
+      upgrade(db, oldVersion) {
+        // Version 1: initial schema.
+        // When adding indexes or stores in future versions, add a new
+        // `if (oldVersion < N)` branch here so existing users migrate safely.
+        if (oldVersion < 1) {
+          const store = db.createObjectStore(AUDIT_STORE_NAME, { keyPath: "id" });
+          store.createIndex("timestamp", "timestamp");
+          store.createIndex("hostname", "hostname");
+          store.createIndex("action", "action");
+          store.createIndex("userDecision", "userDecision");
+        }
+      },
+    });
+  }
+  return _dbPromise;
 }

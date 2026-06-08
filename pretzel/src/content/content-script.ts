@@ -46,16 +46,21 @@ async function bootstrap() {
 
       logger.debug("Detection result:", result);
 
-      await writeAuditEvent(result, promptText, hostname, "sent");
-
       if (result.signInNudge) {
         showSignInNudge();
       }
 
+      // For log-only results the prompt proceeds without a modal — write the
+      // "sent" event here as the outcome is already known.
       if (result.highestAction === "log") {
+        await writeAuditEvent(result, promptText, hostname, "sent");
         return { proceed: true };
       }
 
+      // For warn/block results, defer the audit write until AFTER the modal so
+      // the logged decision reflects what the user actually chose. Writing
+      // "sent" before the modal would produce a spurious extra event whenever
+      // the user clicks "Edit prompt".
       const decision = await showWarningModal(result, promptText);
 
       switch (decision.type) {

@@ -36,17 +36,27 @@ export const chatGPTAdapter: SiteAdapter = {
 
   writePromptText(composer: HTMLElement, text: string): void {
     if (composer instanceof HTMLTextAreaElement) {
+      // For plain <textarea> elements, use the native value setter so React's
+      // synthetic event system (which tracks the native property, not the
+      // attribute) sees the change.
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         HTMLTextAreaElement.prototype,
         "value"
       )?.set;
       nativeInputValueSetter?.call(composer, text);
+      // Dispatch both input and change so React synthetic events fire
+      composer.dispatchEvent(new Event("input", { bubbles: true }));
+      composer.dispatchEvent(new Event("change", { bubbles: true }));
     } else {
-      composer.innerText = text;
+      // For contenteditable / ProseMirror-based editors (ChatGPT), setting
+      // innerText directly does NOT update the framework's internal editor
+      // state — the editor will silently revert on the next keypress.
+      // execCommand("insertText") drives the editor's native input handler
+      // and keeps the internal document model in sync.
+      composer.focus();
+      document.execCommand("selectAll");
+      document.execCommand("insertText", false, text);
     }
-    // Dispatch both input and change so React synthetic events fire
-    composer.dispatchEvent(new Event("input", { bubbles: true }));
-    composer.dispatchEvent(new Event("change", { bubbles: true }));
   },
 
   onSendIntent(

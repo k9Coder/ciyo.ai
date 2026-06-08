@@ -13,7 +13,7 @@ vi.stubGlobal('chrome', {
   },
 })
 
-const mockGetLastUpdatedAt = vi.fn<[], Promise<number | null>>()
+const mockGetLastUpdatedAt = vi.fn<() => Promise<number | null>>()
 vi.mock('../../src/realtime/index', () => ({
   lastUpdatesChecker: { getLastUpdatedAt: mockGetLastUpdatedAt },
 }))

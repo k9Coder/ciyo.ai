@@ -7,8 +7,10 @@ export const geminiAdapter: SiteAdapter = {
   name: "Gemini",
 
   findComposer(): HTMLElement | null {
+    // Gemini uses a custom rich-textarea web component, not Quill — the
+    // rich-textarea selector is the real working path. The generic fallback
+    // is scoped under rich-textarea to avoid matching unrelated editables.
     return (
-      (document.querySelector(".ql-editor") as HTMLElement | null) ??
       (document.querySelector('rich-textarea div[contenteditable="true"]') as HTMLElement | null) ??
       (document.querySelector('div[contenteditable="true"]') as HTMLElement | null)
     );
@@ -27,9 +29,12 @@ export const geminiAdapter: SiteAdapter = {
   },
 
   writePromptText(composer: HTMLElement, text: string): void {
-    composer.innerText = text;
-    composer.dispatchEvent(new Event("input", { bubbles: true }));
-    composer.dispatchEvent(new Event("change", { bubbles: true }));
+    // Gemini's rich-textarea also does not sync from direct DOM mutation —
+    // setting innerText bypasses the internal editor state. execCommand drives
+    // the native input handler, which the rich-textarea component listens to.
+    composer.focus();
+    document.execCommand("selectAll");
+    document.execCommand("insertText", false, text);
   },
 
   onSendIntent(handler: (e: Event) => Promise<{ proceed: boolean }>): () => void {
