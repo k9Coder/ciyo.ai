@@ -1,5 +1,8 @@
+import packageJson from "../../package.json";
+
 export const EXTENSION_NAME = "ciyo";
-export const EXTENSION_VERSION = "2.0.0";
+/** Single source of truth: version is read from package.json (also used by manifest.config.ts). */
+export const EXTENSION_VERSION = packageJson.version;
 
 /** Backend API */
 export const API_BASE = import.meta.env.VITE_API_BASE as string | undefined ?? "https://api.ciyo.ai";
