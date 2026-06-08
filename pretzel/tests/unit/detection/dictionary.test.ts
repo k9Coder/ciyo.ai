@@ -90,4 +90,47 @@ describe("Fuzzy dictionary matching", () => {
     // two substitutions — should not match
     expect(result.findings).toHaveLength(0);
   });
+
+  it("fires on exact match when maxDistance=0 (bug fix: was silently dropped)", async () => {
+    // Previously, dist > 0 guard prevented maxDistance=0 terms from ever matching.
+    const policy: Policy = {
+      ...DEFAULT_POLICY,
+      baseline: [],
+      custom: [
+        {
+          id: "test-dict-exact-fuzzy",
+          name: "Test maxDistance=0",
+          description: "Test",
+          severity: "high",
+          action: "warn",
+          enabled: true,
+          tags: ["test"],
+          kind: "dictionary",
+          terms: [],
+          fuzzyTerms: [{ term: "secret", maxDistance: 0 }],
+          caseSensitive: false,
+        },
+      ],
+    };
+    const result = await detectPrompt("The secret is here", policy, "chatgpt.com");
+    expect(result.findings.length).toBeGreaterThan(0);
+  });
+});
+
+describe("levenshtein with maxDist early termination", () => {
+  it("returns a value > maxDist when strings differ by more than maxDist", () => {
+    // "hello" vs "world" = distance 4
+    const dist = levenshtein("hello", "world", 1);
+    expect(dist).toBeGreaterThan(1);
+  });
+
+  it("returns the correct distance when within maxDist", () => {
+    expect(levenshtein("hello", "hxllo", 2)).toBe(1);
+  });
+
+  it("handles length difference early termination", () => {
+    // length diff is 5, maxDist is 1 — should bail immediately
+    const dist = levenshtein("hello", "helloworld", 1);
+    expect(dist).toBeGreaterThan(1);
+  });
 });

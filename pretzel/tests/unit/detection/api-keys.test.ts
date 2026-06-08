@@ -141,3 +141,132 @@ describe("Google API key detection", () => {
     expect(result.findings).toHaveLength(0);
   });
 });
+
+describe("Stripe live secret key detection", () => {
+  const policy = policyWithOnly("stripe-live-secret-key");
+
+  it("detects sk_live_ key", async () => {
+    const result = await detectPrompt(
+      "STRIPE_KEY=sk_live_AbCdEfGhIjKlMnOpQrStUvWx",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("stripe-live-secret-key");
+  });
+
+  it("does not match sk_test_ keys (test keys)", async () => {
+    const result = await detectPrompt(
+      "sk_test_AbCdEfGhIjKlMnOpQrStUvWx",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("does not match short sk_live_ values", async () => {
+    const result = await detectPrompt("sk_live_short", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+});
+
+describe("HuggingFace token detection", () => {
+  const policy = policyWithOnly("huggingface-token");
+
+  it("detects hf_ token", async () => {
+    const result = await detectPrompt(
+      "HF_TOKEN=hf_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("huggingface-token");
+  });
+
+  it("does not match short hf_ values", async () => {
+    const result = await detectPrompt("hf_tooshort", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+});
+
+describe("npm token detection", () => {
+  const policy = policyWithOnly("npm-token");
+
+  it("detects npm_ token", async () => {
+    const result = await detectPrompt(
+      "NPM_TOKEN=npm_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("npm-token");
+  });
+
+  it("does not match short npm_ values", async () => {
+    const result = await detectPrompt("npm_short", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+});
+
+describe("Database connection string detection", () => {
+  const policy = policyWithOnly("db-connection-string");
+
+  it("detects postgresql connection string with embedded credentials", async () => {
+    const result = await detectPrompt(
+      "postgresql://admin:SuperSecret123@prod-db.internal:5432/customers",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("db-connection-string");
+  });
+
+  it("detects mysql connection string", async () => {
+    const result = await detectPrompt(
+      "mysql://user:password123@db.example.com/mydb",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+  });
+
+  it("detects mongodb connection string", async () => {
+    const result = await detectPrompt(
+      "mongodb://admin:secretpass@mongo-host:27017/prod",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(1);
+  });
+
+  it("does not flag URLs without credentials", async () => {
+    const result = await detectPrompt(
+      "https://api.example.com/v1/users",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("does not flag URLs with too-short passwords", async () => {
+    const result = await detectPrompt(
+      "postgresql://user:abc@host/db",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings).toHaveLength(0);
+  });
+});
+
+describe("Unicode bypass prevention (normalize)", () => {
+  const policy = policyWithOnly("openai-api-key");
+
+  it("detects fullwidth-encoded OpenAI key (ｓｋ- bypass attempt)", async () => {
+    // Fullwidth 'sk-' characters: ｓｋ－ should normalize to 'sk-'
+    // Using actual fullwidth chars: ｓ=U+FF53, ｋ=U+FF4B, ／=U+FF0F (not valid), use ｓｋ-
+    const fullwidthPrefix = "ｓｋ-"; // ｓｋ-
+    const key = fullwidthPrefix + "ABCDEFGHIJKLMNOPQRSTUVabcdefghij";
+    const result = await detectPrompt(key, policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(1);
+  });
+});

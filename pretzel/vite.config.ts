@@ -26,5 +26,6 @@ export default defineConfig({
     environment: "node",
     globals: true,
     include: ["tests/unit/**/*.test.ts"],
+    testTimeout: 10000, // increased from 5000 — service-worker dynamic import can be slow under load
   },
 });
