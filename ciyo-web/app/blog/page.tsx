@@ -4,8 +4,12 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Insights on AI security, data loss prevention, and enterprise AI governance.',
+  title: 'Blog — AI Security Guides and Research',
+  description: 'The Pretzel blog: practical guides, research, and policy templates for CISOs managing AI data risk.',
+  openGraph: {
+    title: 'The Pretzel Blog — AI Security for Enterprise Teams',
+    description: 'Practical guides, research, and policy templates for CISOs managing AI data risk.',
+  },
 }
 
 export default function BlogPage() {

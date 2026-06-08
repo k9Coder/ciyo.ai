@@ -34,14 +34,54 @@ export function Hero() {
         </Link>
       </div>
 
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#17171e] shadow-2xl shadow-black/50"
-        style={{ aspectRatio: '16/10' }}>
-        <div className="flex h-full items-center justify-center">
-          <p className="text-[13px] text-[#64748b]">Extension screenshot placeholder</p>
+      {/* Browser frame mockup showing Pretzel blocking a ChatGPT prompt */}
+      <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d10] shadow-2xl shadow-black/50"
+        aria-label="Pretzel extension blocking a sensitive prompt in ChatGPT">
+        {/* Browser chrome */}
+        <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#111115] px-4 py-3">
+          <span className="size-3 rounded-full bg-[#ff5f57]" aria-hidden="true" />
+          <span className="size-3 rounded-full bg-[#febc2e]" aria-hidden="true" />
+          <span className="size-3 rounded-full bg-[#28c840]" aria-hidden="true" />
+          <div className="ml-3 flex-1 rounded-md bg-white/[0.05] px-3 py-1 text-left text-[11px] text-[#64748b]">
+            chat.openai.com
+          </div>
+        </div>
+        {/* ChatGPT-style prompt area */}
+        <div className="px-6 py-8">
+          <div className="mb-4 rounded-xl border border-[#ff4d4d]/30 bg-[#ff4d4d]/[0.06] p-4 text-left">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-[#ff4d4d]" aria-hidden="true">⚠</span>
+              <span className="text-[13px] font-bold text-[#ff4d4d]">Pretzel blocked this prompt</span>
+            </div>
+            <p className="mb-3 text-[12px] text-[#94a3b8]">
+              Sensitive content detected before submission to ChatGPT:
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-1.5 text-[11px]">
+                <span className="font-mono text-[#ff9f40]">SSN pattern</span>
+                <span className="text-[#64748b]">→</span>
+                <span className="rounded bg-[#ff4d4d]/20 px-1.5 py-0.5 font-mono text-[#ff4d4d]">•••-••-••••</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-1.5 text-[11px]">
+                <span className="font-mono text-[#ff9f40]">Customer email</span>
+                <span className="text-[#64748b]">→</span>
+                <span className="rounded bg-[#ff4d4d]/20 px-1.5 py-0.5 font-mono text-[#ff4d4d]">j.doe@••••.com</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-[#17171e] px-4 py-3">
+            <div className="flex-1 text-left text-[12px] text-[#4b5563] line-through">
+              Summarise this patient record for John Doe (SSN: 123-45-6789, john.doe@acme.com)…
+            </div>
+            <div className="ml-4 flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-[#7c6aff]" aria-hidden="true" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7c6aff]">Blocked</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <p className="mt-8 text-[12px] text-[#64748b]">
+      <p className="mt-8 text-[12px] text-[#94a3b8]">
         Trusted by security teams at healthcare, legal, and fintech companies
       </p>
     </section>

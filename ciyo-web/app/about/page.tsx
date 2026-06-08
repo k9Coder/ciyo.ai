@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: 'The story behind ciyo.ai and Pretzel.',
+  title: 'About ciyo.ai',
+  description: 'ciyo.ai builds AI prompt data loss prevention for enterprise security teams. A small, customer-funded team obsessed with making DLP tools people actually use.',
+  openGraph: {
+    title: 'About ciyo.ai — the team behind Pretzel',
+    description: 'ciyo.ai builds AI prompt data loss prevention for enterprise security teams. A small, customer-funded team obsessed with making DLP tools people actually use.',
+  },
 }
 
 export default function AboutPage() {
