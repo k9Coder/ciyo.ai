@@ -3,6 +3,20 @@ import { db } from '../db/client.js'
 import { scans, tenants } from '../db/schema.js'
 import { isOverScanLimit, getScanLimit, type Plan } from '../billing/limits.js'
 
+// TODO(infrastructure): The `scans` table has no retention/purge mechanism.
+// Rows accumulate indefinitely — old rows are ignored for billing purposes but
+// are never deleted. This means:
+//   1. The table grows without bound (storage cost).
+//   2. Deleted members' scan rows remain with a dangling memberId FK (schema allows
+//      nullable memberId so no FK error, but personal data persists after erasure).
+//   3. Per GDPR Art. 5(1)(e) (storage limitation), scan metadata constitutes
+//      behavioral personal data and must be purged when it is no longer necessary.
+//
+// Required: a scheduled infrastructure job that purges `scans` rows older than
+// the tenant's configured retention window (default: 90 days).
+// On member deletion, either cascade-delete or anonymize (set memberId = null)
+// that member's scan rows so personal data is actually removed on erasure requests.
+
 export async function countMonthlyScans(tenantId: string): Promise<number> {
   const start = new Date()
   start.setUTCDate(1)

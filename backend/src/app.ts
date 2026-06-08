@@ -20,27 +20,28 @@ import { platformRouter } from './platform/router.js'
 import { invitesRouter } from './invites/router.js'
 import { billingRouter } from './billing/router.js'
 import { handleStripeEvent } from './billing/stripe.js'
-import { handlePayPalEvent } from './billing/paypal.js'
+import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypal.js'
 import { requestLoggingPlugin } from './logger/request-logging.js'
 import { logger } from './logger/index.js'
 
 export function buildApp() {
-  // Guard: CORS_ORIGIN must be explicitly set in production.
-  // Defaulting to origin:true (reflect all origins) would open the credentialed API
-  // to any attacker-controlled page. Throw early so a misconfigured deploy fails loudly.
-  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
-    throw new Error('CORS_ORIGIN must be set in production')
+  // Guard: CORS_ORIGIN must be set explicitly in production — never default to wildcard
+  if (process.env['NODE_ENV'] === 'production' && !process.env['CORS_ORIGIN']) {
+    throw new Error('CORS_ORIGIN env var must be set in production')
   }
 
+  const corsOrigin = process.env['CORS_ORIGIN']
+    ? process.env['CORS_ORIGIN'].split(',')
+    : (process.env['NODE_ENV'] === 'test' ? true : ['https://console.ciyo.ai'])
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' })
   void app.register(cors, {
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true,
+    origin:      corsOrigin,
     credentials: true,
   })
   void app.register(requestLoggingPlugin)
 
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
-    if (req.url?.startsWith('/webhooks/stripe') || req.url?.startsWith('/webhooks/clerk')) {
+    if (req.url?.startsWith('/webhooks/stripe') || req.url?.startsWith('/webhooks/clerk') || req.url?.startsWith('/webhooks/paypal')) {
       done(null, body)
     } else {
       try { done(null, JSON.parse(body as string)) }
@@ -54,7 +55,29 @@ export function buildApp() {
   })
 
   app.post('/webhooks/paypal', async (request, reply) => {
-    await handlePayPalEvent(request.body as Record<string, unknown>)
+    const rawBody = request.body as string
+
+    // Verify PayPal webhook signature before processing any event
+    const verified = await verifyPayPalWebhookSignature(rawBody, {
+      transmissionId:   (request.headers['paypal-transmission-id']   as string) ?? '',
+      transmissionTime: (request.headers['paypal-transmission-time'] as string) ?? '',
+      certUrl:          (request.headers['paypal-cert-url']          as string) ?? '',
+      transmissionSig:  (request.headers['paypal-transmission-sig']  as string) ?? '',
+    })
+
+    if (!verified) {
+      logger.warn('PayPal webhook signature verification failed', { url: request.url })
+      return reply.status(400).send({ error: 'Invalid webhook signature' })
+    }
+
+    let body: Record<string, unknown>
+    try {
+      body = JSON.parse(rawBody) as Record<string, unknown>
+    } catch {
+      return reply.status(400).send({ error: 'Invalid JSON body' })
+    }
+
+    await handlePayPalEvent(body)
     return reply.status(200).send({ received: true })
   })
 

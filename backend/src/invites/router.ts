@@ -34,7 +34,7 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
     const { token } = req.params as { token: string }
     if (!req.user) return reply.status(401).send({ error: 'Not authenticated' })
     const result = await acceptInvite(token, req.user.id)
-    if ('error' in result) return reply.status(400).send({ error: result.error })
+    if ('error' in result) return reply.status(result.statusCode ?? 400).send({ error: result.error })
     return reply.status(200).send(result.member)
   })
 }

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { events, rules, type Event } from '../db/schema.js'
 
@@ -8,9 +8,10 @@ export async function ingestEvent(
   memberId: string | null,
   data: { action: 'warn' | 'block'; siteUrl: string; matchedTerm?: string }
 ): Promise<Event | null> {
+  // Filter by tenantId to prevent cross-tenant event poisoning
   const [rule] = await db.select({ reportLevel: rules.reportLevel })
     .from(rules)
-    .where(eq(rules.id, ruleId))
+    .where(and(eq(rules.id, ruleId), eq(rules.tenantId, tenantId)))
 
   if (!rule || rule.reportLevel === 'none') return null
 

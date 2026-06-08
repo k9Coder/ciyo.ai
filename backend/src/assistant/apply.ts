@@ -104,12 +104,14 @@ export async function executeActions(tenantId: string, actions: Action[]): Promi
           break
 
         case 'assign_member_team':
-          await assignTeam(action.memberId, action.teamId)
+          // Pass tenantId to enforce that both member and team belong to this tenant
+          await assignTeam(action.memberId, action.teamId, tenantId)
           applied.push(action)
           break
 
         case 'remove_member_team':
-          await removeTeam(action.memberId, action.teamId)
+          // Pass tenantId to enforce that both member and team belong to this tenant
+          await removeTeam(action.memberId, action.teamId, tenantId)
           applied.push(action)
           break
       }

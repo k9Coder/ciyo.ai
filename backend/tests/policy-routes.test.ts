@@ -29,7 +29,7 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   await truncateAll()
-  const t = await buildTestTenant()
+  const t = await buildTestTenant('LLP')
   tenantId = t.tenantId
   orgToken = t.orgToken
   adminToken = t.adminToken

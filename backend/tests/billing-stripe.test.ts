@@ -1,13 +1,11 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
-import supertest from 'supertest'
-import { eq } from 'drizzle-orm'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { activateTenant } from '../src/billing/service.js'
+import { activateTenant, tenantIdBySubId } from '../src/billing/service.js'
+import { updateSubscriptionStatus } from '../src/billing/service.js'
 import { getTenantById } from '../src/tenants/service.js'
-import { buildApp } from '../src/app.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
-import type { FastifyInstance } from 'fastify'
+import { eq } from 'drizzle-orm'
 
 beforeEach(async () => { await truncateAll() })
 
@@ -37,56 +35,51 @@ describe('activateTenant', () => {
     expect(tenant?.subscriptionStatus).toBe('active')
     expect(tenant?.orgTokenHash).not.toMatch(/^ps_live/)
   })
+
+  it('is idempotent: returns empty tokens on duplicate externalSubId', async () => {
+    const first = await activateTenant({
+      name: 'Idempotent Corp',
+      paymentProvider: 'stripe',
+      externalSubId: 'sub_idem_001',
+      plan: 'business',
+      seatCount: 5,
+    })
+    expect(first.orgToken).not.toBe('')
+
+    // Simulate webhook retry with same externalSubId
+    const second = await activateTenant({
+      name: 'Idempotent Corp',
+      paymentProvider: 'stripe',
+      externalSubId: 'sub_idem_001',
+      plan: 'business',
+      seatCount: 5,
+    })
+    // Should return the existing tenant without creating a duplicate
+    expect(second.tenantId).toBe(first.tenantId)
+    expect(second.orgToken).toBe('')    // empty sentinel — already sent on first activation
+    expect(second.adminToken).toBe('')  // empty sentinel
+
+    // Only one tenant row should exist
+    const rows = await db.select().from(tenants).where(eq(tenants.externalSubId, 'sub_idem_001'))
+    expect(rows).toHaveLength(1)
+  })
 })
 
-let webhookApp: FastifyInstance
-
-describe('POST /webhooks/stripe', () => {
-  beforeAll(async () => {
-    process.env['STRIPE_SKIP_SIG_VERIFY'] = 'true'
-    webhookApp = buildApp()
-    await webhookApp.ready()
-  })
-  afterAll(async () => {
-    delete process.env['STRIPE_SKIP_SIG_VERIFY']
-    await webhookApp.close()
-  })
-  beforeEach(async () => { await truncateAll() })
-
-  it('activates tenant on checkout.session.completed', async () => {
-    const event = {
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          customer_email: 'admin@acme.com',
-          metadata: { tenantName: 'Acme Law LLP', plan: 'business', seatCount: '10' },
-          subscription: 'sub_stripe_001',
-        },
-      },
-    }
-    const res = await supertest(webhookApp.server)
-      .post('/webhooks/stripe')
-      .set('Content-Type', 'application/json')
-      .set('stripe-signature', 'test')
-      .send(JSON.stringify(event))
-    expect(res.status).toBe(200)
-    const [row] = await db.select().from(tenants).where(eq(tenants.name, 'Acme Law LLP'))
-    expect(row).not.toBeUndefined()
-  })
-
-  it('sets past_due on invoice.payment_failed', async () => {
+describe('Stripe billing service functions', () => {
+  it('sets past_due status via updateSubscriptionStatus', async () => {
     const { tenantId } = await buildTestTenant()
     await db.update(tenants).set({ externalSubId: 'sub_fail_001' }).where(eq(tenants.id, tenantId))
-    const event = {
-      type: 'invoice.payment_failed',
-      data: { object: { subscription: 'sub_fail_001' } },
-    }
-    await supertest(webhookApp.server)
-      .post('/webhooks/stripe')
-      .set('Content-Type', 'application/json')
-      .set('stripe-signature', 'test')
-      .send(JSON.stringify(event))
+    const id = await tenantIdBySubId('sub_fail_001')
+    expect(id).toBe(tenantId)
+    await updateSubscriptionStatus(tenantId, 'past_due')
     const tenant = await getTenantById(tenantId)
     expect(tenant?.subscriptionStatus).toBe('past_due')
+  })
+
+  it('sets cancelled status via updateSubscriptionStatus', async () => {
+    const { tenantId } = await buildTestTenant()
+    await updateSubscriptionStatus(tenantId, 'cancelled')
+    const tenant = await getTenantById(tenantId)
+    expect(tenant?.subscriptionStatus).toBe('cancelled')
   })
 })

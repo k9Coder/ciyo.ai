@@ -83,6 +83,32 @@ describe('ingestEvent', () => {
     })
     expect(result).toBeNull()
   })
+
+  it('returns null when ruleId belongs to a different tenant (cross-tenant scoping)', async () => {
+    // Create a second tenant with its own rule
+    const tenant2 = await buildTestTenant()
+    const [subj2] = await db.insert(subjects).values({
+      tenantId: tenant2.tenantId, name: 'Foreign Subject', active: true,
+    }).returning({ id: subjects.id })
+    const [foreignRule] = await db.insert(rules).values({
+      tenantId:    tenant2.tenantId,
+      subjectId:   subj2!.id,
+      kind:        'keyword',
+      keywords:    ['foreign'],
+      action:      'block',
+      reportLevel: 'medium',
+    }).returning({ id: rules.id })
+
+    // Tenant 1 tries to ingest an event with tenant 2's ruleId
+    const result = await ingestEvent(tenantId, foreignRule!.id, memberId, {
+      action: 'block', siteUrl: 'https://chat.openai.com',
+    })
+    // Should return null because the ruleId doesn't belong to tenantId
+    expect(result).toBeNull()
+    // No event should be stored
+    const stored = await db.select().from(events)
+    expect(stored).toHaveLength(0)
+  })
 })
 
 describe('POST /v1/events HTTP', () => {

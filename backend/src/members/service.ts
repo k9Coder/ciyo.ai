@@ -1,6 +1,6 @@
 import { and, count, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { members, users, memberTeams, tenants, type Member, type NewMember, type User } from '../db/schema.js'
+import { members, users, memberTeams, teams, tenants, type Member, type NewMember, type User } from '../db/schema.js'
 import { getUserByEmail } from '../users/service.js'
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 
@@ -81,11 +81,29 @@ export async function deleteMember(tenantId: string, id: string): Promise<void> 
   await db.delete(members).where(and(eq(members.id, id), eq(members.tenantId, tenantId)))
 }
 
-export async function assignTeam(memberId: string, teamId: string): Promise<void> {
+export async function assignTeam(memberId: string, teamId: string, tenantId: string): Promise<void> {
+  // Verify both the member and the team belong to the requesting tenant
+  const [team] = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
+  if (!team) throw Object.assign(new Error('Team not found'), { statusCode: 404 })
+
+  const [member] = await db.select({ id: members.id }).from(members)
+    .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
+  if (!member) throw Object.assign(new Error('Member not found'), { statusCode: 404 })
+
   await db.insert(memberTeams).values({ memberId, teamId }).onConflictDoNothing()
 }
 
-export async function removeTeam(memberId: string, teamId: string): Promise<void> {
+export async function removeTeam(memberId: string, teamId: string, tenantId: string): Promise<void> {
+  // Verify both the member and the team belong to the requesting tenant
+  const [team] = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
+  if (!team) return // team doesn't belong to this tenant — no-op
+
+  const [member] = await db.select({ id: members.id }).from(members)
+    .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
+  if (!member) return // member doesn't belong to this tenant — no-op
+
   await db.delete(memberTeams).where(
     and(eq(memberTeams.memberId, memberId), eq(memberTeams.teamId, teamId))
   )

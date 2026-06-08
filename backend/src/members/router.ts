@@ -42,19 +42,19 @@ export async function membersRouter(fastify: FastifyInstance): Promise<void> {
   fastify.post('/members/:id/teams', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id } = req.params as { id: string }
     const { teamId } = req.body as { teamId: string }
-    await assignTeam(id, teamId)
+    await assignTeam(id, teamId, req.tenant.id)
     return reply.status(204).send()
   })
 
   fastify.post('/members/:id/teams/:teamId', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id, teamId } = req.params as { id: string; teamId: string }
-    await assignTeam(id, teamId)
+    await assignTeam(id, teamId, req.tenant.id)
     return reply.status(204).send()
   })
 
   fastify.delete('/members/:id/teams/:teamId', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id, teamId } = req.params as { id: string; teamId: string }
-    await removeTeam(id, teamId)
+    await removeTeam(id, teamId, req.tenant.id)
     return reply.status(204).send()
   })
 }
