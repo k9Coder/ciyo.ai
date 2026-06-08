@@ -20,16 +20,26 @@ export interface MillerColumnDef {
 }
 
 function ColumnRow({ item, col }: { item: MillerColumnItem; col: MillerColumnDef }) {
-  const [hovered, setHovered] = useState(false)
+  const [visible, setVisible] = useState(false)
   const isSelected = col.selectedId === item.id
+  const showActions = col.onEdit || col.onDelete
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      // onFocus/onBlur make action buttons reachable by keyboard users.
+      // :focus-within on the row means Tab into any child button shows the actions.
+      onFocus={() => setVisible(true)}
+      onBlur={(e) => {
+        // Only hide if focus moves outside this row entirely.
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setVisible(false)
+        }
+      }}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 12px', cursor: 'pointer',
-        background: isSelected || hovered ? 'var(--bg-surface-raised)' : 'transparent',
+        padding: '8px 12px',
+        background: isSelected || visible ? 'var(--bg-surface-raised)' : 'transparent',
         borderLeft: isSelected ? '2px solid var(--brand-primary)' : '2px solid transparent',
       }}
     >
@@ -50,24 +60,37 @@ function ColumnRow({ item, col }: { item: MillerColumnItem; col: MillerColumnDef
           </div>
         )}
       </button>
-      {hovered && (col.onEdit || col.onDelete) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8, flexShrink: 0 }}>
+      {/* Action buttons are always in the DOM so keyboard users can Tab to them.
+          We use opacity to hide them visually when the row is not hovered/focused,
+          while keeping them reachable (opacity ≠ visibility:hidden / display:none). */}
+      {showActions && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8, flexShrink: 0,
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.1s',
+          // Still reachable by keyboard even when invisible
+          pointerEvents: visible ? 'auto' : 'none',
+        }}>
           {col.onEdit && (
             <button
               onClick={e => { e.stopPropagation(); col.onEdit!(item.id) }}
+              onFocus={() => setVisible(true)}
               style={{ padding: 4, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 13 }}
-              title="Edit"
+              aria-label={`Edit ${item.label}`}
+              tabIndex={visible ? 0 : -1}
             >
-              ✎
+              <span aria-hidden="true">✎</span>
             </button>
           )}
           {col.onDelete && (
             <button
               onClick={e => { e.stopPropagation(); col.onDelete!(item.id) }}
+              onFocus={() => setVisible(true)}
               style={{ padding: 4, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4, fontSize: 11 }}
-              title="Delete"
+              aria-label={`Delete ${item.label}`}
+              tabIndex={visible ? 0 : -1}
             >
-              ✕
+              <span aria-hidden="true">✕</span>
             </button>
           )}
         </div>
@@ -84,7 +107,7 @@ export function MillerColumns({ columns }: Props) {
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       {columns.map((col, i) => (
-        <div key={i} style={{
+        <div key={col.title} style={{
           display: 'flex', flexDirection: 'column', width: 220, minWidth: 0,
           overflowY: 'auto', borderRight: i < columns.length - 1 ? '1px solid var(--border)' : undefined,
           flex: i === columns.length - 1 ? 1 : undefined,
