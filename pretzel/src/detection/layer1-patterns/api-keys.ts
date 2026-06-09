@@ -14,6 +14,10 @@ export const API_KEY_RULE_IDS = new Set([
   "github-token",
   "slack-token",
   "google-api-key",
+  "stripe-live-secret-key",
+  "huggingface-token",
+  "npm-token",
+  "azure-connection-string",
 ]);
 
 /**

@@ -5,6 +5,7 @@ export const CREDENTIAL_RULE_IDS = new Set([
   "ssh-private-key",
   "jwt-token",
   "dotenv-line",
+  "db-connection-string",
 ]);
 
 export function isCredentialRule(rule: PatternRule): boolean {

@@ -41,7 +41,7 @@ describe("shannonEntropy", () => {
 });
 
 describe("findHighEntropyTokens", () => {
-  it("returns high-entropy long tokens", () => {
+  it("returns high-entropy long tokens that contain both alpha and numeric chars", () => {
     const tokens = findHighEntropyTokens(
       "normal text ABCDEFGHIJKLMNOPQRSTUVabcdefghij1234 more text",
       24,
@@ -58,6 +58,36 @@ describe("findHighEntropyTokens", () => {
   it("ignores low-entropy long tokens", () => {
     const tokens = findHighEntropyTokens("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 24, 4.0);
     expect(tokens).toHaveLength(0);
+  });
+
+  it("does not flag all-alpha tokens (CamelCase identifiers)", () => {
+    // Long CamelCase function names have no digits so charset diversity fails
+    const tokens = findHighEntropyTokens(
+      "calculateCompoundInterestRateForAnnuityPayments",
+      24,
+      4.0
+    );
+    expect(tokens).toHaveLength(0);
+  });
+
+  it("does not flag UUID tokens", () => {
+    // UUIDs have high entropy but should be allowlisted
+    const tokens = findHighEntropyTokens(
+      "550e8400e29b41d4a716446655440000", // UUID hex without hyphens, 32 chars
+      24,
+      4.0
+    );
+    expect(tokens).toHaveLength(0);
+  });
+
+  it("flags a realistic API key token (alphanumeric, high entropy)", () => {
+    // Simulated 32-char API token with mixed case + digits
+    const tokens = findHighEntropyTokens(
+      "xK8mP2nQ7vR4sT9yW1zA3bC5dE6fG0hJ",
+      24,
+      4.5
+    );
+    expect(tokens.length).toBeGreaterThan(0);
   });
 });
 

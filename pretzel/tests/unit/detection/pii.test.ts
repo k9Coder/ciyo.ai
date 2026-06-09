@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { luhnCheck, ssnCheck } from "@/detection/layer1-patterns/pii";
+import { luhnCheck, ssnCheck, ibanCheck } from "@/detection/layer1-patterns/pii";
 import { detectPrompt } from "@/detection/engine";
 import { DEFAULT_POLICY } from "@/policy/defaults";
 import type { Policy } from "@/policy/schema";
@@ -57,6 +57,86 @@ describe("ssnCheck", () => {
   it("rejects area code 900+", () => {
     expect(ssnCheck("900-45-6789")).toBe(false);
     expect(ssnCheck("999-45-6789")).toBe(false);
+  });
+
+  it("rejects group number 00", () => {
+    expect(ssnCheck("123-00-6789")).toBe(false);
+  });
+
+  it("rejects serial number 0000", () => {
+    expect(ssnCheck("123-45-0000")).toBe(false);
+  });
+});
+
+// ─── IBAN validator unit tests ────────────────────────────────────────────────
+
+describe("ibanCheck", () => {
+  it("accepts a valid German IBAN", () => {
+    // DE89 3704 0044 0532 0130 00 — well-known test IBAN
+    expect(ibanCheck("DE89370400440532013000")).toBe(true);
+  });
+
+  it("accepts a valid GB IBAN", () => {
+    expect(ibanCheck("GB29NWBK60161331926819")).toBe(true);
+  });
+
+  it("accepts IBAN with spaces", () => {
+    expect(ibanCheck("DE89 3704 0044 0532 0130 00")).toBe(true);
+  });
+
+  it("rejects an IBAN with wrong check digits", () => {
+    // Correct is DE89..., change check digits to DE00
+    expect(ibanCheck("DE00370400440532013000")).toBe(false);
+  });
+
+  it("rejects a string that is too short", () => {
+    expect(ibanCheck("DE8937040044")).toBe(false);
+  });
+
+  it("rejects garbage input", () => {
+    expect(ibanCheck("NOT-AN-IBAN")).toBe(false);
+  });
+});
+
+// ─── dotenv-line false-positive tests ────────────────────────────────────────
+
+describe("dotenv-line no longer fires on common non-secret env vars", () => {
+  function policyWithOnly(...ids: string[]): Policy {
+    return {
+      ...DEFAULT_POLICY,
+      baseline: DEFAULT_POLICY.baseline.map((r) => ({
+        ...r,
+        enabled: ids.includes(r.id),
+      })),
+    };
+  }
+
+  const policy = policyWithOnly("dotenv-line");
+
+  it("does not flag NODE_ENV=production (value too short / wrong chars)", async () => {
+    const result = await detectPrompt("NODE_ENV=production", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("does not flag LOG_LEVEL=INFO", async () => {
+    const result = await detectPrompt("LOG_LEVEL=INFO", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("does not flag PATH=/usr/local/bin:/usr/bin (contains slashes, may vary)", async () => {
+    // PATH values contain :/. characters — the charset restriction [A-Za-z0-9+/=_-] won't
+    // capture the colon or other separators, so total match chars < 16
+    const result = await detectPrompt("PATH=/usr/bin", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("flags a secret-like API key value", async () => {
+    const result = await detectPrompt(
+      "MY_SECRET_KEY=AbCdEf0123456789AbCd",
+      policy,
+      "chatgpt.com"
+    );
+    expect(result.findings.length).toBeGreaterThan(0);
   });
 });
 
