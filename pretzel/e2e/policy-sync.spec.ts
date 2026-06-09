@@ -68,11 +68,18 @@ test('extension enforces ACME_SECRET block rule and dispatches an audit event', 
   const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
   await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-  // Wait briefly for the fire-and-forget event dispatch to reach the route handler
-  await new Promise(r => setTimeout(r, 2_000))
+  // Wait for the fire-and-forget event dispatch to reach the route handler.
+  // Using expect.poll is deterministic: it returns as soon as the event arrives
+  // and fails with a clear message if it does not arrive within 8 s — much better
+  // than a hard 2 s sleep that is either too short (flaky) or too long (slow).
+  await expect
+    .poll(() => capturedEvents.length, {
+      message: 'Expected at least one audit event to be dispatched within 8 s',
+      timeout:  8_000,
+    })
+    .toBeGreaterThanOrEqual(1)
 
   // Verify that an event was dispatched with action="block"
-  expect(capturedEvents.length).toBeGreaterThanOrEqual(1)
   const body = JSON.parse(capturedEvents[0]!) as Record<string, unknown>
   expect(body['action']).toBe('block')
 

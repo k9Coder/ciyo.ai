@@ -103,10 +103,18 @@ test.describe('Extension detection', () => {
     await page.locator('#prompt-textarea').fill('Hello, can you help me write a cover letter?')
     await page.locator('#send-button').click()
 
-    // Modal must NOT appear within 2s
+    // Wait for the send to complete (output is updated by the fixture page) so we
+    // know detection has had a chance to run before asserting absence of the modal.
+    // This is more reliable than a hard 2 s timeout: on a fast machine we do not
+    // wait unnecessarily; on a slow CI machine we do not fail prematurely.
+    await expect(page.locator('#output')).toContainText('SENT:', { timeout: 5_000 })
+
+    // Now assert the modal never appeared — detection has already processed the
+    // send event so the absence check is deterministic, not race-prone.
     await expect(
-      page.locator('#ciyo-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected')
-    ).not.toBeVisible({ timeout: 2_000 })
+      page.locator('#ciyo-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected'),
+      'No rule should match safe text — block/warn modal must not appear'
+    ).not.toBeVisible({ timeout: 500 })
 
     await context.close()
   })
