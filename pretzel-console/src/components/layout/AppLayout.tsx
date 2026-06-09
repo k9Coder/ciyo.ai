@@ -19,7 +19,7 @@ const NAV = [
 
 function SparkleIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
       <path
         d="M8 1 L9.2 6.2 L14 8 L9.2 9.8 L8 15 L6.8 9.8 L2 8 L6.8 6.2 Z"
         fill={color}
@@ -36,11 +36,16 @@ function ThemeToggle() {
     setThemeState(next)
   }
   return (
-    <button onClick={toggle} title="Toggle theme" style={{
-      background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-      color: 'var(--text-muted)', fontSize: 14, lineHeight: 1,
-    }}>
-      {theme === 'dark' ? '☀' : '🌙'}
+    <button
+      onClick={toggle}
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+        color: 'var(--text-muted)', fontSize: 14, lineHeight: 1,
+      }}
+    >
+      {/* aria-hidden so the emoji character name is not read by screen readers */}
+      <span aria-hidden="true">{theme === 'dark' ? '☀' : '🌙'}</span>
     </button>
   )
 }
@@ -112,7 +117,7 @@ export function AppLayout() {
         <UpgradeBanner />
 
         {/* Nav */}
-        <nav style={{ padding: 8, flex: 1 }}>
+        <nav aria-label="Main navigation" style={{ padding: 8, flex: 1 }}>
           {NAV.map(({ to, label, icon, ai, dividerAbove }) => (
             <div key={to}>
               {dividerAbove && (
@@ -136,7 +141,7 @@ export function AppLayout() {
               })}>
                 {ai
                   ? <SparkleIcon size={13} color="var(--brand-primary)" />
-                  : <span style={{ fontSize: 13 }}>{icon}</span>
+                  : <span aria-hidden="true" style={{ fontSize: 13 }}>{icon}</span>
                 }
                 {label}
                 {ai && (

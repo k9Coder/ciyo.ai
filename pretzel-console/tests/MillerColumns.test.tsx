@@ -55,4 +55,55 @@ describe('MillerColumns', () => {
     const textEl = screen.getByText('Legal')
     expect(textEl).toHaveStyle({ color: 'var(--brand-primary)' })
   })
+
+  it('renders edit/delete buttons in the DOM for keyboard accessibility', () => {
+    const onEdit = vi.fn()
+    const onDelete = vi.fn()
+    const c: MillerColumnDef[] = [{
+      title: 'Divisions',
+      items: [{ id: 'div-1', label: 'Legal' }],
+      selectedId: null,
+      onSelect: vi.fn(),
+      onEdit,
+      onDelete,
+    }]
+    render(<MillerColumns columns={c} />)
+    // Buttons must be in the DOM (not display:none) so keyboard users can Tab to them
+    expect(screen.getByRole('button', { name: 'Edit Legal' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete Legal' })).toBeInTheDocument()
+  })
+
+  it('calls onEdit when edit button is clicked', () => {
+    const onEdit = vi.fn()
+    const c: MillerColumnDef[] = [{
+      title: 'Divisions',
+      items: [{ id: 'div-1', label: 'Legal' }],
+      selectedId: null,
+      onSelect: vi.fn(),
+      onEdit,
+    }]
+    render(<MillerColumns columns={c} />)
+    // Trigger hover/focus to make button visible
+    const row = screen.getByText('Legal').closest('div')!.parentElement!
+    fireEvent.mouseEnter(row)
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Legal' }))
+    expect(onEdit).toHaveBeenCalledWith('div-1')
+  })
+
+  it('edit/delete buttons become visible on row focus (keyboard navigation)', () => {
+    const onEdit = vi.fn()
+    const c: MillerColumnDef[] = [{
+      title: 'Divisions',
+      items: [{ id: 'div-1', label: 'Legal' }],
+      selectedId: null,
+      onSelect: vi.fn(),
+      onEdit,
+    }]
+    render(<MillerColumns columns={c} />)
+    const editBtn = screen.getByRole('button', { name: 'Edit Legal' })
+    // Simulate keyboard focus arriving on the edit button
+    fireEvent.focus(editBtn)
+    // After focus, opacity should be 1 (visible)
+    expect(editBtn.parentElement).toHaveStyle({ opacity: '1' })
+  })
 })

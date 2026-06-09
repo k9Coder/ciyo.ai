@@ -179,13 +179,18 @@ function RulesPanel({ subject }: { subject: Subject }) {
   }
 
   async function handleSave() {
-    const payload = buildPayload(modal.form)
-    if (modal.editing) {
-      await mutations.update.mutateAsync({ id: modal.editing.id, data: payload })
-    } else {
-      await mutations.create.mutateAsync(payload)
+    try {
+      const payload = buildPayload(modal.form)
+      if (modal.editing) {
+        await mutations.update.mutateAsync({ id: modal.editing.id, data: payload })
+      } else {
+        await mutations.create.mutateAsync(payload)
+      }
+      closeModal()
+    } catch {
+      // mutation onError already fires a toast; swallow the rejection here so it
+      // does not become an unhandled promise rejection.
     }
-    closeModal()
   }
 
   if (isLoading) return <div style={{ padding: 24, fontSize: 13, color: 'var(--text-muted)' }}>Loading rules…</div>
@@ -243,8 +248,12 @@ function RulesPanel({ subject }: { subject: Subject }) {
         message={`Delete this ${deleting?.kind} rule? This cannot be undone.`}
         onClose={() => setDeleting(null)}
         onConfirm={async () => {
-          await mutations.remove.mutateAsync(deleting!.id)
-          setDeleting(null)
+          try {
+            await mutations.remove.mutateAsync(deleting!.id)
+            setDeleting(null)
+          } catch {
+            // mutation onError already fires a toast
+          }
         }}
         confirming={mutations.remove.isPending}
       />
@@ -268,12 +277,16 @@ export function SubjectsPage() {
   function closeModal() { setModal(m => ({ ...m, open: false })) }
 
   async function handleSave() {
-    if (modal.editing) {
-      await mutations.update.mutateAsync({ id: modal.editing.id, data: modal.form })
-    } else {
-      await mutations.create.mutateAsync(modal.form)
+    try {
+      if (modal.editing) {
+        await mutations.update.mutateAsync({ id: modal.editing.id, data: modal.form })
+      } else {
+        await mutations.create.mutateAsync(modal.form)
+      }
+      closeModal()
+    } catch {
+      // mutation onError already fires a toast; swallow the rejection here
     }
-    closeModal()
   }
 
   const left = (
@@ -313,8 +326,22 @@ export function SubjectsPage() {
                 </div>
               )}
               <div className="hidden group-hover:flex" style={{ display: 'flex', gap: 8, marginTop: 2 }}>
-                <span onClick={e => { e.stopPropagation(); openEdit(s) }} style={{ fontSize: 11, color: 'var(--brand-primary)', cursor: 'pointer' }}>Edit</span>
-                <span onClick={e => { e.stopPropagation(); setDeleting(s) }} style={{ fontSize: 11, color: 'var(--status-danger)', cursor: 'pointer' }}>Delete</span>
+                <button
+                  onClick={e => { e.stopPropagation(); openEdit(s) }}
+                  style={{ fontSize: 11, color: 'var(--brand-primary)', cursor: 'pointer',
+                           background: 'none', border: 'none', padding: 0 }}
+                  aria-label={`Edit subject ${s.name}`}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); setDeleting(s) }}
+                  style={{ fontSize: 11, color: 'var(--status-danger)', cursor: 'pointer',
+                           background: 'none', border: 'none', padding: 0 }}
+                  aria-label={`Delete subject ${s.name}`}
+                >
+                  Delete
+                </button>
               </div>
             </button>
           ))}
@@ -355,9 +382,13 @@ export function SubjectsPage() {
         message={`Delete subject "${deleting?.name}" and all its rules? This cannot be undone.`}
         onClose={() => setDeleting(null)}
         onConfirm={async () => {
-          await mutations.remove.mutateAsync(deleting!.id)
-          if (selected?.id === deleting?.id) setSelected(null)
-          setDeleting(null)
+          try {
+            await mutations.remove.mutateAsync(deleting!.id)
+            if (selected?.id === deleting?.id) setSelected(null)
+            setDeleting(null)
+          } catch {
+            // mutation onError already fires a toast
+          }
         }}
         confirming={mutations.remove.isPending}
       />

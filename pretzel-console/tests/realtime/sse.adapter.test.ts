@@ -58,4 +58,27 @@ describe('SSESubscriber', () => {
     expect(MockEventSource.instances).toHaveLength(2)
     expect(MockEventSource.instances[1].url).toContain('fresh-token')
   })
+
+  it('does not reconnect after unsubscribe is called', async () => {
+    const unsub = new SSESubscriber().subscribe(async () => 'tok', vi.fn())
+    await new Promise(r => setTimeout(r, 0))
+
+    unsub()
+
+    // Trigger error after unsubscribe — should not reconnect
+    MockEventSource.instances[0]._triggerError(true)
+    await new Promise(r => setTimeout(r, 1200))
+
+    expect(MockEventSource.instances).toHaveLength(1)
+  })
+
+  it('registers an open listener that is a function', async () => {
+    new SSESubscriber().subscribe(async () => 'tok', vi.fn())
+    await new Promise(r => setTimeout(r, 0))
+
+    const es = MockEventSource.instances[0]
+    // Should have an 'open' listener registered for backoff reset
+    expect(es.listeners['open']).toBeDefined()
+    expect(es.listeners['open'].length).toBeGreaterThan(0)
+  })
 })

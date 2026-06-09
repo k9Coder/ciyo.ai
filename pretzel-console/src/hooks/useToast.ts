@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export interface Toast {
   id: string
@@ -20,10 +20,20 @@ export function useToastStore() {
 
   const addToast = useCallback((t: Toast) => {
     setToasts(prev => [...prev, t])
+    // The timeout ID is not cleaned up here because ToastContainer is mounted
+    // for the entire app lifetime. If that assumption changes, the timeout
+    // references should be tracked and cleared on unmount.
     setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 3000)
   }, [])
 
-  useState(() => { toastListener = addToast })
+  // Register / unregister the listener as a proper side effect instead of
+  // abusing the useState initializer (anti-pattern: initializers must be pure).
+  useEffect(() => {
+    toastListener = addToast
+    return () => {
+      toastListener = null
+    }
+  }, [addToast])
 
   return toasts
 }

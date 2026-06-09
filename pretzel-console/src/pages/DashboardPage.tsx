@@ -34,12 +34,12 @@ export function DashboardPage() {
   const { organization } = useOrganization()
   const [days, setDays] = useState<7 | 30 | 90>(30)
 
-  const { data: summary, isLoading: summaryLoading } = useAnalyticsSummary(days)
-  const { data: daily = [] }                          = useAnalyticsDaily()
-  const { data: incidents = [], isLoading: incidentsLoading } = useAnalyticsIncidents()
-  const { data: topSites = [] }                       = useAnalyticsTopSites(days)
-  const { data: bySubject = [] }                      = useAnalyticsBySubject(days)
-  const { data: policyInfo }                          = usePolicy()
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useAnalyticsSummary(days)
+  const { data: daily = [], isError: dailyError }          = useAnalyticsDaily()
+  const { data: incidents = [], isLoading: incidentsLoading, isError: incidentsError } = useAnalyticsIncidents()
+  const { data: topSites = [], isError: topSitesError }    = useAnalyticsTopSites(days)
+  const { data: bySubject = [], isError: bySubjectError }  = useAnalyticsBySubject(days)
+  const { data: policyInfo }                               = usePolicy()
 
   const maxChart = Math.max(...daily.map(d => d.blocked + d.warned), 10)
   const dash = (v: number | undefined) => summaryLoading ? '—' : (v ?? 0).toLocaleString()
@@ -67,6 +67,11 @@ export function DashboardPage() {
       </div>
 
       {/* Stats row */}
+      {summaryError && (
+        <p style={{ fontSize: 12, color: 'var(--status-danger)', margin: 0 }}>
+          Failed to load summary statistics. Please refresh to try again.
+        </p>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
           { label: 'Prompts Scanned', raw: summary?.scansTotal,      sub: `${dash(summary?.activeUsers)} active users`, subColor: 'var(--brand-primary)' },
@@ -97,21 +102,30 @@ export function DashboardPage() {
             ))}
           </div>
         </div>
-        <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
-          {(daily.length ? daily : Array.from({ length: 7 }, () => ({ day: '', date: '', blocked: 0, warned: 0, scanned: 0 }))).map(({ day, blocked, warned }, i) => {
-            const blockedH = Math.round((blocked / maxChart) * 80)
-            const warnedH  = Math.round((warned  / maxChart) * 80)
-            return (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-                  <div style={{ width: '100%', height: warnedH,  background: 'var(--status-warn)',   borderRadius: '2px 2px 0 0' }}/>
-                  <div style={{ width: '100%', height: blockedH, background: 'var(--status-danger)', borderRadius: '0 0 2px 2px' }}/>
+        {dailyError ? (
+          <p style={{ padding: '16px 24px', fontSize: 12, color: 'var(--status-danger)', margin: 0 }}>
+            Failed to load activity chart.
+          </p>
+        ) : (
+          <div
+            style={{ padding: '16px 24px', display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}
+            aria-label={`Threat activity bar chart. ${daily.map(d => `${d.day}: ${d.blocked} blocked, ${d.warned} warned`).join('; ')}`}
+          >
+            {(daily.length ? daily : Array.from({ length: 7 }, () => ({ day: '', date: '', blocked: 0, warned: 0, scanned: 0 }))).map(({ day, blocked, warned }, i) => {
+              const blockedH = Math.round((blocked / maxChart) * 80)
+              const warnedH  = Math.round((warned  / maxChart) * 80)
+              return (
+                <div key={day || i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                    <div style={{ width: '100%', height: warnedH,  background: 'var(--status-warn)',   borderRadius: '2px 2px 0 0' }}/>
+                    <div style={{ width: '100%', height: blockedH, background: 'var(--status-danger)', borderRadius: '0 0 2px 2px' }}/>
+                  </div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 6 }}>{day}</span>
                 </div>
-                <span style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 6 }}>{day}</span>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Bottom two-column */}
@@ -129,6 +143,10 @@ export function DashboardPage() {
           </div>
           {incidentsLoading ? (
             <InlineLoader size="sm" />
+          ) : incidentsError ? (
+            <p style={{ padding: '16px', fontSize: 12, color: 'var(--status-danger)', margin: 0 }}>
+              Failed to load incidents.
+            </p>
           ) : incidents.length === 0 ? (
             <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
               No incidents recorded — set a report level above None on any rule to start collecting data
@@ -154,7 +172,9 @@ export function DashboardPage() {
               <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>Threat Breakdown</span>
             </div>
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {bySubject.length === 0 ? (
+              {bySubjectError ? (
+                <span style={{ fontSize: 11, color: 'var(--status-danger)' }}>Failed to load threat breakdown.</span>
+              ) : bySubject.length === 0 ? (
                 <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>No data yet</span>
               ) : bySubject.map(({ subjectName, pct }, i) => {
                 const colors = ['var(--status-danger)', 'var(--status-warn)', 'var(--brand-primary)', 'var(--text-muted)', 'var(--border)']
@@ -180,7 +200,9 @@ export function DashboardPage() {
                 <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 600 }}>Top Sites</span>
               </div>
               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {topSites.length === 0 ? (
+                {topSitesError ? (
+                  <span style={{ fontSize: 10, color: 'var(--status-danger)' }}>Failed to load.</span>
+                ) : topSites.length === 0 ? (
                   <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>No data yet</span>
                 ) : topSites.map(({ domain, count }, i) => {
                   const colors = ['var(--brand-primary)', 'var(--text-muted)', 'var(--border)', 'var(--status-warn)', 'var(--status-safe)']
