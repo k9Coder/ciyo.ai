@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { invites, members, tenants, users, type Invite } from '../db/schema.js'
 
@@ -59,8 +59,10 @@ export async function getInvitePreview(token: string): Promise<InvitePreview | n
 export async function acceptInvite(
   token:  string,
   userId: string
-): Promise<{ member: typeof members.$inferSelect } | { error: string }> {
+): Promise<{ member: typeof members.$inferSelect } | { error: string; statusCode?: number }> {
   const now = new Date()
+
+  // Validate the invite exists, is not used, and is not expired
   const [row] = await db
     .select()
     .from(invites)
@@ -68,7 +70,7 @@ export async function acceptInvite(
     .limit(1)
 
   if (!row)            return { error: 'Invite not found' }
-  if (row.usedAt)      return { error: 'Invite already used' }
+  if (row.usedAt)      return { error: 'Invite already used', statusCode: 409 }
   if (row.expiresAt < now) return { error: 'Invite expired' }
 
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
@@ -92,19 +94,32 @@ export async function acceptInvite(
     return { member: existing }
   }
 
+  // Atomically mark the invite as used — this prevents the TOCTOU race where
+  // two concurrent accept requests both see usedAt = null and both try to insert
+  // a member, causing a unique constraint violation on tenantEmailUniq.
+  // The UPDATE only succeeds if usedAt is still null; if another concurrent request
+  // won the race, the returning array will be empty and we return 409.
+  const updated = await db.update(invites)
+    .set({ usedAt: now, usedByUserId: userId })
+    .where(and(eq(invites.token, token), isNull(invites.usedAt)))
+    .returning({ id: invites.id, tenantId: invites.tenantId, role: invites.role })
+
+  if (!updated.length) {
+    // Another concurrent request claimed the invite first
+    return { error: 'Invite already used', statusCode: 409 }
+  }
+
+  const claimed = updated[0]!
+
   const [member] = await db.insert(members).values({
-    tenantId:    row.tenantId,
+    tenantId:    claimed.tenantId,
     userId,
     email:       user.email,
     displayName: user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
       : undefined,
-    role: row.role,
+    role: claimed.role,
   }).returning()
-
-  await db.update(invites)
-    .set({ usedAt: now, usedByUserId: userId })
-    .where(eq(invites.token, token))
 
   return { member: member! }
 }

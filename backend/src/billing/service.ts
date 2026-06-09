@@ -27,6 +27,22 @@ export interface ActivateResult {
 }
 
 export async function activateTenant(input: ActivateInput): Promise<ActivateResult> {
+  // Idempotency guard: if this externalSubId was already activated (e.g. Stripe/PayPal
+  // retries the webhook), skip insertion and return a sentinel indicating the tenant
+  // already exists. Callers should not re-send a welcome email in this case.
+  if (input.externalSubId) {
+    const existing = await tenantIdBySubId(input.externalSubId)
+    if (existing) {
+      // Tenant already activated — return a result without new plaintext tokens
+      // (tokens were already sent on first activation; we cannot recover them).
+      return {
+        tenantId:   existing,
+        orgToken:   '',   // already sent on first activation
+        adminToken: '',   // already sent on first activation
+      }
+    }
+  }
+
   const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
 
@@ -43,7 +59,7 @@ export async function activateTenant(input: ActivateInput): Promise<ActivateResu
     stripeCustomerId:   input.stripeCustomerId ?? null,
   }).returning({ id: tenants.id })
 
-  const tenantId  = row!.id
+  const tenantId   = row!.id
   const orgToken   = formatToken('ps_live', tenantId, orgSecret)
   const adminToken = formatToken('ps_adm',  tenantId, adminSecret)
 

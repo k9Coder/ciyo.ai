@@ -62,13 +62,10 @@ export async function createPortalSession(opts: {
 }
 
 export async function handleStripeEvent(rawBody: string, sig: string): Promise<void> {
-  let event: Stripe.Event
-  if (process.env['STRIPE_SKIP_SIG_VERIFY'] === 'true') {
-    event = JSON.parse(rawBody) as Stripe.Event
-  } else {
-    const stripeClient = stripe()
-    event = stripeClient.webhooks.constructEvent(rawBody, sig, process.env['STRIPE_WEBHOOK_SECRET']!)
-  }
+  // Signature verification is mandatory. Use `stripe listen --forward-to localhost:3000/webhooks/stripe`
+  // with test-mode API keys for local development — there is no escape hatch here.
+  const stripeClient = stripe()
+  const event = stripeClient.webhooks.constructEvent(rawBody, sig, process.env['STRIPE_WEBHOOK_SECRET']!)
 
   switch (event.type) {
     case 'checkout.session.completed': {
@@ -90,7 +87,10 @@ export async function handleStripeEvent(rawBody: string, sig: string): Promise<v
         trialEndsAt:      trialEnd,
         stripeCustomerId: session.customer as string | null,
       })
-      sendWelcomeEmail({ to: email, tenantName: meta['tenantName'] ?? email, orgToken: result.orgToken, adminToken: result.adminToken }).catch(() => {})
+      // Only send welcome email on first activation (idempotency: empty tokens mean already activated)
+      if (result.orgToken) {
+        sendWelcomeEmail({ to: email, tenantName: meta['tenantName'] ?? email, orgToken: result.orgToken, adminToken: result.adminToken }).catch(() => {})
+      }
       break
     }
 

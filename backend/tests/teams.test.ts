@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
+import { assignTeam } from '../src/members/service.js'
 import { buildApp } from '../src/app.js'
 import type { FastifyInstance } from 'fastify'
 
@@ -109,5 +110,56 @@ describe('GET /v1/teams/:teamId/members', () => {
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
     expect(res.body).toHaveLength(0)
+  })
+})
+
+describe('cross-tenant team assignment rejection', () => {
+  it('rejects assigning a member to a team from a different tenant', async () => {
+    // Create a second tenant with its own team
+    const tenant2 = await buildTestTenant()
+    const { body: div2 } = await supertest(app.server)
+      .post('/v1/divisions')
+      .set('Authorization', `Bearer ${tenant2.adminToken}`)
+      .send({ name: 'Other Legal', slug: 'other-legal' })
+    const { body: team2 } = await supertest(app.server)
+      .post(`/v1/divisions/${div2.id as string}/teams`)
+      .set('Authorization', `Bearer ${tenant2.adminToken}`)
+      .send({ name: 'Other Team', slug: 'other-team' })
+
+    // Create a member in tenant 1
+    const { body: member1 } = await supertest(app.server)
+      .post('/v1/members')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'alice@example.com' })
+
+    // Tenant 1 admin tries to assign member to tenant 2's team
+    const res = await supertest(app.server)
+      .post(`/v1/members/${member1.id as string}/teams/${team2.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+    // Should be rejected with 404 (team not found in tenant 1)
+    expect(res.status).toBe(404)
+  })
+
+  it('assignTeam service rejects cross-tenant team assignment directly', async () => {
+    const tenant2 = await buildTestTenant()
+    const { body: div2 } = await supertest(app.server)
+      .post('/v1/divisions')
+      .set('Authorization', `Bearer ${tenant2.adminToken}`)
+      .send({ name: 'T2 Legal', slug: 't2-legal' })
+    const { body: team2 } = await supertest(app.server)
+      .post(`/v1/divisions/${div2.id as string}/teams`)
+      .set('Authorization', `Bearer ${tenant2.adminToken}`)
+      .send({ name: 'T2 Team', slug: 't2-team' })
+
+    const { body: member1 } = await supertest(app.server)
+      .post('/v1/members')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'bob@example.com' })
+
+    // Directly call service with tenant1's ID but tenant2's teamId
+    const t1 = await buildTestTenant()
+    await expect(
+      assignTeam(member1.id as string, team2.id as string, t1.tenantId)
+    ).rejects.toThrow('Team not found')
   })
 })

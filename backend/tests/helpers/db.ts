@@ -2,7 +2,7 @@ import { db } from '../../src/db/client.js'
 import {
   tenants, policies, divisions, teams, users, members, memberTeams,
   subjects, rules, destinationGroups, siteConfigs, events, scans,
-  chatMessages, chatSessions,
+  chatMessages, chatSessions, invites,
 } from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
 import type { User } from '../../src/db/schema.js'
@@ -12,6 +12,7 @@ export async function truncateAll(): Promise<void> {
   await db.delete(scans)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
+  await db.delete(invites)
   await db.delete(memberTeams)
   await db.delete(rules)
   await db.delete(subjects)
@@ -31,16 +32,17 @@ export interface TestTenantResult {
   adminToken: string
 }
 
-export async function buildTestTenant(): Promise<TestTenantResult> {
+export async function buildTestTenant(nameSuffix?: string): Promise<TestTenantResult> {
   const orgSecret   = generateSecret()
   const adminSecret = generateSecret()
+  const suffix = nameSuffix ?? Math.random().toString(36).slice(2, 8)
 
   const [row] = await db.insert(tenants).values({
-    name:               'Test Firm LLP',
+    name:               `Test Firm ${suffix}`,
     orgTokenHash:       await hashToken(orgSecret),
     adminTokenHash:     await hashToken(adminSecret),
     paymentProvider:    'stripe',
-    externalSubId:      'sub_test_fixture',
+    externalSubId:      `sub_test_${suffix}`,
     subscriptionStatus: 'active',
     plan:               'business',
     seatCount:          10,

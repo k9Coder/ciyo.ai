@@ -35,10 +35,16 @@ export async function deleteTeam(tenantId: string, id: string): Promise<void> {
 }
 
 export async function listMembersByTeam(tenantId: string, teamId: string): Promise<Member[]> {
+  // First verify the team belongs to this tenant to prevent cross-tenant data exposure
+  const [team] = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
+  if (!team) return []
+
+  // Filter members by tenantId in SQL — not in JS — to prevent cross-tenant data leakage
   const rows = await db
     .select({ member: members })
     .from(memberTeams)
-    .innerJoin(members, eq(members.id, memberTeams.memberId))
+    .innerJoin(members, and(eq(members.id, memberTeams.memberId), eq(members.tenantId, tenantId)))
     .where(eq(memberTeams.teamId, teamId))
-  return rows.map(r => r.member).filter(m => m.tenantId === tenantId)
+  return rows.map(r => r.member)
 }

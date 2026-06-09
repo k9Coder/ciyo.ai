@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import { db } from '../db/client.js'
-import { chatMessages, subjectVersions, subjects, rules as rulesTable } from '../db/schema.js'
+import { chatMessages, chatSessions, subjectVersions, subjects, rules as rulesTable } from '../db/schema.js'
 import { sendMessage, getSessions, getMessages } from './service.js'
 import { executeActions } from './apply.js'
 import { resolveAffectedSubjectIds } from './versioning.js'
@@ -42,7 +42,17 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
 
   fastify.post('/assistant/apply', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { messageId } = req.body as { messageId: string }
-    const [msg] = await db.select().from(chatMessages).where(eq(chatMessages.id, messageId))
+
+    // Join through chatSessions to ensure the message belongs to this tenant
+    const [row] = await db
+      .select({ msg: chatMessages })
+      .from(chatMessages)
+      .innerJoin(chatSessions, and(
+        eq(chatMessages.sessionId, chatSessions.id),
+        eq(chatSessions.tenantId, req.tenant.id),
+      ))
+      .where(eq(chatMessages.id, messageId))
+    const msg = row?.msg
     if (!msg) return reply.status(404).send({ error: 'Message not found' })
     if (msg.appliedAt) return reply.status(409).send({ error: 'Already applied' })
 

@@ -24,6 +24,14 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
     keywords: r.keywords, pattern: r.pattern, action: r.action, active: r.active,
   }))
 
+  // PRIVACY NOTE (David Horowitz, 2026-06-08): Member emails are included in the
+  // system prompt that is transmitted to external LLM providers (Anthropic, OpenAI,
+  // Groq). This constitutes a third-party data transmission of customer PII to AI
+  // sub-processors. Required actions before GA:
+  //   1. Sign Data Processing Agreements (DPAs) with Anthropic, OpenAI, and Groq.
+  //   2. List all three as sub-processors in the Privacy Policy and customer DPA template.
+  //   3. Consider replacing `email` with a pseudonym (e.g. `member-<hash>`) here;
+  //      the AI only needs member IDs for action references — emails add no functional value.
   const memberSummaries = snapshot.members.map(m => ({
     id: m.id, email: m.email, role: m.role, adminDivisionId: m.adminDivisionId,
   }))
