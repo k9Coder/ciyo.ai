@@ -6,6 +6,7 @@ import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@/detection/types";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
+import { getRole } from "@/policy/role";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
@@ -48,13 +49,15 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+// isAuthenticated mirrors the priority order in getAuthToken() (auth.ts):
+// MDM managed → local orgToken → Clerk JWT.
 async function isAuthenticated(): Promise<boolean> {
-  const clerk = await chrome.storage.local.get("clerkSessionToken") as Record<string, unknown>;
-  if (typeof clerk["clerkSessionToken"] === "string") return true;
   const managed = await chrome.storage.managed.get("orgToken").catch(() => ({})) as Record<string, unknown>;
   if (typeof managed["orgToken"] === "string") return true;
   const local = await chrome.storage.local.get("orgToken") as Record<string, unknown>;
-  return typeof local["orgToken"] === "string";
+  if (typeof local["orgToken"] === "string") return true;
+  const clerk = await chrome.storage.local.get("clerkSessionToken") as Record<string, unknown>;
+  return typeof clerk["clerkSessionToken"] === "string";
 }
 
 const NUDGE_EVERY = 10;
@@ -125,6 +128,12 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "GET_SCAN_LIMIT_STATUS": {
       const result = await chrome.storage.local.get("scanLimitReached") as Record<string, unknown>;
       return { scanLimitReached: result["scanLimitReached"] === true };
+    }
+
+    case "GET_ROLE": {
+      // Returns the display role derived from stored tokens. This is a
+      // UI-gating role only — the backend independently authorises all API calls.
+      return getRole();
     }
 
     default:

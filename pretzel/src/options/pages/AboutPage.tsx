@@ -15,18 +15,22 @@ export function AboutPage() {
           using a configurable policy, then warns you before anything leaves your browser.
         </p>
         <p>
-          All detection and storage happens locally — no data is ever sent to a backend.
+          Detection runs entirely in your browser. Aggregate scan counts and
+          rule-trigger events are reported to your organisation&apos;s ciyo.ai
+          dashboard so administrators can monitor policy compliance. Policy
+          rules are fetched from the ciyo.ai backend and kept in sync
+          automatically.
         </p>
       </div>
 
       <div className="space-y-2 text-sm">
         <a
-          href="https://github.com/your-org/ciyo"
+          href="https://ciyo.ai/docs"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-2 text-blue-600 hover:underline"
         >
-          Documentation &amp; source code
+          Documentation
         </a>
         <a
           href="mailto:support@ciyo.ai"

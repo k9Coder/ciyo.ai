@@ -11,6 +11,10 @@ import overlayStyles from "./overlay.css?inline";
 
 let shadowHost: HTMLElement | null = null;
 let reactRoot: Root | null = null;
+// Keep the ShadowRoot reference in the module closure. Using mode:"closed"
+// means shadowHost.shadowRoot returns null to the host page, so page scripts
+// cannot read finding text or programmatically click modal buttons.
+let _shadowRoot: ShadowRoot | null = null;
 
 /** Inject the Shadow DOM host once, lazily. */
 function ensureShadowHost(): ShadowRoot {
@@ -30,23 +34,25 @@ function ensureShadowHost(): ShadowRoot {
     document.body.appendChild(shadowHost);
   }
 
-  let shadow = shadowHost.shadowRoot;
-  if (!shadow) {
-    shadow = shadowHost.attachShadow({ mode: "open" });
+  if (!_shadowRoot) {
+    // mode:"closed" prevents the host page's JavaScript from accessing the
+    // shadow DOM internals via shadowHost.shadowRoot. We hold the reference
+    // ourselves in _shadowRoot so internal callers can still use it.
+    _shadowRoot = shadowHost.attachShadow({ mode: "closed" });
 
     // Inject the compiled Tailwind stylesheet directly into the shadow tree.
     // This ensures host-page CSS can never bleed in and break the modal.
     const style = document.createElement("style");
     style.textContent = overlayStyles;
-    shadow.appendChild(style);
+    _shadowRoot.appendChild(style);
 
     const container = document.createElement("div");
     container.id = "ps-react-root";
     container.style.pointerEvents = "auto";
-    shadow.appendChild(container);
+    _shadowRoot.appendChild(container);
   }
 
-  return shadow;
+  return _shadowRoot;
 }
 
 /** Mount or update the React root inside the shadow DOM. */

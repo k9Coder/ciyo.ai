@@ -26,9 +26,13 @@ export const claudeAdapter: SiteAdapter = {
   },
 
   writePromptText(composer: HTMLElement, text: string): void {
-    composer.innerText = text;
-    composer.dispatchEvent(new Event("input", { bubbles: true }));
-    composer.dispatchEvent(new Event("change", { bubbles: true }));
+    // Claude.ai uses ProseMirror. Setting innerText directly does NOT update
+    // ProseMirror's internal EditorState — the editor will revert or corrupt
+    // the injected text on the next keypress. execCommand("insertText") drives
+    // the editor's native input handler and keeps ProseMirror state in sync.
+    composer.focus();
+    document.execCommand("selectAll");
+    document.execCommand("insertText", false, text);
   },
 
   onSendIntent(handler: (e: Event) => Promise<{ proceed: boolean }>): () => void {
