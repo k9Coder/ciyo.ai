@@ -2,8 +2,12 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Solutions',
-  description: 'Pretzel AI security solutions for healthcare, legal, fintech, and engineering teams.',
+  title: 'AI Security Solutions by Industry — Healthcare, Legal, Fintech, Engineering',
+  description: 'Pre-built AI DLP policy starter kits for regulated industries. Pretzel ships with policy templates for HIPAA, PCI-DSS, attorney-client privilege, and developer credential protection.',
+  openGraph: {
+    title: 'AI Security Solutions by Industry — Pretzel',
+    description: 'Pre-built AI DLP policy starter kits for regulated industries. Healthcare, Legal, Fintech, and Engineering.',
+  },
 }
 
 const INDUSTRIES = [
