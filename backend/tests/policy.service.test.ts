@@ -29,8 +29,11 @@ vi.mock('../src/db/client.js', () => ({
 describe('publishPolicy', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // getVersionOnly: select → from → where → resolves [{ version: 2 }]
-    mockSelect.mockReturnValueOnce(makeSelectBuilder([{ version: 2 }]))
+    // Re-establish mock return values on every test to avoid call-count accumulation
+    // across test runs (vi.clearAllMocks resets counts but not implementations)
+    mockSelect.mockReturnValue(makeSelectBuilder([{ version: 2 }]))
+    mockInsert.mockReturnValue({ values: mockInsertValues })
+    mockInsertValues.mockResolvedValue(undefined)
   })
 
   it('emits policy:updated after inserting to DB', async () => {
@@ -43,5 +46,30 @@ describe('publishPolicy', () => {
     const { publishPolicy } = await import('../src/policy/service.js')
     const v = await publishPolicy('tenant-1', { version: 1, tenantId: 'tenant-1', subjects: [], siteConfigs: {} })
     expect(v).toBe(3) // max version is 2, next is 3
+  })
+
+  it('calls db.insert with the correct row shape (tenantId, version, policyJson)', async () => {
+    const { publishPolicy } = await import('../src/policy/service.js')
+    const policyJson = { version: 1 as const, tenantId: 'tenant-1', subjects: [], siteConfigs: {} }
+    await publishPolicy('tenant-1', policyJson)
+
+    // Verify insert was actually called
+    expect(mockInsert).toHaveBeenCalledTimes(1)
+    expect(mockInsertValues).toHaveBeenCalledTimes(1)
+
+    // Assert the exact row shape — this is the critical check that was missing
+    const insertedRow = mockInsertValues.mock.calls[0]![0] as Record<string, unknown>
+    expect(insertedRow.tenantId).toBe('tenant-1')
+    expect(insertedRow.version).toBe(3) // max is 2, so next version is 3
+    expect(insertedRow.policyJson).toEqual(policyJson)
+  })
+
+  it('does not emit event when insert fails', async () => {
+    mockInsertValues.mockRejectedValueOnce(new Error('DB write failed'))
+    const { publishPolicy } = await import('../src/policy/service.js')
+    await expect(
+      publishPolicy('tenant-1', { version: 1, tenantId: 'tenant-1', subjects: [], siteConfigs: {} })
+    ).rejects.toThrow('DB write failed')
+    expect(mockEmit).not.toHaveBeenCalled()
   })
 })
