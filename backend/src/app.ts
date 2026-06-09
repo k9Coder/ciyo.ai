@@ -25,6 +25,13 @@ import { requestLoggingPlugin } from './logger/request-logging.js'
 import { logger } from './logger/index.js'
 
 export function buildApp() {
+  // Guard: CORS_ORIGIN must be explicitly set in production.
+  // Defaulting to origin:true (reflect all origins) would open the credentialed API
+  // to any attacker-controlled page. Throw early so a misconfigured deploy fails loudly.
+  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+    throw new Error('CORS_ORIGIN must be set in production')
+  }
+
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' })
   void app.register(cors, {
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true,
