@@ -65,7 +65,7 @@ describe('activateTenant', () => {
   })
 })
 
-describe('Stripe billing service functions', () => {
+describe('billing service functions', () => {
   it('sets past_due status via updateSubscriptionStatus', async () => {
     const { tenantId } = await buildTestTenant()
     await db.update(tenants).set({ externalSubId: 'sub_fail_001' }).where(eq(tenants.id, tenantId))

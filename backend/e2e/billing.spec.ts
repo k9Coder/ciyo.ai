@@ -99,4 +99,29 @@ test.describe('Billing API', () => {
     expect(body.adminToken).toMatch(/^ps_adm_/)
     await api.dispose()
   })
+
+  test('POST /v1/billing/stripe/checkout returns 404 (Stripe disabled)', async () => {
+    const api = await playwrightRequest.newContext()
+    const res = await api.post(`${BACKEND}/v1/billing/stripe/checkout`, {
+      data: { plan: 'starter', seatCount: 1, tenantName: 'Test', email: 'test@test.com' },
+    })
+    expect(res.status()).toBe(404)
+    await api.dispose()
+  })
+
+  test('POST /v1/billing/paypal/checkout returns approval URL for starter plan', async () => {
+    // Skip if PayPal sandbox credentials are not configured
+    if (!process.env['PAYPAL_CLIENT_ID']) {
+      test.skip()
+      return
+    }
+    const api = await playwrightRequest.newContext()
+    const res = await api.post(`${BACKEND}/v1/billing/paypal/checkout`, {
+      data: { plan: 'starter', seatCount: 1, tenantName: 'E2E PayPal Test', email: 'e2e@ciyo.ai' },
+    })
+    expect(res.status()).toBe(200)
+    const body = await res.json() as { url: string }
+    expect(body.url).toMatch(/^https:\/\/www\.sandbox\.paypal\.com|^https:\/\/www\.paypal\.com/)
+    await api.dispose()
+  })
 })

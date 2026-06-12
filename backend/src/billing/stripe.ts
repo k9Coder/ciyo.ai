@@ -1,3 +1,10 @@
+// ─────────────────────────────────────────────────────────────────
+// STRIPE DISABLED
+// Stripe is not available in the company's operating country.
+// This file is preserved for future reference or re-enablement.
+// No code in this file is currently imported or executed.
+// To re-enable: uncomment the imports in app.ts and billing/router.ts
+// ─────────────────────────────────────────────────────────────────
 import Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'

@@ -93,6 +93,44 @@ describe('POST /webhooks/paypal', () => {
     process.env['PAYPAL_SKIP_SIG_VERIFY'] = 'true'
   })
 
+  it('sets active status on PAYMENT.SALE.COMPLETED', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.update(tenants).set({ externalSubId: 'I-SALE001', subscriptionStatus: 'past_due' }).where(eq(tenants.id, tenantId))
+    const body = JSON.stringify({
+      event_type: 'PAYMENT.SALE.COMPLETED',
+      resource: { billing_agreement_id: 'I-SALE001' },
+    })
+    const res = await supertest(app.server)
+      .post('/webhooks/paypal')
+      .set('Content-Type', 'application/json')
+      .set('paypal-transmission-id',   'test-id')
+      .set('paypal-transmission-time', '2026-01-01T00:00:00Z')
+      .set('paypal-cert-url',          'https://api.paypal.com/v1/notifications/certs/test')
+      .set('paypal-transmission-sig',  'test-sig')
+      .send(body)
+    expect(res.status).toBe(200)
+    expect((await getTenantById(tenantId))?.subscriptionStatus).toBe('active')
+  })
+
+  it('sets past_due status on BILLING.SUBSCRIPTION.PAYMENT.FAILED', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.update(tenants).set({ externalSubId: 'I-FAIL001' }).where(eq(tenants.id, tenantId))
+    const body = JSON.stringify({
+      event_type: 'BILLING.SUBSCRIPTION.PAYMENT.FAILED',
+      resource: { id: 'I-FAIL001' },
+    })
+    const res = await supertest(app.server)
+      .post('/webhooks/paypal')
+      .set('Content-Type', 'application/json')
+      .set('paypal-transmission-id',   'test-id')
+      .set('paypal-transmission-time', '2026-01-01T00:00:00Z')
+      .set('paypal-cert-url',          'https://api.paypal.com/v1/notifications/certs/test')
+      .set('paypal-transmission-sig',  'test-sig')
+      .send(body)
+    expect(res.status).toBe(200)
+    expect((await getTenantById(tenantId))?.subscriptionStatus).toBe('past_due')
+  })
+
   it('is idempotent: duplicate BILLING.SUBSCRIPTION.ACTIVATED does not create second tenant', async () => {
     const body = JSON.stringify({
       event_type: 'BILLING.SUBSCRIPTION.ACTIVATED',

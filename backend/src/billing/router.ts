@@ -4,7 +4,7 @@ import { db } from '../db/client.js'
 import { tenants, members, scans } from '../db/schema.js'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import { freeTierSignup } from './service.js'
-import { createCheckoutSession, createPortalSession } from './stripe.js'
+// import { createCheckoutSession, createPortalSession } from './stripe.js'  // STRIPE DISABLED
 import { createPayPalSubscriptionUrl } from './paypal.js'
 import { PLAN_LIMITS, getScanLimit, getSeatLimit, isOverScanLimit, type Plan } from './limits.js'
 
@@ -28,42 +28,11 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
     }
   )
 
-  // ── Stripe checkout session ───────────────────────────────────────────────
-  fastify.post<{
-    Body: { plan: 'starter' | 'business'; seatCount: number; tenantName: string; email: string }
-  }>('/billing/stripe/checkout', async (req, reply) => {
-    const { plan, seatCount, tenantName, email } = req.body
-    if (!plan || !tenantName || !email) {
-      return reply.status(400).send({ error: 'plan, tenantName, and email are required' })
-    }
-    if (plan === 'business' && (seatCount ?? 0) < 10) {
-      return reply.status(400).send({ error: 'Business plan requires at least 10 seats' })
-    }
-    try {
-      return reply.send(await createCheckoutSession({ plan, seatCount: seatCount ?? 1, tenantName, email }))
-    } catch (err: unknown) {
-      return reply.status(500).send({ error: err instanceof Error ? err.message : 'Failed to create checkout session' })
-    }
-  })
+  // ── Stripe checkout session — DISABLED ───────────────────────────────────
+  // fastify.post('/billing/stripe/checkout', ...)  // STRIPE DISABLED — uncomment imports in app.ts + router.ts to re-enable
 
-  // ── Stripe customer portal ────────────────────────────────────────────────
-  fastify.post<{ Body: { returnUrl?: string } }>(
-    '/billing/stripe/portal',
-    { preHandler: requireAdminTokenOrClerkAdmin },
-    async (req, reply) => {
-      const customerId = req.tenant.stripeCustomerId
-      if (!customerId) {
-        return reply.status(400).send({ error: 'No Stripe customer associated with this account' })
-      }
-      const returnUrl = req.body?.returnUrl
-        ?? `${process.env['CONSOLE_URL'] ?? 'https://console.ciyo.ai'}/settings`
-      try {
-        return reply.send(await createPortalSession({ stripeCustomerId: customerId, returnUrl }))
-      } catch (err: unknown) {
-        return reply.status(500).send({ error: err instanceof Error ? err.message : 'Failed to create portal session' })
-      }
-    }
-  )
+  // ── Stripe customer portal — DISABLED ────────────────────────────────────
+  // fastify.post('/billing/stripe/portal', ...)  // STRIPE DISABLED
 
   // ── PayPal subscription checkout ──────────────────────────────────────────
   fastify.post<{

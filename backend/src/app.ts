@@ -19,7 +19,7 @@ import { assistantRouter } from './assistant/router.js'
 import { platformRouter } from './platform/router.js'
 import { invitesRouter } from './invites/router.js'
 import { billingRouter } from './billing/router.js'
-import { handleStripeEvent } from './billing/stripe.js'
+// import { handleStripeEvent } from './billing/stripe.js'  // STRIPE DISABLED
 import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypal.js'
 import { requestLoggingPlugin } from './logger/request-logging.js'
 import { logger } from './logger/index.js'
@@ -41,7 +41,7 @@ export function buildApp() {
   void app.register(requestLoggingPlugin)
 
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
-    if (req.url?.startsWith('/webhooks/stripe') || req.url?.startsWith('/webhooks/clerk') || req.url?.startsWith('/webhooks/paypal')) {
+    if (req.url?.startsWith('/webhooks/clerk') || req.url?.startsWith('/webhooks/paypal')) {
       done(null, body)
     } else {
       try { done(null, JSON.parse(body as string)) }
@@ -49,10 +49,10 @@ export function buildApp() {
     }
   })
 
-  app.post('/webhooks/stripe', async (request, reply) => {
-    await handleStripeEvent(request.body as string, (request.headers['stripe-signature'] as string) ?? '')
-    return reply.status(200).send({ received: true })
-  })
+  // app.post('/webhooks/stripe', async (request, reply) => {  // STRIPE DISABLED
+  //   await handleStripeEvent(request.body as string, (request.headers['stripe-signature'] as string) ?? '')
+  //   return reply.status(200).send({ received: true })
+  // })
 
   app.post('/webhooks/paypal', async (request, reply) => {
     const rawBody = request.body as string
