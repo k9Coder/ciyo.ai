@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ciyo.ai — Product Roadmap</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 48px 32px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────── */
+    .header {
+      max-width: 1100px;
+      margin: 0 auto 56px;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: white;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #f8fafc;
+      letter-spacing: -0.3px;
+    }
+    .header .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .updated {
+      margin-left: auto;
+      font-size: 12px;
+      color: #475569;
+      background: #1e293b;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+    }
+
+    /* ─── Phase blocks ───────────────────────────────────────── */
+    .phases {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .phase {
+      border-radius: 16px;
+      border: 1px solid #1e293b;
+      overflow: hidden;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 28px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .phase-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .phase-1 .phase-badge { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+    .phase-2 .phase-badge { background: #1e1b4b; color: #a5b4fc; border: 1px solid #3730a3; }
+    .phase-3 .phase-badge { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; }
+
+    .phase-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    .phase-window {
+      margin-left: auto;
+      font-size: 12px;
+      color: #64748b;
+      background: #0f172a;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+    }
+    .phase-status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .phase-1 .phase-status-dot { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
+    .phase-2 .phase-status-dot { background: #6366f1; }
+    .phase-3 .phase-status-dot { background: #475569; }
+
+    /* ─── Timeline strip ─────────────────────────────────────── */
+    .timeline-strip {
+      padding: 0 28px;
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+    }
+    .timeline-months {
+      display: grid;
+      height: 32px;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+    }
+    .month-label {
+      font-size: 10px;
+      color: #475569;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-left: 4px;
+      border-left: 1px solid #1e293b;
+    }
+
+    /* ─── Gantt bars ─────────────────────────────────────────── */
+    .gantt {
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .gantt-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 36px;
+    }
+    .gantt-label {
+      width: 220px;
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .gantt-label .icon {
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .gantt-label .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .tag-launch { background: #052e16; color: #4ade80; }
+    .tag-fix    { background: #431407; color: #fb923c; }
+    .tag-new    { background: #1e1b4b; color: #a5b4fc; }
+
+    .gantt-track {
+      flex: 1;
+      height: 32px;
+      background: #0f172a;
+      border-radius: 6px;
+      position: relative;
+      border: 1px solid #1e293b;
+    }
+
+    .gantt-bar {
+      position: absolute;
+      top: 4px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Phase 1 bar colors */
+    .bar-green  { background: linear-gradient(90deg, #15803d, #16a34a); color: #dcfce7; }
+    .bar-orange { background: linear-gradient(90deg, #9a3412, #c2410c); color: #ffedd5; }
+    .bar-blue   { background: linear-gradient(90deg, #1d4ed8, #2563eb); color: #dbeafe; }
+    .bar-teal   { background: linear-gradient(90deg, #0f766e, #0d9488); color: #ccfbf1; }
+
+    /* Phase 2 bar colors */
+    .bar-violet { background: linear-gradient(90deg, #4c1d95, #6d28d9); color: #ede9fe; }
+    .bar-indigo { background: linear-gradient(90deg, #3730a3, #4338ca); color: #e0e7ff; }
+    .bar-purple { background: linear-gradient(90deg, #6b21a8, #7e22ce); color: #f3e8ff; }
+
+    /* Phase 3 */
+    .bar-slate  { background: linear-gradient(90deg, #1e293b, #334155); color: #94a3b8; border: 1px dashed #475569; }
+
+    /* milestone diamond */
+    .milestone {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      width: 14px; height: 14px;
+      border-radius: 2px;
+    }
+    .ms-green  { background: #4ade80; box-shadow: 0 0 8px #4ade8066; }
+    .ms-violet { background: #a78bfa; box-shadow: 0 0 8px #a78bfa66; }
+
+    .milestone-label {
+      position: absolute;
+      top: -18px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #94a3b8;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    /* ─── Section dividers ───────────────────────────────────── */
+    .gantt-section {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #475569;
+      padding: 4px 0 2px;
+      border-top: 1px solid #1e293b;
+      margin-top: 4px;
+    }
+    .gantt-section:first-child { border-top: none; margin-top: 0; }
+
+    /* ─── Product cards ──────────────────────────────────────── */
+    .product-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 20px 28px 28px;
+    }
+
+    .product-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .product-card .card-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .card-green { background: #052e16; }
+    .card-violet { background: #1e1b4b; }
+    .card-slate { background: #1e293b; }
+
+    .product-card .card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+    .product-card .card-desc {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .product-card .card-status {
+      margin-top: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-ready    { color: #4ade80; }
+    .status-building { color: #a78bfa; }
+    .status-future   { color: #475569; }
+
+    /* ─── Footer legend ──────────────────────────────────────── */
+    .legend {
+      max-width: 1100px;
+      margin: 40px auto 0;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .legend-milestone {
+      width: 10px; height: 10px;
+      transform: rotate(45deg);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Now line ───────────────────────────────────────────── */
+    .now-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: #ef4444;
+      opacity: 0.6;
+    }
+    .now-label {
+      position: absolute;
+      top: -20px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    /* ─── Scrollable gantt on small screens ──────────────────── */
+    .gantt-scroll { overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">c</div>
+    <h1>ciyo.ai — Product Roadmap</h1>
+    <span class="updated">Updated June 12, 2026</span>
+  </div>
+  <p class="subtitle">Prepared by Ben Cho (PM) · Reviewed by Ethan Cole (CEO) · Marcus Webb (CTO)</p>
+</div>
+
+<div class="phases">
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 1                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="phase phase-1">
+
+    <div class="phase-header">
+      <span class="phase-status-dot"></span>
+      <span class="phase-badge">Phase 1 — Active</span>
+      <span class="phase-title">Ship the Core Product</span>
+      <span class="phase-window">Jun 2026 — Aug 2026</span>
+    </div>
+
+    <!-- Product cards -->
+    <div class="product-cards">
+      <div class="product-card">
+        <div class="card-icon card-green">🧩</div>
+        <div class="card-name">Pretzel (Chrome Extension)</div>
+        <div class="card-desc">Intercepts browser prompts on ChatGPT, Claude.ai, Gemini. Blocks/warns based on policy.</div>
+        <div class="card-status status-ready">● Finalizing for Web Store</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-green">⚙️</div>
+        <div class="card-name">Pretzel Console</div>
+        <div class="card-desc">Admin dashboard. Configure rules, manage members, view violations, billing.</div>
+        <div class="card-status status-ready">● Finalizing</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-green">🔌</div>
+        <div class="card-name">Backend API</div>
+        <div class="card-desc">Fastify REST API. Policy engine, tenant isolation, Stripe billing, Clerk auth.</div>
+        <div class="card-status status-ready">● Pre-launch fixes in progress</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-green">🌐</div>
+        <div class="card-name">ciyo.ai Web (Marketing)</div>
+        <div class="card-desc">Landing site, pricing, signup flow. Next.js, deployed on Vercel.</div>
+        <div class="card-status status-ready">● Ready</div>
+      </div>
+    </div>
+
+    <!-- Gantt -->
+    <div class="gantt-scroll">
+      <div class="gantt-strip" style="padding: 0 28px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+        <div style="display:grid; grid-template-columns: 220px repeat(10,1fr); height:28px; align-items:center; gap:16px;">
+          <div></div>
+          <div class="month-label">W1</div>
+          <div class="month-label">W2</div>
+          <div class="month-label">W3</div>
+          <div class="month-label">W4</div>
+          <div class="month-label">W5</div>
+          <div class="month-label">W6</div>
+          <div class="month-label">W7</div>
+          <div class="month-label">W8</div>
+          <div class="month-label">W9</div>
+          <div class="month-label">W10</div>
+        </div>
+      </div>
+
+      <div class="gantt">
+
+        <div class="gantt-section">Pre-launch fixes</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔐</span> Security fixes <span class="tag tag-fix">FIX</span></div>
+          <div class="gantt-track" style="position:relative;">
+            <div class="gantt-bar bar-orange" style="left:0%;width:20%;">PayPal sig · CORS</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🧪</span> E2E suite completion <span class="tag tag-fix">FIX</span></div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-orange" style="left:0%;width:30%;">api · admin · cross-service</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔍</span> QA & extension adapters</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-teal" style="left:10%;width:30%;">ChatGPT · Claude · Gemini</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📦</span> Chrome Web Store submit <span class="tag tag-launch">LAUNCH</span></div>
+          <div class="gantt-track" style="position:relative;">
+            <div class="gantt-bar bar-green" style="left:30%;width:15%;">Review period</div>
+            <div class="milestone ms-green" style="left:30%;"></div>
+            <div class="milestone-label" style="left:30%;">Submit</div>
+          </div>
+        </div>
+
+        <div class="gantt-section">Launch</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🚀</span> Backend → Production <span class="tag tag-launch">LAUNCH</span></div>
+          <div class="gantt-track" style="position:relative;">
+            <div class="milestone ms-green" style="left:40%;"></div>
+            <div class="milestone-label" style="left:40%;">Go Live</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🎯</span> First 10 paying customers</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-green" style="left:40%;width:40%;">Founder-led sales</div>
+          </div>
+        </div>
+
+        <div class="gantt-section">Post-launch stabilization</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📊</span> Analytics pipeline (A)</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-blue" style="left:50%;width:35%;">Event tracking · dashboards</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📋</span> Policy Templates</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-teal" style="left:50%;width:20%;">HIPAA · SOC2 · PCI</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📈</span> Compliance Reports</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-blue" style="left:65%;width:30%;">Quarterly violation export</div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /gantt-scroll -->
+  </div><!-- /phase-1 -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 2                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="phase phase-2">
+
+    <div class="phase-header">
+      <span class="phase-status-dot"></span>
+      <span class="phase-badge">Phase 2 — Planned</span>
+      <span class="phase-title">ciyo-guard — Beyond the Browser</span>
+      <span class="phase-window">Sep 2026 — Jan 2027</span>
+    </div>
+
+    <!-- Product cards -->
+    <div class="product-cards">
+      <div class="product-card">
+        <div class="card-icon card-violet">🛡️</div>
+        <div class="card-name">ciyo-guard (Proxy Mode)</div>
+        <div class="card-desc">Local HTTPS proxy. Intercepts all AI API traffic — Cursor, Claude Code, scripts, any tool. Same policy from Pretzel Console.</div>
+        <div class="card-status status-building">◐ Spec complete · Design approved</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-violet">📦</div>
+        <div class="card-name">@ciyo/detect (npm library)</div>
+        <div class="card-desc">Detection engine extracted from Pretzel extension. Open-source. Powers ciyo-guard and future enforcement clients.</div>
+        <div class="card-status status-building">◐ Planned (prerequisite)</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-violet">🗺️</div>
+        <div class="card-name">Coverage Map (Console)</div>
+        <div class="card-desc">Per-member view showing which clients are installed and active. CISOs can see gaps and push install instructions.</div>
+        <div class="card-status status-building">◐ Planned</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-violet">🔑</div>
+        <div class="card-name">API Key Management</div>
+        <div class="card-desc">Non-browser clients (ciyo-guard, future CI/CD) authenticate with long-lived API keys managed in the Console.</div>
+        <div class="card-status status-building">◐ Planned</div>
+      </div>
+    </div>
+
+    <!-- Gantt -->
+    <div class="gantt-scroll">
+      <div class="gantt-strip" style="padding: 0 28px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+        <div style="display:grid; grid-template-columns: 220px repeat(10,1fr); height:28px; align-items:center; gap:16px;">
+          <div></div>
+          <div class="month-label">Sep W1</div>
+          <div class="month-label">Sep W2</div>
+          <div class="month-label">Sep W3</div>
+          <div class="month-label">Sep W4</div>
+          <div class="month-label">Oct W1</div>
+          <div class="month-label">Oct W2</div>
+          <div class="month-label">Nov</div>
+          <div class="month-label">Dec</div>
+          <div class="month-label">Jan W1</div>
+          <div class="month-label">Jan W2</div>
+        </div>
+      </div>
+
+      <div class="gantt">
+
+        <div class="gantt-section">Prerequisites</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📦</span> Extract @ciyo/detect <span class="tag tag-new">NEW</span></div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-indigo" style="left:0%;width:20%;">Port engine to standalone pkg</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔑</span> API Key endpoint (backend)</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-indigo" style="left:0%;width:20%;">POST /v1/api-keys</div>
+          </div>
+        </div>
+
+        <div class="gantt-section">ciyo-guard build</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🏗️</span> Binary scaffold + login flow</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-violet" style="left:20%;width:15%;">Bun compile · auth</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔀</span> Proxy engine (HTTPS MITM)</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-violet" style="left:30%;width:25%;">TLS termination · stream passthrough</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔌</span> Policy sync + detection</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-purple" style="left:35%;width:20%;">Reuse sync.ts pattern</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">⚙️</span> setup --cursor / --system</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-violet" style="left:45%;width:15%;">Auto-config installer</div>
+          </div>
+        </div>
+
+        <div class="gantt-section">Console changes</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🗺️</span> Coverage Map UI</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-indigo" style="left:50%;width:25%;">Per-member client status</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">📊</span> clientType filter in Reports</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-indigo" style="left:55%;width:15%;"></div>
+          </div>
+        </div>
+
+        <div class="gantt-section">Alpha → GA</div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🔬</span> Internal alpha</div>
+          <div class="gantt-track" style="position:relative;">
+            <div class="gantt-bar bar-violet" style="left:55%;width:10%;">Team dogfood</div>
+            <div class="milestone ms-violet" style="left:55%;"></div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🤝</span> Private beta (5 customers)</div>
+          <div class="gantt-track">
+            <div class="gantt-bar bar-violet" style="left:65%;width:20%;">Sofia's deal list</div>
+          </div>
+        </div>
+
+        <div class="gantt-row">
+          <div class="gantt-label"><span class="icon">🚀</span> ciyo-guard GA <span class="tag tag-launch">LAUNCH</span></div>
+          <div class="gantt-track" style="position:relative;">
+            <div class="milestone ms-violet" style="left:88%;"></div>
+            <div class="milestone-label" style="left:88%;">GA</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /phase-2 -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 3 (future)                                           -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="phase phase-3">
+
+    <div class="phase-header">
+      <span class="phase-status-dot"></span>
+      <span class="phase-badge">Phase 3 — Future</span>
+      <span class="phase-title">Platform Expansion</span>
+      <span class="phase-window">2027 +</span>
+    </div>
+
+    <div class="product-cards">
+      <div class="product-card">
+        <div class="card-icon card-slate">🔗</div>
+        <div class="card-name">ciyo git hook</div>
+        <div class="card-desc">Pre-commit scan. Flags sensitive files before they enter repos that AI agents will later read.</div>
+        <div class="card-status status-future">○ Parked</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-slate">⚡</div>
+        <div class="card-name">ciyo GitHub Action</div>
+        <div class="card-desc">PR pipeline scan. Repo API key. Violations in same audit log.</div>
+        <div class="card-status status-future">○ Parked</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-slate">📓</div>
+        <div class="card-name">ciyo Jupyter Extension</div>
+        <div class="card-desc">Data science enforcement. Intercepts Jupyter AI calls. Same policy, different buyer (Head of Data).</div>
+        <div class="card-status status-future">○ Parked</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-slate">🔤</div>
+        <div class="card-name">ciyo LSP</div>
+        <div class="card-desc">Language Server for any IDE. Inline warnings: "this file would be blocked if sent to AI."</div>
+        <div class="card-status status-future">○ Parked</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-slate">💬</div>
+        <div class="card-name">ciyo Slack/Teams App</div>
+        <div class="card-desc">Audit Slack AI, Microsoft Copilot in Teams. Audit-first (no real-time block in v1).</div>
+        <div class="card-status status-future">○ Parked</div>
+      </div>
+      <div class="product-card">
+        <div class="card-icon card-slate">👤</div>
+        <div class="card-name">ciyo Solo (PLG)</div>
+        <div class="card-desc">$10/month self-serve for individual developers. Bottom-up enterprise funnel.</div>
+        <div class="card-status status-future">○ Parked · needs own GTM motion</div>
+      </div>
+    </div>
+
+  </div><!-- /phase-3 -->
+
+</div><!-- /phases -->
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#16a34a;"></div>
+    Phase 1 — Ship current product
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#6d28d9;"></div>
+    Phase 2 — ciyo-guard
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#334155;"></div>
+    Phase 3 — Future
+  </div>
+  <div class="legend-item">
+    <div class="legend-milestone" style="background:#4ade80;"></div>
+    Launch milestone
+  </div>
+  <div class="legend-item">
+    <div class="legend-milestone" style="background:#a78bfa;"></div>
+    Phase 2 milestone
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#ef4444;border-radius:0;"></div>
+    Today
+  </div>
+</div>
+
+</body>
+</html>
