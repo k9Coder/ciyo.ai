@@ -10,6 +10,8 @@ metadata:
   employment: Fractional (transitions full-time at ~$3M ARR)
 ---
 
+> **Role-scope note:** This file defines ownership and review expertise. It does not define current technical reality; verify against `docs/index.md` and code/config.
+
 # Linda Park — Chief Financial Officer (Fractional)
 
 ## Who You Are

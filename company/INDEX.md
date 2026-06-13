@@ -1,7 +1,8 @@
 # ciyo.ai — Staff Index & Routing Guide
 
-> **For any LLM agent:** Read this file first when given a task at ciyo.ai.
-> It tells you who to invoke, how to choose, and where their skill file lives.
+> **Agent-routing document only.** Technical reality is defined by code and the
+> canonical documentation index at [`../docs/index.md`](../docs/index.md).
+> This file tells you who owns a task and where their specialist lens lives.
 >
 > **Development pipeline** (feature → commit/push flow, QA gates): [`PIPELINE.md`](PIPELINE.md)
 
@@ -27,6 +28,7 @@ Task received
             │                               or Priya Nair (Marketing) staff:priya-nair
             ├── Customer Success          → James Okafor (Head CS)  staff:james-okafor
             ├── Security Research         → Alexei Petrov           staff:alexei-petrov
+            ├── Security (InfoSec/CISO)   → Noa Katz (CISO)        staff:noa-katz
             ├── Finance / Legal           → Linda Park (CFO)        staff:linda-park
             │                               or David Horowitz (GC)  staff:david-horowitz
             │
@@ -47,9 +49,9 @@ Use this to skip the division head and go straight to the right person.
 |---|---|---|
 | Backend API, Fastify routers, PostgreSQL, Drizzle, webhooks, policy compiler | Arjun Mehta | `staff:arjun-mehta` |
 | Chrome extension, MV3, content scripts, adapters (ChatGPT/Claude/Gemini), overlay UI | Yuki Tanaka | `staff:yuki-tanaka` |
-| Admin console SPA, React, Zustand, ChatPane, billing gates, component library | Chloe Dubois | `staff:chloe-dubois` |
+| Admin console SPA, React, TanStack Query, ChatPane, plan gates, component library | Chloe Dubois | `staff:chloe-dubois` |
 | Detection rules, regex patterns, entropy, PII classification, fuzzy matching | Omar Hassan | `staff:omar-hassan` |
-| AWS infra, CI/CD, Docker, PostgreSQL ops, SOC 2 controls, monitoring, secrets | Ryan Kowalski | `staff:ryan-kowalski` |
+| Render/Vercel/GHCR deployment, CI/CD, Docker, PostgreSQL ops, monitoring, secrets | Ryan Kowalski | `staff:ryan-kowalski` |
 | E2E test suite, Playwright automation, release gate, detection bypass testing, QA team lead | Natasha Ivanova (QA Lead) | `staff:natasha-ivanova` |
 | Manual test plans, Playwright runs against test DB, exploratory testing, UX regression | Lena Hartmann (QA Analyst) | `staff:lena-hartmann` |
 | Product roadmap, feature specs, sprint planning, user research, success metrics | Ben Cho | `staff:ben-cho` |
@@ -82,13 +84,22 @@ Use this to skip the division head and go straight to the right person.
 | OSINT, dark web monitoring, new data patterns, threat feed analysis | Isabella Torres | `staff:isabella-torres` |
 | Detection roadmap, threat reports, conference research, CISO evaluations | Alexei Petrov | `staff:alexei-petrov` |
 
+### Security (InfoSec / CISO)
+
+| Task involves... | Specialist | Skill |
+|---|---|---|
+| Security program strategy, SOC 2, ISO 27001, CISO customer conversations, board reporting, incident command | Noa Katz (CISO) | `staff:noa-katz` |
+| Penetration testing, vulnerability management, AWS security, Israeli INCD/data security levels, SOC 2 technical controls, incident response | Tal Ben-David | `staff:tal-ben-david` |
+
 ### Finance & Legal
 
 | Task involves... | Specialist | Skill |
 |---|---|---|
 | Bookkeeping, payroll, vendor management, HR ops, software licenses | Nina Schulz | `staff:nina-schulz` |
 | Financial model, runway, board financials, fundraising prep | Linda Park (CFO) | `staff:linda-park` |
-| Enterprise contracts, GDPR/HIPAA/SOC2, legal review, equity | David Horowitz (GC) | `staff:david-horowitz` |
+| Enterprise contracts, GDPR/HIPAA/SOC2, legal review, equity (US/EU law) | David Horowitz (GC) | `staff:david-horowitz` |
+| Israeli privacy law, Israeli employment law, IIA grants, Section 102 options, PPA registration, cross-border transfers | Yael Mizrahi | `staff:yael-mizrahi` |
+| Israeli corporate tax, VAT on SaaS exports, IIA grant accounting, Section 102 tax, Preferred Technology Enterprise | Avi Shapiro (CPA) | `staff:avi-shapiro` |
 
 ### Executive
 
@@ -105,7 +116,10 @@ Use this to skip the division head and go straight to the right person.
 | Task spans Engineering + GTM + CS | CEO (`staff:ethan-cole`) |
 | Task requires budget decision not in plan | CEO → CFO |
 | Task requires signing a contract | CEO + GC (`staff:david-horowitz`) |
-| Task requires legal opinion | GC (`staff:david-horowitz`) |
+| Task requires legal opinion (US/EU) | GC (`staff:david-horowitz`) |
+| Task requires Israeli law opinion | Israeli Lawyer (`staff:yael-mizrahi`) |
+| Task requires Israeli tax/accounting | CPA (`staff:avi-shapiro`) |
+| Task requires security posture decision or incident command | CISO (`staff:noa-katz`) |
 | Specialist is blocked by another division | That specialist escalates to their manager; or invoke both managers |
 | You genuinely cannot determine the division | CEO (`staff:ethan-cole`) — he routes it |
 
@@ -139,7 +153,11 @@ Use this to skip the division head and go straight to the right person.
 | Aisha Johnson | Customer Support Specialist | Customer Success | `staff:aisha-johnson` |
 | Linda Park | CFO (Fractional) | Finance & Legal | `staff:linda-park` |
 | David Horowitz | General Counsel (Fractional) | Finance & Legal | `staff:david-horowitz` |
+| Yael Mizrahi | Israeli & International Tech Lawyer (Fractional) | Finance & Legal | `staff:yael-mizrahi` |
+| Avi Shapiro | Israeli CPA / Accountant (Fractional) | Finance & Legal | `staff:avi-shapiro` |
 | Nina Schulz | Finance & Ops Manager | Finance & Legal | `staff:nina-schulz` |
+| Noa Katz | CISO (Fractional) | Security | `staff:noa-katz` |
+| Tal Ben-David | Cybersecurity Specialist | Security | `staff:tal-ben-david` |
 
 ---
 
@@ -157,5 +175,7 @@ company/staff/
 │                       rachel-kim.md  dimitri-stavros.md  megan-obrien.md
 │                       carlos-mendes.md
 ├── customer-success/   james-okafor.md  trevor-banks.md  aisha-johnson.md
-└── finance-legal/      linda-park.md  david-horowitz.md  nina-schulz.md
+├── finance-legal/      linda-park.md  david-horowitz.md  nina-schulz.md
+│                       yael-mizrahi.md  avi-shapiro.md
+└── security/           noa-katz.md  tal-ben-david.md
 ```

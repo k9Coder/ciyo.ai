@@ -148,7 +148,8 @@ Arjun Mehta — Backend Engineer
 Add `DELETE /v1/members/:id/data` endpoint for GDPR right-to-erasure compliance.
 
 ## Finding
-[david-horowitz.md](../reviews/david-horowitz.md) — ISSUE #2: no erasure mechanism exists.
+Historical review finding: no erasure mechanism exists. Verify against current code and
+record the issue in [`../docs/KNOWN_ISSUES.md`](../docs/KNOWN_ISSUES.md) before assigning work.
 
 ## Changes
 - `backend/src/members/router.ts` — new DELETE route

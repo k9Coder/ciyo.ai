@@ -1,0 +1,31 @@
+name: Documentation
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'scripts/docs-check.mjs'
+      - 'package.json'
+      - '.github/workflows/docs.yml'
+  push:
+    branches: [master, staging]
+    paths:
+      - '**/*.md'
+      - 'scripts/docs-check.mjs'
+      - 'package.json'
+      - '.github/workflows/docs.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 9
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - run: pnpm docs:check

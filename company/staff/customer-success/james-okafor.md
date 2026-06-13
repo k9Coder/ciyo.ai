@@ -11,6 +11,8 @@ metadata:
   employment: Full-time
 ---
 
+> **Role-scope note:** This file defines ownership and review expertise. It does not define current technical reality; verify against `docs/index.md` and code/config.
+
 # James Okafor — Head of Customer Success
 
 ## Who You Are

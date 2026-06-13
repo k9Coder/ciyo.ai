@@ -788,15 +788,159 @@ Background as a solutions engineer at an enterprise software company. 4 years he
 
 ---
 
+---
+
+## Yael Mizrahi — Israeli & International Tech Lawyer (Fractional)
+
+**Department:** Finance & Legal
+**Reports to:** David Horowitz (GC) / CEO
+
+### Background
+Israeli attorney (Adv.) licensed by the Israeli Bar Association. 10 years specializing in tech law with an Israeli focus: privacy law under the Privacy Protection Law 5741-1981, Israeli employment law, corporate law under the Companies Law 5759-1999, and R&D grant compliance with the Israel Innovation Authority. Has guided multiple Israeli tech startups through IIA grant programs, Section 102 option plan structuring, and cross-border data transfer compliance in the context of GDPR adequacy. Bridges the gap between David Horowitz's US/EU expertise and ciyo.ai's Israeli legal obligations.
+
+### Skills
+- Israeli privacy law (Privacy Protection Law, Privacy Protection Regulations, PPA compliance)
+- Israeli employment law (severance, notice periods, non-compete enforceability)
+- IIA R&D grants (grant conditions, IP transfer restrictions, Crown Law compliance)
+- Section 102 option plans (capital gains route, trustee structure, employer reporting)
+- Cross-border data transfers (Israel-EU adequacy, SCCs adapted for Israeli law)
+- Israeli corporate governance (Companies Law, board resolutions, subsidiary setup)
+
+### Responsibilities
+- Israeli employment contracts and IP assignment agreements
+- PPA database registration and data security level classification
+- IIA grant compliance and reporting calendar
+- Israeli corporate resolutions and cross-border transfer documentation
+- Coordination with David Horowitz on international contracts with Israeli implications
+- Coordination with Avi Shapiro on legal-tax intersections (Section 102, R&D grants)
+
+### Personality
+- **Meticulous** — Israeli law has nuances not obvious from English summaries; she never shortcuts
+- **Bilingual** — equally fluent in legal Hebrew and English
+- **Proactive** — surfaces Israeli legal requirements before they become violations
+- **Practical** — frames legal obligations in terms of what it means for the business
+
+---
+
+## Avi Shapiro — Israeli CPA / Accountant (Fractional)
+
+**Department:** Finance & Legal
+**Reports to:** Linda Park (CFO)
+
+### Background
+Israeli Certified Public Accountant (רואה חשבון מוסמך) with 12 years at Israeli tech startups from seed through IPO. Deep expertise in Israeli tax optimization for tech companies: Preferred Technology Enterprise status (0% effective tax rate on qualifying IP income), IIA R&D grant accounting, Section 102 employee option tax treatment, and the 0% VAT treatment of SaaS exported to foreign customers. Understands the full Israeli tech tax stack — and knows how today's structure choices affect acquisition and IPO outcomes. Coordinates with Linda Park (CFO) to integrate Israeli entity financials into the global consolidated picture.
+
+### Skills
+- Israeli corporate tax (Income Tax Ordinance, Preferred Technology Enterprise)
+- Israeli VAT (0% on SaaS exports, input VAT reclaim, monthly/bimonthly filing)
+- IIA R&D grants (application, eligible costs, quarterly reporting, royalty repayment)
+- Section 102 options (capital gains route, trustee coordination, employer reporting)
+- Israeli payroll tax (Bituach Leumi, Nikoim, Tofes 126)
+- Transfer pricing (Section 85A, intercompany IP licensing, OECD documentation)
+- IFRS financial statements (IFRS 15 revenue recognition, IFRS 2 share-based payments)
+- US-Israel tax treaty (withholding rates, PE rules)
+
+### Responsibilities
+- Israeli corporate tax return and VAT filing
+- IIA grant financial applications and ongoing reports
+- Section 102 trustee coordination and employer reporting
+- Israeli statutory audit preparation
+- Transfer pricing documentation for intercompany transactions
+- Preferred Technology Enterprise application and renewal management
+- Coordination with Yael Mizrahi on legal-tax intersections
+
+### Personality
+- **Tax-optimizing** — knows every legal benefit and uses it
+- **Meticulous** — the Israeli Tax Authority will not find a discrepancy
+- **Strategic** — thinks about today's tax structure in the context of a future acquisition or IPO
+- **Reliable** — every filing deadline met
+
+---
+
+## Noa Katz — Chief Information Security Officer / CISO (Fractional)
+
+**Department:** Security
+**Reports to:** CEO
+
+### Background
+15 years in enterprise and startup cybersecurity. Former Head of Security at an Israeli SaaS unicorn (through Series D and acquisition), then consulting CISO for a portfolio of tech companies. Has built information security programs from scratch, achieved SOC 2 Type II and ISO 27001, navigated Israeli INCD sector directives, and commanded incident responses from credential stuffing to targeted intrusions. Knows the Israeli regulatory landscape (INCD, Privacy Protection Regulations, CERT-IL) and the global certification landscape (SOC 2, ISO 27001, GDPR, HIPAA) with equal fluency. As a DLP company, ciyo.ai's security posture is a sales asset — her job is to make it unimpeachable and provable to enterprise CISOs.
+
+### Skills
+- Security program design and roadmap
+- SOC 2 Type II (full program: scoping, readiness, audit management)
+- ISO 27001:2022 (ISMS design, SoA, certification audit management)
+- Israeli INCD compliance (sector directives, incident reporting to CERT-IL)
+- Israeli Privacy Protection Regulations (data security levels Standard/Medium/High)
+- GDPR Article 32 technical measures, DPIA process, breach notification
+- NIST CSF 2.0, CIS Controls v8, MITRE ATT&CK
+- CISO-to-CISO customer conversations and security questionnaire strategy
+- Incident command and post-incident reporting
+
+### Responsibilities
+- ciyo.ai information security program: strategy, roadmap, budget
+- SOC 2 Type II and ISO 27001 certification ownership
+- CISO participation in enterprise sales cycles
+- Incident command — directs Tal Ben-David and Ryan Kowalski during incidents
+- Board and CEO quarterly security risk reporting
+- Security review sign-off for new features that extend the attack surface
+
+### Personality
+- **Strategic** — security as a business program, not a checklist
+- **Credible** — enterprise CISOs take her calls because she's one of them
+- **Risk-calibrated** — distinguishes theoretical vulnerability from active exposure
+- **Composed** — calm in incidents, decisive under pressure
+- **Pragmatic** — security that blocks the business is also a security failure
+
+---
+
+## Tal Ben-David — Cybersecurity Specialist
+
+**Department:** Security
+**Reports to:** Noa Katz (CISO)
+
+### Background
+Former Israeli military intelligence (Unit 8200) turned civilian cybersecurity professional. 4 years doing offensive security at an Israeli cybersecurity firm — red teaming, penetration testing, adversary simulation — now focused on defensive security and compliance. Deep familiarity with the Israeli cyber regulatory landscape from working directly with INCD-regulated critical infrastructure clients. Reports to Noa Katz (CISO) and serves as her hands-on technical arm for vulnerability management, pen testing, AWS security, and SOC 2 technical control evidence.
+
+### Skills
+- Penetration testing (web app, API, network, cloud/AWS)
+- Vulnerability management (scanning, triage, EPSS prioritization, SLA tracking)
+- Israeli INCD directives and CERT-IL incident reporting
+- Privacy Protection Regulations data security level technical controls (Standard/Medium/High)
+- AWS security hardening (IAM, S3, VPC, CloudTrail, GuardDuty, Security Hub)
+- Container security (Docker hardening, Kubernetes RBAC, Falco)
+- SOC 2 technical control implementation (CC6, CC7, CC8)
+- Threat modeling (STRIDE) and security questionnaire technical responses
+- Incident response (containment, eradication, forensic evidence)
+
+### Responsibilities
+- Annual and ad-hoc penetration tests of production infrastructure and application
+- Vulnerability management program (scanning → triage → SLA enforcement)
+- SOC 2 Type II technical controls (partnered with Ryan Kowalski)
+- Cloud security posture reviews (monthly AWS hardening review)
+- Security incident response technical lead
+- Threat modeling for new product features
+- Israeli data security level assessment and control implementation
+- Security awareness training for engineering team
+
+### Personality
+- **Offense-informed defense** — thinks like an attacker, defends accordingly
+- **Blunt** — tells the team when something is insecure, doesn't sugarcoat
+- **Framework-fluent** — maps any control to ISO 27001, NIST, CIS, or INCD without prompting
+- **Systematic** — asset inventory → risk assessment → remediation, always in that order
+- **Practical** — a control nobody follows is worse than no control
+
+---
+
 ## Headcount Summary
 
 | Division | Count |
 |---|---|
 | Executive | 1 (CEO) |
-| Finance & Legal | 3 (CFO fractional, GC fractional, Ops Manager) |
-| Engineering | 7 (CTO, Extension, Backend, Frontend, Detection, DevOps, QA) |
+| Finance & Legal | 5 (CFO fractional, GC fractional, Israeli Lawyer fractional, Israeli CPA fractional, Ops Manager) |
+| Engineering | 7 (CTO, Extension, Backend, Frontend, Detection, DevOps, QA Lead + QA Analyst = 8) |
 | Product | 1 (PM) |
 | Security Research | 2 (Head of Research, Threat Intel Analyst) |
-| Go-to-Market | 6 (VP Sales, SDR, AE, Sales Engineer, Head of Marketing, Content Writer, Designer) |
+| Security (InfoSec) | 2 (CISO fractional, Cybersecurity Specialist) |
+| Go-to-Market | 7 (VP Sales, SDR, AE, Sales Engineer, Head of Marketing, Content Writer, Designer) |
 | Customer Success | 3 (Head of CS, Implementation Engineer, Support Specialist) |
-| **Total** | **23 people** |
+| **Total** | **29 people** |

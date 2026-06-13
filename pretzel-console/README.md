@@ -1,87 +1,110 @@
-# pretzel-console
+---
+status: current
+owner: ciyo.ai engineering
+verified_at: 2026-06-13
+sources:
+  - package.json
+  - src/App.tsx
+  - src/components/layout/RequireAuth.tsx
+  - src/components/billing/PlanGate.tsx
+  - src/lib/api.ts
+  - vite.config.ts
+  - playwright.config.ts
+  - Dockerfile
+  - ../.github/workflows/pretzel-console-deploy.yml
+---
 
-Admin web app. Manage policy, members, and billing. Built with React, TypeScript, Vite, TanStack Query, Clerk auth.
+# Pretzel Console
 
-## Prerequisites
+`pretzel-console` is the React/Vite administration SPA for Pretzel. Organization administrators use it to inspect analytics, manage policy subjects and rules, organize members, publish policy versions, review audit events, and manage billing.
 
-- Node.js ≥ 20
-- pnpm
-- Backend running (`cd backend && pnpm dev`)
+## Run locally
 
-## Running
-
-### Staging (developers & testers)
-
-Uses the Clerk development instance and points at `localhost:3000`.
-
-```bash
-cd pretzel-console && pnpm dev:staging
-```
-
-App runs at `http://localhost:5173`.
-
-Sign in with a staging account (created in Clerk's development instance at `pk_test_...`).
-
-### Production (deploy)
+Requirements: Node.js 20+, pnpm, a Clerk publishable key, and the backend API.
 
 ```bash
-cd pretzel-console && pnpm build:prod
+pnpm install
+pnpm dev
 ```
 
-Produces `dist/` — deploy to any static host (Vercel, Netlify, S3, etc.).
+Vite serves the console at `http://localhost:5173`. Unless `VITE_API_BASE` is set, API calls target `http://localhost:3000`.
 
-To preview the production build locally:
+Use the committed staging configuration with:
+
 ```bash
-pnpm build:prod && pnpm preview
+pnpm dev:staging
 ```
 
-## Environment files
+## Environment
 
-| File | Purpose |
+| Variable | Required | Behavior |
+|---|---:|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | Yes | Passed to `ClerkProvider`; authentication cannot initialize correctly without it. |
+| `VITE_API_BASE` | No | Backend origin. Defaults to `http://localhost:3000`. |
+| `VITE_APP_ENV` | No | Shows a `STAGING` badge when its value is `staging`. |
+| `VITE_SENTRY_DSN` | No | Enables Sentry browser tracing and error replay. Localhost events are discarded. |
+
+Start from `.env.example`. Vite modes load `.env.staging` for `dev:staging`/`build:staging` and `.env.prod` for `dev:prod`/`build:prod`. Do not put secrets in `VITE_*` variables; Vite embeds them in the browser bundle.
+
+## Access gates
+
+Public routes are `/login`, `/unauthorized`, `/onboarding`, `/invite/:token`, and `/accessibility`.
+
+Every application route requires:
+
+1. a signed-in Clerk user;
+2. an active Clerk organization; and
+3. Clerk role `org:admin`.
+
+Users failing those checks are redirected to `/login`, `/onboarding`, or `/unauthorized`. `/assistant` has an additional billing-feature gate and renders only when `/v1/billing/status` reports `features.assistantEnabled`.
+
+See [src/README.md](src/README.md) for the complete route and subsystem map.
+
+## Commands
+
+| Command | Purpose |
 |---|---|
-| `.env.staging` | Staging vars — committed, test keys only |
-| `.env.prod` | Prod vars — **gitignored**, fill in `pk_live_` key + prod API URL locally |
-| `.env` | Used by plain `pnpm dev` (no `--mode`) — gitignored |
-
-### What goes in `.env.prod`
-
-```dotenv
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...   # from Clerk dashboard → Production instance
-VITE_API_BASE=https://api.ciyo.ai
-```
+| `pnpm dev` | Start Vite using normal environment loading. |
+| `pnpm dev:staging` | Start Vite in `staging` mode. |
+| `pnpm build` | Build the default Vite mode. |
+| `pnpm build:staging` | Build the staging bundle. |
+| `pnpm build:prod` | Build the production bundle. |
+| `pnpm preview` | Serve `dist/` locally. |
+| `pnpm typecheck` | Run TypeScript without emitting files. |
+| `pnpm test` | Run Vitest unit and component tests once. |
+| `pnpm test:watch` | Run Vitest in watch mode. |
+| `pnpm test:e2e` | Run the package Playwright suite. |
 
 ## Tests
 
-```bash
-pnpm test            # unit + component tests (Vitest + Testing Library)
-pnpm test:watch      # watch mode
+Run the minimum local verification:
 
-# E2E — requires backend running + DB seeded
-cd backend && pnpm seed:e2e
-cd pretzel-console && pnpm test:e2e
+```bash
+pnpm test
+pnpm typecheck
 ```
 
-See `CLAUDE.md` for full E2E prerequisites.
+Admin E2E requires a running backend, a running console, seeded E2E data, and `e2e/.env.e2e` credentials. See [e2e/README.md](e2e/README.md).
 
----
+Changes to shared policy, auth, token, database, or API contracts must also follow the monorepo cross-cutting E2E rule.
 
 ## Deployment
 
-Pushes to `staging` or `master` trigger `.github/workflows/pretzel-console-deploy.yml` automatically.
+The production build is a static SPA in `dist/`.
 
-| Branch | Environment | Build command |
-|---|---|---|
-| `staging` | Render Static Site (staging) | `pnpm build:staging` |
-| `master` | Render Static Site (production) | `pnpm build:prod` |
+- `Dockerfile` builds with Node 20 and serves the output through unprivileged nginx on port `8080`.
+- `nginx.conf` falls back to `index.html` for client-side routes.
+- Pushes affecting this package on `staging` or `master` run unit tests and typecheck, then trigger the corresponding Render deploy hook.
+- Render must provide the public `VITE_*` build variables for the target environment.
 
-**Pipeline:** run tests + typecheck → trigger Render deploy hook → Render builds from source → Discord notification.
+## Known issues
 
-Environment variables (`VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_BASE`) are set in the Render dashboard per environment.
+- The SSE realtime adapter puts a Clerk token in the `/v1/events?token=...` query string. The source contains a security TODO to replace this with a short-lived SSE ticket.
+- LogRocket initializes unconditionally in `src/main.tsx`; there is no environment switch in this package.
+- The route table has no explicit catch-all/not-found route.
 
-### GitHub Secrets required
+## Documentation
 
-| Secret | Where to get it |
-|---|---|
-| `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` | Render staging Static Site → Settings → Deploy Hooks |
-| `RENDER_CONSOLE_PROD_DEPLOY_HOOK` | Render prod Static Site → Settings → Deploy Hooks |
-| `DISCORD_WEBHOOK_URL` | Discord channel → Integrations → Webhooks |
+- [src/README.md](src/README.md): routes, gates, state, API, and realtime architecture
+- [e2e/README.md](e2e/README.md): Playwright prerequisites and coverage
+- [AGENTS.md](AGENTS.md): package-specific instructions for coding agents
