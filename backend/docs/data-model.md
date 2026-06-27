@@ -19,7 +19,7 @@ PostgreSQL schema is declared in `src/db/schema.ts`; generated migrations live i
 |---|---|---|
 | `users` | Global Clerk-linked identity | Unique nullable `clerk_id`; unique email; platform-admin flag |
 | `tenants` | Token hashes, plan, and subscription state | Org/admin hashes required; plan defaults to `free`; grace period defaults to 7 days |
-| `members` | User enrollment or pre-enrollment by email | Unique `(tenant_id, email)`; nullable `user_id`; three roles |
+| `members` | User enrollment or pre-enrollment by email | Unique `(tenant_id, email)`; nullable `user_id`; three roles; nullable `admin_division_id` FK → `divisions` |
 | `divisions` | Tenant organization unit | Unique `(tenant_id, slug)` |
 | `teams` | Division child unit | Unique `(division_id, slug)` |
 | `member_teams` | Member-to-team many-to-many mapping | Composite primary key |

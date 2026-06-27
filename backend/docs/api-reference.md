@@ -93,7 +93,7 @@ Important constraints:
 | POST | `/v1/assistant/messages/:messageId/revert` | Admin | Restore pre-apply subject snapshots |
 | GET | `/v1/assistant/sessions` | Admin | Latest 50 tenant sessions |
 | GET | `/v1/assistant/sessions/:id/messages` | Admin | Session messages and revert flags |
-| POST | `/v1/invites` | Clerk super admin | Create an invite link |
+| POST | `/v1/invites` | Admin | Create an invite link |
 | GET | `/v1/invites/:token` | Public | Preview an invite |
 | POST | `/v1/invites/:token/accept` | Clerk | Accept an invite |
 | POST | `/v1/billing/free-signup` | Public | Create a free tenant and deployment tokens |
