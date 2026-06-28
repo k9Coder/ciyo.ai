@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
+import { randomUUID } from 'node:crypto'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { activateTenant, tenantIdBySubId } from '../src/billing/service.js'
 import { updateSubscriptionStatus } from '../src/billing/service.js'
@@ -6,7 +7,13 @@ import { getTenantById } from '../src/tenants/service.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
 import { eq } from 'drizzle-orm'
+import { startTestApp } from './helpers/setup.js'
+import { requestContext } from '../src/context/request-context.js'
+import type { FastifyInstance } from 'fastify'
 
+let app: FastifyInstance
+beforeAll(async () => { ({ app } = await startTestApp()) })
+afterAll(async () => { await app.close() })
 beforeEach(async () => { await truncateAll() })
 
 describe('activateTenant', () => {
@@ -66,19 +73,26 @@ describe('activateTenant', () => {
 })
 
 describe('billing service functions', () => {
+  const runWithCtx = <T>(tenantId: string, fn: () => Promise<T>): Promise<T> =>
+    new Promise((resolve, reject) =>
+      requestContext.run({ traceId: randomUUID(), tenantId, isM2M: true }, () =>
+        fn().then(resolve).catch(reject)
+      )
+    )
+
   it('sets past_due status via updateSubscriptionStatus', async () => {
     const { tenantId } = await buildTestTenant()
     await db.update(tenants).set({ externalSubId: 'sub_fail_001' }).where(eq(tenants.id, tenantId))
     const id = await tenantIdBySubId('sub_fail_001')
     expect(id).toBe(tenantId)
-    await updateSubscriptionStatus(tenantId, 'past_due')
+    await runWithCtx(tenantId, () => updateSubscriptionStatus(tenantId, 'past_due'))
     const tenant = await getTenantById(tenantId)
     expect(tenant?.subscriptionStatus).toBe('past_due')
   })
 
   it('sets cancelled status via updateSubscriptionStatus', async () => {
     const { tenantId } = await buildTestTenant()
-    await updateSubscriptionStatus(tenantId, 'cancelled')
+    await runWithCtx(tenantId, () => updateSubscriptionStatus(tenantId, 'cancelled'))
     const tenant = await getTenantById(tenantId)
     expect(tenant?.subscriptionStatus).toBe('cancelled')
   })

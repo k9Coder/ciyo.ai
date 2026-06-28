@@ -1,7 +1,9 @@
 import { and, eq, gte, count } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { scans, tenants } from '../db/schema.js'
+import { scans } from '../db/schema.js'
 import { isOverScanLimit, getScanLimit, type Plan } from '../billing/limits.js'
+import { tenantsClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 
 // TODO(infrastructure): The `scans` table has no retention/purge mechanism.
 // Rows accumulate indefinitely — old rows are ignored for billing purposes but
@@ -32,10 +34,12 @@ export async function recordScan(
   tenantId: string,
   memberId: string | null
 ): Promise<{ blocked: boolean; remaining: number }> {
-  const [tenant] = await db
-    .select({ plan: tenants.plan })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const tenant = await tenantsClient.get<{ plan: string }>(`/${tenantId}`)
+    .then(r => r.data)
+    .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
 
   if (!tenant) return { blocked: false, remaining: -1 }
 

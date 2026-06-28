@@ -1,9 +1,6 @@
 import type { Action } from './llm/interface.js'
-import { createRule, updateRule, deleteRule } from '../rules/service.js'
-import { createSubject, updateSubject, deleteSubject } from '../subjects/service.js'
-import { createDivision, deleteDivision } from '../divisions/service.js'
-import { createTeam, deleteTeam } from '../teams/service.js'
-import { createMember, deleteMember, updateMember, assignTeam, removeTeam } from '../members/service.js'
+import { rulesClient, subjectsClient, divisionsClient, teamsClient, membersClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 
 export interface ApplyResult {
   applied: Action[]
@@ -18,100 +15,98 @@ export async function executeActions(tenantId: string, actions: Action[]): Promi
   const applied: Action[] = []
   const errors: string[] = []
 
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
   for (const action of actions) {
     try {
       switch (action.op) {
         case 'create_rule':
-          await createRule(tenantId, action.subjectId, {
-            kind:                action.kind,
-            keywords:            action.keywords ?? null,
-            pattern:             action.pattern ?? null,
-            destinations:        action.destinations ?? [],
+          await rulesClient.post('/', {
+            subjectId: action.subjectId,
+            kind: action.kind,
+            keywords: action.keywords ?? null,
+            pattern: action.pattern ?? null,
+            destinations: action.destinations ?? [],
             destinationGroupIds: action.destinationGroupIds ?? [],
-            action:              action.action,
-            message:             action.message ?? null,
-            reportLevel:         action.reportLevel ?? 'none',
+            action: action.action,
+            message: action.message ?? null,
+            reportLevel: action.reportLevel ?? 'none',
           })
           applied.push(action)
           break
 
         case 'update_rule':
-          await updateRule(tenantId, action.ruleId, action.patch as Parameters<typeof updateRule>[2])
+          await rulesClient.patch(`/${action.ruleId}`, action.patch)
           applied.push(action)
           break
 
         case 'delete_rule':
-          await deleteRule(tenantId, action.ruleId)
+          await rulesClient.delete(`/${action.ruleId}`)
           applied.push(action)
           break
 
         case 'create_subject':
-          await createSubject(tenantId, {
-            name:        action.name,
+          await subjectsClient.post('/', {
+            name: action.name,
             description: action.description ?? null,
-            divisionId:  action.divisionId ?? null,
-            teamId:      action.teamId ?? null,
+            divisionId: action.divisionId ?? null,
+            teamId: action.teamId ?? null,
           })
           applied.push(action)
           break
 
         case 'update_subject':
-          await updateSubject(tenantId, action.subjectId, action.patch as Parameters<typeof updateSubject>[2])
+          await subjectsClient.patch(`/${action.subjectId}`, action.patch)
           applied.push(action)
           break
 
         case 'delete_subject':
-          await deleteSubject(tenantId, action.subjectId)
+          await subjectsClient.delete(`/${action.subjectId}`)
           applied.push(action)
           break
 
         case 'create_division':
-          await createDivision(tenantId, { name: action.name, slug: toSlug(action.name) })
+          await divisionsClient.post('/', { name: action.name, slug: toSlug(action.name) })
           applied.push(action)
           break
 
         case 'delete_division':
-          await deleteDivision(tenantId, action.divisionId)
+          await divisionsClient.delete(`/${action.divisionId}`)
           applied.push(action)
           break
 
         case 'create_team':
-          await createTeam(tenantId, action.divisionId, { name: action.name, slug: toSlug(action.name) })
+          await teamsClient.post('/', { divisionId: action.divisionId, name: action.name, slug: toSlug(action.name) })
           applied.push(action)
           break
 
         case 'delete_team':
-          await deleteTeam(tenantId, action.teamId)
+          await teamsClient.delete(`/${action.teamId}`)
           applied.push(action)
           break
 
         case 'create_member': {
-          const member = await createMember(tenantId, {
-            email:       action.email,
-            role:        action.role,
-            displayName: action.displayName ?? null,
-          })
+          const res = await membersClient.post<{ id: string }>('/', { email: action.email, role: action.role, displayName: action.displayName ?? null })
           if (action.adminDivisionId) {
-            await updateMember(tenantId, member.id, { adminDivisionId: action.adminDivisionId })
+            await membersClient.patch(`/${res.data.id}`, { adminDivisionId: action.adminDivisionId })
           }
           applied.push(action)
           break
         }
 
         case 'delete_member':
-          await deleteMember(tenantId, action.memberId)
+          await membersClient.delete(`/${action.memberId}`)
           applied.push(action)
           break
 
         case 'assign_member_team':
-          // Pass tenantId to enforce that both member and team belong to this tenant
-          await assignTeam(action.memberId, action.teamId, tenantId)
+          await membersClient.post(`/${action.memberId}/assign-team`, { teamId: action.teamId })
           applied.push(action)
           break
 
         case 'remove_member_team':
-          // Pass tenantId to enforce that both member and team belong to this tenant
-          await removeTeam(action.memberId, action.teamId, tenantId)
+          await membersClient.post(`/${action.memberId}/remove-team`, { teamId: action.teamId })
           applied.push(action)
           break
       }

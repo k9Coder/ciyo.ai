@@ -1,6 +1,16 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import { randomUUID } from 'node:crypto'
 import './types.js'
+import { requestContext } from './context/request-context.js'
+import { rulesInternalRouter }              from './internal/rules.router.js'
+import { subjectsInternalRouter }           from './internal/subjects.router.js'
+import { divisionsInternalRouter }          from './internal/divisions.router.js'
+import { teamsInternalRouter }              from './internal/teams.router.js'
+import { membersInternalRouter }            from './internal/members.router.js'
+import { tenantsInternalRouter }            from './internal/tenants.router.js'
+import { usersInternalRouter }              from './internal/users.router.js'
+import { destinationGroupsInternalRouter }  from './internal/destination-groups.router.js'
 import { policyRouter } from './policy/router.js'
 import { divisionsRouter } from './divisions/router.js'
 import { teamsRouter } from './teams/router.js'
@@ -39,6 +49,20 @@ export function buildApp() {
     credentials: true,
   })
   void app.register(requestLoggingPlugin)
+
+  app.addHook('onRequest', (req, _reply, done) => {
+    const traceId = (req.headers['x-trace-id'] as string) ?? randomUUID()
+    req.headers['x-trace-id'] = traceId
+    requestContext.run({ traceId, isM2M: req.headers['x-m2m'] === 'true' }, done)
+  })
+
+  const INTERNAL_SECRET = process.env['INTERNAL_SECRET'] ?? ''
+  app.addHook('onRequest', async (req, reply) => {
+    if (!req.url.startsWith('/internal/')) return
+    if (req.headers['x-internal-secret'] !== INTERNAL_SECRET) {
+      return reply.code(404).send()
+    }
+  })
 
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
     if (req.url?.startsWith('/webhooks/clerk') || req.url?.startsWith('/webhooks/paypal')) {
@@ -99,6 +123,15 @@ export function buildApp() {
   void app.register(billingRouter,   { prefix: '/v1' })
   void app.register(platformRouter,  { prefix: '/platform/v1' })
   void app.register(clerkWebhookRouter)
+
+  void app.register(rulesInternalRouter,             { prefix: '/internal/v1/rules' })
+  void app.register(subjectsInternalRouter,          { prefix: '/internal/v1/subjects' })
+  void app.register(divisionsInternalRouter,         { prefix: '/internal/v1/divisions' })
+  void app.register(teamsInternalRouter,             { prefix: '/internal/v1/teams' })
+  void app.register(membersInternalRouter,           { prefix: '/internal/v1/members' })
+  void app.register(tenantsInternalRouter,           { prefix: '/internal/v1/tenants' })
+  void app.register(usersInternalRouter,             { prefix: '/internal/v1/users' })
+  void app.register(destinationGroupsInternalRouter, { prefix: '/internal/v1/destination-groups' })
 
   app.setErrorHandler((err, _req, reply) => {
     logger.error('Unhandled error', { message: err.message, stack: err.stack })

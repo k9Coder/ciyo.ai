@@ -1,6 +1,7 @@
-import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { events, rules, type Event } from '../db/schema.js'
+import { events, type Event } from '../db/schema.js'
+import { rulesClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 
 export async function ingestEvent(
   tenantId: string,
@@ -8,10 +9,12 @@ export async function ingestEvent(
   memberId: string | null,
   data: { action: 'warn' | 'block'; siteUrl: string; matchedTerm?: string }
 ): Promise<Event | null> {
-  // Filter by tenantId to prevent cross-tenant event poisoning
-  const [rule] = await db.select({ reportLevel: rules.reportLevel })
-    .from(rules)
-    .where(and(eq(rules.id, ruleId), eq(rules.tenantId, tenantId)))
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const rule = await rulesClient.get<{ reportLevel: string }>(`/${ruleId}`)
+    .then(r => r.data)
+    .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
 
   if (!rule || rule.reportLevel === 'none') return null
 

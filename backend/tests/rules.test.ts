@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 
 let app: FastifyInstance
 let adminToken: string
 let subjectId: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   const t = await buildTestTenant()

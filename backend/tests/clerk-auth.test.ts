@@ -5,7 +5,7 @@ import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { members } from '../src/db/schema.js'
 import { publishPolicy } from '../src/policy/service.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 
 const MOCK_CLERK_USER_ID = 'user_test_alice'
@@ -23,7 +23,7 @@ let app: FastifyInstance
 let tenantId: string
 let orgToken: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   mockVerifyToken.mockResolvedValue({ sub: MOCK_CLERK_USER_ID })

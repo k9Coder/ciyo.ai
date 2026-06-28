@@ -2,6 +2,11 @@ import { and, desc, eq, lt } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { events, members, rules, subjects } from '../db/schema.js'
 
+// DELIBERATE EXCEPTION: audit-log is a read-only reporting service. It JOINs across
+// events, members, rules, and subjects to build paginated audit entries. HTTP fan-out
+// is not viable here — the aggregation requires a single SQL query. This service never
+// writes to foreign tables. See: docs/archive/plans/superpowers/2026-06-27-microservices-http-boundaries.md Task 23.
+
 export interface AuditLogEntry {
   id:          string
   memberEmail: string | null

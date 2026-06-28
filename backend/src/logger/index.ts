@@ -1,3 +1,5 @@
+import { getContext } from '../context/request-context.js'
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export interface LogContext {
@@ -83,10 +85,14 @@ export class Logger {
   }
 
   private emit(level: LogLevel, message: string, context: LogContext = {}): void {
+    const ctx = getContext()
+    const traceFields: LogContext = ctx
+      ? { traceId: ctx.traceId, tenantId: ctx.tenantId, initiatorId: ctx.initiatorId, isM2M: ctx.isM2M }
+      : {}
     const entry: LogEntry = {
       level,
       message,
-      context,
+      context: { ...traceFields, ...context },
       timestamp: new Date().toISOString(),
     }
     for (const transport of this.transports) {

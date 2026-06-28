@@ -3,7 +3,7 @@ import { Webhook } from 'svix'
 import { db } from '../db/client.js'
 import { tenants, members } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
-import { createUser, updateUserProfile, nullifyClerkId, claimPendingMembers } from '../users/service.js'
+import { usersClient } from '../http/internal-client.js'
 import type { FastifyInstance } from 'fastify'
 
 type ClerkWebhookEvent =
@@ -34,13 +34,13 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
         const email = email_addresses[0]?.email_address ?? ''
         if (!email) break
 
-        const user = await createUser({
+        const user = (await usersClient.post('/', {
           clerkId:   id,
           email,
           firstName: first_name ?? undefined,
           lastName:  last_name  ?? undefined,
           avatarUrl: image_url  || undefined,
-        })
+        })).data
         if (!user) break
 
         // If the user already has any membership (e.g. from seed-fintech), skip
@@ -57,7 +57,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
           .where(and(eq(members.email, email), isNull(members.userId)))
 
         if (pending.length > 0) {
-          await claimPendingMembers(email, user.id)
+          await usersClient.post('/claim-pending', { email, userId: user.id })
         } else {
           // No pre-enrollment — auto-provision a tenant for this user
           const localPart = email.split('@')[0] ?? email
@@ -84,7 +84,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
 
       case 'user.updated': {
         const { id, first_name, last_name, image_url } = event.data
-        await updateUserProfile(id, {
+        await usersClient.patch(`/by-clerk/${id}`, {
           firstName: first_name ?? undefined,
           lastName:  last_name  ?? undefined,
           avatarUrl: image_url  || undefined,
@@ -93,7 +93,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
       }
 
       case 'user.deleted': {
-        await nullifyClerkId(event.data.id)
+        await usersClient.post(`/by-clerk/${event.data.id}/nullify`, {})
         break
       }
     }

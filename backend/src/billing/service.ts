@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { tenants } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
-import { updateSubscriptionStatus } from '../tenants/service.js'
+import { tenantsClient } from '../http/internal-client.js'
 import { sendWelcomeEmail } from './email.js'
 
 export async function tenantIdBySubId(subId: string): Promise<string | null> {
@@ -86,4 +86,6 @@ export async function freeTierSignup(input: {
   return result
 }
 
-export { updateSubscriptionStatus }
+export async function updateSubscriptionStatus(tenantId: string, status: string): Promise<void> {
+  await tenantsClient.patch(`/${tenantId}/subscription`, { status })
+}

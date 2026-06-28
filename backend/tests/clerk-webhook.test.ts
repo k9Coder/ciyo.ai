@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import supertest from 'supertest'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
 import { tenants, members, users } from '../src/db/schema.js'
 import type { FastifyInstance } from 'fastify'
@@ -15,7 +15,7 @@ vi.mock('svix', () => ({
 
 let app: FastifyInstance
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => { await truncateAll() })
 afterAll(async () => { await app.close() })
 

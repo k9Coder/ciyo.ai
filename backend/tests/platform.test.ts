@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant, buildTestUser, buildTestMember } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { users } from '../src/db/schema.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 
 const MOCK_PLATFORM_USER_ID = 'user_platform_admin'
@@ -20,7 +20,7 @@ vi.mock('@clerk/backend', () => ({
 
 let app: FastifyInstance
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   mockVerifyToken.mockResolvedValue({ sub: MOCK_PLATFORM_USER_ID })

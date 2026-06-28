@@ -1,27 +1,28 @@
 import { eq, desc } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { chatSessions, chatMessages, teams, type ChatSession, type ChatMessage } from '../db/schema.js'
-import { listDivisions } from '../divisions/service.js'
-import { listSubjects } from '../subjects/service.js'
-import { listAllActiveRules } from '../rules/service.js'
-import { listMembers } from '../members/service.js'
+import { divisionsClient, subjectsClient, rulesClient, membersClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 import { buildSystemPrompt, type TenantSnapshot } from './prompt.js'
 import type { LlmService, Action } from './llm/interface.js'
 
 async function fetchSnapshot(tenantId: string): Promise<TenantSnapshot> {
-  const [divisions, allTeams, subjects, rules, membersRaw] = await Promise.all([
-    listDivisions(tenantId),
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const [divisionsRes, allTeams, subjectsRes, rulesRes, membersRes] = await Promise.all([
+    divisionsClient.get<TenantSnapshot['divisions']>('/'),
     db.select().from(teams).where(eq(teams.tenantId, tenantId)),
-    listSubjects(tenantId),
-    listAllActiveRules(tenantId),
-    listMembers(tenantId),
+    subjectsClient.get<TenantSnapshot['subjects']>('/'),
+    rulesClient.get<TenantSnapshot['rules']>('/'),
+    membersClient.get<Array<Omit<TenantSnapshot['members'][number], 'user'>>>('/'),
   ])
   return {
-    divisions,
-    teams: allTeams,
-    subjects,
-    rules,
-    members: membersRaw.map(({ user: _user, ...m }) => m),
+    divisions: divisionsRes.data,
+    teams:     allTeams,
+    subjects:  subjectsRes.data,
+    rules:     rulesRes.data,
+    members:   membersRes.data,
   }
 }
 

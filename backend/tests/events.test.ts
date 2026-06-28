@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { randomUUID } from 'node:crypto'
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant, buildTestMember, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { subjects, rules, events } from '../src/db/schema.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
+import { requestContext } from '../src/context/request-context.js'
 import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 
@@ -12,7 +14,7 @@ let tenantId: string
 let memberId: string
 let ruleId: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 
 beforeEach(async () => {
   await truncateAll()
@@ -41,10 +43,21 @@ afterAll(async () => { await app.close() })
 
 import { ingestEvent } from '../src/events/service.js'
 
+// ingestEvent now calls rulesClient (HTTP) — needs a request context with tenantId
+function runWithCtx<T>(tid: string, fn: () => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) =>
+    requestContext.run({ traceId: randomUUID(), tenantId: tid, isM2M: true }, () =>
+      fn().then(resolve).catch(reject)
+    )
+  )
+}
+
 describe('ingestEvent', () => {
   it('returns null and stores nothing when reportLevel is none', async () => {
     await db.update(rules).set({ reportLevel: 'none' }).where(eq(rules.id, ruleId))
-    const result = await ingestEvent(tenantId, ruleId, memberId, { action: 'block', siteUrl: 'https://chat.openai.com' })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, ruleId, memberId, { action: 'block', siteUrl: 'https://chat.openai.com' })
+    )
     expect(result).toBeNull()
     const stored = await db.select().from(events)
     expect(stored).toHaveLength(0)
@@ -52,7 +65,9 @@ describe('ingestEvent', () => {
 
   it('stores event without memberId for minimal level', async () => {
     await db.update(rules).set({ reportLevel: 'minimal' }).where(eq(rules.id, ruleId))
-    const result = await ingestEvent(tenantId, ruleId, memberId, { action: 'warn', siteUrl: 'https://gemini.google.com' })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, ruleId, memberId, { action: 'warn', siteUrl: 'https://gemini.google.com' })
+    )
     expect(result).not.toBeNull()
     expect(result!.memberId).toBeNull()
     expect(result!.matchedTerm).toBeNull()
@@ -61,7 +76,9 @@ describe('ingestEvent', () => {
   })
 
   it('stores event with memberId for medium level', async () => {
-    const result = await ingestEvent(tenantId, ruleId, memberId, { action: 'block', siteUrl: 'https://chat.openai.com' })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, ruleId, memberId, { action: 'block', siteUrl: 'https://chat.openai.com' })
+    )
     expect(result).not.toBeNull()
     expect(result!.memberId).toBe(memberId)
     expect(result!.matchedTerm).toBeNull()
@@ -69,18 +86,22 @@ describe('ingestEvent', () => {
 
   it('stores event with memberId + matchedTerm for rich level', async () => {
     await db.update(rules).set({ reportLevel: 'rich' }).where(eq(rules.id, ruleId))
-    const result = await ingestEvent(tenantId, ruleId, memberId, {
-      action: 'block', siteUrl: 'https://chat.openai.com', matchedTerm: 'Project Zeus',
-    })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, ruleId, memberId, {
+        action: 'block', siteUrl: 'https://chat.openai.com', matchedTerm: 'Project Zeus',
+      })
+    )
     expect(result).not.toBeNull()
     expect(result!.memberId).toBe(memberId)
     expect(result!.matchedTerm).toBe('Project Zeus')
   })
 
   it('returns null for unknown ruleId', async () => {
-    const result = await ingestEvent(tenantId, '00000000-0000-0000-0000-000000000000', memberId, {
-      action: 'block', siteUrl: 'https://chat.openai.com',
-    })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, '00000000-0000-0000-0000-000000000000', memberId, {
+        action: 'block', siteUrl: 'https://chat.openai.com',
+      })
+    )
     expect(result).toBeNull()
   })
 
@@ -100,9 +121,11 @@ describe('ingestEvent', () => {
     }).returning({ id: rules.id })
 
     // Tenant 1 tries to ingest an event with tenant 2's ruleId
-    const result = await ingestEvent(tenantId, foreignRule!.id, memberId, {
-      action: 'block', siteUrl: 'https://chat.openai.com',
-    })
+    const result = await runWithCtx(tenantId, () =>
+      ingestEvent(tenantId, foreignRule!.id, memberId, {
+        action: 'block', siteUrl: 'https://chat.openai.com',
+      })
+    )
     // Should return null because the ruleId doesn't belong to tenantId
     expect(result).toBeNull()
     // No event should be stored

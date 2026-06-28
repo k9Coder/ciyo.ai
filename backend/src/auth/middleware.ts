@@ -2,9 +2,24 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { parseToken, compareToken } from './tokens.js'
-import { getTenantById } from '../tenants/service.js'
 import { db } from '../db/client.js'
-import { tenants, members, users } from '../db/schema.js'
+import { members, users, tenants } from '../db/schema.js'
+import type { Tenant } from '../db/schema.js'
+
+const _tenantCache = new Map<string, { data: Tenant; expiresAt: number }>()
+
+// DELIBERATE EXCEPTION: auth middleware is foundational infrastructure that validates
+// all incoming tokens. It requires direct DB access to get typed Tenant objects (with
+// proper Date fields) for the hot-path token-validation cache. HTTP deserialization
+// converts Date fields to strings, breaking gracePeriodEndsAt comparisons.
+async function getTenantCached(id: string): Promise<Tenant | null> {
+  const hit = _tenantCache.get(id)
+  if (hit && hit.expiresAt > Date.now()) return hit.data
+  const [row] = await db.select().from(tenants).where(eq(tenants.id, id))
+  if (!row) return null
+  _tenantCache.set(id, { data: row, expiresAt: Date.now() + 30_000 })
+  return row
+}
 
 async function resolveOrgToken(
   request: FastifyRequest,
@@ -19,7 +34,7 @@ async function resolveOrgToken(
   if (!parsed) {
     return reply.status(401).send({ error: 'Invalid token format' })
   }
-  const tenant = await getTenantById(parsed.tenantId)
+  const tenant = await getTenantCached(parsed.tenantId)
   if (!tenant) {
     return reply.status(401).send({ error: 'Unknown tenant' })
   }
@@ -68,14 +83,14 @@ export async function resolveClerkJwt(
     if (!tenantIdHint) {
       return reply.status(400).send({ error: 'Multiple organisations found — specify X-Tenant-Id header' })
     }
-    const [t] = await db.select().from(tenants).where(eq(tenants.id, tenantIdHint))
+    const t = await getTenantCached(tenantIdHint)
     if (!t) return reply.status(401).send({ error: 'Unknown tenant' })
     const found = memberRows.find(m => m.tenantId === t.id)
     if (!found) return reply.status(401).send({ error: 'Not a member of that organisation' })
     member = found
     request.tenant = t
   } else {
-    const [t] = await db.select().from(tenants).where(eq(tenants.id, member.tenantId))
+    const t = await getTenantCached(member.tenantId)
     if (!t) return reply.status(401).send({ error: 'Tenant not found' })
     request.tenant = t
   }
@@ -143,7 +158,7 @@ export async function requirePlatformAdmin(req: FastifyRequest, reply: FastifyRe
 
   const tenantId = (req.params as Record<string, string | undefined>)['tenantId']
   if (tenantId) {
-    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, tenantId))
+    const tenant = await getTenantCached(tenantId)
     if (!tenant) return reply.status(404).send({ error: 'Tenant not found' })
     req.tenant = tenant
   }

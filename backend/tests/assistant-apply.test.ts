@@ -1,17 +1,19 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { randomUUID } from 'node:crypto'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
 import { subjects, rules, divisions, teams, members, memberTeams } from '../src/db/schema.js'
 import { eq, and } from 'drizzle-orm'
 import { executeActions } from '../src/assistant/apply.js'
+import { requestContext } from '../src/context/request-context.js'
 import type { FastifyInstance } from 'fastify'
 
 let app: FastifyInstance
 let tenantId: string
 let subjectId: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   const t = await buildTestTenant()
@@ -21,11 +23,22 @@ beforeEach(async () => {
 })
 afterAll(async () => { await app.close() })
 
+// executeActions now makes internal HTTP calls that require X-Tenant-ID. Run inside context.
+function runWithCtx<T>(tid: string, fn: () => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) =>
+    requestContext.run({ traceId: randomUUID(), tenantId: tid, isM2M: true }, () =>
+      fn().then(resolve).catch(reject)
+    )
+  )
+}
+
 describe('executeActions', () => {
   it('creates a keyword rule', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_rule', subjectId, kind: 'keyword', keywords: ['secret'], action: 'block' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_rule', subjectId, kind: 'keyword', keywords: ['secret'], action: 'block' },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const [rule] = await db.select().from(rules).where(eq(rules.subjectId, subjectId))
@@ -34,9 +47,11 @@ describe('executeActions', () => {
   })
 
   it('creates a subject', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_subject', name: 'New Subject' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_subject', name: 'New Subject' },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(subjects).where(eq(subjects.tenantId, tenantId))
@@ -47,9 +62,11 @@ describe('executeActions', () => {
     const [rule] = await db.insert(rules).values({
       tenantId, subjectId, kind: 'keyword', keywords: ['x'], action: 'block', active: true, reportLevel: 'none',
     }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'delete_rule', ruleId: rule!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'delete_rule', ruleId: rule!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const remaining = await db.select().from(rules).where(eq(rules.id, rule!.id))
@@ -57,10 +74,12 @@ describe('executeActions', () => {
   })
 
   it('records error for invalid FK and continues with remaining actions', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_rule', subjectId: '00000000-0000-0000-0000-000000000000', kind: 'keyword', keywords: ['x'], action: 'block' },
-      { op: 'create_subject', name: 'Safe Subject' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_rule', subjectId: '00000000-0000-0000-0000-000000000000', kind: 'keyword', keywords: ['x'], action: 'block' },
+        { op: 'create_subject', name: 'Safe Subject' },
+      ])
+    )
     expect(errors).toHaveLength(1)
     expect(errors[0]).toContain('create_rule')
     expect(applied).toHaveLength(1)
@@ -70,9 +89,11 @@ describe('executeActions', () => {
   // --- divisions ---
 
   it('creates a division', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_division', name: 'Legal' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_division', name: 'Legal' },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(divisions).where(eq(divisions.tenantId, tenantId))
@@ -81,9 +102,11 @@ describe('executeActions', () => {
   })
 
   it('creates a division and auto-slugifies the name', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_division', name: 'Research & Development' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_division', name: 'Research & Development' },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(divisions).where(eq(divisions.tenantId, tenantId))
@@ -92,9 +115,11 @@ describe('executeActions', () => {
 
   it('deletes a division', async () => {
     const [div] = await db.insert(divisions).values({ tenantId, name: 'ToDelete', slug: 'todelete' }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'delete_division', divisionId: div!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'delete_division', divisionId: div!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(divisions).where(eq(divisions.id, div!.id))
@@ -105,9 +130,11 @@ describe('executeActions', () => {
 
   it('creates a team inside a division', async () => {
     const [div] = await db.insert(divisions).values({ tenantId, name: 'Eng', slug: 'eng' }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_team', name: 'Backend', divisionId: div!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_team', name: 'Backend', divisionId: div!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(teams).where(eq(teams.tenantId, tenantId))
@@ -118,9 +145,11 @@ describe('executeActions', () => {
   it('deletes a team', async () => {
     const [div] = await db.insert(divisions).values({ tenantId, name: 'Eng', slug: 'eng' }).returning()
     const [team] = await db.insert(teams).values({ tenantId, divisionId: div!.id, name: 'Backend', slug: 'backend' }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'delete_team', teamId: team!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'delete_team', teamId: team!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(teams).where(eq(teams.id, team!.id))
@@ -130,9 +159,11 @@ describe('executeActions', () => {
   // --- members ---
 
   it('creates a member', async () => {
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_member', email: 'jane@example.com', role: 'member' },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_member', email: 'jane@example.com', role: 'member' },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(members).where(eq(members.tenantId, tenantId))
@@ -141,9 +172,11 @@ describe('executeActions', () => {
 
   it('creates a division_admin member and sets adminDivisionId', async () => {
     const [div] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'create_member', email: 'admin@example.com', role: 'division_admin', adminDivisionId: div!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_member', email: 'admin@example.com', role: 'division_admin', adminDivisionId: div!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(members).where(eq(members.tenantId, tenantId))
@@ -154,9 +187,11 @@ describe('executeActions', () => {
 
   it('deletes a member', async () => {
     const [mem] = await db.insert(members).values({ tenantId, email: 'del@example.com', role: 'member' }).returning()
-    const { applied, errors } = await executeActions(tenantId, [
-      { op: 'delete_member', memberId: mem!.id },
-    ])
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'delete_member', memberId: mem!.id },
+      ])
+    )
     expect(errors).toHaveLength(0)
     expect(applied).toHaveLength(1)
     const rows = await db.select().from(members).where(eq(members.id, mem!.id))
@@ -168,17 +203,21 @@ describe('executeActions', () => {
     const [team] = await db.insert(teams).values({ tenantId, divisionId: div!.id, name: 'Backend', slug: 'backend' }).returning()
     const [mem]  = await db.insert(members).values({ tenantId, email: 'dev@example.com', role: 'member' }).returning()
 
-    const assign = await executeActions(tenantId, [
-      { op: 'assign_member_team', memberId: mem!.id, teamId: team!.id },
-    ])
+    const assign = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'assign_member_team', memberId: mem!.id, teamId: team!.id },
+      ])
+    )
     expect(assign.errors).toHaveLength(0)
     const afterAssign = await db.select().from(memberTeams)
       .where(and(eq(memberTeams.memberId, mem!.id), eq(memberTeams.teamId, team!.id)))
     expect(afterAssign).toHaveLength(1)
 
-    const remove = await executeActions(tenantId, [
-      { op: 'remove_member_team', memberId: mem!.id, teamId: team!.id },
-    ])
+    const remove = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'remove_member_team', memberId: mem!.id, teamId: team!.id },
+      ])
+    )
     expect(remove.errors).toHaveLength(0)
     const afterRemove = await db.select().from(memberTeams)
       .where(and(eq(memberTeams.memberId, mem!.id), eq(memberTeams.teamId, team!.id)))

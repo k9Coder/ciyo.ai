@@ -1,8 +1,9 @@
 import { and, count, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { members, users, memberTeams, teams, tenants, type Member, type NewMember, type User } from '../db/schema.js'
-import { getUserByEmail } from '../users/service.js'
+import { members, users, memberTeams, type Member, type NewMember, type User } from '../db/schema.js'
+import { usersClient, tenantsClient, teamsClient } from '../http/internal-client.js'
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
+import { getContext } from '../context/request-context.js'
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
@@ -33,10 +34,12 @@ export async function createMember(
   tenantId: string,
   data: Pick<NewMember, 'email' | 'displayName' | 'role'>
 ): Promise<Member> {
-  const [tenant] = await db
-    .select({ plan: tenants.plan })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const tenant = await tenantsClient.get<{ plan: string }>(`/${tenantId}`)
+    .then(r => r.data)
+    .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
 
   if (tenant) {
     const plan = tenant.plan as Plan
@@ -54,7 +57,9 @@ export async function createMember(
     }
   }
 
-  const existingUser = await getUserByEmail(data.email)
+  const existingUser = await usersClient.get<User>('/by-email', { params: { email: data.email } })
+    .then(r => r.data)
+    .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
   const [row] = await db.insert(members).values({
     tenantId,
     ...data,
@@ -82,10 +87,13 @@ export async function deleteMember(tenantId: string, id: string): Promise<void> 
 }
 
 export async function assignTeam(memberId: string, teamId: string, tenantId: string): Promise<void> {
-  // Verify both the member and the team belong to the requesting tenant
-  const [team] = await db.select({ id: teams.id }).from(teams)
-    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
-  if (!team) throw Object.assign(new Error('Team not found'), { statusCode: 404 })
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  await teamsClient.get(`/${teamId}`).catch((e: unknown) => {
+    if ((e as Error).message.startsWith('[404]')) throw Object.assign(new Error('Team not found'), { statusCode: 404 })
+    throw e
+  })
 
   const [member] = await db.select({ id: members.id }).from(members)
     .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
@@ -95,18 +103,39 @@ export async function assignTeam(memberId: string, teamId: string, tenantId: str
 }
 
 export async function removeTeam(memberId: string, teamId: string, tenantId: string): Promise<void> {
-  // Verify both the member and the team belong to the requesting tenant
-  const [team] = await db.select({ id: teams.id }).from(teams)
-    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
-  if (!team) return // team doesn't belong to this tenant — no-op
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const teamOk = await teamsClient.get(`/${teamId}`)
+    .then(() => true)
+    .catch((e: unknown) => { if ((e as Error).message.startsWith('[404]')) return false; throw e })
+  if (!teamOk) return
 
   const [member] = await db.select({ id: members.id }).from(members)
     .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
-  if (!member) return // member doesn't belong to this tenant — no-op
+  if (!member) return
 
   await db.delete(memberTeams).where(
     and(eq(memberTeams.memberId, memberId), eq(memberTeams.teamId, teamId))
   )
+}
+
+export async function listMembersByTeam(tenantId: string, teamId: string): Promise<Member[]> {
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const teamOk = await teamsClient.get(`/${teamId}`)
+    .then(() => true)
+    .catch((e: unknown) => { if ((e as Error).message.startsWith('[404]')) return false; throw e })
+  if (!teamOk) return []
+
+  // memberTeams is owned by members domain — direct DB access is legitimate
+  const rows = await db
+    .select({ member: members })
+    .from(memberTeams)
+    .innerJoin(members, and(eq(members.id, memberTeams.memberId), eq(members.tenantId, tenantId)))
+    .where(eq(memberTeams.teamId, teamId))
+  return rows.map(r => r.member)
 }
 
 export async function importMembers(
@@ -115,7 +144,9 @@ export async function importMembers(
 ): Promise<Member[]> {
   if (rows.length === 0) return []
   const toInsert = await Promise.all(rows.map(async r => {
-    const existingUser = await getUserByEmail(r.email)
+    const existingUser = await usersClient.get<User>('/by-email', { params: { email: r.email } })
+      .then(r => r.data)
+      .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
     return {
       tenantId,
       email:       r.email,

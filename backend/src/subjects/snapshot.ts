@@ -1,6 +1,9 @@
 import { eq, and, max } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { subjects, rules, subjectVersions, type SubjectSnapshot } from '../db/schema.js'
+import { subjects, subjectVersions, type SubjectSnapshot } from '../db/schema.js'
+import type { Rule } from '../db/schema.js'
+import { rulesClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 
 export async function snapshotSubject(
   tenantId: string,
@@ -8,6 +11,9 @@ export async function snapshotSubject(
   source: 'pre_ai_apply' | 'rollback',
   conversationMsgId?: string,
 ): Promise<void> {
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
   const [subject] = await db
     .select()
     .from(subjects)
@@ -15,10 +21,8 @@ export async function snapshotSubject(
 
   if (!subject) return
 
-  const currentRules = await db
-    .select()
-    .from(rules)
-    .where(and(eq(rules.subjectId, subjectId), eq(rules.tenantId, tenantId)))
+  const currentRules = await rulesClient.get<Rule[]>('/', { params: { subjectId } })
+    .then(r => r.data)
 
   const [lastVersionRow] = await db
     .select({ version: max(subjectVersions.version) })

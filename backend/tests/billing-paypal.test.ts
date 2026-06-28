@@ -3,6 +3,7 @@ import supertest from 'supertest'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { getTenantById } from '../src/tenants/service.js'
+import { startTestApp } from './helpers/setup.js'
 import { buildApp } from '../src/app.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
@@ -14,8 +15,7 @@ beforeAll(async () => {
   // PAYPAL_SKIP_SIG_VERIFY bypasses the PayPal signature verification API call in tests.
   // NODE_ENV=test prevents the production guard from rejecting this flag.
   process.env['PAYPAL_SKIP_SIG_VERIFY'] = 'true'
-  app = buildApp()
-  await app.ready()
+  ;({ app } = await startTestApp())
 })
 beforeEach(async () => { await truncateAll() })
 afterAll(async () => {

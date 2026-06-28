@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { scans, tenants, members } from '../src/db/schema.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 
 // vi.hoisted runs before module-level constants are initialized,
@@ -24,7 +24,7 @@ let app: FastifyInstance
 let tenantId: string
 let orgToken: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   mockVerifyToken.mockResolvedValue({ sub: MOCK_CLERK_USER_ID })

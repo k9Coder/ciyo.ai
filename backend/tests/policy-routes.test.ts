@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { randomUUID } from 'node:crypto'
 import supertest from 'supertest'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { publishPolicy } from '../src/policy/service.js'
 import { db } from '../src/db/client.js'
 import { tenants } from '../src/db/schema.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
+import { requestContext } from '../src/context/request-context.js'
 import type { FastifyInstance } from 'fastify'
 import { createSubject } from '../src/subjects/service.js'
 import { createRule } from '../src/rules/service.js'
@@ -24,8 +26,7 @@ let orgToken: string
 let adminToken: string
 
 beforeAll(async () => {
-  app = buildApp()
-  await app.ready()
+  ;({ app } = await startTestApp())
 })
 beforeEach(async () => {
   await truncateAll()
@@ -143,7 +144,11 @@ describe('GET /v1/policy — member scope via org token (no filtering)', () => {
     await createRule(tenantId, subject1.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })
     const subject2 = await createSubject(tenantId, { name: 'B' })
     await createRule(tenantId, subject2.id, { kind: 'keyword', keywords: ['y'], action: 'block' })
-    await publishPolicy(tenantId, await compilePolicy(tenantId))
+    await new Promise<void>((resolve, reject) =>
+      requestContext.run({ traceId: randomUUID(), tenantId, isM2M: true }, () =>
+        compilePolicy(tenantId).then(p => publishPolicy(tenantId, p)).then(resolve).catch(reject)
+      )
+    )
 
     const res = await supertest(app.server)
       .get('/v1/policy')

@@ -1,15 +1,17 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { randomUUID } from 'node:crypto'
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { assignTeam } from '../src/members/service.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
+import { requestContext } from '../src/context/request-context.js'
 import type { FastifyInstance } from 'fastify'
 
 let app: FastifyInstance
 let adminToken: string
 let divisionId: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   const t = await buildTestTenant()
@@ -159,7 +161,11 @@ describe('cross-tenant team assignment rejection', () => {
     // Directly call service with tenant1's ID but tenant2's teamId
     const t1 = await buildTestTenant()
     await expect(
-      assignTeam(member1.id as string, team2.id as string, t1.tenantId)
+      new Promise((_, reject) =>
+        requestContext.run({ traceId: randomUUID(), tenantId: t1.tenantId, isM2M: true }, () =>
+          assignTeam(member1.id as string, team2.id as string, t1.tenantId).catch(reject)
+        )
+      )
     ).rejects.toThrow('Team not found')
   })
 })

@@ -1,11 +1,10 @@
 import http from 'http'
-import type { AddressInfo } from 'net'
 import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest'
 import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { members } from '../src/db/schema.js'
 import { publishPolicy } from '../src/policy/service.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 
 const MOCK_CLERK_USER_ID = 'user_sse_alice'
@@ -21,10 +20,7 @@ let tenantId: string
 let port: number
 
 beforeAll(async () => {
-  app = buildApp()
-  await app.ready()
-  await app.listen({ port: 0, host: '127.0.0.1' })
-  port = (app.server.address() as AddressInfo).port
+  ;({ app, port } = await startTestApp())
 })
 
 beforeEach(async () => {

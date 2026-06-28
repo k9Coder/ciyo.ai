@@ -2,6 +2,12 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { rules, type Rule, type NewRule } from '../db/schema.js'
 
+export async function getRuleById(tenantId: string, id: string): Promise<Rule | null> {
+  const [row] = await db.select().from(rules)
+    .where(and(eq(rules.id, id), eq(rules.tenantId, tenantId)))
+  return row ?? null
+}
+
 export async function listRules(tenantId: string, subjectId: string): Promise<Rule[]> {
   return db.select().from(rules).where(
     and(eq(rules.tenantId, tenantId), eq(rules.subjectId, subjectId), eq(rules.active, true))

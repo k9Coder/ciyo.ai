@@ -98,17 +98,17 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
       if (snap.rules.length > 0) {
         await db.insert(rulesTable).values(
           snap.rules.map(r => ({
-            tenantId:            req.tenant.id,
-            subjectId:           ver.subjectId,
-            kind:                r.kind,
-            keywords:            r.keywords,
-            pattern:             r.pattern,
-            destinations:        r.destinations,
+            tenantId: req.tenant.id,
+            subjectId: ver.subjectId,
+            kind: r.kind,
+            keywords: r.keywords,
+            pattern: r.pattern,
+            destinations: r.destinations,
             destinationGroupIds: r.destinationGroupIds,
-            action:              r.action,
-            message:             r.message,
-            reportLevel:         r.reportLevel,
-            active:              r.active,
+            action: r.action,
+            message: r.message,
+            reportLevel: r.reportLevel,
+            active: r.active,
           }))
         )
       }

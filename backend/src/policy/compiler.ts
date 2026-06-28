@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { listSubjects } from '../subjects/service.js'
-import { listAllActiveRules } from '../rules/service.js'
+import { subjectsClient, rulesClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 import { db } from '../db/client.js'
 import { siteConfigs } from '../db/schema.js'
-import type { Rule } from '../db/schema.js'
+import type { Rule, Subject } from '../db/schema.js'
 
 export interface SiteConfig {
   inputSelector: string
@@ -52,11 +52,17 @@ function toRulePolicy(r: Rule): RulePolicy {
 }
 
 export async function compilePolicy(tenantId: string): Promise<PolicyDoc> {
-  const [allSubjects, allRules, allSiteConfigs] = await Promise.all([
-    listSubjects(tenantId),
-    listAllActiveRules(tenantId),
+  const ctx = getContext()
+  if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+
+  const [subjectsRes, rulesRes, allSiteConfigs] = await Promise.all([
+    subjectsClient.get<Subject[]>('/'),
+    rulesClient.get<Rule[]>('/'),
     db.select().from(siteConfigs).where(eq(siteConfigs.tenantId, tenantId)),
   ])
+
+  const allSubjects = subjectsRes.data
+  const allRules    = rulesRes.data
 
   const rulesBySubject = new Map<string, Rule[]>()
   for (const rule of allRules) {

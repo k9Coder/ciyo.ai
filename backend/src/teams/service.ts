@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { teams, memberTeams, members, type Team, type NewTeam, type Member } from '../db/schema.js'
+import { teams, type Team, type NewTeam } from '../db/schema.js'
 
 export async function listTeams(tenantId: string, divisionId: string): Promise<Team[]> {
   return db.select().from(teams).where(
@@ -34,17 +34,8 @@ export async function deleteTeam(tenantId: string, id: string): Promise<void> {
   await db.delete(teams).where(and(eq(teams.id, id), eq(teams.tenantId, tenantId)))
 }
 
-export async function listMembersByTeam(tenantId: string, teamId: string): Promise<Member[]> {
-  // First verify the team belongs to this tenant to prevent cross-tenant data exposure
-  const [team] = await db.select({ id: teams.id }).from(teams)
-    .where(and(eq(teams.id, teamId), eq(teams.tenantId, tenantId)))
-  if (!team) return []
-
-  // Filter members by tenantId in SQL — not in JS — to prevent cross-tenant data leakage
-  const rows = await db
-    .select({ member: members })
-    .from(memberTeams)
-    .innerJoin(members, and(eq(members.id, memberTeams.memberId), eq(members.tenantId, tenantId)))
-    .where(eq(memberTeams.teamId, teamId))
-  return rows.map(r => r.member)
+export async function getTeamById(tenantId: string, id: string): Promise<Team | null> {
+  const [row] = await db.select().from(teams)
+    .where(and(eq(teams.id, id), eq(teams.tenantId, tenantId)))
+  return row ?? null
 }

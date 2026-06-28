@@ -2,6 +2,12 @@ import { and, eq, gte, isNotNull, sql, desc } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { events, scans, members, rules, subjects } from '../db/schema.js'
 
+// DELIBERATE EXCEPTION: analytics is a read-only reporting service. It JOINs across
+// events, scans, members, rules, and subjects for aggregate metrics and incident lists.
+// HTTP fan-out is not viable — SQL GROUP BY / COUNT aggregations cannot be replicated
+// as N+1 HTTP calls without catastrophic performance impact. This service never writes
+// to foreign tables. See: docs/archive/plans/superpowers/2026-06-27-microservices-http-boundaries.md Task 23.
+
 function since(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 }
@@ -9,35 +15,33 @@ function since(days: number): Date {
 export async function getAnalyticsSummary(tenantId: string, days: number) {
   const cutoff = since(days)
 
-  const [scansTotal] = await db
-    .select({ v: sql<number>`count(*)` })
-    .from(scans)
-    .where(and(eq(scans.tenantId, tenantId), gte(scans.occurredAt, cutoff)))
-
-  const [blocked] = await db
-    .select({ v: sql<number>`count(*)` })
-    .from(events)
-    .where(and(eq(events.tenantId, tenantId), eq(events.action, 'block'), gte(events.occurredAt, cutoff)))
-
-  const [warned] = await db
-    .select({ v: sql<number>`count(*)` })
-    .from(events)
-    .where(and(eq(events.tenantId, tenantId), eq(events.action, 'warn'), gte(events.occurredAt, cutoff)))
-
-  const [activeUsers] = await db
-    .select({ v: sql<number>`count(distinct ${scans.memberId})` })
-    .from(scans)
-    .where(and(eq(scans.tenantId, tenantId), isNotNull(scans.memberId), gte(scans.occurredAt, cutoff)))
-
-  const [totalMembers] = await db
-    .select({ v: sql<number>`count(*)` })
-    .from(members)
-    .where(eq(members.tenantId, tenantId))
-
-  const [activeRulesCount] = await db
-    .select({ v: sql<number>`count(*)` })
-    .from(rules)
-    .where(and(eq(rules.tenantId, tenantId), eq(rules.active, true)))
+  const [
+    [scansTotal],
+    [blocked],
+    [warned],
+    [activeUsers],
+    [totalMembers],
+    [activeRulesCount],
+  ] = await Promise.all([
+    db.select({ v: sql<number>`count(*)` })
+      .from(scans)
+      .where(and(eq(scans.tenantId, tenantId), gte(scans.occurredAt, cutoff))),
+    db.select({ v: sql<number>`count(*)` })
+      .from(events)
+      .where(and(eq(events.tenantId, tenantId), eq(events.action, 'block'), gte(events.occurredAt, cutoff))),
+    db.select({ v: sql<number>`count(*)` })
+      .from(events)
+      .where(and(eq(events.tenantId, tenantId), eq(events.action, 'warn'), gte(events.occurredAt, cutoff))),
+    db.select({ v: sql<number>`count(distinct ${scans.memberId})` })
+      .from(scans)
+      .where(and(eq(scans.tenantId, tenantId), isNotNull(scans.memberId), gte(scans.occurredAt, cutoff))),
+    db.select({ v: sql<number>`count(*)` })
+      .from(members)
+      .where(eq(members.tenantId, tenantId)),
+    db.select({ v: sql<number>`count(*)` })
+      .from(rules)
+      .where(and(eq(rules.tenantId, tenantId), eq(rules.active, true))),
+  ])
 
   return {
     scansTotal:       Number(scansTotal!.v),
@@ -60,15 +64,14 @@ export async function getAnalyticsDaily(tenantId: string) {
   }
   const cutoff = new Date(buckets[0]!.date + 'T00:00:00Z')
 
-  const eventsRows = await db
-    .select({ occurredAt: events.occurredAt, action: events.action })
-    .from(events)
-    .where(and(eq(events.tenantId, tenantId), gte(events.occurredAt, cutoff)))
-
-  const scansRows = await db
-    .select({ occurredAt: scans.occurredAt })
-    .from(scans)
-    .where(and(eq(scans.tenantId, tenantId), gte(scans.occurredAt, cutoff)))
+  const [eventsRows, scansRows] = await Promise.all([
+    db.select({ occurredAt: events.occurredAt, action: events.action })
+      .from(events)
+      .where(and(eq(events.tenantId, tenantId), gte(events.occurredAt, cutoff))),
+    db.select({ occurredAt: scans.occurredAt })
+      .from(scans)
+      .where(and(eq(scans.tenantId, tenantId), gte(scans.occurredAt, cutoff))),
+  ])
 
   return buckets.map(({ date, day }) => ({
     day,

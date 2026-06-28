@@ -3,9 +3,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockSelect = vi.fn()
 const mockInsert = vi.fn()
 const mockValues = vi.fn().mockResolvedValue(undefined)
+const mockRulesGet = vi.fn()
 
 vi.mock('../../src/db/client.js', () => ({
   db: { select: mockSelect, insert: mockInsert },
+}))
+
+vi.mock('../../src/http/internal-client.js', () => ({
+  rulesClient: { get: mockRulesGet },
 }))
 
 beforeEach(() => vi.resetAllMocks())
@@ -26,9 +31,9 @@ const rule = {
 function setupMocks(subjectResult: unknown[], rulesResult: unknown[], maxVersion: number | null) {
   mockSelect
     .mockReturnValueOnce({ from: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue(subjectResult) })
-    .mockReturnValueOnce({ from: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue(rulesResult) })
     .mockReturnValueOnce({ from: vi.fn().mockReturnThis(), where: vi.fn().mockResolvedValue([{ version: maxVersion }]) })
   mockInsert.mockReturnValue({ values: mockValues })
+  mockRulesGet.mockResolvedValueOnce({ data: rulesResult })
 }
 
 describe('snapshotSubject', () => {

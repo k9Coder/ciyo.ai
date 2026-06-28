@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
-import { listTeams, createTeam, updateTeam, deleteTeam, listMembersByTeam } from './service.js'
+import { listTeams, createTeam, updateTeam, deleteTeam } from './service.js'
+import { membersClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 
 export async function teamsRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/divisions/:divisionId/teams', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
@@ -29,6 +31,8 @@ export async function teamsRouter(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/teams/:teamId/members', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
     const { teamId } = req.params as { teamId: string }
-    return listMembersByTeam(req.tenant.id, teamId)
+    const ctx = getContext()
+    if (ctx && !ctx.tenantId) ctx.tenantId = req.tenant.id
+    return (await membersClient.get(`/by-team/${teamId}`)).data
   })
 }

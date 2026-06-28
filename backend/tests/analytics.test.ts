@@ -3,7 +3,7 @@ import supertest from 'supertest'
 import { truncateAll, buildTestTenant, buildTestMember, buildTestUser } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { scans, events, subjects, rules } from '../src/db/schema.js'
-import { buildApp } from '../src/app.js'
+import { startTestApp } from './helpers/setup.js'
 import type { FastifyInstance } from 'fastify'
 import { getAnalyticsSummary, getAnalyticsDaily, getAnalyticsIncidents, getAnalyticsTopSites, getAnalyticsBySubject } from '../src/analytics/service.js'
 
@@ -14,7 +14,7 @@ let memberId: string
 let ruleId: string
 let subjectId: string
 
-beforeAll(async () => { app = buildApp(); await app.ready() })
+beforeAll(async () => { ({ app } = await startTestApp()) })
 beforeEach(async () => {
   await truncateAll()
   const t = await buildTestTenant()
