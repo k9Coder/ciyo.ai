@@ -2,10 +2,13 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { teams, type Team, type NewTeam } from '../db/schema.js'
 
-export async function listTeams(tenantId: string, divisionId: string): Promise<Team[]> {
-  return db.select().from(teams).where(
-    and(eq(teams.tenantId, tenantId), eq(teams.divisionId, divisionId))
-  )
+export async function listTeams(tenantId: string, divisionId?: string): Promise<Team[]> {
+  if (divisionId) {
+    return db.select().from(teams).where(
+      and(eq(teams.tenantId, tenantId), eq(teams.divisionId, divisionId))
+    )
+  }
+  return db.select().from(teams).where(eq(teams.tenantId, tenantId))
 }
 
 export async function createTeam(

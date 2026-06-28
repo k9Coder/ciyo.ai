@@ -11,7 +11,7 @@ function tid(req: FastifyRequest): string {
 
 export async function teamsInternalRouter(app: FastifyInstance) {
   app.get<{ Querystring: { divisionId?: string } }>('/', async req => {
-    return listTeams(tid(req), req.query.divisionId ?? '')
+    return listTeams(tid(req), req.query.divisionId)
   })
 
   app.post<{ Body: Pick<NewTeam, 'name' | 'slug'> & { divisionId: string } }>('/', async (req, reply) => {

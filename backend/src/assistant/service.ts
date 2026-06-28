@@ -1,7 +1,7 @@
 import { eq, desc } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { chatSessions, chatMessages, teams, type ChatSession, type ChatMessage } from '../db/schema.js'
-import { divisionsClient, subjectsClient, rulesClient, membersClient } from '../http/internal-client.js'
+import { chatSessions, chatMessages, type ChatSession, type ChatMessage } from '../db/schema.js'
+import { divisionsClient, subjectsClient, rulesClient, membersClient, teamsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
 import { buildSystemPrompt, type TenantSnapshot } from './prompt.js'
 import type { LlmService, Action } from './llm/interface.js'
@@ -10,16 +10,16 @@ async function fetchSnapshot(tenantId: string): Promise<TenantSnapshot> {
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
 
-  const [divisionsRes, allTeams, subjectsRes, rulesRes, membersRes] = await Promise.all([
+  const [divisionsRes, teamsRes, subjectsRes, rulesRes, membersRes] = await Promise.all([
     divisionsClient.get<TenantSnapshot['divisions']>('/'),
-    db.select().from(teams).where(eq(teams.tenantId, tenantId)),
+    teamsClient.get<TenantSnapshot['teams']>('/'),
     subjectsClient.get<TenantSnapshot['subjects']>('/'),
     rulesClient.get<TenantSnapshot['rules']>('/'),
     membersClient.get<Array<Omit<TenantSnapshot['members'][number], 'user'>>>('/'),
   ])
   return {
     divisions: divisionsRes.data,
-    teams:     allTeams,
+    teams:     teamsRes.data,
     subjects:  subjectsRes.data,
     rules:     rulesRes.data,
     members:   membersRes.data,

@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Action } from '../src/assistant/llm/interface.js'
 
-const mockSelect = vi.fn()
-vi.mock('../src/db/client.js', () => ({ db: { select: mockSelect } }))
+const mockRulesGet = vi.fn()
+vi.mock('../src/http/internal-client.js', () => ({
+  rulesClient: { get: mockRulesGet },
+}))
 
 beforeEach(() => vi.resetAllMocks())
 
@@ -23,11 +25,8 @@ describe('resolveAffectedSubjectIds', () => {
     expect(ids).not.toContain(null)
   })
 
-  it('looks up subjectId from DB for update_rule and delete_rule', async () => {
-    mockSelect.mockReturnValue({
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockResolvedValue([{ subjectId: 'sub-d' }]),
-    })
+  it('looks up subjectId via HTTP for update_rule and delete_rule', async () => {
+    mockRulesGet.mockResolvedValue({ data: [{ subjectId: 'sub-d' }] })
     const { resolveAffectedSubjectIds } = await import('../src/assistant/versioning.js')
     const actions: Action[] = [
       { op: 'update_rule', ruleId: 'rule-1', patch: { action: 'block' } },
@@ -35,6 +34,9 @@ describe('resolveAffectedSubjectIds', () => {
     ]
     const ids = await resolveAffectedSubjectIds('tenant-1', actions)
     expect(ids).toContain('sub-d')
+    expect(mockRulesGet).toHaveBeenCalledWith('/subject-ids', {
+      params: { ruleIds: 'rule-1,rule-2' },
+    })
   })
 
   it('deduplicates subject ids', async () => {

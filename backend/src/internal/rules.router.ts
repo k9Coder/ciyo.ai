@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify'
-import { getRuleById, listRules, listAllActiveRules, createRule, updateRule, deleteRule } from '../rules/service.js'
+import { getRuleById, listRules, listAllActiveRules, createRule, updateRule, deleteRule, getSubjectIdsByRuleIds } from '../rules/service.js'
 import type { NewRule } from '../db/schema.js'
 
 function tid(req: FastifyRequest): string {
@@ -13,6 +13,11 @@ export async function rulesInternalRouter(app: FastifyInstance) {
     const tenantId = tid(req)
     if (req.query.subjectId) return listRules(tenantId, req.query.subjectId)
     return listAllActiveRules(tenantId)
+  })
+
+  app.get<{ Querystring: { ruleIds: string } }>('/subject-ids', async req => {
+    const ids = (req.query.ruleIds ?? '').split(',').filter(Boolean)
+    return getSubjectIdsByRuleIds(tid(req), ids)
   })
 
   app.get<{ Params: { id: string } }>('/:id', async (req, reply) => {

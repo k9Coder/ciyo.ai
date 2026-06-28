@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { rules, type Rule, type NewRule } from '../db/schema.js'
 
@@ -44,4 +44,13 @@ export async function updateRule(
 
 export async function deleteRule(tenantId: string, id: string): Promise<void> {
   await db.delete(rules).where(and(eq(rules.id, id), eq(rules.tenantId, tenantId)))
+}
+
+export async function getSubjectIdsByRuleIds(
+  tenantId: string,
+  ruleIds: string[],
+): Promise<Array<{ subjectId: string }>> {
+  if (ruleIds.length === 0) return []
+  return db.select({ subjectId: rules.subjectId }).from(rules)
+    .where(and(eq(rules.tenantId, tenantId), inArray(rules.id, ruleIds)))
 }

@@ -1,6 +1,5 @@
-import { eq, and, inArray } from 'drizzle-orm'
-import { db } from '../db/client.js'
-import { rules } from '../db/schema.js'
+import { rulesClient } from '../http/internal-client.js'
+import { getContext } from '../context/request-context.js'
 import type { Action } from './llm/interface.js'
 
 export async function resolveAffectedSubjectIds(
@@ -26,11 +25,12 @@ export async function resolveAffectedSubjectIds(
   }
 
   if (ruleIdsToLookup.length > 0) {
-    const rows = await db
-      .select({ subjectId: rules.subjectId })
-      .from(rules)
-      .where(and(eq(rules.tenantId, tenantId), inArray(rules.id, ruleIdsToLookup)))
-    for (const row of rows) ids.add(row.subjectId)
+    const ctx = getContext()
+    if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+    const res = await rulesClient.get<Array<{ subjectId: string }>>('/subject-ids', {
+      params: { ruleIds: ruleIdsToLookup.join(',') },
+    })
+    for (const row of res.data) ids.add(row.subjectId)
   }
 
   return Array.from(ids)
