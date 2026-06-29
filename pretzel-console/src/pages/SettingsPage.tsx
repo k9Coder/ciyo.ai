@@ -141,7 +141,7 @@ export function SettingsPage() {
       </div>
 
       {/* Billing */}
-      {billing && (
+      {billing && billing.plan !== 'pilot' && (
         <div style={sectionStyle}>
           <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Billing</h2>
 
