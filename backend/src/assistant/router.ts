@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq, gte } from 'drizzle-orm'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import { db } from '../db/client.js'
 import { chatMessages, chatSessions, type SubjectVersion } from '../db/schema.js'
@@ -25,21 +25,54 @@ async function makeLlmService(): Promise<LlmService> {
   return new AnthropicLlmService()
 }
 
+export async function countPromptsUsedToday(tenantId: string): Promise<number> {
+  const todayStart = new Date()
+  todayStart.setUTCHours(0, 0, 0, 0)
+
+  const [row] = await db
+    .select({ n: count() })
+    .from(chatMessages)
+    .innerJoin(chatSessions, eq(chatMessages.sessionId, chatSessions.id))
+    .where(and(
+      eq(chatSessions.tenantId, tenantId),
+      eq(chatMessages.role, 'user'),
+      gte(chatMessages.createdAt, todayStart),
+    ))
+  return row?.n ?? 0
+}
+
 export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
   const llm = await makeLlmService()
 
   fastify.post('/assistant/chat', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
-    const plan = req.tenant.plan as Plan
-    if (!PLAN_LIMITS[plan]?.assistantEnabled) {
+    const plan   = req.tenant.plan as Plan
+    const limits = PLAN_LIMITS[plan]
+
+    if (!limits?.assistantEnabled) {
       return reply.status(402).send({
         error: 'The AI Assistant is available on the Business plan. Upgrade to access it.',
       })
     }
+
+    if (limits.assistantPromptsADay !== -1) {
+      const used = await countPromptsUsedToday(req.tenant.id)
+      if (used >= limits.assistantPromptsADay) {
+        return reply.status(429).send({
+          error: `Daily assistant limit reached (${limits.assistantPromptsADay} prompts/day). Resets at midnight UTC.`,
+          promptsUsedToday: used,
+          limit: limits.assistantPromptsADay,
+        })
+      }
+    }
+
     const { message, sessionId } = req.body as { message: string; sessionId?: string }
     if (!message || typeof message !== 'string') {
       return reply.status(400).send({ error: 'message is required' })
     }
-    return sendMessage({ tenantId: req.tenant.id, memberId: req.member?.id, sessionId, message, llm })
+
+    const maxTokens = limits.assistantMaximumTokens !== -1 ? limits.assistantMaximumTokens : undefined
+
+    return sendMessage({ tenantId: req.tenant.id, memberId: req.member?.id, sessionId, message, llm, maxTokens })
   })
 
   fastify.post('/assistant/apply', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {

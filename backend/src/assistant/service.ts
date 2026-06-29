@@ -32,6 +32,7 @@ export async function sendMessage(opts: {
   sessionId: string | undefined
   message:   string
   llm:       LlmService
+  maxTokens?: number
 }): Promise<{ sessionId: string; messageId: string; reply: string; actions: Action[] }> {
   const { tenantId, memberId, message, llm } = opts
   let sessionId = opts.sessionId
@@ -55,7 +56,7 @@ export async function sendMessage(opts: {
 
   const snapshot     = await fetchSnapshot(tenantId)
   const systemPrompt = buildSystemPrompt(snapshot)
-  const { reply, actions } = await llm.chat(systemPrompt, history, message)
+  const { reply, actions } = await llm.chat(systemPrompt, history, message, opts.maxTokens !== undefined ? { maxTokens: opts.maxTokens } : undefined)
 
   await db.insert(chatMessages).values({ sessionId, role: 'user', content: message })
   const [assistantMsg] = await db.insert(chatMessages)
