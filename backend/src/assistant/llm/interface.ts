@@ -32,6 +32,10 @@ export interface LlmResponse {
   actions: Action[]
 }
 
+export interface LlmChatOptions {
+  maxTokens?: number
+}
+
 export interface LlmService {
-  chat(systemPrompt: string, history: LlmMessage[], userMessage: string): Promise<LlmResponse>
+  chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse>
 }

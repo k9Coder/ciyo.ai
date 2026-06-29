@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import type { LlmService, LlmMessage, LlmResponse } from './interface.js'
+import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions } from './interface.js'
 import { parseResponse } from './openai.js'
 
 export class GroqLlmService implements LlmService {
@@ -12,7 +12,7 @@ export class GroqLlmService implements LlmService {
     })
   }
 
-  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string): Promise<LlmResponse> {
+  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse> {
     const messages: OpenAI.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
       ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
@@ -21,7 +21,7 @@ export class GroqLlmService implements LlmService {
 
     const response = await this.client.chat.completions.create({
       model:           'llama-3.3-70b-versatile',
-      max_tokens:      2048,
+      max_tokens:      opts?.maxTokens ?? 2048,
       messages,
       response_format: { type: 'json_object' },
     })

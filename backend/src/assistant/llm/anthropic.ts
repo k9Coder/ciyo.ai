@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { LlmService, LlmMessage, LlmResponse, Action } from './interface.js'
+import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions, Action } from './interface.js'
 
 export class AnthropicLlmService implements LlmService {
   private client: Anthropic
@@ -8,7 +8,7 @@ export class AnthropicLlmService implements LlmService {
     this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   }
 
-  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string): Promise<LlmResponse> {
+  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse> {
     const messages: Anthropic.MessageParam[] = [
       ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       { role: 'user', content: userMessage },
@@ -16,7 +16,7 @@ export class AnthropicLlmService implements LlmService {
 
     const response = await this.client.messages.create({
       model:      'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: opts?.maxTokens ?? 2048,
       system:     systemPrompt,
       messages,
     })

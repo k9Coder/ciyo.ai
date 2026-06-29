@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import type { LlmService, LlmMessage, LlmResponse, Action } from './interface.js'
+import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions, Action } from './interface.js'
 
 export class OpenAiLlmService implements LlmService {
   private client: OpenAI
@@ -8,7 +8,7 @@ export class OpenAiLlmService implements LlmService {
     this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   }
 
-  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string): Promise<LlmResponse> {
+  async chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse> {
     const messages: OpenAI.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
       ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
@@ -17,7 +17,7 @@ export class OpenAiLlmService implements LlmService {
 
     const response = await this.client.chat.completions.create({
       model:           'gpt-4o',
-      max_tokens:      2048,
+      max_tokens:      opts?.maxTokens ?? 2048,
       messages,
       response_format: { type: 'json_object' },
     })
