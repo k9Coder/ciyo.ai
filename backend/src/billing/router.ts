@@ -7,6 +7,7 @@ import { freeTierSignup } from './service.js'
 // import { createCheckoutSession, createPortalSession } from './stripe.js'  // STRIPE DISABLED
 import { createPayPalSubscriptionUrl } from './paypal.js'
 import { PLAN_LIMITS, getScanLimit, getSeatLimit, isOverScanLimit, type Plan } from './limits.js'
+import { countPromptsUsedToday } from '../assistant/router.js'
 
 export async function billingRouter(fastify: FastifyInstance): Promise<void> {
 
@@ -61,17 +62,19 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
     start.setUTCDate(1)
     start.setUTCHours(0, 0, 0, 0)
 
-    const [[scanRow], [seatRow]] = await Promise.all([
+    const [[scanRow], [seatRow], promptsUsedToday] = await Promise.all([
       db.select({ n: count() }).from(scans)
         .where(and(eq(scans.tenantId, tenant.id), gte(scans.occurredAt, start))),
       db.select({ n: count() }).from(members)
         .where(eq(members.tenantId, tenant.id)),
+      countPromptsUsedToday(tenant.id),
     ])
 
     const monthlyScans = scanRow?.n ?? 0
     const currentSeats = seatRow?.n ?? 0
     const scanLimit    = getScanLimit(plan)
     const seatLimit    = getSeatLimit(plan)
+    const limits       = PLAN_LIMITS[plan]
 
     return reply.send({
       plan,
@@ -84,8 +87,13 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
       scanBlocked:        isOverScanLimit(plan, monthlyScans),
       paymentProvider:    tenant.paymentProvider ?? null,
       features: {
-        assistantEnabled:  PLAN_LIMITS[plan]?.assistantEnabled ?? false,
-        advancedAnalytics: PLAN_LIMITS[plan]?.advancedAnalytics ?? false,
+        assistantEnabled:  limits?.assistantEnabled  ?? false,
+        advancedAnalytics: limits?.advancedAnalytics ?? false,
+      },
+      assistantLimits: {
+        promptsPerDay:    limits?.assistantPromptsADay   ?? -1,
+        promptsUsedToday,
+        maximumTokens:    limits?.assistantMaximumTokens ?? -1,
       },
     })
   })

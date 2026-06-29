@@ -14,7 +14,7 @@ export interface ActivateInput {
   name:             string
   paymentProvider:  'stripe' | 'paypal' | null
   externalSubId:    string | null
-  plan:             'free' | 'starter' | 'business' | 'enterprise'
+  plan:             'free' | 'starter' | 'business' | 'enterprise' | 'pilot'
   seatCount:        number
   trialEndsAt?:     Date | null
   stripeCustomerId?: string | null
