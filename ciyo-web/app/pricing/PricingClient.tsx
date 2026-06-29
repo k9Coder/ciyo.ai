@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { APP_URL } from '@/lib/config'
+import { APP_URL, IS_PILOT_MODE } from '@/lib/config'
 
 const TIERS = [
   {
@@ -36,6 +36,29 @@ const TIERS = [
 
 export default function PricingClient() {
   const [annual, setAnnual] = useState(false)
+
+  if (IS_PILOT_MODE) {
+    return (
+      <div className="px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pilot Program</p>
+          <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">
+            You&apos;re In
+          </h1>
+          <p className="mx-auto mb-8 max-w-lg text-[16px] text-[#94a3b8]">
+            Pretzel is currently in a closed pilot. All features are available at no cost during the pilot period.
+            Pricing will be announced before general availability.
+          </p>
+          <Link
+            href={`${APP_URL}/onboarding`}
+            className="inline-block rounded-xl bg-[#7c6aff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#6b59ee]"
+          >
+            Access the Console →
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="px-6 py-24">
