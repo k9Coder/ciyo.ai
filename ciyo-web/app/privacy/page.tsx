@@ -56,7 +56,7 @@ export default function PrivacyPage() {
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
-                <span><strong className="text-white">Error and diagnostic data.</strong> Anonymised application error data is collected by Sentry to help us diagnose and fix issues.</span>
+                <span><strong className="text-white">Error and diagnostic data.</strong> Anonymised application error logs are retained on our infrastructure to help us diagnose and fix issues.</span>
               </li>
             </ul>
           </section>
@@ -98,13 +98,8 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-medium text-white">Stripe</td>
-                    <td className="px-4 py-3">Payment processing</td>
+                    <td className="px-4 py-3">Payment processing (paid plans only; not active during the pilot period)</td>
                     <td className="px-4 py-3">Billing name, email, payment method (handled directly by Stripe)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 font-medium text-white">Sentry</td>
-                    <td className="px-4 py-3">Error monitoring and diagnostics</td>
-                    <td className="px-4 py-3">Application error data; session replays on error events (PII masking applied)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-medium text-white">Anthropic</td>
@@ -167,7 +162,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">7. Data Transfers</h2>
             <p>
-              ciyo.ai stores data in the European Union by default (AWS eu-west-1). Some sub-processors (Clerk, Stripe, Sentry, Anthropic, OpenAI, Groq) may process data in the United States. Where transfers occur, we rely on Standard Contractual Clauses (SCCs) or other approved transfer mechanisms under GDPR Chapter V.
+              ciyo.ai infrastructure is hosted via third-party sub-processors including Fly.io (backend compute), Neon (database), and Vercel (frontend delivery), which operate primarily in the United States. Some additional sub-processors (Clerk, Anthropic, OpenAI, Groq) also process data in the United States. Where international transfers occur, we rely on Standard Contractual Clauses (SCCs) or other approved transfer mechanisms under GDPR Chapter V.
             </p>
           </section>
 
