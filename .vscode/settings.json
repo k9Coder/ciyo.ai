@@ -7,7 +7,7 @@
   "explorer.confirmDragAndDrop": false,
   "editor.bracketPairColorization.enabled": true,
   "explorer.compactFolders": true,
-  "workbench.colorTheme": "Black Purple",
+  "workbench.colorTheme": "Dark+",
   "explorer.confirmPasteNative": false,
   // --- Crucial AI & Performance Optimizations ---
   // Prevents Claude and VS Code from fighting over a file at the exact same millisecond.
