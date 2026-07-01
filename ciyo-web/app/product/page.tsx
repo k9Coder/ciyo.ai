@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { APP_URL } from '@/lib/config'
 
 export const metadata: Metadata = {
   title: 'Product',
@@ -61,7 +62,7 @@ export default function ProductPage() {
         ))}
 
         <div className="text-center">
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href={`${APP_URL}/onboarding`}
             className="rounded-xl bg-[#7c6aff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee]">
             Start Free — No Credit Card
           </Link>

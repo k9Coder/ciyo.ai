@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getPost, getAllPosts } from '@/lib/posts'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
+import { APP_URL } from '@/lib/config'
 
 export function generateStaticParams() {
   return getAllPosts().map(p => ({ slug: p.slug }))
@@ -39,7 +40,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <div className="mt-12 rounded-2xl border border-[#7c6aff]/20 bg-[#7c6aff]/[0.06] p-6">
           <p className="mb-3 text-[15px] font-semibold text-white">Try Pretzel free — protect your team today</p>
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href={`${APP_URL}/onboarding`}
             className="inline-block rounded-xl bg-[#7c6aff] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-[#6b59ee]">
             Start Free — No Credit Card
           </Link>

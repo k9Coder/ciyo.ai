@@ -212,7 +212,7 @@ export function AppLayout() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Link to="/accessibility"
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-              נגישות
+              Accessibility
             </Link>
             <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
