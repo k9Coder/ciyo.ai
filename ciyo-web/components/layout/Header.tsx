@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
-import { APP_URL } from '@/lib/config'
+import { APP_URL, IS_PILOT_MODE } from '@/lib/config'
 
 const NAV = [
   { href: '/product',   label: 'Product' },
@@ -45,8 +45,13 @@ export function Header() {
         <nav className="hidden gap-1 md:flex">
           {NAV.map(({ href, label }) => (
             <Link key={href} href={href}
-              className="rounded-md px-3 py-1.5 text-[13px] text-[#94a3b8] transition-colors hover:bg-white/[0.05] hover:text-white">
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] text-[#94a3b8] transition-colors hover:bg-white/[0.05] hover:text-white">
               {label}
+              {IS_PILOT_MODE && href === '/pricing' && (
+                <span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-[#7c6aff]/20 text-[#a78bfa]">
+                  Soon
+                </span>
+              )}
             </Link>
           ))}
         </nav>

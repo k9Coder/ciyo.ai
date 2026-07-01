@@ -1,12 +1,36 @@
 import Link from 'next/link'
+import { APP_URL, IS_PILOT_MODE } from '@/lib/config'
 
 const TIERS = [
-  { name: 'Solo',     price: 'Free', period: '',           desc: 'For individuals exploring Pretzel.',         cta: 'Get Started Free', href: 'https://app.ciyo.ai/onboarding',               featured: false, features: ['3 users', '500 scans/month', 'Keyword detection', 'Basic Console'] },
-  { name: 'Starter',  price: '$49',  period: '/mo',        desc: 'Small teams, flat rate.',                    cta: 'Start Starter',    href: 'https://app.ciyo.ai/onboarding?plan=starter',  featured: false, features: ['25 users', '50K scans/month', 'Keyword + regex', '30-day analytics'] },
-  { name: 'Business', price: '$15',  period: '/user/mo',   desc: 'Full protection for your whole org.',        cta: 'Start Business',   href: 'https://app.ciyo.ai/onboarding?plan=business', featured: true,  features: ['Unlimited users', 'All detection types', 'AI policy assistant', 'Slack alerting', '12-month audit log'] },
+  { name: 'Solo',     price: 'Free', period: '',           desc: 'For individuals exploring Pretzel.',         cta: 'Get Started Free', href: `${APP_URL}/onboarding`,               featured: false, features: ['3 users', '500 scans/month', 'Keyword detection', 'Basic Console'] },
+  { name: 'Starter',  price: '$49',  period: '/mo',        desc: 'Small teams, flat rate.',                    cta: 'Start Starter',    href: `${APP_URL}/onboarding?plan=starter`,  featured: false, features: ['25 users', '50K scans/month', 'Keyword + regex', '30-day analytics'] },
+  { name: 'Business', price: '$15',  period: '/user/mo',   desc: 'Full protection for your whole org.',        cta: 'Start Business',   href: `${APP_URL}/onboarding?plan=business`, featured: true,  features: ['Unlimited users', 'All detection types', 'AI policy assistant', 'Slack alerting', '12-month audit log'] },
 ]
 
 export function PricingPreview() {
+  if (IS_PILOT_MODE) {
+    return (
+      <section className="border-t border-white/[0.05] px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pilot Program</p>
+          <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-white">
+            Pricing Coming Soon
+          </h2>
+          <p className="mx-auto mb-8 max-w-lg text-[15px] text-[#94a3b8]">
+            Pretzel is currently in a closed pilot. All features are available at no cost.
+            Pricing tiers will be announced before general availability.
+          </p>
+          <Link
+            href={`${APP_URL}/onboarding`}
+            className="inline-block rounded-xl bg-[#7c6aff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#6b59ee]"
+          >
+            Access the Console →
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="border-t border-white/[0.05] px-6 py-24">
       <div className="mx-auto max-w-5xl">
