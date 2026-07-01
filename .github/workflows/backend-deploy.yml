@@ -15,6 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: promptshield_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -35,6 +49,11 @@ jobs:
       - name: Run tests
         run: pnpm test
         working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptshield_test
+          CLERK_SECRET_KEY: sk_test_dummy_for_tests
+          CLERK_WEBHOOK_SECRET: whsec_test_dummy_for_tests
+          INTERNAL_SECRET: test-secret
 
   build-and-deploy:
     needs: test
