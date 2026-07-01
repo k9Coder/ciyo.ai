@@ -7,6 +7,10 @@ export function initSentry(): void {
   Sentry.init({
     dsn,
     environment: import.meta.env.MODE,
+    dataCollection: {
+      // userInfo: false,    // disable sending user PII
+      // httpBodies: [],     // disable capturing request/response bodies
+    },
     tracesSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     replaysSessionSampleRate: 0,   // Clarity handles session replay

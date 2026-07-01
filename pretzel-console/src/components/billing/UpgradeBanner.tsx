@@ -5,6 +5,7 @@ const PLAN_LABELS: Record<string, string> = {
   starter:    'Starter',
   business:   'Business',
   enterprise: 'Enterprise',
+  pilot:      'Pilot',
 }
 
 const PLAN_COLORS: Record<string, string> = {
@@ -12,6 +13,7 @@ const PLAN_COLORS: Record<string, string> = {
   starter:    '#3b82f6',
   business:   'var(--brand-primary)',
   enterprise: '#8b5cf6',
+  pilot:      '#10b981',
 }
 
 export function PlanBadge() {
@@ -28,6 +30,30 @@ export function PlanBadge() {
     }}>
       {label}
     </span>
+  )
+}
+
+export function PilotBanner() {
+  const { data } = useBilling()
+  if (!data || data.plan !== 'pilot') return null
+
+  return (
+    <div style={{
+      margin: '10px 10px 4px',
+      background: 'color-mix(in srgb, #10b981 8%, var(--bg-surface-raised))',
+      border: '1px solid color-mix(in srgb, #10b981 25%, transparent)',
+      borderRadius: 8, padding: '8px 12px',
+    }}>
+      <div style={{ color: '#10b981', fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700 }}>
+        Pilot Program
+      </div>
+      <div style={{ color: 'var(--text-primary)', fontSize: 11, marginTop: 3, fontWeight: 500 }}>
+        All features free
+      </div>
+      <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2, lineHeight: 1.4 }}>
+        No credit card needed
+      </div>
+    </div>
   )
 }
 

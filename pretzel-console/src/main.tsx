@@ -2,7 +2,8 @@ import { initSentry } from './lib/sentry'
 initSentry()
 
 import LogRocket from 'logrocket'
-LogRocket.init('ciyoai/pretzel-console')
+const LOGROCKET_ID = import.meta.env['VITE_LOGROCKET_ID'] as string | undefined
+if (LOGROCKET_ID) LogRocket.init(LOGROCKET_ID)
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'

@@ -2,10 +2,11 @@ import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useOrganization, useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
 import { getTheme, setTheme } from '../../utils/theme'
-import { useState } from 'react'
-import { UpgradeBanner, PlanBadge } from '../billing/UpgradeBanner'
+import { useState, useEffect } from 'react'
+import { UpgradeBanner, PilotBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
+import LogRocket from 'logrocket'
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: '▦', ai: false, dividerAbove: false },
@@ -54,6 +55,14 @@ export function AppLayout() {
   const { organization } = useOrganization()
   const { user } = useUser()
   usePolicyRealtime()
+
+  useEffect(() => {
+    if (!user) return
+    LogRocket.identify(user.id, {
+      name: user.fullName ?? undefined,
+      email: user.primaryEmailAddress?.emailAddress ?? undefined,
+    })
+  }, [user?.id])
 
   return (
     <div style={{
@@ -114,6 +123,7 @@ export function AppLayout() {
           </div>
         )}
 
+        <PilotBanner />
         <UpgradeBanner />
 
         {/* Nav */}

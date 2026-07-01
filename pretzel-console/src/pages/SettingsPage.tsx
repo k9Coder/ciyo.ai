@@ -140,6 +140,45 @@ export function SettingsPage() {
         )}
       </div>
 
+      {/* Pilot status card */}
+      {billing && billing.plan === 'pilot' && (
+        <div style={sectionStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Pilot Program</h2>
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase',
+              color: '#10b981', background: 'color-mix(in srgb, #10b981 12%, transparent)',
+              border: '1px solid color-mix(in srgb, #10b981 30%, transparent)',
+              borderRadius: 4, padding: '2px 6px',
+            }}>Active</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px' }}>
+            All Pretzel features are available at no cost during the pilot period.
+          </p>
+          <div style={rowStyle}>
+            <span style={{ color: 'var(--text-secondary)' }}>Seats</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+              {billing.seatCount} / {billing.seatLimit === -1 ? '∞' : billing.seatLimit}
+            </span>
+          </div>
+          <div style={rowStyle}>
+            <span style={{ color: 'var(--text-secondary)' }}>AI prompts today</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+              {billing.assistantLimits.promptsUsedToday} / {billing.assistantLimits.promptsPerDay === -1 ? '∞' : billing.assistantLimits.promptsPerDay}
+            </span>
+          </div>
+          <div style={{
+            marginTop: 12, padding: '10px 12px', borderRadius: 6,
+            background: 'color-mix(in srgb, #10b981 6%, var(--bg-surface-raised))',
+            border: '1px solid color-mix(in srgb, #10b981 15%, transparent)',
+            fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5,
+          }}>
+            When the pilot ends, this account moves to the <strong style={{ color: 'var(--text-primary)' }}>Free plan</strong> automatically.{' '}
+            No credit card required — ever — unless you choose to upgrade.
+          </div>
+        </div>
+      )}
+
       {/* Billing */}
       {billing && billing.plan !== 'pilot' && (
         <div style={sectionStyle}>

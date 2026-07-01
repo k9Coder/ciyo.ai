@@ -237,4 +237,9 @@ export interface BillingStatus {
     assistantEnabled:  boolean
     advancedAnalytics: boolean
   }
+  assistantLimits: {
+    promptsPerDay:    number
+    promptsUsedToday: number
+    maximumTokens:    number
+  }
 }
