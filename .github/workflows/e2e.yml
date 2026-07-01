@@ -35,8 +35,13 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: pretzel-console
 
+      - name: Install e2e dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: e2e
+
       - name: Install Playwright Chromium
         run: pnpm exec playwright install chromium --with-deps
+        working-directory: e2e
 
       - name: Build extension
         run: pnpm run build
