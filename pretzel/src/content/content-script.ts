@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/browser";
+import { initSentry, Sentry } from "@/lib/sentry";
 import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
@@ -6,6 +6,8 @@ import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@/detection/types";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
+
+initSentry();
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
