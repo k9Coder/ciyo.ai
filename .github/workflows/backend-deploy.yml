@@ -46,6 +46,12 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: backend
 
+      - name: Run migrations
+        run: pnpm exec tsx src/db/migrate.ts
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptshield_test
+
       - name: Run tests
         run: pnpm test
         working-directory: backend
