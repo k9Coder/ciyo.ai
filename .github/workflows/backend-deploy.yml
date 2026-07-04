@@ -113,11 +113,18 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           IMAGE_URL: ${{ env.IMAGE }}:${{ github.sha }}
         run: |
-          curl --silent --output /dev/null --fail -X POST \
+          HTTP_STATUS=$(curl --silent --show-error --write-out '%{http_code}' \
+            -X POST \
             "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d "{\"imageUrl\": \"${IMAGE_URL}\"}"
+            -d "{\"imageUrl\": \"${IMAGE_URL}\"}" \
+            -o /tmp/render-response.json)
+          cat /tmp/render-response.json
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "Render deploy failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
 
       - name: Run DB migrations
         run: pnpm exec tsx src/db/migrate.ts
