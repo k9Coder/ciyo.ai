@@ -44,9 +44,10 @@ test.describe('Cross-tenant isolation', () => {
       headers: freeOrgHeaders(),
     })
 
-    // A correctly isolated backend will return the free tenant's own policy (200)
-    // or reject the request (401/403) — it must NOT return the main tenant's policy.
-    expect([200, 401, 403]).toContain(res.status())
+    // A correctly isolated backend will return the free tenant's own policy (200),
+    // reject the request (401/403), or 404 when the free tenant has no published
+    // policy yet — any of these prove the main tenant's policy was not returned.
+    expect([200, 401, 403, 404]).toContain(res.status())
 
     if (res.status() === 200) {
       const body = await res.json() as { tenantId?: string; policy?: { tenantId?: string } }

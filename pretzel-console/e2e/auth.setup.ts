@@ -4,7 +4,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const AUTH_FILE = path.join(__dirname, '../.auth/admin.json')
+// auth.setup.ts lives in pretzel-console/e2e/ — climb two levels to reach the
+// repo root, then descend into e2e/.auth/ where playwright.config.ts expects it.
+const AUTH_FILE = path.join(__dirname, '../../e2e/.auth/admin.json')
 
 setup('authenticate as org admin', async ({ page }) => {
   await clerkSetup({ publishableKey: process.env.CLERK_PUBLISHABLE_KEY })
