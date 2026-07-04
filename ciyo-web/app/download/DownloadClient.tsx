@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-const GITHUB_RELEASES = 'https://github.com/ciyo-ai/pretzel-desktop/releases/latest'
-const RELEASE_API = 'https://api.github.com/repos/ciyo-ai/pretzel-desktop/releases/latest'
+const GITHUB_RELEASES = 'https://github.com/yarin-mag/ciyo.ai/releases'
+const RELEASE_API = 'https://api.github.com/repos/yarin-mag/ciyo.ai/releases'
 
 interface ReleaseAsset {
   name: string
@@ -14,6 +14,7 @@ interface ReleaseAsset {
 interface Release {
   tag_name: string
   assets: ReleaseAsset[]
+  prerelease: boolean
 }
 
 type Platform = 'mac-arm' | 'mac-intel' | 'windows' | 'linux' | 'unknown'
@@ -50,7 +51,12 @@ export function DownloadClient() {
     setPlatform(detectPlatform())
     fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
       .then(r => r.ok ? r.json() : null)
-      .then((data: Release | null) => setRelease(data))
+      .then((data: Release[] | null) => {
+        const desktop = Array.isArray(data)
+          ? data.find(r => r.tag_name.startsWith('pretzel-desktop-v')) ?? null
+          : null
+        setRelease(desktop)
+      })
       .catch(() => null)
       .finally(() => setLoading(false))
   }, [])

@@ -47,5 +47,5 @@ nsis:
 
 publish:
   provider: github
-  owner: ciyo-ai
-  repo: pretzel-desktop
+  owner: yarin-mag
+  repo: ciyo.ai
