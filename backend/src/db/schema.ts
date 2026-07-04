@@ -25,20 +25,23 @@ export const users = pgTable('users', {
 
 // ── Tenants ──────────────────────────────────────────────────────────────────
 export const tenants = pgTable('tenants', {
-  id:                 uuid('id').primaryKey().defaultRandom(),
-  name:               text('name').notNull(),
-  orgTokenHash:       text('org_token_hash').notNull(),
-  adminTokenHash:     text('admin_token_hash').notNull(),
-  paymentProvider:    text('payment_provider'),            // nullable — free tier has no provider
-  externalSubId:      text('external_sub_id'),             // nullable — free tier has no sub
-  subscriptionStatus: text('subscription_status').notNull().default('active'),
-  plan:               text('plan').notNull().default('free'),
-  seatCount:          integer('seat_count').notNull().default(1),
-  trialEndsAt:        timestamp('trial_ends_at', { withTimezone: true }),
-  stripeCustomerId:   text('stripe_customer_id'),
-  gracePeriodDays:    integer('grace_period_days').notNull().default(7),
-  gracePeriodEndsAt:  timestamp('grace_period_ends_at', { withTimezone: true }),
-  createdAt:          timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  id:                        uuid('id').primaryKey().defaultRandom(),
+  name:                      text('name').notNull(),
+  orgTokenHash:              text('org_token_hash').notNull(),
+  adminTokenHash:            text('admin_token_hash').notNull(),
+  paymentProvider:           text('payment_provider'),            // nullable — free tier has no provider
+  externalSubId:             text('external_sub_id'),             // nullable — free tier has no sub
+  subscriptionStatus:        text('subscription_status').notNull().default('active'),
+  plan:                      text('plan').notNull().default('free'),
+  seatCount:                 integer('seat_count').notNull().default(1),
+  trialEndsAt:               timestamp('trial_ends_at', { withTimezone: true }),
+  stripeCustomerId:          text('stripe_customer_id'),
+  gracePeriodDays:           integer('grace_period_days').notNull().default(7),
+  gracePeriodEndsAt:         timestamp('grace_period_ends_at', { withTimezone: true }),
+  profession:                text('profession'),
+  professionFollowUp:        text('profession_follow_up'),
+  onboardingWizardCompleted: boolean('onboarding_wizard_completed').notNull().default(false),
+  createdAt:                 timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
 // ── Policies (versioned snapshots) ───────────────────────────────────────────
@@ -270,6 +273,30 @@ export const invites = pgTable('invites', {
   tenantIdx: index().on(t.tenantId),
 }))
 
+// ── Policy Templates (onboarding wizard) ─────────────────────────────────────
+// policy_json stores TemplateContent: { subjects: [{ name, description, rules: [...] }] }
+// When applied, subjects+rules are created in the live tables and policy is compiled+published.
+export const policyTemplates = pgTable('policy_templates', {
+  id:          uuid('id').primaryKey().defaultRandom(),
+  name:        text('name').notNull(),
+  description: text('description'),
+  policyJson:  jsonb('policy_json').notNull(),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// ── Profession → Template Map ─────────────────────────────────────────────────
+// '*' as follow_up_answer is a wildcard — matches any answer for that profession.
+// UNIQUE on (profession, follow_up_answer) prevents duplicate mappings.
+export const professionTemplateMap = pgTable('profession_template_map', {
+  id:             uuid('id').primaryKey().defaultRandom(),
+  profession:     text('profession').notNull(),
+  followUpAnswer: text('follow_up_answer').notNull(),
+  templateId:     uuid('template_id').notNull().references(() => policyTemplates.id),
+}, (t) => ({
+  professionAnswerUniq: unique().on(t.profession, t.followUpAnswer),
+  professionIdx:        index().on(t.profession),
+}))
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type User       = typeof users.$inferSelect
 export type NewUser    = typeof users.$inferInsert
@@ -315,3 +342,9 @@ export type NewInvite = typeof invites.$inferInsert
 
 export type SubjectVersion    = typeof subjectVersions.$inferSelect
 export type NewSubjectVersion = typeof subjectVersions.$inferInsert
+
+export type PolicyTemplate    = typeof policyTemplates.$inferSelect
+export type NewPolicyTemplate = typeof policyTemplates.$inferInsert
+
+export type ProfessionTemplateMap    = typeof professionTemplateMap.$inferSelect
+export type NewProfessionTemplateMap = typeof professionTemplateMap.$inferInsert

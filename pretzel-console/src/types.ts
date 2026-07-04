@@ -122,6 +122,13 @@ export interface TenantInfo {
   name: string
   plan: string
   subscriptionStatus: string
+  onboardingWizardCompleted: boolean
+}
+
+export interface OnboardingApplyResult {
+  policyId: string | null
+  wizardCompleted: boolean
+  alreadyExisted?: boolean
 }
 
 export interface AnalyticsSummary {

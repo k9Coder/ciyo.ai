@@ -4,16 +4,16 @@ import { updateTenantName, rotateOrgToken, rotateAdminToken } from './service.js
 
 export async function tenantsRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/tenant', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
-    const { id, name, plan, subscriptionStatus } = req.tenant
-    return { id, name, plan, subscriptionStatus }
+    const { id, name, plan, subscriptionStatus, onboardingWizardCompleted } = req.tenant
+    return { id, name, plan, subscriptionStatus, onboardingWizardCompleted }
   })
 
   fastify.patch('/tenant', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { name } = req.body as { name?: string }
     if (!name?.trim()) return reply.status(400).send({ error: 'name is required' })
     const tenant = await updateTenantName(req.tenant.id, name.trim())
-    const { id, name: n, plan, subscriptionStatus } = tenant
-    return { id, name: n, plan, subscriptionStatus }
+    const { id, name: n, plan, subscriptionStatus, onboardingWizardCompleted } = tenant
+    return { id, name: n, plan, subscriptionStatus, onboardingWizardCompleted }
   })
 
   fastify.post('/tenant/rotate-org-token', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {

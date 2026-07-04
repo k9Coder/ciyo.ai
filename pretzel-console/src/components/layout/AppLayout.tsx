@@ -6,7 +6,38 @@ import { useState, useEffect } from 'react'
 import { UpgradeBanner, PilotBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
+import { useTenant } from '../../hooks/useTenant'
 import LogRocket from 'logrocket'
+
+const ONBOARDING_BADGE_ENABLED = import.meta.env['VITE_FEATURE_ONBOARDING_BADGE'] === 'true'
+
+function OnboardingBadge() {
+  const { data: tenant } = useTenant()
+  if (!ONBOARDING_BADGE_ENABLED) return null
+  if (!tenant || tenant.onboardingWizardCompleted) return null
+  return (
+    <Link
+      to="/onboarding/profile"
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 8,
+        margin: '6px 8px', padding: '10px 12px',
+        background: 'color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface-raised))',
+        border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, var(--border))',
+        borderRadius: 8, textDecoration: 'none', flexShrink: 0,
+      }}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1, marginTop: 1 }}>⚡</span>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-primary)', lineHeight: 1.2 }}>
+          Complete setup
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.3 }}>
+          Apply a recommended DLP policy
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: '▦', ai: false, dividerAbove: false },
@@ -59,8 +90,8 @@ export function AppLayout() {
   useEffect(() => {
     if (!user) return
     LogRocket.identify(user.id, {
-      name: user.fullName ?? undefined,
-      email: user.primaryEmailAddress?.emailAddress ?? undefined,
+      ...(user.fullName ? { name: user.fullName } : {}),
+      ...(user.primaryEmailAddress?.emailAddress ? { email: user.primaryEmailAddress.emailAddress } : {}),
     })
   }, [user?.id])
 
@@ -125,6 +156,7 @@ export function AppLayout() {
 
         <PilotBanner />
         <UpgradeBanner />
+        <OnboardingBadge />
 
         {/* Nav */}
         <nav aria-label="Main navigation" style={{ padding: 8, flex: 1 }}>

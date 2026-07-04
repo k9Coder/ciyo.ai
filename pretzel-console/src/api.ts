@@ -7,6 +7,7 @@ import type {
   ChatSession, ChatMessage, AssistantChatResponse, AssistantApplyResponse,
   InvitePreview, InviteCreated,
   BillingStatus,
+  OnboardingApplyResult,
 } from './types'
 import { API_BASE } from './lib/api'
 
@@ -172,5 +173,11 @@ export const api = {
       request<BillingStatus>('GET', '/v1/billing/status'),
     stripePortal: (returnUrl?: string) =>
       request<{ url: string }>('POST', '/v1/billing/stripe/portal', { returnUrl }),
+  },
+  onboarding: {
+    applyTemplate: (profession: string, followUpAnswer: string) =>
+      request<OnboardingApplyResult>('POST', '/v1/onboarding/apply-template', { profession, followUpAnswer }),
+    skip: () =>
+      request<OnboardingApplyResult>('POST', '/v1/onboarding/skip', {}),
   },
 }

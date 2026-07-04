@@ -34,7 +34,7 @@ export function OnboardingPage() {
     try {
       if (!createOrganization) return
       await createOrganization({ name: name.trim(), slug: slug.trim() })
-      navigate('/dashboard', { replace: true })
+      navigate('/onboarding/profile', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create organization')
     } finally {

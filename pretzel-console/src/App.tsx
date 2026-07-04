@@ -5,6 +5,7 @@ import { RequireAuth } from './components/layout/RequireAuth'
 import { LoginPage } from './pages/LoginPage'
 import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { OnboardingPage } from './pages/OnboardingPage'
+import { OnboardingProfilePage } from './pages/OnboardingProfilePage'
 import { DashboardPage } from './pages/DashboardPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { OrgPage } from './pages/OrgPage'
@@ -32,7 +33,8 @@ export function App() {
         <Routes>
           <Route path="/login"          element={<LoginPage />} />
           <Route path="/unauthorized"   element={<UnauthorizedPage />} />
-          <Route path="/onboarding"     element={<OnboardingPage />} />
+          <Route path="/onboarding"         element={<OnboardingPage />} />
+          <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />
           <Route
