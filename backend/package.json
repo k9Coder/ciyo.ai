@@ -14,8 +14,8 @@
     "check-db": "node scripts/check-db.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:e2e": "tsx --env-file=.env --env-file=../e2e/.env.e2e src/scripts/seed-e2e.ts",
-    "teardown:e2e": "tsx --env-file=.env src/scripts/teardown-e2e.ts",
+    "seed:e2e": "tsx src/scripts/seed-e2e.ts",
+    "teardown:e2e": "tsx src/scripts/teardown-e2e.ts",
     "seed:fintech": "tsx --env-file=.env src/scripts/seed-fintech.ts",
     "seed:templates": "tsx --env-file=.env src/db/seeds/run-profession-templates.ts",
     "test:e2e": "playwright test --config playwright.config.ts"
