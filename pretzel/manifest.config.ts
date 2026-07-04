@@ -38,6 +38,14 @@ export default defineManifest(async ({ mode }) => {
     },
     content_scripts: [
       {
+        // MAIN world: runs before any page script, overrides fetch/XHR for file upload interception.
+        matches: LLM_HOSTS,
+        js: ["src/content/fetch-interceptor.ts"],
+        run_at: "document_start",
+        world: "MAIN",
+      },
+      {
+        // ISOLATED world: chrome API access, detection bridge, button-click handler, overlay.
         matches: LLM_HOSTS,
         js: ["src/content/content-script.ts"],
         run_at: "document_idle",

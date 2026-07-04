@@ -7,6 +7,7 @@ metadata:
   reports-to: Ethan Cole (CEO)
   direct-reports:
     - Yuki Tanaka (Chrome Extension Engineer)
+    - Sam Rivera (Desktop Application Engineer)
     - Arjun Mehta (Backend Engineer)
     - Chloe Dubois (Frontend Engineer)
     - Omar Hassan (Detection Engineer)

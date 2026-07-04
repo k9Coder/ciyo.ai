@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { subjectsClient, rulesClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
 import { db } from '../db/client.js'
-import { siteConfigs } from '../db/schema.js'
+import { siteConfigs, tenants } from '../db/schema.js'
 import type { Rule, Subject } from '../db/schema.js'
 
 export interface SiteConfig {
@@ -35,6 +35,7 @@ export interface PolicyDoc {
   tenantId: string
   subjects: SubjectPolicy[]
   siteConfigs: Record<string, SiteConfig>
+  failMode: 'open' | 'closed'
 }
 
 function toRulePolicy(r: Rule): RulePolicy {
@@ -55,10 +56,11 @@ export async function compilePolicy(tenantId: string): Promise<PolicyDoc> {
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
 
-  const [subjectsRes, rulesRes, allSiteConfigs] = await Promise.all([
+  const [subjectsRes, rulesRes, allSiteConfigs, tenantRows] = await Promise.all([
     subjectsClient.get<Subject[]>('/'),
     rulesClient.get<Rule[]>('/'),
     db.select().from(siteConfigs).where(eq(siteConfigs.tenantId, tenantId)),
+    db.select({ failMode: tenants.failMode }).from(tenants).where(eq(tenants.id, tenantId)),
   ])
 
   const allSubjects = subjectsRes.data
@@ -87,5 +89,6 @@ export async function compilePolicy(tenantId: string): Promise<PolicyDoc> {
       rules:      (rulesBySubject.get(s.id) ?? []).map(toRulePolicy),
     })),
     siteConfigs: siteConfigsMap,
+    failMode: tenantRows[0]?.failMode ?? 'open',
   }
 }

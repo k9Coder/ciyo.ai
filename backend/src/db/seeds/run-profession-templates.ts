@@ -5,7 +5,7 @@ import { professionTemplates } from './profession_templates.js'
 import { eq } from 'drizzle-orm'
 
 const sql = postgres(process.env['DATABASE_URL']!, { max: 1 })
-const db  = drizzle(sql)
+const db = drizzle(sql)
 
 async function seed() {
   console.log('Seeding profession templates...')
@@ -42,9 +42,9 @@ async function seed() {
     if (!template) throw new Error(`Failed to insert template: ${entry.name}`)
 
     await db.insert(professionTemplateMap).values({
-      profession:     entry.profession,
+      profession: entry.profession,
       followUpAnswer: entry.followUpAnswer,
-      templateId:     template.id,
+      templateId: template.id,
     })
 
     console.log(`  OK  ${entry.profession}/${entry.followUpAnswer} → ${template.id}`)

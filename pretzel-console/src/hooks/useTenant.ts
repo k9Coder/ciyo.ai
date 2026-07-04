@@ -27,5 +27,11 @@ export function useTenantMutations() {
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
-  return { updateName, rotateOrgToken, rotateAdminToken }
+  const updateFailMode = useMutation({
+    mutationFn: (failMode: 'open' | 'closed') => api.tenant.updateFailMode(failMode),
+    onSuccess: () => { inv(); toast('Fail mode updated') },
+    onError: (e: Error) => toast(e.message, 'error'),
+  })
+
+  return { updateName, rotateOrgToken, rotateAdminToken, updateFailMode }
 }

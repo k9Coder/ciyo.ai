@@ -1,0 +1,51 @@
+appId: ai.ciyo.pretzel-desktop
+productName: Pretzel Desktop
+copyright: Copyright © 2025 ciyo.ai
+
+directories:
+  output: release/${version}
+
+files:
+  - dist-electron/**/*
+  - dist/**/*
+  - node_modules/**/*
+  - package.json
+  - build/icon.*
+
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+
+linux:
+  icon: build/icon.png
+  category: Utility
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+
+publish:
+  provider: github
+  owner: ciyo-ai
+  repo: pretzel-desktop

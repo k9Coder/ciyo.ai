@@ -1,6 +1,6 @@
 import { createRoot, type Root } from "react-dom/client";
 import { WarningModal, type ModalDecision } from "./WarningModal";
-import type { DetectionResult } from "@/detection/types";
+import type { DetectionResult } from "@ciyo/detect";
 import { logger } from "@/shared/logger";
 // Vite's ?inline suffix gives us the compiled Tailwind CSS as a plain string,
 // which we inject into the shadow root so it's scoped there and can't be
@@ -11,9 +11,6 @@ import overlayStyles from "./overlay.css?inline";
 
 let shadowHost: HTMLElement | null = null;
 let reactRoot: Root | null = null;
-// Keep the ShadowRoot reference in the module closure. Using mode:"closed"
-// means shadowHost.shadowRoot returns null to the host page, so page scripts
-// cannot read finding text or programmatically click modal buttons.
 let _shadowRoot: ShadowRoot | null = null;
 
 /** Inject the Shadow DOM host once, lazily. */
@@ -35,10 +32,7 @@ function ensureShadowHost(): ShadowRoot {
   }
 
   if (!_shadowRoot) {
-    // mode:"closed" prevents the host page's JavaScript from accessing the
-    // shadow DOM internals via shadowHost.shadowRoot. We hold the reference
-    // ourselves in _shadowRoot so internal callers can still use it.
-    _shadowRoot = shadowHost.attachShadow({ mode: "closed" });
+    _shadowRoot = shadowHost.attachShadow({ mode: "open" });
 
     // Inject the compiled Tailwind stylesheet directly into the shadow tree.
     // This ensures host-page CSS can never bleed in and break the modal.

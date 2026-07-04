@@ -9,6 +9,7 @@ export const memberRoleEnum  = pgEnum('member_role',  ['super_admin', 'division_
 export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score'])
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
+export const failModeEnum    = pgEnum('fail_mode',    ['open', 'closed'])
 
 // ── Users (global identity, not tenant-scoped) ────────────────────────────────
 export const users = pgTable('users', {
@@ -41,6 +42,7 @@ export const tenants = pgTable('tenants', {
   profession:                text('profession'),
   professionFollowUp:        text('profession_follow_up'),
   onboardingWizardCompleted: boolean('onboarding_wizard_completed').notNull().default(false),
+  failMode:                  failModeEnum('fail_mode').notNull().default('open'),
   createdAt:                 timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

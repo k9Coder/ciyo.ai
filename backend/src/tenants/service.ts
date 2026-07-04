@@ -51,3 +51,12 @@ export async function rotateAdminToken(tenantId: string): Promise<string> {
   await db.update(tenants).set({ adminTokenHash: await hashToken(secret) }).where(eq(tenants.id, tenantId))
   return formatToken('ps_adm', tenantId, secret)
 }
+
+export async function updateTenantFailMode(tenantId: string, failMode: 'open' | 'closed'): Promise<Tenant> {
+  const [row] = await db
+    .update(tenants)
+    .set({ failMode })
+    .where(eq(tenants.id, tenantId))
+    .returning()
+  return row!
+}

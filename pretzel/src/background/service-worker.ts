@@ -1,9 +1,9 @@
 import { initSentry, Sentry } from "@/lib/sentry";
-import { detectPrompt } from "@/detection/engine";
+import { detectPrompt } from "@ciyo/detect";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
-import type { DetectionResult } from "@/detection/types";
+import type { DetectionResult } from "@ciyo/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
 import { getRole } from "@/policy/role";
@@ -78,10 +78,13 @@ async function getDisabledSites(): Promise<string[]> {
 async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
-      const { text, hostname, pasteDetected } = message.payload;
+      const { text, hostname, pasteDetected, inputType, filename, mimeType } = message.payload;
       if (!await isAuthenticated()) return unauthResult();
       const policy = await loadPolicy();
-      const result = await detectPrompt(text, policy, hostname, pasteDetected ?? false);
+      const result = await detectPrompt(
+        { text, hostname, pasteDetected, inputType: inputType ?? "prompt", filename, mimeType },
+        policy,
+      );
       void dispatchEvents(result, hostname);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();

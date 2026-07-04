@@ -1,6 +1,6 @@
 import { API_BASE } from "@/shared/constants";
-import { PolicyDocSchema } from "@/policy/schema";
-import type { DetectionResult } from "@/detection/types";
+import { PolicyDocSchema } from "@ciyo/detect";
+import type { DetectionResult } from "@ciyo/detect";
 import { getAuthToken } from "@/policy/auth";
 
 function getRuleReportLevel(ruleId: string, policyDoc: unknown): "none" | "minimal" | "medium" | "rich" {

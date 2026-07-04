@@ -3,9 +3,10 @@ import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
 import { appendAuditEvent } from "@/audit/log";
-import type { DetectionResult } from "@/detection/types";
+import type { DetectionResult } from "@ciyo/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
+import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH } from "./intercept-messages";
 
 initSentry();
 
@@ -33,6 +34,48 @@ async function bootstrap() {
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
   function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
 
+  // ── Fetch interceptor bridge ─────────────────────────────────────────────
+  // The MAIN world fetch-interceptor posts CIYO_INTERCEPT when it catches a
+  // file upload that wasn't triggered by the button-click path. We detect it
+  // here (ISOLATED world has chrome API access) and post back CIYO_DECISION.
+  if (typeof window !== "undefined") window.addEventListener("message", async (e: MessageEvent) => {
+    if (e.source !== window) return;
+    const data = e.data as { type?: string; id?: string; payload?: Record<string, unknown> };
+    if (data?.type !== MSG_INTERCEPT || !data.id || !data.payload) return;
+
+    const { id, payload } = data;
+    const label = payload.filename ? String(payload.filename) : String(payload.text ?? "").slice(0, 80);
+
+    try {
+      const result: DetectionResult = await sendMessage({
+        type: "DETECT",
+        payload: {
+          text:      String(payload.text ?? ""),
+          hostname:  String(payload.hostname ?? hostname),
+          inputType: payload.inputType as "prompt" | "file",
+          filename:  payload.filename ? String(payload.filename) : undefined,
+          mimeType:  payload.mimeType ? String(payload.mimeType) : undefined,
+          pasteDetected: false,
+        },
+      });
+
+      if (result.signInNudge) showSignInNudge();
+
+      if (result.highestAction === "log") {
+        window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*");
+        return;
+      }
+
+      const decision = await showWarningModal(result, label);
+      const proceed = decision.type === "send_anyway";
+      window.postMessage({ type: MSG_DECISION, id, proceed }, "*");
+    } catch (err) {
+      logger.error("Fetch intercept bridge error:", err);
+      window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*"); // fail open
+    }
+  });
+
+  // ── Button-click send intent ─────────────────────────────────────────────
   adapter.onSendIntent(async (_e: Event) => {
     try {
       const composer = adapter.findComposer();
@@ -56,6 +99,8 @@ async function bootstrap() {
       // "sent" event here as the outcome is already known.
       if (result.highestAction === "log") {
         await writeAuditEvent(result, promptText, hostname, "sent");
+        // Tell the MAIN world fetch interceptor this send was pre-approved.
+        window.postMessage({ type: MSG_UNLOCK_FETCH }, "*");
         return { proceed: true };
       }
 
@@ -73,6 +118,8 @@ async function bootstrap() {
 
         case "send_anyway":
           await writeAuditEvent(result, promptText, hostname, "sent_with_reason", decision.reason);
+          // Tell the MAIN world fetch interceptor this send was pre-approved.
+          if (typeof window !== "undefined") window.postMessage({ type: MSG_UNLOCK_FETCH }, "*");
           return { proceed: true };
       }
     } catch (err) {

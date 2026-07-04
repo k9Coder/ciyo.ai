@@ -1,0 +1,1 @@
+export const SNIPPET_CONTEXT_CHARS = 20;

@@ -6,7 +6,7 @@ import { InlineLoader } from '../components/ui/Spinner'
 
 export function SettingsPage() {
   const { data: tenant, isLoading, isError } = useTenant()
-  const { updateName, rotateOrgToken, rotateAdminToken } = useTenantMutations()
+  const { updateName, rotateOrgToken, rotateAdminToken, updateFailMode } = useTenantMutations()
   const { data: billing } = useBilling()
   const { openPortal } = useBillingMutations()
 
@@ -135,6 +135,31 @@ export function SettingsPage() {
               }}>
                 {tenant.subscriptionStatus.replace('_', ' ')}
               </span>
+            </div>
+
+            {/* Fail mode */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Extension fail mode</span>
+                <select
+                  value={tenant.failMode}
+                  disabled={updateFailMode.isPending}
+                  onChange={e => updateFailMode.mutate(e.target.value as 'open' | 'closed')}
+                  style={{
+                    border: '1px solid var(--border)', borderRadius: 6, padding: '4px 8px',
+                    fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="open">Fail open (allow on error)</option>
+                  <option value="closed">Fail closed (block on error)</option>
+                </select>
+              </div>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Controls extension behaviour when policy cannot be fetched.{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>Fail open</strong> lets prompts through;{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>fail closed</strong> blocks them.
+              </p>
             </div>
           </>
         )}
@@ -308,6 +333,111 @@ export function SettingsPage() {
           newToken={newAdminToken}
           onDismiss={() => setNewAdminToken(null)}
         />
+      </div>
+
+      {/* Desktop Agent */}
+      <div style={sectionStyle}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Desktop Agent</h2>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+          Pretzel Desktop monitors all apps system-wide — not just the browser. Intercepts Chrome, Edge, Safari, and native AI tools via a local HTTPS proxy.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* macOS */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🍎 macOS</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Apple Silicon + Intel · macOS 12+</div>
+            </div>
+            <a
+              href="https://ciyo.ai/download"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: 'var(--brand-primary)', color: '#fff',
+                border: 'none', borderRadius: 8, padding: '6px 16px',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Download .dmg
+            </a>
+          </div>
+
+          {/* Windows */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🪟 Windows</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Windows 10 / 11 (64-bit)</div>
+            </div>
+            <a
+              href="https://ciyo.ai/download"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: 'var(--brand-primary)', color: '#fff',
+                border: 'none', borderRadius: 8, padding: '6px 16px',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Download .exe
+            </a>
+          </div>
+
+          {/* Linux */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🐧 Linux</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>AppImage (x64)</div>
+            </div>
+            <a
+              href="https://ciyo.ai/download"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: 'var(--bg-surface-raised)', color: 'var(--text-primary)',
+                border: '1px solid var(--border)', borderRadius: 8, padding: '6px 16px',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Download .AppImage
+            </a>
+          </div>
+        </div>
+
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Quick install</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>macOS (Homebrew)</div>
+              <code style={{
+                display: 'block', background: 'var(--bg-base)', border: '1px solid var(--border)',
+                borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'var(--brand-secondary)',
+                userSelect: 'all', cursor: 'text',
+              }}>
+                brew install --cask pretzel-desktop
+              </code>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>Windows (winget)</div>
+              <code style={{
+                display: 'block', background: 'var(--bg-base)', border: '1px solid var(--border)',
+                borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'var(--brand-secondary)',
+                userSelect: 'all', cursor: 'text',
+              }}>
+                winget install ciyo.PretzelDesktop
+              </code>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href="https://ciyo.ai/download"
+          target="_blank"
+          rel="noreferrer"
+          style={{ fontSize: 13, color: 'var(--brand-primary)', textDecoration: 'none', alignSelf: 'flex-start' }}
+        >
+          View all platforms and release notes →
+        </a>
       </div>
     </div>
   )

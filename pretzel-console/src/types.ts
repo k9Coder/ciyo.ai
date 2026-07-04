@@ -123,6 +123,7 @@ export interface TenantInfo {
   plan: string
   subscriptionStatus: string
   onboardingWizardCompleted: boolean
+  failMode: 'open' | 'closed'
 }
 
 export interface OnboardingApplyResult {

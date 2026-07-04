@@ -1,10 +1,10 @@
-import type { DetectionResult } from "@/detection/types";
-import type { Policy } from "@/policy/schema";
+import type { DetectionResult, InputType } from "@ciyo/detect";
+import type { Policy } from "@ciyo/detect";
 
 /** Typed message bus for runtime.sendMessage / onMessage. */
 
 export type Message =
-  | { type: "DETECT"; payload: { text: string; hostname: string; pasteDetected?: boolean } }
+  | { type: "DETECT"; payload: { text: string; hostname: string; pasteDetected?: boolean; inputType?: InputType; filename?: string; mimeType?: string } }
   | { type: "DETECT_RESULT"; payload: DetectionResult }
   | { type: "GET_POLICY"; payload?: never }
   | { type: "POLICY_UPDATED"; payload: Policy }

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Upload Mock</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; background: #212121; color: #ececec; }
+      #upload-form { display: flex; gap: 8px; align-items: center; margin-top: 2rem; }
+      input[type="file"] { color: #ececec; }
+      button[type="submit"] { background: white; color: #212121; border: none; border-radius: 8px;
+                              padding: 8px 12px; cursor: pointer; font-weight: bold; }
+      #output { margin-top: 1rem; font-size: 14px; color: #aaa; }
+    </style>
+  </head>
+  <body>
+    <h2>File Upload (Mock)</h2>
+    <p id="output">No upload yet.</p>
+
+    <form id="upload-form">
+      <input id="file-input" type="file" aria-label="Choose file" />
+      <button type="submit" aria-label="Upload file">Upload</button>
+    </form>
+
+    <script>
+      const form      = document.getElementById('upload-form')
+      const fileInput = document.getElementById('file-input')
+      const output    = document.getElementById('output')
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const file = fileInput.files[0]
+        if (!file) { output.textContent = 'No file selected.'; return }
+
+        const fd = new FormData()
+        fd.append('file', file)
+
+        try {
+          const res = await fetch('/upload', { method: 'POST', body: fd })
+          output.textContent = res.ok
+            ? 'UPLOADED: ' + file.name
+            : 'SERVER_ERROR: ' + res.status
+        } catch (err) {
+          // AbortError thrown by Pretzel's fetch interceptor when policy blocks
+          output.textContent = 'BLOCKED: ' + file.name
+        }
+      })
+    </script>
+  </body>
+</html>

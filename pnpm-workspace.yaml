@@ -1,0 +1,8 @@
+packages:
+  - 'pretzel'
+  - 'pretzel-console'
+  - 'pretzel-desktop'
+  - 'backend'
+  - 'ciyo-web'
+  - 'e2e'
+  - 'packages/*'

@@ -1,0 +1,156 @@
+name: Release Pretzel Desktop
+
+# Trigger: git tag pretzel-desktop-v* → push
+# Example: git tag pretzel-desktop-v1.0.0 && git push origin pretzel-desktop-v1.0.0
+#
+# NOTE: Builds are currently UNSIGNED (beta distribution).
+# TODO: Add Apple Developer ID signing + notarization once enrolled.
+#       See docs/operations/release-process.md → "Future: Apple Code Signing"
+
+on:
+  push:
+    tags:
+      - 'pretzel-desktop-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  # ─── macOS (arm64 + x64 DMG — unsigned beta) ────────────────────────────
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afcd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & package macOS (arm64 + x64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          # CSC_IDENTITY_AUTO_DISCOVERY=false tells electron-builder to skip
+          # signing when no certificate is present instead of failing
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        working-directory: pretzel-desktop
+        run: |
+          pnpm build
+          npx electron-builder \
+            --mac \
+            --arm64 --x64 \
+            --config build/electron-builder.yml \
+            --publish always
+
+      - name: Upload DMG artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-dmg
+          path: |
+            pretzel-desktop/release/**/*.dmg
+            pretzel-desktop/release/**/*.zip
+          retention-days: 7
+
+  # ─── Windows (x64 NSIS installer — unsigned beta) ───────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afcd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & package Windows (x64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          # Skip Authenticode signing for beta
+          WIN_CSC_LINK: ''
+        working-directory: pretzel-desktop
+        run: |
+          pnpm build
+          npx electron-builder --win --x64 --config build/electron-builder.yml --publish always
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: pretzel-desktop/release/**/*.exe
+          retention-days: 7
+
+  # ─── Linux (AppImage + deb) ───────────────────────────────────────────────
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afcd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install system deps for electron-builder
+        run: sudo apt-get install -y rpm fakeroot
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Linux (AppImage + deb)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+        working-directory: pretzel-desktop
+        run: |
+          pnpm build
+          npx electron-builder --linux --x64 --config build/electron-builder.yml --publish always
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            pretzel-desktop/release/**/*.AppImage
+            pretzel-desktop/release/**/*.deb
+          retention-days: 7
+
+  # ─── Post-release notification ────────────────────────────────────────────
+  notify:
+    needs: [build-mac, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify Discord
+        uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: ${{ (needs.build-mac.result == 'success' && needs.build-windows.result == 'success') && 'success' || 'failure' }}
+          title: "${{ github.ref_name }} desktop release"
+          description: |
+            macOS: ${{ needs.build-mac.result }}
+            Windows: ${{ needs.build-windows.result }}
+            Linux: ${{ needs.build-linux.result }}
+            Download: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}

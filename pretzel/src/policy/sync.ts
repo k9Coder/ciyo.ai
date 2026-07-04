@@ -1,4 +1,4 @@
-import { PolicyDocSchema } from './schema'
+import { PolicyDocSchema } from '@ciyo/detect'
 import { getAuthToken } from './auth'
 import { API_BASE } from '@/shared/constants'
 
