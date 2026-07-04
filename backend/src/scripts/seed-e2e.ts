@@ -1,8 +1,10 @@
 import path from 'path'
 import { writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
+import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
+import { requestContext } from '../context/request-context.js'
 import {
   tenants, divisions, teams, users, members, memberTeams,
   subjects, rules, policies,
@@ -109,7 +111,10 @@ async function main() {
     },
   ])
 
-  const policyJson = await compilePolicy(tenantId)
+  const policyJson = await requestContext.run(
+    { traceId: randomUUID(), tenantId, isM2M: true },
+    () => compilePolicy(tenantId),
+  )
   await db.insert(policies).values({
     tenantId,
     version:     1,
