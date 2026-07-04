@@ -125,6 +125,12 @@ jobs:
         env:
           DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
 
+      - name: Seed profession templates (idempotent)
+        run: pnpm exec tsx src/db/seeds/run-profession-templates.ts
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+
       - name: Notify Discord
         if: always()
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
