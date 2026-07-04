@@ -43,12 +43,11 @@ function formatBytes(bytes: number): string {
 }
 
 export function DownloadClient() {
-  const [platform, setPlatform] = useState<Platform>('unknown')
+  const [platform] = useState<Platform>(detectPlatform)
   const [release, setRelease] = useState<Release | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setPlatform(detectPlatform())
     fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
       .then(r => r.ok ? r.json() : null)
       .then((data: Release[] | null) => {

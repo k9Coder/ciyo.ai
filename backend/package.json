@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file=.env src/db/migrate.ts",
+    "db:migrate": "tsx src/db/migrate.ts",
     "db:setup": "node scripts/db-setup.mjs",
     "check-db": "node scripts/check-db.mjs",
     "test": "vitest run",
