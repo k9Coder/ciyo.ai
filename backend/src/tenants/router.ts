@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
+import { requireAdminTokenOrClerkAdmin, invalidateTenantCache } from '../auth/middleware.js'
 import { updateTenantName, rotateOrgToken, rotateAdminToken, updateTenantFailMode } from './service.js'
 
 export async function tenantsRouter(fastify: FastifyInstance): Promise<void> {
@@ -16,12 +16,14 @@ export async function tenantsRouter(fastify: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'failMode must be "open" or "closed"' })
       }
       const tenant = await updateTenantFailMode(req.tenant.id, body.failMode)
+      invalidateTenantCache(req.tenant.id)
       const { id, name, plan, subscriptionStatus, onboardingWizardCompleted, failMode } = tenant
       return { id, name, plan, subscriptionStatus, onboardingWizardCompleted, failMode }
     }
 
     if (!body.name?.trim()) return reply.status(400).send({ error: 'name is required' })
     const tenant = await updateTenantName(req.tenant.id, body.name.trim())
+    invalidateTenantCache(req.tenant.id)
     const { id, name: n, plan, subscriptionStatus, onboardingWizardCompleted, failMode } = tenant
     return { id, name: n, plan, subscriptionStatus, onboardingWizardCompleted, failMode }
   })

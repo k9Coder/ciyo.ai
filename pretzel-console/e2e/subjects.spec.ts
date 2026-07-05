@@ -73,8 +73,7 @@ test.describe('Subjects', () => {
   test('can rename a subject', async ({ page }) => {
     await page.goto('/subjects')
 
-    const subjectRow = page.locator('button', { hasText: 'ACME Confidential' })
-    await subjectRow.locator('span', { hasText: 'Edit' }).click()
+    await page.getByRole('button', { name: 'Edit subject ACME Confidential', exact: true }).click()
 
     await page.getByRole('dialog').getByLabel('Name').clear()
     await page.getByRole('dialog').getByLabel('Name').fill('ACME Confidential Renamed')

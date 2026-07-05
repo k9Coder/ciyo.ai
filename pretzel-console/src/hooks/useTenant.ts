@@ -13,7 +13,7 @@ export function useTenantMutations() {
 
   const updateName = useMutation({
     mutationFn: (name: string) => api.tenant.update(name),
-    onSuccess: () => { inv(); toast('Organisation name updated') },
+    onSuccess: (data) => { qc.setQueryData(['tenant'], data); toast('Organisation name updated') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 

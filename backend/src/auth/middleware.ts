@@ -100,6 +100,10 @@ export async function resolveClerkJwt(
   request.tokenPrefix = 'clerk'
 }
 
+export function invalidateTenantCache(tenantId: string): void {
+  _tenantCache.delete(tenantId)
+}
+
 export async function requireClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const token = req.headers.authorization?.slice(7) ?? ''
   return resolveClerkJwt(req, reply, token)

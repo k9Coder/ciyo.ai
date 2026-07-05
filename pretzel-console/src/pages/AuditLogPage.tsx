@@ -76,11 +76,14 @@ export function AuditLogPage() {
                     {e.subjectName}
                   </td>
                   <td style={{ padding: '10px 16px' }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase',
-                      background: e.action === 'block' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
-                      color:      e.action === 'block' ? 'var(--status-danger)'  : 'var(--status-warn)',
-                    }}>
+                    <span
+                      data-testid="event-action"
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase',
+                        background: e.action === 'block' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                        color:      e.action === 'block' ? 'var(--status-danger)'  : 'var(--status-warn)',
+                      }}
+                    >
                       {e.action}
                     </span>
                   </td>
