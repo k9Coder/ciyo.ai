@@ -63,7 +63,7 @@ jobs:
         working-directory: pretzel
 
       - name: Build extension
-        run: pnpm run build -- --mode development
+        run: pnpm run build:e2e
         working-directory: pretzel
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
