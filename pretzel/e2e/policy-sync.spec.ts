@@ -59,6 +59,7 @@ test('extension enforces ACME_SECRET block rule and dispatches an audit event', 
 
   const page = await context.newPage()
   await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+  await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
   // Type the blocked keyword
   await page.locator('#prompt-textarea').fill('This is ACME_SECRET data')

@@ -31,6 +31,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('#prompt-textarea').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('#send-button').click()
@@ -49,6 +50,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     // JWT token triggers a warn action (not block), enabling the "Looks fine, send it" button
     const fakeJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.fake_sig_AABBCCDDEE'
@@ -69,6 +71,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/claude-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('.ProseMirror').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('button[aria-label="Send Message"]').click()
@@ -84,6 +87,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/gemini-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('.ql-editor').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('button[aria-label="Send message"]').click()
@@ -99,6 +103,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('#prompt-textarea').fill('Hello, can you help me write a cover letter?')
     await page.locator('#send-button').click()

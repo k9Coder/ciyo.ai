@@ -126,6 +126,10 @@ async function bootstrap() {
     }
   });
 
+  // Mark extension as ready for E2E test synchronisation — set synchronously
+  // after ALL listeners so tests can waitFor this before interacting with the page.
+  document.documentElement.dataset.ciyoReady = '1';
+
   // Cosmetic scan-limit banner — checked after all security listeners are registered
   // so service-worker startup latency cannot delay click interception.
   const limitStatus = await sendMessage<{ scanLimitReached: boolean }>({ type: "GET_SCAN_LIMIT_STATUS" }).catch(() => null);

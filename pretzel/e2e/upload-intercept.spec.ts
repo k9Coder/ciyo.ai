@@ -45,6 +45,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     // Upload a text file containing an OpenAI API key (triggers block rule)
     await page.locator('#file-input').setInputFiles({
@@ -73,6 +74,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     // Upload a plain safe text file — no detection rule should match
     await page.locator('#file-input').setInputFiles({
@@ -98,6 +100,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
+    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
 
     const fakeJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.fake_sig_AABBCCDDEE'
     await page.locator('#file-input').setInputFiles({
