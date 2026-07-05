@@ -28,8 +28,8 @@ async function launchWithExtension() {
 
   const background = context.serviceWorkers()[0]
     ?? await context.waitForEvent('serviceworker')
-  await background.evaluate(() => {
-    void chrome.storage.local.set({ orgToken: 'e2e-fake-token' })
+  await background.evaluate(async () => {
+    await chrome.storage.local.set({ orgToken: 'e2e-fake-token' })
   })
 
   // Route /upload so it returns 200 when the fetch is not blocked.

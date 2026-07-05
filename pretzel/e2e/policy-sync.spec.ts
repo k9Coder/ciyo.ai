@@ -45,8 +45,8 @@ test('extension enforces ACME_SECRET block rule and dispatches an audit event', 
   // Inject token + policy doc so the extension has the ACME rules without backend sync
   const background = context.serviceWorkers()[0]
     ?? await context.waitForEvent('serviceworker')
-  await background.evaluate((doc) => {
-    void chrome.storage.local.set({ orgToken: 'e2e-fake-token', policyDoc: doc })
+  await background.evaluate(async (doc) => {
+    await chrome.storage.local.set({ orgToken: 'e2e-fake-token', policyDoc: doc })
   }, TEST_POLICY_DOC)
 
   // Intercept the event dispatch. The service worker POSTs to API_BASE/v1/events

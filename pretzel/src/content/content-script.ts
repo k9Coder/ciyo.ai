@@ -27,9 +27,6 @@ async function bootstrap() {
 
   logger.info("ciyo active on", adapter.name);
 
-  const limitStatus = await sendMessage<{ scanLimitReached: boolean }>({ type: "GET_SCAN_LIMIT_STATUS" }).catch(() => null);
-  if (limitStatus?.scanLimitReached) showScanLimitBanner();
-
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
   function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
@@ -128,6 +125,11 @@ async function bootstrap() {
       return { proceed: true };
     }
   });
+
+  // Cosmetic scan-limit banner — checked after all security listeners are registered
+  // so service-worker startup latency cannot delay click interception.
+  const limitStatus = await sendMessage<{ scanLimitReached: boolean }>({ type: "GET_SCAN_LIMIT_STATUS" }).catch(() => null);
+  if (limitStatus?.scanLimitReached) showScanLimitBanner();
 }
 
 // ─── Notification banners ────────────────────────────────────────────────────

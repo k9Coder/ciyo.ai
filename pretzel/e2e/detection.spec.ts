@@ -19,8 +19,8 @@ async function launchWithExtension() {
   // No policyDoc means the DEFAULT_POLICY (built-in API key / JWT rules) is used.
   const background = context.serviceWorkers()[0]
     ?? await context.waitForEvent('serviceworker')
-  await background.evaluate(() => {
-    void chrome.storage.local.set({ orgToken: 'e2e-fake-token' })
+  await background.evaluate(async () => {
+    await chrome.storage.local.set({ orgToken: 'e2e-fake-token' })
   })
 
   return context
