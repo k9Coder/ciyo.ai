@@ -160,7 +160,9 @@ test.describe('Assistant page', () => {
     await page.getByRole('button', { name: /send/i }).click()
 
     await expect(page.getByRole('button', { name: /apply changes/i })).toBeVisible()
+    const applyDone = page.waitForResponse(r => r.url().includes('/v1/assistant/apply'))
     await page.getByRole('button', { name: /apply changes/i }).click()
+    await applyDone
 
     expect(applyRequests).toContain(MOCK_MESSAGE_ID)
   })
