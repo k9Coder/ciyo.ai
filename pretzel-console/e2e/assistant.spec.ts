@@ -5,8 +5,32 @@ const MOCK_MESSAGE_ID = '22222222-2222-2222-2222-222222222222'
 
 const CHAT_PLACEHOLDER = /ask me to create/i
 
+// Stubs billing/status so PlanGate lets assistantEnabled pages through.
+async function mockBillingEnabled(page: Page) {
+  await page.route('**/v1/billing/status', route => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        plan: 'business',
+        subscriptionStatus: 'active',
+        trialEndsAt: null,
+        seatCount: 1,
+        seatLimit: -1,
+        monthlyScans: 0,
+        scanLimit: -1,
+        scanBlocked: false,
+        paymentProvider: 'stripe',
+        features: { assistantEnabled: true, advancedAnalytics: true },
+        assistantLimits: { promptsPerDay: -1, promptsUsedToday: 0, maximumTokens: -1 },
+      }),
+    })
+  })
+}
+
 // Intercepts all /v1/assistant/* API calls so the test runs without a real LLM.
 async function mockAssistantApi(page: Page) {
+  await mockBillingEnabled(page)
   await page.route('**/v1/assistant/sessions', route => {
     route.fulfill({
       status: 200,
@@ -52,6 +76,7 @@ async function mockAssistantApi(page: Page) {
 
 test.describe('Assistant page', () => {
   test('loads with empty state — chat pane visible', async ({ page }) => {
+    await mockBillingEnabled(page)
     await page.route('**/v1/assistant/sessions', route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ sessions: [] }),
@@ -65,6 +90,7 @@ test.describe('Assistant page', () => {
   })
 
   test('send button is disabled when input is empty', async ({ page }) => {
+    await mockBillingEnabled(page)
     await page.route('**/v1/assistant/sessions', route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ sessions: [] }),
