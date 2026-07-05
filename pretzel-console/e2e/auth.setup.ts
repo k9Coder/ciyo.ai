@@ -1,5 +1,5 @@
 import { test as setup, expect } from '@playwright/test'
-import { clerkSetup, setupClerkTestingToken } from '@clerk/testing/playwright'
+import { clerkSetup } from '@clerk/testing/playwright'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -12,7 +12,6 @@ setup('authenticate as org admin', async ({ page }) => {
   await clerkSetup({ publishableKey: process.env.CLERK_PUBLISHABLE_KEY })
 
   await page.goto(process.env.E2E_ADMIN_URL + '/login')
-  await setupClerkTestingToken({ page })
 
   // Click the "Sign in with Clerk" button which opens Clerk's modal
   await page.getByRole('button', { name: /sign in/i }).click()

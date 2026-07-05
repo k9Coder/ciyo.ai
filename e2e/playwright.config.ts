@@ -16,10 +16,10 @@ export default defineConfig({
     timeout: 10_000,
   },
   timeout: 30_000,
-  use: {
+  expect: {
     // CI Clerk JWT refreshes over the network (extra latency). Give assertions
     // 15 s instead of the default 5 s so the first API call has time to land.
-    assertionTimeout: 15_000,
+    timeout: 15_000,
   },
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
