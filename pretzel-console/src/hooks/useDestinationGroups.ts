@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { useToast } from './useToast'
+import type { DestinationGroup } from '../types'
 
 export function useDestinationGroups() {
   return useQuery({ queryKey: ['destination-groups'], queryFn: api.destinationGroups.list })
@@ -13,7 +14,10 @@ export function useDestinationGroupMutations() {
 
   const create = useMutation({
     mutationFn: api.destinationGroups.create,
-    onSuccess: () => { invalidate(); toast('Group created') },
+    onSuccess: (newGroup) => {
+      qc.setQueryData(['destination-groups'], (old: DestinationGroup[] = []) => [...old, newGroup])
+      toast('Group created')
+    },
     onError: (e: Error) => toast(e.message, 'error'),
   })
   const update = useMutation({

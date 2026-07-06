@@ -17,12 +17,14 @@ test.describe('Destination groups', () => {
   test('can create a destination group', async ({ page }) => {
     await page.goto('/destinations')
 
-    await page.getByRole('button', { name: /new group|add group|\+/i }).click()
+    await page.getByRole('button', { name: /new group|add group|\+/i }).first().click()
 
-    await page.getByLabel(/name/i).fill('E2E External Email')
-    await page.getByLabel(/domains/i).fill('gmail.com, yahoo.com')
-    await page.getByRole('button', { name: /create|save/i }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel(/name/i).fill('E2E External Email')
+    await dialog.getByLabel(/domains/i).fill('gmail.com\nyahoo.com')
+    await dialog.getByRole('button', { name: /save/i }).click()
 
+    await expect(dialog).not.toBeVisible({ timeout: 10_000 })
     await expect(page.getByText('E2E External Email')).toBeVisible()
 
     const api  = await playwrightRequest.newContext()
