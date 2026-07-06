@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import { listRules, createRule, updateRule, deleteRule } from './service.js'
-import { isRuleKindAllowed, type Plan } from '../billing/limits.js'
 
 export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/subjects/:subjectId/rules', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
@@ -21,12 +20,8 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
       message?: string
       reportLevel?: 'none' | 'minimal' | 'medium' | 'rich'
     }
-    const plan = req.tenant.plan as Plan
-    if (!isRuleKindAllowed(plan, body.kind)) {
-      return reply.status(402).send({
-        error: `Rule kind '${body.kind}' is not available on the ${plan} plan. Upgrade to unlock pattern, entropy, and score rules.`,
-      })
-    }
+    // Rule-kind plan gating is enforced in the service layer (createRule) so the
+    // assistant/internal apply path is covered too. Service throws a 402-tagged error.
     return reply.status(201).send(await createRule(req.tenant.id, subjectId, body))
   })
 

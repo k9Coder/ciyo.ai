@@ -73,6 +73,21 @@ export function isRuleKindAllowed(plan: Plan, kind: string): boolean {
   return (kinds as string[]).includes(kind)
 }
 
+/**
+ * Entitlement invariant for rule kinds. Throws a 402-tagged error when the plan
+ * does not permit the kind. Enforced in the service layer so BOTH the HTTP
+ * router and the assistant/internal path are covered (the assistant applies
+ * rules through the internal client, which never hits the HTTP router).
+ */
+export function assertRuleKindAllowed(plan: Plan, kind: string): void {
+  if (!isRuleKindAllowed(plan, kind)) {
+    throw Object.assign(
+      new Error(`Rule kind '${kind}' is not available on the ${plan} plan. Upgrade to unlock pattern, entropy, and score rules.`),
+      { statusCode: 402 },
+    )
+  }
+}
+
 export function getScanLimit(plan: Plan): number {
   return PLAN_LIMITS[plan]?.monthlyScans ?? 500
 }

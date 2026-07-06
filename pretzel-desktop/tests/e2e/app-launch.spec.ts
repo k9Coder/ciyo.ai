@@ -76,13 +76,13 @@ test.describe('detection integration via proxy', () => {
     // This verifies @ciyo/detect works in the same Node runtime as the proxy
     const { detectPrompt, DEFAULT_POLICY } = await import('@ciyo/detect')
     const text = 'AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
-    const result = detectPrompt({ text, inputType: 'text' }, DEFAULT_POLICY)
-    expect(['warn', 'block']).toContain(result.action)
+    const result = await detectPrompt({ text, inputType: 'prompt', hostname: 'chatgpt.com' }, DEFAULT_POLICY)
+    expect(['warn', 'require_confirmation', 'block']).toContain(result.highestAction)
   })
 
   test('detectPrompt allows clean traffic', async () => {
     const { detectPrompt, DEFAULT_POLICY } = await import('@ciyo/detect')
-    const result = detectPrompt({ text: 'Summarize this article for me', inputType: 'text' }, DEFAULT_POLICY)
-    expect(['allow', 'warn']).toContain(result.action)
+    const result = await detectPrompt({ text: 'Summarize this article for me', inputType: 'prompt', hostname: 'chatgpt.com' }, DEFAULT_POLICY)
+    expect(['log', 'warn']).toContain(result.highestAction)
   })
 })

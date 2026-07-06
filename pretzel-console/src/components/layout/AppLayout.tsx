@@ -5,6 +5,7 @@ import { getTheme, setTheme } from '../../utils/theme'
 import { useState, useEffect } from 'react'
 import { UpgradeBanner, PilotBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
+import { EnforcementBanner } from './EnforcementBanner'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 import { useTenant } from '../../hooks/useTenant'
 import LogRocket from 'logrocket'
@@ -228,6 +229,7 @@ export function AppLayout() {
 
         {/* Page content */}
         <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-base)' }}>
+          <EnforcementBanner />
           <Outlet />
         </div>
 

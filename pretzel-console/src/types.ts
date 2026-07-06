@@ -217,6 +217,19 @@ export interface AssistantApplyResponse {
   errors:  string[]
 }
 
+export type EnforcementReason = 'decision_timeout' | 'bridge_error' | 'adapter_miss'
+
+export interface DegradedHost {
+  hostname: string
+  reason:   EnforcementReason
+  count:    number
+}
+
+export interface EnforcementSummary {
+  degraded:      DegradedHost[]
+  silentFailure: boolean
+}
+
 export interface InvitePreview {
   tenantName: string
   role:       string

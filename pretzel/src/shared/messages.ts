@@ -14,7 +14,11 @@ export type Message =
   | { type: "SYNC_NOW"; payload?: never }
   | { type: "GET_ROLE"; payload?: never }
   | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never }
-  | { type: "GET_SCAN_LIMIT_STATUS"; payload?: never };
+  | { type: "GET_SCAN_LIMIT_STATUS"; payload?: never }
+  | { type: "REPORT_DEGRADED"; payload: { hostname: string; reason: EnforcementReason } };
+
+/** Reasons the extension can report degraded enforcement (no prompt content). */
+export type EnforcementReason = "decision_timeout" | "bridge_error" | "adapter_miss";
 
 /** Send a message to the background service worker from a content script or popup. */
 export function sendMessage<T>(message: Message): Promise<T> {

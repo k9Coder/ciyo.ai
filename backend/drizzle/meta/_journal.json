@@ -22,6 +22,13 @@
       "when": 1783158600000,
       "tag": "0002_failmode_tenant",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783373342119,
+      "tag": "0003_tough_the_twelve",
+      "breakpoints": true
     }
   ]
 }

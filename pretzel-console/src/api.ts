@@ -8,6 +8,7 @@ import type {
   InvitePreview, InviteCreated,
   BillingStatus,
   OnboardingApplyResult,
+  EnforcementSummary,
 } from './types'
 import { API_BASE } from './lib/api'
 
@@ -180,5 +181,9 @@ export const api = {
       request<OnboardingApplyResult>('POST', '/v1/onboarding/apply-template', { profession, followUpAnswer }),
     skip: () =>
       request<OnboardingApplyResult>('POST', '/v1/onboarding/skip', {}),
+  },
+  telemetry: {
+    enforcementSummary: () =>
+      request<EnforcementSummary>('GET', '/v1/telemetry/enforcement/summary'),
   },
 }
