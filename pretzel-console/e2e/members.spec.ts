@@ -13,7 +13,7 @@ test.describe('Members', () => {
     await page.locator('form').getByRole('button', { name: /generate link/i }).click()
 
     // URL input with the invite link appears
-    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 15_000 })
     const urlInput = page.locator('input[readonly]')
     await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
     // No member row yet — invite must be accepted first
@@ -26,7 +26,7 @@ test.describe('Members', () => {
     // Leave email blank — open link (anyone with it can join)
     await page.locator('form').getByRole('button', { name: /generate link/i }).click()
 
-    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 15_000 })
     const urlInput = page.locator('input[readonly]')
     await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
   })

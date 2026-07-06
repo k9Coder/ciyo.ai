@@ -15,7 +15,15 @@ test.describe('Destination groups', () => {
   })
 
   test('can create a destination group', async ({ page }) => {
+    // Wait for the list GET to succeed before acting so the Clerk JWT is warm
+    // by the time we click Save. Set up the listener before navigation so we
+    // don't miss the response.
+    const listReady = page.waitForResponse(
+      res => res.url().includes('/v1/destination-groups') && res.request().method() === 'GET' && res.status() === 200,
+      { timeout: 20_000 },
+    )
     await page.goto('/destinations')
+    await listReady
 
     await page.getByRole('button', { name: /new group|add group|\+/i }).first().click()
 
@@ -44,8 +52,13 @@ test.describe('Destination groups', () => {
     const group = await createRes.json() as { id: string }
     await api.dispose()
 
+    const listReady = page.waitForResponse(
+      res => res.url().includes('/v1/destination-groups') && res.request().method() === 'GET' && res.status() === 200,
+      { timeout: 20_000 },
+    )
     await page.goto('/destinations')
-    await page.getByText('E2E Edit Group').waitFor()
+    await listReady
+    await page.getByText('E2E Edit Group').waitFor({ timeout: 5_000 })
 
     // Edit button is a plain <button> in each group card
     await page.getByRole('button', { name: 'Edit' }).first().click()
