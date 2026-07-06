@@ -2,3 +2,5 @@
 export const MSG_INTERCEPT    = "CIYO_INTERCEPT";
 export const MSG_DECISION     = "CIYO_DECISION";
 export const MSG_UNLOCK_FETCH = "CIYO_UNLOCK_FETCH";
+/** MAIN → ISOLATED: enforcement degraded (e.g. detection decision timed out). */
+export const MSG_DEGRADED     = "CIYO_DEGRADED";

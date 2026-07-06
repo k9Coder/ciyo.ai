@@ -27,6 +27,7 @@ See [payments.md](./payments.md) for infrastructure decisions and cost rationale
 - [ ] Set up uptime monitor — Better Stack free tier (1 monitor). Alert goes to Marcus and Ryan.
 - [ ] Create `privacy@ciyo.ai` email alias — forwards to Marcus during pilot. Must exist before privacy page goes live.
 - [ ] Confirm Neon DB backups enabled, or schedule a manual export before pilot start.
+- [ ] Fix pretzel-console deploy job: repo secrets `RENDER_CONSOLE_PROD_DEPLOY_HOOK` (master) and `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` (staging) were never created — the `Deploy pretzel-console` workflow's deploy step has failed on every run since June 2 (test job green as of PR #12, 2026-07-06; step now errors explicitly naming the missing secret). Either create the deploy hooks in the Render dashboard and `gh secret set` them, **or** — since Chloe's plan deploys the console to Vercel — retarget/remove the Render deploy step in `.github/workflows/pretzel-console-deploy.yml` as part of the Vercel migration. Decide one; don't leave CI permanently red.
 
 ---
 

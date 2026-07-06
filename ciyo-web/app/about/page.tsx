@@ -1,17 +1,37 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About ciyo.ai',
-  description: 'ciyo.ai builds AI prompt data loss prevention for enterprise security teams. A small, customer-funded team obsessed with making DLP tools people actually use.',
+  title: 'About ciyo.ai — The Team Behind Pretzel AI DLP',
+  description: 'ciyo.ai was founded to solve a problem its team lived firsthand: employees pasting source code and credentials into public AI tools with no guardrails in place. We build Pretzel — browser-native AI DLP for enterprise.',
+  alternates: { canonical: 'https://ciyo.ai/about' },
   openGraph: {
-    title: 'About ciyo.ai — the team behind Pretzel',
-    description: 'ciyo.ai builds AI prompt data loss prevention for enterprise security teams. A small, customer-funded team obsessed with making DLP tools people actually use.',
+    title: 'About ciyo.ai — The Team Behind Pretzel',
+    description: 'A small, customer-funded team obsessed with making enterprise DLP tools people actually use.',
+  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  url: 'https://ciyo.ai/about',
+  name: 'About ciyo.ai',
+  description: 'ciyo.ai builds Pretzel, a browser-native AI data loss prevention platform for enterprise security teams.',
+  mainEntity: {
+    '@id': 'https://ciyo.ai/#org',
+    '@type': 'Organization',
+    name: 'ciyo.ai',
+    url: 'https://ciyo.ai',
+    foundingDate: '2024',
+    description: 'ciyo.ai builds Pretzel — a Chrome browser extension that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
+    sameAs: ['https://www.linkedin.com/company/ciyo-ai'],
+    contactPoint: { '@type': 'ContactPoint', email: 'hello@ciyo.ai', contactType: 'customer support' },
   },
 }
 
 export default function AboutPage() {
   return (
     <div className="px-6 py-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-2xl">
         <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">About</p>
         <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-white">Built for the AI-era by people who lived the problem</h1>

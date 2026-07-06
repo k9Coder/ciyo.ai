@@ -1,8 +1,13 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Security & Trust',
-  description: 'Pretzel never stores prompt content in full. TLS 1.3, AES-256, EU data residency, SOC 2 Type II in progress. Honest answers to the questions CISOs actually ask.',
+  title: 'AI DLP Security Architecture — How Pretzel Handles Your Data | ciyo.ai',
+  description: 'Pretzel runs detection locally in the browser — full prompt text never reaches ciyo.ai servers. TLS 1.3, AES-256, EU data residency, SOC 2 Type II in progress. Honest answers to CISO questions.',
+  alternates: { canonical: 'https://ciyo.ai/security' },
+  openGraph: {
+    title: 'Security & Trust — How Pretzel Handles Your Data',
+    description: 'Detection runs locally. Prompt text never transmitted to ciyo.ai. TLS 1.3, AES-256, SOC 2 Type II in progress.',
+  },
 }
 
 const POINTS = [
@@ -33,9 +38,50 @@ const POINTS = [
   },
 ]
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  url: 'https://ciyo.ai/security',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Does Pretzel store or transmit the content of AI prompts?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. Detection runs locally in the browser extension. The full text of any prompt is never transmitted to or stored on ciyo.ai servers. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a brief excerpt may be retained for audit purposes on a rolling 90-day window.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What encryption does Pretzel use?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'All API traffic between the extension and ciyo.ai backend uses TLS 1.3. Data at rest is encrypted with AES-256. Organization tokens are hashed with bcrypt.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is Pretzel SOC 2 certified?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'SOC 2 Type II certification is in progress, targeted for Q3 2026. Security practices are designed to meet SOC 2 controls before the audit. Interim controls documentation is available on request at security@ciyo.ai.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Where is Pretzel data stored?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Data is stored in the EU by default on AWS eu-west-1 (Ireland). ciyo.ai is designed for GDPR and CCPA compliance. Data Processing Agreements (DPAs) are available for enterprise customers.',
+      },
+    },
+  ],
+}
+
 export default function SecurityPage() {
   return (
     <div className="px-6 py-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-3xl">
         <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Security &amp; Trust</p>
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">How We Handle Your Data</h1>

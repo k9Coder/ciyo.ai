@@ -6,7 +6,13 @@ import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@ciyo/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
-import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH } from "./intercept-messages";
+import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
+import type { EnforcementReason } from "@/shared/messages";
+
+/** Report degraded enforcement to the service worker (which debounces + POSTs). */
+function reportDegraded(reason: EnforcementReason): void {
+  void sendMessage({ type: "REPORT_DEGRADED", payload: { hostname: location.hostname, reason } }).catch(() => {});
+}
 
 initSentry();
 
@@ -30,6 +36,13 @@ async function bootstrap() {
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
   function wasPasteRecent(): boolean { return Date.now() - lastPasteAt < 500; }
+
+  // MAIN world signals degraded enforcement (e.g. decision timeout) — forward it.
+  if (typeof window !== "undefined") window.addEventListener("message", (e: MessageEvent) => {
+    if (e.source !== window) return;
+    const data = e.data as { type?: string; reason?: EnforcementReason };
+    if (data?.type === MSG_DEGRADED && data.reason) reportDegraded(data.reason);
+  });
 
   // ── Fetch interceptor bridge ─────────────────────────────────────────────
   // The MAIN world fetch-interceptor posts CIYO_INTERCEPT when it catches a
@@ -63,11 +76,23 @@ async function bootstrap() {
         return;
       }
 
+      const promptText = String(payload.text ?? "");
+      const eventHostname = String(payload.hostname ?? hostname);
       const decision = await showWarningModal(result, label);
       const proceed = decision.type === "send_anyway";
+      // Record the outcome — the network/file backstop must be visible in the audit
+      // trail, not just the button-click path.
+      await writeAuditEvent(
+        result,
+        promptText,
+        eventHostname,
+        proceed ? "sent_with_reason" : "edited",
+        proceed && decision.type === "send_anyway" ? decision.reason : undefined,
+      );
       window.postMessage({ type: MSG_DECISION, id, proceed }, "*");
     } catch (err) {
       logger.error("Fetch intercept bridge error:", err);
+      reportDegraded("bridge_error");
       window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*"); // fail open
     }
   });
@@ -76,7 +101,12 @@ async function bootstrap() {
   adapter.onSendIntent(async (_e: Event) => {
     try {
       const composer = adapter.findComposer();
-      if (!composer) return { proceed: true };
+      if (!composer) {
+        // A send fired but the adapter can't locate the composer — its selectors
+        // are likely stale. Enforcement is degraded on this site.
+        reportDegraded("adapter_miss");
+        return { proceed: true };
+      }
 
       const promptText = adapter.readPromptText(composer);
       if (!promptText.trim()) return { proceed: true };

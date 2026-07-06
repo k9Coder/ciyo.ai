@@ -5,7 +5,37 @@ import {
   isOverSeatLimit,
   getScanLimit,
   getSeatLimit,
+  assertRuleKindAllowed,
 } from './limits.js'
+
+describe('assertRuleKindAllowed — enforced in service layer (covers assistant path)', () => {
+  it('rejects a pattern rule on the free plan with a 402-tagged error', () => {
+    try {
+      assertRuleKindAllowed('free', 'pattern')
+      throw new Error('should have thrown')
+    } catch (e) {
+      expect((e as { statusCode?: number }).statusCode).toBe(402)
+      expect((e as Error).message).toContain('free')
+    }
+  })
+
+  it('rejects entropy/score on starter (keyword+pattern only)', () => {
+    expect(() => assertRuleKindAllowed('starter', 'entropy')).toThrow()
+    expect(() => assertRuleKindAllowed('starter', 'score')).toThrow()
+  })
+
+  it('allows keyword on every plan', () => {
+    for (const plan of ['free', 'starter', 'business', 'enterprise', 'pilot'] as const) {
+      expect(() => assertRuleKindAllowed(plan, 'keyword')).not.toThrow()
+    }
+  })
+
+  it('allows pattern/entropy/score on business', () => {
+    expect(() => assertRuleKindAllowed('business', 'pattern')).not.toThrow()
+    expect(() => assertRuleKindAllowed('business', 'entropy')).not.toThrow()
+    expect(() => assertRuleKindAllowed('business', 'score')).not.toThrow()
+  })
+})
 
 describe('PlanLimits — new fields exist on all plans', () => {
   const plans = ['free', 'starter', 'business', 'enterprise', 'pilot'] as const

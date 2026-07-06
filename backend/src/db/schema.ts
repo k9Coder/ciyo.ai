@@ -189,6 +189,27 @@ export const scans = pgTable('scans', {
   tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
 }))
 
+// ── Enforcement signals ───────────────────────────────────────────────────────
+// Degraded-enforcement telemetry from the extension. Never carries prompt
+// content — only host + reason. Powers the console "protection degraded" banner.
+export const enforcementReasonEnum = pgEnum('enforcement_reason', [
+  'decision_timeout',
+  'bridge_error',
+  'adapter_miss',
+])
+
+export const enforcementSignals = pgTable('enforcement_signals', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:   uuid('member_id').references(() => members.id),
+  hostname:   text('hostname').notNull(),
+  reason:     enforcementReasonEnum('reason').notNull(),
+  extVersion: text('ext_version'),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+}))
+
 // ── Chat Sessions ─────────────────────────────────────────────────────────────
 export const chatMessageRoleEnum = pgEnum('chat_message_role', ['user', 'assistant'])
 

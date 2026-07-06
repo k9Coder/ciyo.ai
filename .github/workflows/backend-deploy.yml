@@ -31,6 +31,28 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Guard against destructive migrations
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BASE="HEAD~1"
+          else
+            BASE="$BEFORE"
+          fi
+          CHANGED=$(git diff --name-only "$BASE" "${{ github.sha }}" -- 'backend/drizzle/*.sql' || true)
+          if [ -z "$CHANGED" ]; then echo "No new migration files."; exit 0; fi
+          echo "New migrations: $CHANGED"
+          if echo "$CHANGED" | xargs grep -iE 'DROP[[:space:]]+(COLUMN|TABLE)|ALTER[[:space:]]+COLUMN.*[[:space:]]TYPE|RENAME[[:space:]]+(COLUMN|TO)'; then
+            if [ "${{ vars.ALLOW_DESTRUCTIVE_MIGRATION }}" = "true" ]; then
+              echo "Destructive migration explicitly allowed via ALLOW_DESTRUCTIVE_MIGRATION."
+            else
+              echo "::error::Destructive migration detected. Deploy runs migrations BEFORE the new image goes live, so non-additive changes break the running (old) code. Use expand/contract, or set repo variable ALLOW_DESTRUCTIVE_MIGRATION=true to override for this release."
+              exit 1
+            fi
+          fi
 
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -104,9 +126,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Deploy the new image first, then run migrations so the new code is live
-      # before any schema changes take effect. All migrations must be additive-only
-      # (backward-compatible) to avoid a gap where old code serves against a new schema.
+      # Migrate-first (expand/contract): run migrations BEFORE the new image goes
+      # live, and fail the deploy if they error so a bad image never ships. This
+      # is safe only for additive/backward-compatible migrations — the destructive
+      # guard in the `test` job enforces that. Never DROP/rename a column in the
+      # same release that stops using it.
+      - name: Run DB migrations
+        run: pnpm exec tsx src/db/migrate.ts
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+
+      - name: Seed profession templates (idempotent)
+        run: pnpm exec tsx src/db/seeds/run-profession-templates.ts
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+
       - name: Deploy to Render
         env:
           SERVICE_ID: ${{ github.ref_name == 'master' && secrets.RENDER_BACKEND_PROD_SERVICE_ID || secrets.RENDER_BACKEND_STAGING_SERVICE_ID }}
@@ -125,18 +161,6 @@ jobs:
             echo "Render deploy failed with HTTP $HTTP_STATUS"
             exit 1
           fi
-
-      - name: Run DB migrations
-        run: pnpm exec tsx src/db/migrate.ts
-        working-directory: backend
-        env:
-          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
-
-      - name: Seed profession templates (idempotent)
-        run: pnpm exec tsx src/db/seeds/run-profession-templates.ts
-        working-directory: backend
-        env:
-          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
 
       - name: Notify Discord
         if: always()

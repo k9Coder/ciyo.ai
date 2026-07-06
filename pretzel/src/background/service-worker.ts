@@ -7,6 +7,7 @@ import type { DetectionResult } from "@ciyo/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
 import { getRole } from "@/policy/role";
+import { reportDegraded } from "@/telemetry/dispatch";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
@@ -124,6 +125,12 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "GET_SCAN_LIMIT_STATUS": {
       const result = await chrome.storage.local.get("scanLimitReached") as Record<string, unknown>;
       return { scanLimitReached: result["scanLimitReached"] === true };
+    }
+
+    case "REPORT_DEGRADED": {
+      const { hostname, reason } = message.payload;
+      void reportDegraded(hostname, reason);
+      return { ok: true };
     }
 
     case "GET_ROLE": {

@@ -136,8 +136,9 @@ app.whenReady().then(async () => {
   const authenticated = isAuthenticated()
 
   registerIpcHandlers({
-    onDecision: (_requestId, _allow) => {
-      // Resolved via ProxyDecisionEvent.resolve in proxy.ts
+    onDecision: (requestId, allow) => {
+      // Route the user's Allow/Block choice back to the held proxy request.
+      proxy.resolveDecision(requestId, allow)
     },
     onPolicyUpdate: (update) => {
       console.log('[pretzel-desktop] Policy update from renderer:', update)

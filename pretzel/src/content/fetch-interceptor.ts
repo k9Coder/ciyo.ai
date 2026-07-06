@@ -14,9 +14,10 @@
  */
 
 import { extractFile } from "./file-extract";
-import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH } from "./intercept-messages";
+import { extractPromptFromRequest } from "./request-extract";
+import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
 
-export { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH };
+export { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED };
 
 const DECISION_TIMEOUT_MS = 5_000;
 
@@ -59,6 +60,9 @@ function requestDetection(payload: InterceptPayload): Promise<boolean> {
 
     const timer = setTimeout(() => {
       window.removeEventListener("message", handler);
+      // Enforcement degraded: detection didn't answer in time. Signal the ISOLATED
+      // world (which has chrome APIs) to report it, then fail open.
+      window.postMessage({ type: MSG_DEGRADED, reason: "decision_timeout" }, "*");
       resolve(true); // fail open on timeout
     }, DECISION_TIMEOUT_MS);
 
@@ -68,6 +72,39 @@ function requestDetection(payload: InterceptPayload): Promise<boolean> {
 }
 
 // ─── File body extraction ─────────────────────────────────────────────────────
+
+/** Resolve the request URL from fetch args. */
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  if (input instanceof Request) return input.url;
+  return String(input);
+}
+
+/**
+ * Read a string request body for JSON prompt inspection.
+ * Only string bodies (the common `fetch(url, { body: JSON.stringify(...) })`
+ * shape) and Request objects are read; anything else returns null.
+ */
+async function readBodyText(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<string | null> {
+  const body = init?.body;
+  if (typeof body === "string") return body;
+  if (!body && input instanceof Request) {
+    try { return await input.clone().text(); } catch { return null; }
+  }
+  return null;
+}
+
+/** Inspect a JSON prompt body; returns a detection payload or null if not a prompt send. */
+function inspectPromptBody(url: string, bodyText: string): InterceptPayload | null {
+  const hostname = location.hostname;
+  const text = extractPromptFromRequest(hostname, url, bodyText);
+  if (!text) return null;
+  return { text, inputType: "prompt", hostname };
+}
 
 async function inspectFormData(body: FormData): Promise<InterceptPayload | null> {
   const hostname = location.hostname;
@@ -114,10 +151,21 @@ window.fetch = async function ciyoFetch(
           throw new DOMException("Blocked by Pretzel policy", "AbortError");
         }
       }
+    } else {
+      // JSON prompt sends — the network backstop. Runs only when the button-click
+      // path did NOT pre-approve this fetch (nextFetchApproved handled above), so a
+      // DOM/selector change can't silently disable enforcement.
+      const bodyText = await readBodyText(input, init);
+      if (bodyText) {
+        const payload = inspectPromptBody(requestUrl(input), bodyText);
+        if (payload) {
+          const proceed = await requestDetection(payload);
+          if (!proceed) {
+            throw new DOMException("Blocked by Pretzel policy", "AbortError");
+          }
+        }
+      }
     }
-
-    // Non-file (JSON prompt) sends are handled by the button-click path for now.
-    // Future: parse JSON body here to fully replace button-click detection.
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
     // Any extraction/detection error → fail open
@@ -133,6 +181,13 @@ const OriginalXHR = window.XMLHttpRequest;
 
 class CiyoXHR extends OriginalXHR {
   private _ciyoBody: FormData | null = null;
+  private _ciyoUrl = "";
+
+  open(method: string, url: string | URL, ...rest: unknown[]): void {
+    this._ciyoUrl = typeof url === "string" ? url : url.toString();
+    // @ts-expect-error — forwarding the full native open signature
+    super.open(method, url, ...rest);
+  }
 
   send(body?: Document | XMLHttpRequestBodyInit | null): void {
     if (nextFetchApproved) {
@@ -157,6 +212,18 @@ class CiyoXHR extends OriginalXHR {
         super.send(this._ciyoBody ?? undefined); // fail open
       });
       return;
+    }
+
+    // JSON prompt body — network backstop (mirrors the fetch path).
+    if (typeof body === "string") {
+      const payload = inspectPromptBody(this._ciyoUrl, body);
+      if (payload) {
+        requestDetection(payload).then((proceed) => {
+          if (!proceed) { this.dispatchEvent(new ProgressEvent("error")); return; }
+          super.send(body);
+        }).catch(() => super.send(body)); // fail open
+        return;
+      }
     }
 
     super.send(body ?? undefined);
