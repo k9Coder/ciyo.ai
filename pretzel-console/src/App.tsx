@@ -22,10 +22,7 @@ import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
 
 const queryClient = new QueryClient({
-  // retry: 3 gives Clerk's JWT refresh network call time to complete in CI before
-  // React Query gives up. Exponential backoff: 1 s, 2 s, 4 s — first successful
-  // window is at ~3 s, well within the 15 s assertion timeout.
-  defaultOptions: { queries: { retry: 3, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
 })
 
 export function App() {

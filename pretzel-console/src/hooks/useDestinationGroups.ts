@@ -14,7 +14,6 @@ export function useDestinationGroupMutations() {
 
   const create = useMutation({
     mutationFn: api.destinationGroups.create,
-    retry: 2,
     onSuccess: (newGroup) => {
       qc.setQueryData(['destination-groups'], (old: DestinationGroup[] = []) => [...old, newGroup])
       toast('Group created')
