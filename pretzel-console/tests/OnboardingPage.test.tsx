@@ -53,7 +53,7 @@ describe('OnboardingPage', () => {
     fireEvent.change(screen.getByPlaceholderText(/company name/i), { target: { value: 'Acme Law LLP' } })
     fireEvent.click(screen.getByRole('button', { name: /create organization/i }))
     await waitFor(() => expect(mockCreateOrganization).toHaveBeenCalledWith({ name: 'Acme Law LLP', slug: 'acme-law-llp' }))
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/onboarding/profile', { replace: true })
   })
 
   it('shows an error message when org creation fails', async () => {
