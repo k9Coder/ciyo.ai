@@ -8,8 +8,10 @@ vi.mock('@clerk/react', () => ({
   UserButton: () => null,
 }))
 vi.mock('../src/hooks/usePolicyRealtime', () => ({ usePolicyRealtime: vi.fn() }))
+vi.mock('../src/hooks/useTenant', () => ({ useTenant: vi.fn(() => ({ data: undefined })) }))
 vi.mock('../src/components/billing/UpgradeBanner', () => ({
   UpgradeBanner: () => null,
+  PilotBanner: () => null,
   PlanBadge: () => null,
 }))
 

@@ -46,7 +46,12 @@ jobs:
       - name: Trigger Render deploy
         env:
           DEPLOY_HOOK: ${{ github.ref_name == 'master' && secrets.RENDER_CONSOLE_PROD_DEPLOY_HOOK || secrets.RENDER_CONSOLE_STAGING_DEPLOY_HOOK }}
-        run: curl --silent --output /dev/null --fail -X POST "$DEPLOY_HOOK"
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::Render deploy hook secret is not set (RENDER_CONSOLE_PROD_DEPLOY_HOOK for master, RENDER_CONSOLE_STAGING_DEPLOY_HOOK for staging). Create the deploy hook in the Render dashboard and add it as a repo secret."
+            exit 1
+          fi
+          curl --silent --output /dev/null --fail -X POST "$DEPLOY_HOOK"
 
       - name: Notify Discord
         if: always()
