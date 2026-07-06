@@ -4,21 +4,32 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Blog — AI Security Guides and Research',
-  description: 'The Pretzel blog: practical guides, research, and policy templates for CISOs managing AI data risk.',
+  title: 'AI DLP Blog — Security Research & Guides | ciyo.ai',
+  description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams managing generative AI risk.',
+  alternates: { canonical: 'https://ciyo.ai/blog' },
   openGraph: {
-    title: 'The Pretzel Blog — AI Security for Enterprise Teams',
-    description: 'Practical guides, research, and policy templates for CISOs managing AI data risk.',
+    title: 'AI DLP Blog — Security Research & Guides | ciyo.ai',
+    description: 'Practical guides, policy templates, and research on AI data loss prevention for enterprise security teams.',
   },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  url: 'https://ciyo.ai/blog',
+  name: 'AI DLP Blog — Security Research & Guides',
+  description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams.',
+  publisher: { '@id': 'https://ciyo.ai/#org' },
 }
 
 export default function BlogPage() {
   const posts = getAllPosts()
   return (
     <div className="px-6 py-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-2xl">
         <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Blog</p>
-        <h1 className="mb-12 text-4xl font-extrabold tracking-tight text-white">Insights on AI Security</h1>
+        <h1 className="mb-12 text-4xl font-extrabold tracking-tight text-white">AI DLP Research &amp; Security Guides</h1>
         {posts.map(post => (
           <Link key={post.slug} href={`/blog/${post.slug}`}
             className="mb-6 block rounded-2xl border border-white/[0.07] bg-[#17171e] p-7 transition hover:border-[#7c6aff]/30">

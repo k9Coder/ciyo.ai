@@ -52,17 +52,37 @@ export function generateStaticParams() {
   return Object.keys(INDUSTRIES).map(industry => ({ industry }))
 }
 
+const INDUSTRY_META: Record<string, { title: string; description: string }> = {
+  healthcare: {
+    title: 'AI DLP for Healthcare — HIPAA Compliance for ChatGPT | Pretzel',
+    description: 'Prevent patient PHI from reaching ChatGPT, Claude, and Gemini. Pretzel blocks all 18 HIPAA-defined PHI identifiers at the point of input. No network changes required.',
+  },
+  legal: {
+    title: 'AI DLP for Legal Teams — Protect Attorney-Client Privilege | Pretzel',
+    description: 'Stop privileged communications, client names, and matter details from reaching AI tools. Pretzel enforces attorney-client privilege protection at the browser level.',
+  },
+  fintech: {
+    title: 'AI DLP for Fintech — Keep Card Data and MNPI Out of AI Tools | Pretzel',
+    description: 'Block PCI-DSS card numbers, IBAN codes, and material non-public information from reaching AI chat interfaces. Audit trail included for regulatory compliance.',
+  },
+  engineering: {
+    title: 'AI DLP for Engineering — Stop Credentials and Code Leaking to AI | Pretzel',
+    description: 'Entropy detection catches API keys, tokens, and database passwords before they reach ChatGPT or Copilot — even credentials not in your keyword list.',
+  },
+}
+
 export function generateMetadata({ params }: { params: Promise<{ industry: string }> }): Promise<Metadata> {
   return params.then(({ industry }) => {
     const data = INDUSTRIES[industry as Industry]
     if (!data) return {}
+    const meta = INDUSTRY_META[industry]
+    const title = meta?.title ?? `${data.name} AI Security — Pretzel`
+    const description = meta?.description ?? `${data.headline}. ${data.problem.slice(0, 120)}…`
     return {
-      title: `${data.name} AI Security — Pretzel`,
-      description: `${data.headline}. ${data.problem.slice(0, 120)}…`,
-      openGraph: {
-        title: `${data.name} AI Security — Pretzel`,
-        description: `${data.headline}. ${data.problem.slice(0, 120)}…`,
-      },
+      title,
+      description,
+      alternates: { canonical: `https://ciyo.ai/solutions/${industry}` },
+      openGraph: { title, description },
     }
   })
 }
