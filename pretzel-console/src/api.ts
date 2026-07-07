@@ -9,8 +9,10 @@ import type {
   BillingStatus,
   OnboardingApplyResult,
   EnforcementSummary,
+  Membership,
 } from './types'
 import { API_BASE } from './lib/api'
+import { getSelectedTenantId } from './lib/tenant'
 
 const TOKEN_KEY = 'ps_admin_token'
 
@@ -32,13 +34,17 @@ export function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, opts?: { skipTenant?: boolean }): Promise<T> {
   const token = _tokenGetter ? await _tokenGetter() : getToken()
+  // The memberships call resolves which tenant to use, so it must NOT send the
+  // header (the user may have >1 membership and no selection yet).
+  const tenantId = opts?.skipTenant ? null : getSelectedTenantId()
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(tenantId ? { 'X-Tenant-Id': tenantId } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
@@ -161,6 +167,10 @@ export const api = {
       request<{ messages: ChatMessage[] }>('GET', `/v1/assistant/sessions/${sessionId}/messages`),
     revertMessage: (messageId: string) =>
       request<{ reverted: number }>('POST', `/v1/assistant/messages/${messageId}/revert`),
+  },
+  me: {
+    memberships: () =>
+      request<{ memberships: Membership[] }>('GET', '/v1/me/memberships', undefined, { skipTenant: true }),
   },
   invites: {
     create: (opts: { email?: string; role?: Member['role'] }) =>

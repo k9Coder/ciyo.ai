@@ -2,6 +2,7 @@ import { API_BASE } from "@/shared/constants";
 import { PolicyDocSchema } from "@ciyo/detect";
 import type { DetectionResult } from "@ciyo/detect";
 import { getAuthToken } from "@/policy/auth";
+import { buildAuthHeaders } from "@/auth/headers";
 
 function getRuleReportLevel(ruleId: string, policyDoc: unknown): "none" | "minimal" | "medium" | "rich" {
   const parsed = PolicyDocSchema.safeParse(policyDoc);
@@ -29,6 +30,7 @@ export async function dispatchEvents(
   if (!token) return;
 
   const policyDoc = stored["policyDoc"];
+  const authHeaders = await buildAuthHeaders(token);
 
   for (const finding of reportable) {
     const reportLevel = getRuleReportLevel(finding.ruleId, policyDoc);
@@ -45,7 +47,7 @@ export async function dispatchEvents(
 
     fetch(`${API_BASE}/v1/events`, {
       method:  "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { ...authHeaders, "Content-Type": "application/json" },
       body:    JSON.stringify(body),
     }).catch(() => {}); // fire-and-forget
   }

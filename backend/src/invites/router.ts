@@ -4,12 +4,23 @@ import { createInvite, getInvitePreview, acceptInvite } from './service.js'
 
 const BASE_URL = process.env.ADMIN_BASE_URL ?? 'http://localhost:5173'
 
+const ALLOWED_ROLES = ['member', 'division_admin', 'super_admin'] as const
+type InviteRole = (typeof ALLOWED_ROLES)[number]
+
+function isAllowedRole(role: string): role is InviteRole {
+  return (ALLOWED_ROLES as readonly string[]).includes(role)
+}
+
 export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
   // Admin creates an invite link
   fastify.post('/invites', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     if (!req.member) return reply.status(403).send({ error: 'Clerk auth required to create invites' })
     const body = req.body as { email?: string; role?: string }
-    const role = (body.role ?? 'member') as 'member' | 'division_admin' | 'super_admin'
+    const role = body.role ?? 'member'
+    if (!isAllowedRole(role)) return reply.status(400).send({ error: 'Invalid role' })
+    if (role === 'super_admin' && req.member.role !== 'super_admin') {
+      return reply.status(403).send({ error: 'Only a super admin can create super admin invites' })
+    }
     const { token, expiresAt } = await createInvite(req.tenant.id, req.member.id, {
       email: body.email?.trim() || undefined,
       role,

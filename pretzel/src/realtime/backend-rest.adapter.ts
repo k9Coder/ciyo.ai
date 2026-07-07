@@ -1,4 +1,5 @@
 import { getAuthToken } from '@/policy/auth'
+import { buildAuthHeaders } from '@/auth/headers'
 import { API_BASE } from '@/shared/constants'
 import type { ILastUpdatesChecker } from './types'
 
@@ -7,9 +8,8 @@ export class BackendRESTChecker implements ILastUpdatesChecker {
     const token = await getAuthToken()
     if (!token) return null
     try {
-      const res = await fetch(`${API_BASE}/v1/policy/last-updates`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const headers = await buildAuthHeaders(token)
+      const res = await fetch(`${API_BASE}/v1/policy/last-updates`, { headers })
       if (!res.ok) return null
       const { ts } = await res.json() as { ts: number }
       return ts

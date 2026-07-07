@@ -4,6 +4,7 @@ import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { getTheme, setTheme } from "@/shared/theme";
+import { ensureTenantSelected } from "@/auth/tenant";
 import { Spinner } from "../options/components/loading";
 
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
@@ -105,7 +106,10 @@ function SignedInView() {
 
   useEffect(() => {
     getToken().then((token) => {
-      if (token) void chrome.storage.local.set({ clerkSessionToken: token });
+      if (token) {
+        void chrome.storage.local.set({ clerkSessionToken: token });
+        void ensureTenantSelected(token); // sign-in: resolve tenant for X-Tenant-Id header
+      }
     });
   }, [getToken]);
 

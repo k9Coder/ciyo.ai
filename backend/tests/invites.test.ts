@@ -1,9 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest'
+import supertest from 'supertest'
 import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { createInvite, acceptInvite, getInvitePreview } from '../src/invites/service.js'
+import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { invites, members } from '../src/db/schema.js'
+import { invites, members, tenants } from '../src/db/schema.js'
 import { eq, and, isNull } from 'drizzle-orm'
+import type { FastifyInstance } from 'fastify'
+
+const MOCK_CLERK_USER_ID = 'user_test_super_admin'
+const MOCK_CLERK_JWT     = 'eyJhbGciOiJSUzI1NiJ9.mock.signature'
+
+const { mockVerifyToken } = vi.hoisted(() => ({
+  mockVerifyToken: vi.fn().mockResolvedValue({ sub: 'user_test_super_admin' }),
+}))
+
+vi.mock('@clerk/backend', () => ({
+  verifyToken: mockVerifyToken,
+}))
 
 beforeEach(async () => { await truncateAll() })
 
@@ -93,6 +107,86 @@ describe('acceptInvite', () => {
       expect(result.statusCode).toBe(409)
     }
   })
+
+  it('accept succeeds when tenant is under the seat limit', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.update(tenants).set({ plan: 'free' }).where(eq(tenants.id, tenantId))
+    // Seed 2 existing members — free plan caps at 3 seats, so a 3rd should still fit
+    const seatA = await buildTestUser('clerk_seat_a', 'seat-a@example.com')
+    await db.insert(members).values({ tenantId, userId: seatA.id, email: seatA.email, role: 'member' })
+    const seatB = await buildTestUser('clerk_seat_b', 'seat-b@example.com')
+    await db.insert(members).values({ tenantId, userId: seatB.id, email: seatB.email, role: 'member' })
+
+    const { token } = await createInvite(tenantId, null, { role: 'member' })
+    const user = await buildTestUser('clerk_seat_c', 'seat-c@example.com')
+    const result = await acceptInvite(token, user.id)
+
+    expect('error' in result).toBe(false)
+    if (!('error' in result)) {
+      expect(result.member.tenantId).toBe(tenantId)
+    }
+  })
+
+  it('returns 402 at the seat cap and does NOT burn the invite — same token succeeds after a seat frees up', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.update(tenants).set({ plan: 'free' }).where(eq(tenants.id, tenantId))
+
+    // Seed 3 existing members — free plan caps at 3 seats
+    const seatMembers: string[] = []
+    for (const suffix of ['a', 'b', 'c']) {
+      const u = await buildTestUser(`clerk_cap_${suffix}`, `cap-${suffix}@example.com`)
+      const [m] = await db.insert(members).values({ tenantId, userId: u.id, email: u.email, role: 'member' }).returning()
+      seatMembers.push(m!.id)
+    }
+
+    const { token } = await createInvite(tenantId, null, { role: 'member' })
+    const newUser = await buildTestUser('clerk_cap_new', 'cap-new@example.com')
+
+    const result = await acceptInvite(token, newUser.id)
+    expect('error' in result).toBe(true)
+    if ('error' in result) {
+      expect(result.statusCode).toBe(402)
+      expect(result.error).toContain('Seat limit reached')
+      expect(result.error).toContain('free')
+    }
+
+    // The invite must NOT be burned by the rejected accept
+    const [inv] = await db.select({ usedAt: invites.usedAt }).from(invites).where(eq(invites.token, token))
+    expect(inv?.usedAt).toBeNull()
+
+    // Free up a seat, then the SAME token should succeed
+    await db.delete(members).where(eq(members.id, seatMembers[0]!))
+    const retry = await acceptInvite(token, newUser.id)
+    expect('error' in retry).toBe(false)
+    if (!('error' in retry)) {
+      expect(retry.member.tenantId).toBe(tenantId)
+      expect(retry.member.userId).toBe(newUser.id)
+    }
+  })
+
+  it('already-a-member path returns existing membership without applying the seat check', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.update(tenants).set({ plan: 'free' }).where(eq(tenants.id, tenantId))
+
+    // Fill the tenant to the seat cap (3 on free plan)
+    let existingUser: Awaited<ReturnType<typeof buildTestUser>> | undefined
+    for (const suffix of ['a', 'b', 'c']) {
+      const u = await buildTestUser(`clerk_existing_${suffix}`, `existing-${suffix}@example.com`)
+      await db.insert(members).values({ tenantId, userId: u.id, email: u.email, role: 'member' })
+      if (suffix === 'a') existingUser = u
+    }
+
+    // One of the existing members accepts an invite for the same tenant — should
+    // hit the "already a member" early-return path, not the seat check.
+    const { token } = await createInvite(tenantId, null, { role: 'member' })
+    const result = await acceptInvite(token, existingUser!.id)
+
+    expect('error' in result).toBe(false)
+    if (!('error' in result)) {
+      expect(result.member.tenantId).toBe(tenantId)
+      expect(result.member.userId).toBe(existingUser.id)
+    }
+  })
 })
 
 describe('getInvitePreview', () => {
@@ -113,5 +207,72 @@ describe('getInvitePreview', () => {
     await db.update(invites).set({ usedAt: new Date() }).where(eq(invites.token, token))
     const preview = await getInvitePreview(token)
     expect(preview!.valid).toBe(false)
+  })
+})
+
+describe('POST /v1/invites', () => {
+  let app: FastifyInstance
+  let tenantId: string
+  let adminToken: string
+
+  beforeAll(async () => { ({ app } = await startTestApp()) })
+  beforeEach(async () => {
+    mockVerifyToken.mockResolvedValue({ sub: MOCK_CLERK_USER_ID })
+    const t = await buildTestTenant()
+    tenantId   = t.tenantId
+    adminToken = t.adminToken
+  })
+  afterAll(async () => { await app.close() })
+
+  it('rejects an unknown role with 400', async () => {
+    // requireAdminTokenOrClerkAdmin only lets a Clerk caller reach the route handler
+    // if they are already super_admin (req.member?.role !== 'super_admin' -> 403 at
+    // the middleware level), so role validation is exercised via a super_admin caller.
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'bogus' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Invalid role')
+  })
+
+  it('allows a super_admin Clerk caller to create a super_admin invite', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'super_admin' })
+    expect(res.status).toBe(201)
+    expect(res.body.token).toBeDefined()
+  })
+
+  it('rejects any invite creation from a ps_adm token caller (req.member unset)', async () => {
+    // requireAdminTokenOrClerkAdmin lets ps_adm tokens through, but the route itself
+    // requires req.member (only set for Clerk callers) for ALL invite creation.
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ role: 'member' })
+    expect(res.status).toBe(403)
+    expect(res.body.error).toContain('Clerk auth required')
+  })
+
+  it('rejects a non-super_admin Clerk caller before the route body runs', async () => {
+    // requireAdminTokenOrClerkAdmin itself 403s Clerk callers whose req.member.role
+    // isn't super_admin, so a division_admin never reaches the route's role checks.
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'division@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'division_admin' })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'super_admin' })
+    expect(res.status).toBe(403)
+    expect(res.body.error).toContain('Admin access required')
   })
 })

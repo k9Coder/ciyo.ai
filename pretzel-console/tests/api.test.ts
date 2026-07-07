@@ -11,6 +11,7 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 const { setToken, getToken, clearToken, api, AdminApiError } = await import('../src/api.js')
+const { setSelectedTenantId, clearSelectedTenantId } = await import('../src/lib/tenant.js')
 
 function ok(body: unknown, status = 200) {
   return Promise.resolve({
@@ -107,6 +108,43 @@ describe('api.subjects.remove', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/v1/subjects/abc'),
       expect.objectContaining({ method: 'DELETE' })
+    )
+  })
+})
+
+describe('X-Tenant-Id header', () => {
+  it('sends X-Tenant-Id when a selection is set', async () => {
+    setToken('tok')
+    setSelectedTenantId('tenant_abc')
+    mockFetch.mockReturnValueOnce(ok([]))
+    await api.subjects.list()
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/subjects'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'X-Tenant-Id': 'tenant_abc' }),
+      })
+    )
+  })
+
+  it('omits X-Tenant-Id when no selection is set', async () => {
+    setToken('tok')
+    clearSelectedTenantId()
+    mockFetch.mockReturnValueOnce(ok([]))
+    await api.subjects.list()
+    const headers = mockFetch.mock.calls[0]![1].headers
+    expect(headers).not.toHaveProperty('X-Tenant-Id')
+  })
+
+  it('never sends X-Tenant-Id on the memberships call, even with a selection', async () => {
+    setToken('tok')
+    setSelectedTenantId('tenant_abc')
+    mockFetch.mockReturnValueOnce(ok({ memberships: [] }))
+    await api.me.memberships()
+    const headers = mockFetch.mock.calls[0]![1].headers
+    expect(headers).not.toHaveProperty('X-Tenant-Id')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/me/memberships'),
+      expect.objectContaining({ method: 'GET' })
     )
   })
 })

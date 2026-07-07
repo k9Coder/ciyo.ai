@@ -126,6 +126,12 @@ export interface TenantInfo {
   failMode: 'open' | 'closed'
 }
 
+export interface Membership {
+  tenantId: string
+  tenantName: string
+  role: string
+}
+
 export interface OnboardingApplyResult {
   policyId: string | null
   wizardCompleted: boolean
