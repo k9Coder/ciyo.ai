@@ -4,6 +4,7 @@ import { members, users, memberTeams, type Member, type NewMember, type User } f
 import { usersClient, tenantsClient, teamsClient } from '../http/internal-client.js'
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 import { getContext } from '../context/request-context.js'
+import { anonymizeMember } from '../scans/service.js'
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
@@ -82,6 +83,10 @@ export async function updateMember(
 }
 
 export async function deleteMember(tenantId: string, id: string): Promise<void> {
+  // Anonymize retained telemetry first: nulls memberId on this member's scans +
+  // enforcement_signals so their personal link is erased (GDPR right to erasure)
+  // and no dangling FK blocks the delete.
+  await anonymizeMember(id)
   await db.delete(memberTeams).where(eq(memberTeams.memberId, id))
   await db.delete(members).where(and(eq(members.id, id), eq(members.tenantId, tenantId)))
 }

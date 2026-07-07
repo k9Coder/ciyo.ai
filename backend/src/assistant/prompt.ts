@@ -24,16 +24,19 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
     keywords: r.keywords, pattern: r.pattern, action: r.action, active: r.active,
   }))
 
-  // PRIVACY NOTE (David Horowitz, 2026-06-08): Member emails are included in the
-  // system prompt that is transmitted to external LLM providers (Anthropic, OpenAI,
-  // Groq). This constitutes a third-party data transmission of customer PII to AI
-  // sub-processors. Required actions before GA:
-  //   1. Sign Data Processing Agreements (DPAs) with Anthropic, OpenAI, and Groq.
-  //   2. List all three as sub-processors in the Privacy Policy and customer DPA template.
-  //   3. Consider replacing `email` with a pseudonym (e.g. `member-<hash>`) here;
-  //      the AI only needs member IDs for action references — emails add no functional value.
+  // PRIVACY (David Horowitz, 2026-06-08; pseudonymized 2026-07-07): Member emails
+  // are PII. All current LLM providers (Anthropic, OpenAI, Groq) are third parties,
+  // so by default we send an opaque, stable label (`member-<first 8 chars of id>`)
+  // instead of the real email. The model only ever references members by `id` for
+  // actions (delete_member, assign_member_team, etc.), so labels lose no functional
+  // value. Escape hatch: set ASSISTANT_SEND_PII=true to transmit real emails (e.g.
+  // for a first-party/self-hosted model under a signed DPA); default is redacted.
+  const sendPII = process.env.ASSISTANT_SEND_PII === 'true'
   const memberSummaries = snapshot.members.map(m => ({
-    id: m.id, email: m.email, role: m.role, adminDivisionId: m.adminDivisionId,
+    id: m.id,
+    email: sendPII ? m.email : `member-${m.id.slice(0, 8)}`,
+    role: m.role,
+    adminDivisionId: m.adminDivisionId,
   }))
 
   return `You are Pretzel AI — an AI assistant built into the Pretzel Console that helps administrators manage data-loss prevention policies. Pretzel is a Chrome extension (by ciyo.ai) that intercepts AI prompts (ChatGPT, Claude, Gemini, etc.) and warns or blocks users when they attempt to send sensitive data.

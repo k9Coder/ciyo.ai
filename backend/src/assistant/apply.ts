@@ -1,4 +1,4 @@
-import type { Action } from './llm/interface.js'
+import type { Action, MemberRole } from './llm/interface.js'
 import { rulesClient, subjectsClient, divisionsClient, teamsClient, membersClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
 
@@ -7,11 +7,34 @@ export interface ApplyResult {
   errors: string[]
 }
 
+export interface ApplyContext {
+  // Role of the member applying the actions. Only a super_admin may create or
+  // update a member with the super_admin role — this prevents privilege
+  // escalation via the assistant. Admin-token callers hold org-wide authority
+  // and are treated as super_admin.
+  callerRole: MemberRole
+}
+
 function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export async function executeActions(tenantId: string, actions: Action[]): Promise<ApplyResult> {
+// True when the action would create or update a member with the super_admin
+// role. Reads the raw shape so it also catches a future `update_member` op that
+// carries a `role`/`patch.role` field, even though only `create_member` is in
+// the current Action union.
+function grantsSuperAdmin(action: Action): boolean {
+  const op = (action as { op: string }).op
+  if (op !== 'create_member' && op !== 'update_member') return false
+  const a = action as { role?: unknown; patch?: { role?: unknown } }
+  return a.role === 'super_admin' || a.patch?.role === 'super_admin'
+}
+
+export async function executeActions(
+  tenantId: string,
+  actions: Action[],
+  callerCtx: ApplyContext = { callerRole: 'super_admin' },
+): Promise<ApplyResult> {
   const applied: Action[] = []
   const errors: string[] = []
 
@@ -20,6 +43,14 @@ export async function executeActions(tenantId: string, actions: Action[]): Promi
 
   for (const action of actions) {
     try {
+      // Privilege-escalation guard: assigning the super_admin role requires the
+      // caller to already be super_admin. Covers create_member and (defensively)
+      // any future update_member action. Surfaced per-action so the rest of the
+      // batch still applies.
+      if (grantsSuperAdmin(action) && callerCtx.callerRole !== 'super_admin') {
+        throw new Error('only a super_admin may grant the super_admin role')
+      }
+
       switch (action.op) {
         case 'create_rule':
           await rulesClient.post('/', {

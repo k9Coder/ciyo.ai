@@ -1,23 +1,80 @@
-import { and, eq, gte, count } from 'drizzle-orm'
+import { and, eq, gte, lt, count } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { scans } from '../db/schema.js'
+import { scans, enforcementSignals } from '../db/schema.js'
 import { isOverScanLimit, getScanLimit, type Plan } from '../billing/limits.js'
 import { tenantsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
+import { logger } from '../logger/index.js'
 
-// TODO(infrastructure): The `scans` table has no retention/purge mechanism.
-// Rows accumulate indefinitely — old rows are ignored for billing purposes but
-// are never deleted. This means:
-//   1. The table grows without bound (storage cost).
-//   2. Deleted members' scan rows remain with a dangling memberId FK (schema allows
-//      nullable memberId so no FK error, but personal data persists after erasure).
-//   3. Per GDPR Art. 5(1)(e) (storage limitation), scan metadata constitutes
-//      behavioral personal data and must be purged when it is no longer necessary.
-//
-// Required: a scheduled infrastructure job that purges `scans` rows older than
-// the tenant's configured retention window (default: 90 days).
-// On member deletion, either cascade-delete or anonymize (set memberId = null)
-// that member's scan rows so personal data is actually removed on erasure requests.
+// Retention window for behavioral telemetry (scans + enforcement_signals). Per
+// GDPR Art. 5(1)(e) (storage limitation), this metadata is purged once it is no
+// longer necessary. Pilot policy: 90 days.
+export const PILOT_RETENTION_DAYS = 90
+
+/**
+ * Delete telemetry rows older than PILOT_RETENTION_DAYS across both the `scans`
+ * and `enforcement_signals` tables. Returns per-table deletion counts. Safe to
+ * run repeatedly (idempotent) — scheduled on boot and every 24h.
+ */
+export async function purgeExpired(): Promise<{ scans: number; enforcementSignals: number }> {
+  const cutoff = new Date(Date.now() - PILOT_RETENTION_DAYS * 24 * 60 * 60 * 1000)
+
+  const deletedScans = await db.delete(scans)
+    .where(lt(scans.occurredAt, cutoff))
+    .returning({ id: scans.id })
+  const deletedSignals = await db.delete(enforcementSignals)
+    .where(lt(enforcementSignals.occurredAt, cutoff))
+    .returning({ id: enforcementSignals.id })
+
+  return { scans: deletedScans.length, enforcementSignals: deletedSignals.length }
+}
+
+/**
+ * Erase a member's personal link from retained telemetry by nulling memberId on
+ * their `scans` and `enforcement_signals` rows. Called from the member-deletion
+ * path so behavioral data survives for aggregate/billing purposes but no longer
+ * identifies the erased individual. Returns per-table update counts.
+ */
+export async function anonymizeMember(memberId: string): Promise<{ scans: number; enforcementSignals: number }> {
+  const updatedScans = await db.update(scans)
+    .set({ memberId: null })
+    .where(eq(scans.memberId, memberId))
+    .returning({ id: scans.id })
+  const updatedSignals = await db.update(enforcementSignals)
+    .set({ memberId: null })
+    .where(eq(enforcementSignals.memberId, memberId))
+    .returning({ id: enforcementSignals.id })
+
+  return { scans: updatedScans.length, enforcementSignals: updatedSignals.length }
+}
+
+let retentionTimer: NodeJS.Timeout | null = null
+
+/**
+ * Run the retention purge once immediately, then every 24h. The interval is
+ * `.unref()`'d so it never blocks process shutdown. Idempotent: repeated calls
+ * do not stack timers.
+ */
+export function scheduleRetentionPurge(): void {
+  if (retentionTimer) return
+
+  const runOnce = async (): Promise<void> => {
+    try {
+      const counts = await purgeExpired()
+      logger.info('retention purge complete', {
+        retentionDays: PILOT_RETENTION_DAYS,
+        scansDeleted: counts.scans,
+        enforcementSignalsDeleted: counts.enforcementSignals,
+      })
+    } catch (err) {
+      logger.error('retention purge failed', { error: (err as Error).message })
+    }
+  }
+
+  void runOnce()
+  retentionTimer = setInterval(() => { void runOnce() }, 24 * 60 * 60 * 1000)
+  retentionTimer.unref()
+}
 
 export async function countMonthlyScans(tenantId: string): Promise<number> {
   const start = new Date()
