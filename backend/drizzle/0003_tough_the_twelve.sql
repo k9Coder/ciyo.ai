@@ -20,7 +20,11 @@ CREATE TABLE IF NOT EXISTS "enforcement_signals" (
 	"occurred_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "tenants" ADD COLUMN "fail_mode" "fail_mode" DEFAULT 'open' NOT NULL;--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "tenants" ADD COLUMN "fail_mode" "fail_mode" DEFAULT 'open' NOT NULL;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "enforcement_signals" ADD CONSTRAINT "enforcement_signals_tenant_id_tenants_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION

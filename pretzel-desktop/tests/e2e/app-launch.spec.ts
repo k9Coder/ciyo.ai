@@ -7,9 +7,8 @@
  */
 import { test, expect, _electron as electron } from '@playwright/test'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
-const ROOT = path.resolve(fileURLToPath(import.meta.url), '../../../')
+const ROOT = path.resolve(__dirname, '../../')
 
 test.describe('pretzel-desktop app', () => {
   test('app launches without crashing', async () => {
