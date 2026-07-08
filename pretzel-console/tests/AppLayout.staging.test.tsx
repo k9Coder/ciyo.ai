@@ -9,10 +9,14 @@ vi.mock('@clerk/react', () => ({
 }))
 vi.mock('../src/hooks/usePolicyRealtime', () => ({ usePolicyRealtime: vi.fn() }))
 vi.mock('../src/hooks/useTenant', () => ({ useTenant: vi.fn(() => ({ data: undefined })) }))
+vi.mock('../src/hooks/useMemberships', () => ({ useMemberships: vi.fn(() => ({ data: undefined })) }))
 vi.mock('../src/components/billing/UpgradeBanner', () => ({
   UpgradeBanner: () => null,
   PilotBanner: () => null,
   PlanBadge: () => null,
+}))
+vi.mock('../src/components/layout/EnforcementBanner', () => ({
+  EnforcementBanner: () => null,
 }))
 
 import { AppLayout } from '../src/components/layout/AppLayout'

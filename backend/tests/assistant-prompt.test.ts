@@ -48,9 +48,9 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('CURRENT STATE')
   })
 
-  it('includes member email in CURRENT STATE', () => {
+  it('redacts member email in CURRENT STATE by default (PII stays off third-party LLM prompts)', () => {
     const prompt = buildSystemPrompt(snapshot)
-    expect(prompt).toContain('alice@corp.com')
+    expect(prompt).not.toContain('alice@corp.com')
     expect(prompt).toContain('mem1')
   })
 

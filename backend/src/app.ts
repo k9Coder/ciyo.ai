@@ -31,6 +31,7 @@ import { invitesRouter } from './invites/router.js'
 import { billingRouter } from './billing/router.js'
 import { onboardingRouter } from './onboarding/router.js'
 import { telemetryRouter } from './telemetry/router.js'
+import { meRouter } from './me/router.js'
 // import { handleStripeEvent } from './billing/stripe.js'  // STRIPE DISABLED
 import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypal.js'
 import { requestLoggingPlugin } from './logger/request-logging.js'
@@ -125,6 +126,7 @@ export function buildApp() {
   void app.register(billingRouter,    { prefix: '/v1' })
   void app.register(onboardingRouter, { prefix: '/v1' })
   void app.register(telemetryRouter,  { prefix: '/v1' })
+  void app.register(meRouter,         { prefix: '/v1' })
   void app.register(platformRouter,  { prefix: '/platform/v1' })
   void app.register(clerkWebhookRouter)
 

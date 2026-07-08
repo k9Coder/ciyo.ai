@@ -7,9 +7,14 @@ import { subjects, chatSessions, chatMessages, divisions, teams, members } from 
 import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 
-// Mock the LLM so tests don't hit real APIs
-vi.mock('../src/assistant/llm/anthropic.js', () => ({
-  AnthropicLlmService: class {
+// Pin the provider so intent is explicit; the seam is mocked below regardless.
+process.env.LLM_PROVIDER = 'groq'
+
+// Mock the LLM SEAM (provider-selection module) rather than a concrete provider,
+// so results are env-independent: whatever LLM_PROVIDER is set to, getLlmClient()
+// returns this stub instead of hitting a real API.
+vi.mock('../src/assistant/llm/index.js', () => ({
+  getLlmClient: async () => ({
     async chat(_sys: string, _hist: unknown[], message: string) {
       const m = message.toLowerCase()
 
@@ -32,8 +37,8 @@ vi.mock('../src/assistant/llm/anthropic.js', () => ({
         return { reply: 'Creating a keyword rule.', actions: [{ op: 'create_rule', subjectId: '__SUBJECT_ID__', kind: 'keyword', keywords: ['test'], action: 'block' }] }
 
       return { reply: 'Got it.', actions: [] }
-    }
-  },
+    },
+  }),
 }))
 
 let app: FastifyInstance

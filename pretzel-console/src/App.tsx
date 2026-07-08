@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppLayout } from './components/layout/AppLayout'
 import { RequireAuth } from './components/layout/RequireAuth'
+import { TenantBootstrap } from './components/layout/TenantBootstrap'
 import { LoginPage } from './pages/LoginPage'
 import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { OnboardingPage } from './pages/OnboardingPage'
@@ -40,7 +41,9 @@ export function App() {
           <Route
             element={
               <RequireAuth>
-                <AppLayout />
+                <TenantBootstrap>
+                  <AppLayout />
+                </TenantBootstrap>
               </RequireAuth>
             }
           >

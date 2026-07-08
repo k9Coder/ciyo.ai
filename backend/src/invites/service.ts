@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, count, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { invites, members, tenants, users, type Invite } from '../db/schema.js'
+import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 
 const INVITE_TTL_MS = 72 * 60 * 60 * 1000 // 72 hours
 
@@ -94,32 +95,94 @@ export async function acceptInvite(
     return { member: existing }
   }
 
-  // Atomically mark the invite as used — this prevents the TOCTOU race where
-  // two concurrent accept requests both see usedAt = null and both try to insert
-  // a member, causing a unique constraint violation on tenantEmailUniq.
-  // The UPDATE only succeeds if usedAt is still null; if another concurrent request
-  // won the race, the returning array will be empty and we return 409.
-  const updated = await db.update(invites)
-    .set({ usedAt: now, usedByUserId: userId })
-    .where(and(eq(invites.token, token), isNull(invites.usedAt)))
-    .returning({ id: invites.id, tenantId: invites.tenantId, role: invites.role })
+  // Seat limit is enforced BEFORE we claim the invite AND re-checked inside the
+  // transaction below. Checking here alone isn't enough: the seat count could
+  // change between this check and the claim (another accept lands concurrently),
+  // so the transaction re-check guards the actual window that matters.
+  const [tenant] = await db.select().from(tenants).where(eq(tenants.id, row.tenantId)).limit(1)
+  if (!tenant) return { error: 'Tenant not found' }
+  const plan = tenant.plan as Plan
 
-  if (!updated.length) {
-    // Another concurrent request claimed the invite first
-    return { error: 'Invite already used', statusCode: 409 }
+  const seatCheck = await checkSeatLimit(db, row.tenantId, plan)
+  if (seatCheck) return seatCheck
+
+  // Claim the invite and insert the member inside a single transaction so that a
+  // seat-limit rejection AFTER the claim (re-checked below) rolls the claim back
+  // instead of burning the invite. Everything in this block must use `tx`.
+  // drizzle only rolls back when the callback THROWS — returning an error object
+  // would COMMIT the claim — so rejections inside the transaction are thrown and
+  // translated back into result objects below.
+  try {
+    return await db.transaction(async tx => {
+    // Atomically mark the invite as used — this prevents the TOCTOU race where
+    // two concurrent accept requests both see usedAt = null and both try to insert
+    // a member, causing a unique constraint violation on tenantEmailUniq.
+    // The UPDATE only succeeds if usedAt is still null; if another concurrent request
+    // won the race, the returning array will be empty and we return 409.
+    const updated = await tx.update(invites)
+      .set({ usedAt: now, usedByUserId: userId })
+      .where(and(eq(invites.token, token), isNull(invites.usedAt)))
+      .returning({ id: invites.id, tenantId: invites.tenantId, role: invites.role })
+
+    if (!updated.length) {
+      // Another concurrent request claimed the invite first. Nothing was
+      // modified in this transaction, so throwing vs returning is equivalent;
+      // throw for consistency with the rollback rule above.
+      throw new AcceptRejection({ error: 'Invite already used', statusCode: 409 })
+    }
+
+    const claimed = updated[0]!
+
+    // Re-check the seat limit inside the transaction — a concurrent accept could
+    // have consumed the last seat between the pre-check above and this claim.
+    // Throwing here rolls back the UPDATE above, so the invite is NOT burned.
+    const seatRecheck = await checkSeatLimit(tx, claimed.tenantId, plan)
+    if (seatRecheck) throw new AcceptRejection(seatRecheck)
+
+    const [member] = await tx.insert(members).values({
+      tenantId:    claimed.tenantId,
+      userId,
+      email:       user.email,
+      displayName: user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : undefined,
+      role: claimed.role,
+    }).returning()
+
+    return { member: member! }
+    })
+  } catch (err) {
+    if (err instanceof AcceptRejection) return err.result
+    throw err
   }
+}
 
-  const claimed = updated[0]!
+class AcceptRejection extends Error {
+  constructor(public readonly result: { error: string; statusCode: number }) {
+    super(result.error)
+  }
+}
 
-  const [member] = await db.insert(members).values({
-    tenantId:    claimed.tenantId,
-    userId,
-    email:       user.email,
-    displayName: user.firstName && user.lastName
-      ? `${user.firstName} ${user.lastName}`
-      : undefined,
-    role: claimed.role,
-  }).returning()
+// db.transaction's callback receives a `tx` handle with the same query surface as
+// `db`; this helper accepts either so it can run both outside and inside the transaction.
+type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0]
 
-  return { member: member! }
+async function checkSeatLimit(
+  handle: DbOrTx,
+  tenantId: string,
+  plan: Plan
+): Promise<{ error: string; statusCode: number } | null> {
+  const [countRow] = await handle
+    .select({ n: count() })
+    .from(members)
+    .where(eq(members.tenantId, tenantId))
+  const currentSeats = countRow?.n ?? 0
+  if (isOverSeatLimit(plan, currentSeats)) {
+    const limit = getSeatLimit(plan)
+    return {
+      error: `Seat limit reached (${limit} seats on the ${plan} plan) — ask your admin to remove a member`,
+      statusCode: 402,
+    }
+  }
+  return null
 }

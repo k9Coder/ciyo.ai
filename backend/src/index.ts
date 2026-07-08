@@ -1,6 +1,7 @@
 import { buildApp } from './app.js'
 import { logger } from './logger/index.js'
 import { pingDb } from './db/client.js'
+import { scheduleRetentionPurge } from './scans/service.js'
 
 const port = Number(process.env['PORT'] ?? 3000)
 
@@ -24,3 +25,6 @@ process.on('SIGINT',  close)
 
 await app.listen({ port, host: '0.0.0.0' })
 logger.info(`listening on http://0.0.0.0:${port}`)
+
+// Retention: purge >90d telemetry now and every 24h (interval is .unref()'d).
+scheduleRetentionPurge()

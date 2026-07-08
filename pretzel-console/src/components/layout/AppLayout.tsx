@@ -8,6 +8,8 @@ import { PretzelLogo } from './PretzelLogo'
 import { EnforcementBanner } from './EnforcementBanner'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 import { useTenant } from '../../hooks/useTenant'
+import { useMemberships } from '../../hooks/useMemberships'
+import { getSelectedTenantId, setSelectedTenantId } from '../../lib/tenant'
 import LogRocket from 'logrocket'
 
 const ONBOARDING_BADGE_ENABLED = import.meta.env['VITE_FEATURE_ONBOARDING_BADGE'] === 'true'
@@ -80,6 +82,34 @@ function ThemeToggle() {
       {/* aria-hidden so the emoji character name is not read by screen readers */}
       <span aria-hidden="true">{theme === 'dark' ? '☀' : '🌙'}</span>
     </button>
+  )
+}
+
+function OrgSwitcher() {
+  const { data: memberships } = useMemberships()
+  if (!memberships || memberships.length < 2) return null
+  const selected = getSelectedTenantId() ?? ''
+
+  function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setSelectedTenantId(e.target.value)
+    window.location.assign('/dashboard')
+  }
+
+  return (
+    <select
+      aria-label="Switch organization"
+      value={selected}
+      onChange={onChange}
+      style={{
+        background: 'var(--bg-surface-raised)', color: 'var(--text-primary)',
+        border: '1px solid var(--border)', borderRadius: 6,
+        padding: '5px 8px', fontSize: 12, cursor: 'pointer', maxWidth: 200,
+      }}
+    >
+      {memberships.map(m => (
+        <option key={m.tenantId} value={m.tenantId}>{m.tenantName}</option>
+      ))}
+    </select>
   )
 }
 
@@ -224,6 +254,7 @@ export function AppLayout() {
           background: 'var(--bg-surface)', display: 'flex',
           justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
         }}>
+          <OrgSwitcher />
           <ThemeToggle />
         </div>
 

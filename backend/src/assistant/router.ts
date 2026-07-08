@@ -10,20 +10,8 @@ import { executeActions } from './apply.js'
 import { resolveAffectedSubjectIds } from './versioning.js'
 import { snapshotSubject } from '../subjects/snapshot.js'
 import { PLAN_LIMITS, type Plan } from '../billing/limits.js'
-import type { LlmService, Action } from './llm/interface.js'
-
-async function makeLlmService(): Promise<LlmService> {
-  if (process.env.LLM_PROVIDER === 'openai') {
-    const { OpenAiLlmService } = await import('./llm/openai.js')
-    return new OpenAiLlmService()
-  }
-  if (process.env.LLM_PROVIDER === 'groq') {
-    const { GroqLlmService } = await import('./llm/groq.js')
-    return new GroqLlmService()
-  }
-  const { AnthropicLlmService } = await import('./llm/anthropic.js')
-  return new AnthropicLlmService()
-}
+import type { Action } from './llm/interface.js'
+import { getLlmClient } from './llm/index.js'
 
 export async function countPromptsUsedToday(tenantId: string): Promise<number> {
   const todayStart = new Date()
@@ -42,7 +30,7 @@ export async function countPromptsUsedToday(tenantId: string): Promise<number> {
 }
 
 export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
-  const llm = await makeLlmService()
+  const llm = await getLlmClient()
 
   fastify.post('/assistant/chat', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const plan   = req.tenant.plan as Plan
@@ -102,7 +90,13 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
       affectedIds.map(id => snapshotSubject(req.tenant.id, id, 'pre_ai_apply', messageId))
     )
 
-    const { applied, errors } = await executeActions(req.tenant.id, actions)
+    // Admin-token callers hold org-wide authority (treated as super_admin); Clerk
+    // callers reaching this admin-gated route are already super_admin, but read the
+    // member role explicitly so the guard stays correct if gating ever loosens.
+    const callerRole = req.tokenPrefix === 'ps_adm'
+      ? 'super_admin' as const
+      : (req.member?.role ?? 'member')
+    const { applied, errors } = await executeActions(req.tenant.id, actions, { callerRole })
     await db.update(chatMessages).set({ appliedAt: new Date() }).where(eq(chatMessages.id, messageId))
 
     return { applied, errors }

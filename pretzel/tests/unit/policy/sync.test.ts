@@ -103,3 +103,32 @@ describe('syncPolicy', () => {
     expect(mockLocalSet).not.toHaveBeenCalled()
   })
 })
+
+describe('syncPolicy — Clerk auth path', () => {
+  const CLERK_TOKEN = 'eyJhbGciOiJSUzI1NiJ9.clerk-jwt-payload.sig'
+
+  beforeEach(() => {
+    // No org token — falls back to Clerk session token — with an existing tenant selection.
+    mockLocalGet.mockImplementation((keys: string | string[]) => {
+      const k = Array.isArray(keys) ? keys : [keys]
+      const result: Record<string, unknown> = {}
+      if ((k as string[]).includes('clerkSessionToken')) result['clerkSessionToken'] = CLERK_TOKEN
+      if ((k as string[]).includes('selectedTenantId')) result['selectedTenantId'] = 'tenant-acme'
+      return Promise.resolve(result)
+    })
+  })
+
+  it('includes X-Tenant-Id header on requests for a Clerk-authenticated user with a tenant selected', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ version: 3 }) })
+    await syncPolicy()
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/policy/version'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${CLERK_TOKEN}`,
+          'X-Tenant-Id': 'tenant-acme',
+        }),
+      }),
+    )
+  })
+})

@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useAuth } from '@clerk/react'
 import { api } from '../api'
+import { setSelectedTenantId } from '../lib/tenant'
 
 export function InvitePage() {
   const { token }  = useParams<{ token: string }>()
-  const navigate   = useNavigate()
   const { isSignedIn, isLoaded } = useAuth()
   const [accepted, setAccepted]  = useState(false)
   const [error, setError]        = useState<string | null>(null)
@@ -20,7 +20,13 @@ export function InvitePage() {
 
   const accept = useMutation({
     mutationFn: () => api.invites.accept(token!),
-    onSuccess: () => { setAccepted(true); setTimeout(() => navigate('/dashboard'), 2000) },
+    onSuccess: (member) => {
+      // Pin the newly joined org and land there. Full reload so the (now stale)
+      // memberships cache is rebuilt against the freshly selected tenant.
+      setSelectedTenantId(member.tenantId)
+      setAccepted(true)
+      setTimeout(() => window.location.assign('/dashboard'), 2000)
+    },
     onError: (err: Error) => setError(err.message),
   })
 

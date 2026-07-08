@@ -3,6 +3,12 @@ import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest'
 vi.mock('../../src/policy/auth', () => ({ getAuthToken: vi.fn().mockResolvedValue('tok') }))
 vi.mock('../../src/shared/constants', () => ({ API_BASE: 'https://api.test' }))
 
+vi.stubGlobal('chrome', {
+  storage: {
+    local: { get: vi.fn().mockResolvedValue({}) },
+  },
+})
+
 const originalFetch = global.fetch
 let fetchMock: ReturnType<typeof vi.fn>
 beforeEach(() => { fetchMock = vi.fn(); global.fetch = fetchMock })

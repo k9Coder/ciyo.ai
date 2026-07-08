@@ -1,5 +1,7 @@
 import { PolicyDocSchema } from '@ciyo/detect'
 import { getAuthToken } from './auth'
+import { buildAuthHeaders } from '@/auth/headers'
+import { ensureTenantSelected } from '@/auth/tenant'
 import { API_BASE } from '@/shared/constants'
 
 async function getCachedVersion(): Promise<number | null> {
@@ -12,10 +14,11 @@ export async function syncPolicy(): Promise<void> {
   const token = await getAuthToken()
   if (!token) return
 
+  if (!token.startsWith('ps_')) await ensureTenantSelected(token)
+
   try {
-    const versionRes = await fetch(`${API_BASE}/v1/policy/version`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const headers = await buildAuthHeaders(token)
+    const versionRes = await fetch(`${API_BASE}/v1/policy/version`, { headers })
     if (!versionRes.ok) {
       if (versionRes.status === 402) await chrome.storage.local.set({ subscriptionExpired: true })
       return
@@ -24,9 +27,7 @@ export async function syncPolicy(): Promise<void> {
     const cached = await getCachedVersion()
     if (cached === contentVersion) return
 
-    const policyRes = await fetch(`${API_BASE}/v1/policy`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const policyRes = await fetch(`${API_BASE}/v1/policy`, { headers })
     if (!policyRes.ok) {
       if (policyRes.status === 402) await chrome.storage.local.set({ subscriptionExpired: true })
       return

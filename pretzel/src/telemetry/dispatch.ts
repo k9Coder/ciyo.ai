@@ -1,5 +1,6 @@
 import { API_BASE, EXTENSION_VERSION } from "@/shared/constants";
 import { getAuthToken } from "@/policy/auth";
+import { buildAuthHeaders } from "@/auth/headers";
 import type { EnforcementReason } from "@/shared/messages";
 
 /**
@@ -23,9 +24,10 @@ export async function reportDegraded(hostname: string, reason: EnforcementReason
   const token = await getAuthToken();
   if (!token) return; // unauthenticated — nothing to attribute the signal to
 
+  const authHeaders = await buildAuthHeaders(token);
   fetch(`${API_BASE}/v1/telemetry/enforcement`, {
     method:  "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    headers: { ...authHeaders, "Content-Type": "application/json" },
     body:    JSON.stringify({ hostname, reason, extVersion: EXTENSION_VERSION }),
   }).catch(() => {}); // fire-and-forget
 }
