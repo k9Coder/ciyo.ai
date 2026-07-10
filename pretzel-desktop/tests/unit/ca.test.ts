@@ -8,7 +8,7 @@ import forge from 'node-forge'
 // Mock electron so ca.ts can be imported without a real Electron binary
 vi.mock('electron', () => ({ app: { getPath: vi.fn(() => '/tmp/pretzel-test') } }))
 
-import { generateCACert, signHostCert } from '../../electron/ca'
+import { generateCACert, signHostCert, signHostCertCached, clearHostCertCache } from '../../electron/ca'
 
 describe('generateCACert', () => {
   it('returns certPem, keyPem, and cert object', () => {
@@ -83,5 +83,32 @@ describe('signHostCert', () => {
     const san = cert.getExtension('subjectAltName') as { altNames?: Array<{ type: number; value: string }> } | null
     const hasDns = san?.altNames?.some(n => n.type === 2 && n.value === 'secure.example.com')
     expect(hasDns).toBe(true)
+  })
+})
+
+describe('S8: signHostCertCached', () => {
+  it('reuses the cached cert for repeated calls (no re-keygen)', () => {
+    clearHostCertCache()
+    const ca = generateCACert()
+    const a = signHostCertCached('cache.example.com', ca)
+    const b = signHostCertCached('cache.example.com', ca)
+    expect(b).toBe(a)
+  })
+
+  it('returns a valid host cert on the first call', () => {
+    clearHostCertCache()
+    const ca = generateCACert()
+    const host = signHostCertCached('first.example.com', ca)
+    const cert = forge.pki.certificateFromPem(host.certPem)
+    expect(cert.subject.getField('CN')?.value).toBe('first.example.com')
+  })
+
+  it('rebuilds the cache when the CA changes', () => {
+    clearHostCertCache()
+    const ca1 = generateCACert()
+    const ca2 = generateCACert()
+    const a = signHostCertCached('host.example.com', ca1)
+    const b = signHostCertCached('host.example.com', ca2)
+    expect(b).not.toBe(a)
   })
 })

@@ -199,11 +199,12 @@ test.describe('Invites API', () => {
     const res = await api.get(`${BACKEND}/v1/invites/${invite.token}`)
 
     expect(res.status()).toBe(200)
+    // S3: the preview never echoes the restricted email (targeted-phishing vector).
     const preview = await res.json() as {
-      tenantName: string; role: string; email: string | null; expiresAt: string; valid: boolean
+      tenantName: string; role: string; email?: string; expiresAt: string; valid: boolean
     }
     expect(preview.valid).toBe(true)
-    expect(preview.email).toBe(email)
+    expect(preview.email).toBeUndefined()
     expect(preview.role).toBe('member')
     expect(typeof preview.tenantName).toBe('string')
 
@@ -219,18 +220,23 @@ test.describe('Invites API', () => {
     const res = await api.get(`${BACKEND}/v1/invites/${invite.token}`)
 
     expect(res.status()).toBe(200)
-    const preview = await res.json() as { email: string | null; valid: boolean }
-    expect(preview.email).toBeNull()
+    const preview = await res.json() as { email?: string; valid: boolean }
+    expect(preview.email).toBeUndefined()
     expect(preview.valid).toBe(true)
 
     await deleteInviteByToken(invite.token)
     await api.dispose()
   })
 
-  test('GET /v1/invites/:token returns 404 for an unknown token', async () => {
+  test('GET /v1/invites/:token returns a uniform valid:false body for an unknown token', async () => {
+    // S3: missing tokens return the same 200 { valid:false } body as expired/used ones
+    // so the endpoint does not oracle whether a given token exists.
     const api = await playwrightRequest.newContext()
     const res = await api.get(`${BACKEND}/v1/invites/does-not-exist-${runId()}`)
-    expect(res.status()).toBe(404)
+    expect(res.status()).toBe(200)
+    const preview = await res.json() as { valid: boolean; email?: string }
+    expect(preview.valid).toBe(false)
+    expect(preview.email).toBeUndefined()
     await api.dispose()
   })
 
@@ -246,9 +252,10 @@ test.describe('Invites API', () => {
     const res = await api.get(`${BACKEND}/v1/invites/${invite.token}`)
 
     expect(res.status()).toBe(200)
-    const preview = await res.json() as { valid: boolean; expiresAt: string }
+    // S3: invalid invites return a uniform body — valid:false, no detail leaked.
+    const preview = await res.json() as { valid: boolean; email?: string }
     expect(preview.valid).toBe(false)
-    expect(new Date(preview.expiresAt).getTime()).toBeLessThan(Date.now())
+    expect(preview.email).toBeUndefined()
 
     await deleteInviteByToken(invite.token)
     await api.dispose()
@@ -273,7 +280,7 @@ test.describe('Invites API', () => {
     await api.dispose()
   })
 
-  test('GET /v1/invites/:token preview surfaces the restricted email so a client can warn before accept', async () => {
+  test('GET /v1/invites/:token does NOT surface the restricted email (S3 anti-phishing)', async () => {
     const { tenantId } = getSeedState()
     const restrictedEmail = `invite-restricted-${runId()}@e2e.test`
     const invite = await seedInvite({ tenantId, email: restrictedEmail, role: 'division_admin' })
@@ -282,8 +289,9 @@ test.describe('Invites API', () => {
     const res = await api.get(`${BACKEND}/v1/invites/${invite.token}`)
 
     expect(res.status()).toBe(200)
-    const preview = await res.json() as { email: string | null; role: string; valid: boolean }
-    expect(preview.email).toBe(restrictedEmail)
+    const preview = await res.json() as { email?: string; role: string; valid: boolean }
+    // The email must not be exposed to an unauthenticated caller; accept re-checks it.
+    expect(preview.email).toBeUndefined()
     expect(preview.role).toBe('division_admin')
     expect(preview.valid).toBe(true)
 

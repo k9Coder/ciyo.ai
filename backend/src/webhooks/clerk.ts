@@ -68,10 +68,11 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
           const autoPlan = process.env.PILOT_MODE === 'true' ? 'pilot' : 'free'
 
           const [tenant] = await db.insert(tenants).values({
-            name:           `${first_name ?? localPart}'s Organization`,
-            orgTokenHash:   await hashToken(orgSecret),
-            adminTokenHash: await hashToken(adminSecret),
-            plan:           autoPlan,
+            name:            `${first_name ?? localPart}'s Organization`,
+            orgTokenHash:    await hashToken(orgSecret),
+            adminTokenHash:  await hashToken(adminSecret),
+            plan:            autoPlan,
+            autoProvisioned: true,
           }).returning({ id: tenants.id })
 
           await db.insert(members).values({

@@ -10,7 +10,7 @@ import {
 
 export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
   // Client (extension) reports a degraded-enforcement event. No prompt content.
-  fastify.post('/telemetry/enforcement', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
+  fastify.post('/telemetry/enforcement', { preHandler: requireOrgTokenOrClerkAuth, bodyLimit: 8 * 1024 }, async (req, reply) => {
     const body = req.body as { hostname?: string; reason?: string; extVersion?: string }
 
     if (!body.hostname || typeof body.hostname !== 'string') {

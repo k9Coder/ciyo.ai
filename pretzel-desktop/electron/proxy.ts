@@ -21,7 +21,7 @@ import tls from 'tls'
 import { EventEmitter } from 'events'
 import { detectPrompt } from '@ciyo/detect'
 import type { Policy, DetectionResult } from '@ciyo/detect'
-import { signHostCert, type CACert } from './ca'
+import { signHostCertCached, type CACert } from './ca'
 
 export const PROXY_PORT = 18888
 
@@ -126,7 +126,7 @@ export class PretzelProxy extends EventEmitter {
 
     let hostCert: { certPem: string; keyPem: string }
     try {
-      hostCert = signHostCert(hostname, this.ca)
+      hostCert = signHostCertCached(hostname, this.ca)
     } catch {
       this.blindTunnel(hostname, port, clientSocket, head)
       return

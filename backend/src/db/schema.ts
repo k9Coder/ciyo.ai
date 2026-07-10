@@ -43,6 +43,11 @@ export const tenants = pgTable('tenants', {
   professionFollowUp:        text('profession_follow_up'),
   onboardingWizardCompleted: boolean('onboarding_wizard_completed').notNull().default(false),
   failMode:                  failModeEnum('fail_mode').notNull().default('open'),
+  // True when this tenant was auto-created for a user who signed up WITHOUT an invite
+  // (see webhooks/clerk). Invited users end up with both their personal auto-tenant and
+  // the org they joined; clients must prefer the non-auto-provisioned org so enforcement
+  // and telemetry land in the employer's tenant, not the empty personal one.
+  autoProvisioned:           boolean('auto_provisioned').notNull().default(false),
   createdAt:                 timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
