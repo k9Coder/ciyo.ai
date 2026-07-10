@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { eq } from 'drizzle-orm'
+import { eq, asc } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { db } from '../db/client.js'
 import { members, users, tenants } from '../db/schema.js'
@@ -25,11 +25,20 @@ export async function meRouter(fastify: FastifyInstance): Promise<void> {
     const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
     if (!user) return reply.status(401).send({ error: 'User not found — sign up first' })
 
+    // Deterministic order: real (invited) orgs before auto-provisioned personal tenants,
+    // oldest first within each group. Clients default to the first membership, so this
+    // makes an invited employee land on the employer's org, not their empty auto-tenant.
     const rows = await db
-      .select({ tenantId: tenants.id, tenantName: tenants.name, role: members.role })
+      .select({
+        tenantId:        tenants.id,
+        tenantName:      tenants.name,
+        role:            members.role,
+        autoProvisioned: tenants.autoProvisioned,
+      })
       .from(members)
       .innerJoin(tenants, eq(members.tenantId, tenants.id))
       .where(eq(members.userId, user.id))
+      .orderBy(asc(tenants.autoProvisioned), asc(tenants.createdAt))
 
     return { memberships: rows }
   })

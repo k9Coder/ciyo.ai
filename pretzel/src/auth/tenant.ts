@@ -17,6 +17,7 @@ export interface TenantMembership {
   tenantId: string;
   tenantName: string;
   role: string;
+  autoProvisioned?: boolean;
 }
 
 interface MembershipsResponse {
@@ -46,12 +47,26 @@ async function clearSelectedTenant(): Promise<void> {
 }
 
 /**
+ * Picks the tenant a client should default to from a membership list.
+ *
+ * Prefers the first NON-auto-provisioned org (the employer a user was invited to)
+ * over an auto-provisioned personal tenant, so an invited employee enforces the
+ * employer's policy instead of their empty personal org. Falls back to the first
+ * entry when every membership is auto-provisioned. `/v1/me/memberships` already
+ * returns real orgs first, so `[0]` is usually correct — this is belt-and-suspenders.
+ */
+function preferredTenantId(memberships: TenantMembership[]): string {
+  const real = memberships.find(m => !m.autoProvisioned);
+  return (real ?? memberships[0]!).tenantId;
+}
+
+/**
  * Ensures a tenant is selected for the given Clerk JWT.
  *
  * - 0 memberships: clears any stored selection.
- * - 1 membership: auto-selects it.
- * - >1 memberships: selects the first and stores the full list so the UI
- *   can offer a switcher later.
+ * - An existing selection that is still a valid membership is KEPT (never clobbered
+ *   on refresh — this is what let the old code silently reset a user's org choice).
+ * - Otherwise selects the preferred (non-auto-provisioned) membership.
  *
  * Debounced/cached so it doesn't hit the network on every request — callers
  * should invoke this on sign-in and on policy sync, not per-request.
@@ -75,17 +90,14 @@ export async function ensureTenantSelected(token: string, options?: { force?: bo
         return;
       }
 
-      if (memberships.length === 1) {
-        await chrome.storage.local.set({
-          [STORAGE_SELECTED_TENANT_KEY]: memberships[0].tenantId,
-          [STORAGE_MEMBERSHIPS_KEY]: memberships,
-        });
+      // Keep a still-valid existing selection; only refresh the stored list.
+      if (existing && memberships.some(m => m.tenantId === existing)) {
+        await chrome.storage.local.set({ [STORAGE_MEMBERSHIPS_KEY]: memberships });
         return;
       }
 
-      // >1 memberships: select the first, store the full list for a future switcher UI.
       await chrome.storage.local.set({
-        [STORAGE_SELECTED_TENANT_KEY]: memberships[0].tenantId,
+        [STORAGE_SELECTED_TENANT_KEY]: preferredTenantId(memberships),
         [STORAGE_MEMBERSHIPS_KEY]: memberships,
       });
     } catch {

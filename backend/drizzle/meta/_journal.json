@@ -29,6 +29,13 @@
       "when": 1783373342119,
       "tag": "0003_tough_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783697329725,
+      "tag": "0004_legal_korath",
+      "breakpoints": true
     }
   ]
 }

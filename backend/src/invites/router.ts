@@ -32,16 +32,33 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
     })
   })
 
-  // Public — returns invite preview for the landing page (no auth required)
-  fastify.get('/invites/:token', async (req, reply) => {
+  // Public — returns invite preview for the landing page (no auth required).
+  // Tight per-IP limit: unauthenticated + enumerable, so throttle brute force.
+  fastify.get('/invites/:token', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (req) => {
     const { token } = req.params as { token: string }
     const preview = await getInvitePreview(token)
-    if (!preview) return reply.status(404).send({ error: 'Invite not found' })
-    return preview
+    // Never expose the restricted email to an unauthenticated caller (targeted-phishing
+    // vector), and collapse missing/used/expired into one uniform body so the endpoint
+    // does not oracle whether a given token exists. The accept flow re-checks the email
+    // server-side, so nothing downstream depends on it being echoed here.
+    if (!preview || !preview.valid) {
+      return { tenantName: '', role: '', expiresAt: '', valid: false }
+    }
+    return {
+      tenantName: preview.tenantName,
+      role:       preview.role,
+      expiresAt:  preview.expiresAt,
+      valid:      true,
+    }
   })
 
   // Authenticated user accepts an invite
-  fastify.post('/invites/:token/accept', { preHandler: requireClerkAuth }, async (req, reply) => {
+  fastify.post('/invites/:token/accept', {
+    preHandler: requireClerkAuth,
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (req, reply) => {
     const { token } = req.params as { token: string }
     if (!req.user) return reply.status(401).send({ error: 'Not authenticated' })
     const result = await acceptInvite(token, req.user.id)

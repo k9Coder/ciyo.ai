@@ -1,0 +1,1 @@
+ALTER TABLE "tenants" ADD COLUMN "auto_provisioned" boolean DEFAULT false NOT NULL;

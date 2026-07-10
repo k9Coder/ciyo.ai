@@ -55,6 +55,30 @@ describe('ensureTenantSelected', () => {
     })
   })
 
+  it('prefers the non-auto-provisioned org over the personal auto-tenant', async () => {
+    const memberships = [
+      { tenantId: 'tenant-personal', tenantName: 'Personal', role: 'super_admin', autoProvisioned: true },
+      { tenantId: 'tenant-org', tenantName: 'Acme', role: 'member', autoProvisioned: false },
+    ]
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ memberships }) })
+    await ensureTenantSelected(TOKEN, { force: true })
+    expect(mockLocalSet).toHaveBeenCalledWith({ selectedTenantId: 'tenant-org', memberships })
+  })
+
+  it('keeps a still-valid existing selection instead of clobbering it on refresh', async () => {
+    mockLocalGet.mockResolvedValue({ selectedTenantId: 'tenant-personal' })
+    const memberships = [
+      { tenantId: 'tenant-org', tenantName: 'Acme', role: 'member', autoProvisioned: false },
+      { tenantId: 'tenant-personal', tenantName: 'Personal', role: 'super_admin', autoProvisioned: true },
+    ]
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ memberships }) })
+    await ensureTenantSelected(TOKEN, { force: true })
+    expect(mockLocalSet).toHaveBeenCalledWith({ memberships })
+    expect(mockLocalSet).not.toHaveBeenCalledWith(
+      expect.objectContaining({ selectedTenantId: expect.anything() }),
+    )
+  })
+
   it('clears the selection when 0 memberships are returned', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,

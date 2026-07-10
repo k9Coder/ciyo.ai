@@ -76,6 +76,32 @@ export function signHostCert(hostname: string, ca: CACert): { certPem: string; k
   }
 }
 
+// Per-host cert cache. Signing a cert generates a fresh 2048-bit RSA keypair, which
+// is CPU-heavy; without caching a page can fan out CONNECTs to many hostnames and peg
+// the user's machine. Certs are stable for a session, so memoize by hostname. Reset
+// when the CA changes so we never serve a host cert signed by a stale CA.
+const hostCertCache = new Map<string, { certPem: string; keyPem: string }>()
+let hostCertCacheCaPem: string | null = null
+
+/** Cached wrapper around signHostCert — use this on the proxy hot path. */
+export function signHostCertCached(hostname: string, ca: CACert): { certPem: string; keyPem: string } {
+  if (hostCertCacheCaPem !== ca.certPem) {
+    hostCertCache.clear()
+    hostCertCacheCaPem = ca.certPem
+  }
+  const cached = hostCertCache.get(hostname)
+  if (cached) return cached
+  const fresh = signHostCert(hostname, ca)
+  hostCertCache.set(hostname, fresh)
+  return fresh
+}
+
+/** Clear the per-host cert cache (e.g. on CA rotation or shutdown). */
+export function clearHostCertCache(): void {
+  hostCertCache.clear()
+  hostCertCacheCaPem = null
+}
+
 /** Persist CA cert PEM to app user data dir. */
 export function saveCACertFile(certPem: string): string {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

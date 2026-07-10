@@ -2,6 +2,9 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant, buildTestUser, buildTestMember } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
+import { db } from '../src/db/client.js'
+import { tenants, members } from '../src/db/schema.js'
+import { hashToken, generateSecret } from '../src/auth/tokens.js'
 import type { FastifyInstance } from 'fastify'
 
 const MOCK_CLERK_USER_ID = 'user_test_alice'
@@ -61,6 +64,30 @@ describe('GET /v1/me/memberships', () => {
     expect(res.body.memberships).toHaveLength(2)
     const tenantIds = res.body.memberships.map((m: { tenantId: string }) => m.tenantId)
     expect(tenantIds).toEqual(expect.arrayContaining([tenantA, tenantB]))
+  })
+
+  it('S4: orders real orgs before auto-provisioned tenants and returns the flag', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'alice@acme.com')
+    // Auto-provisioned personal tenant (as the Clerk webhook would create at signup).
+    const [personal] = await db.insert(tenants).values({
+      name:            "Alice's Organization",
+      orgTokenHash:    await hashToken(generateSecret()),
+      adminTokenHash:  await hashToken(generateSecret()),
+      plan:            'pilot',
+      autoProvisioned: true,
+    }).returning({ id: tenants.id })
+    await db.insert(members).values({ tenantId: personal!.id, userId: user.id, email: user.email, role: 'super_admin' })
+    // Real org the user was invited to (buildTestTenant leaves autoProvisioned = false).
+    const { tenantId: orgId } = await buildTestTenant('acme')
+    await buildTestMember(orgId, user)
+
+    const res = await supertest(app.server)
+      .get('/v1/me/memberships')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(200)
+    expect(res.body.memberships).toHaveLength(2)
+    expect(res.body.memberships[0]).toMatchObject({ tenantId: orgId, autoProvisioned: false })
+    expect(res.body.memberships[1]).toMatchObject({ tenantId: personal!.id, autoProvisioned: true })
   })
 
   it('returns an empty array for a user with no memberships', async () => {

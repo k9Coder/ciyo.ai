@@ -32,7 +32,11 @@ export async function countPromptsUsedToday(tenantId: string): Promise<number> {
 export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
   const llm = await getLlmClient()
 
-  fastify.post('/assistant/chat', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
+  fastify.post('/assistant/chat', {
+    preHandler: requireAdminTokenOrClerkAdmin,
+    // LLM calls cost money — cap bursts per tenant on top of the daily plan limit.
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (req, reply) => {
     const plan   = req.tenant.plan as Plan
     const limits = PLAN_LIMITS[plan]
 

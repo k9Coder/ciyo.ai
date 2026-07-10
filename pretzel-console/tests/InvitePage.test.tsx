@@ -31,7 +31,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useAuth).mockReturnValue({ isSignedIn: true, isLoaded: true } as any)
   vi.mocked(api.invites.preview).mockResolvedValue({
-    tenantName: 'Acme', role: 'member', email: null,
+    tenantName: 'Acme', role: 'member',
     expiresAt: new Date(Date.now() + 86400000).toISOString(), valid: true,
   } as any)
 })

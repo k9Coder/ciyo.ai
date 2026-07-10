@@ -3,7 +3,7 @@ import { requireOrgTokenOrClerkAuth } from '../auth/middleware.js'
 import { recordScan } from './service.js'
 
 export async function scansRouter(fastify: FastifyInstance): Promise<void> {
-  fastify.post('/scans', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
+  fastify.post('/scans', { preHandler: requireOrgTokenOrClerkAuth, bodyLimit: 4 * 1024 }, async (req, reply) => {
     const memberId = req.member?.id ?? null
     const result   = await recordScan(req.tenant.id, memberId)
 

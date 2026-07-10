@@ -105,9 +105,6 @@ export function InvitePage() {
         <p style={{ ...titleStyle, fontSize: 26 }}>{preview.tenantName}</p>
         <p style={subtitleStyle}>
           Role: <strong style={{ color: 'var(--text-primary, #e8eaf0)' }}>{roleLabel}</strong>
-          {preview.email && (
-            <> · Restricted to <strong style={{ color: 'var(--text-primary, #e8eaf0)' }}>{preview.email}</strong></>
-          )}
         </p>
         <p style={{ ...subtitleStyle, fontSize: 11 }}>
           Expires {new Date(preview.expiresAt).toLocaleDateString()}

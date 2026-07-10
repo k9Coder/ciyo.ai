@@ -224,6 +224,20 @@ describe('POST /v1/invites', () => {
   })
   afterAll(async () => { await app.close() })
 
+  it('S3: preview never leaks the restricted email and hides token existence', async () => {
+    const { token } = await createInvite(tenantId, null, { email: 'secret@example.com', role: 'member' })
+
+    const ok = await supertest(app.server).get(`/v1/invites/${token}`)
+    expect(ok.status).toBe(200)
+    expect(ok.body.valid).toBe(true)
+    expect(ok.body.tenantName).toBeTruthy()
+    expect(ok.body.email).toBeUndefined()
+
+    const missing = await supertest(app.server).get('/v1/invites/does-not-exist')
+    expect(missing.status).toBe(200)
+    expect(missing.body).toEqual({ tenantName: '', role: '', expiresAt: '', valid: false })
+  })
+
   it('rejects an unknown role with 400', async () => {
     // requireAdminTokenOrClerkAdmin only lets a Clerk caller reach the route handler
     // if they are already super_admin (req.member?.role !== 'super_admin' -> 403 at

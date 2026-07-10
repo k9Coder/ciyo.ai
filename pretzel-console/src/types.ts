@@ -239,7 +239,6 @@ export interface EnforcementSummary {
 export interface InvitePreview {
   tenantName: string
   role:       string
-  email:      string | null
   expiresAt:  string
   valid:      boolean
 }
