@@ -131,6 +131,9 @@ jobs:
           # to the backend on :3000 — must present the same secret the backend expects.
           INTERNAL_SECRET: test-secret-e2e-32chars-minimum-xxxx
           CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
+          # seed:e2e boots backend modules whose env validation requires this —
+          # the webhook route itself is not exercised by the suite.
+          CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
           E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
