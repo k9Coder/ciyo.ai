@@ -1,5 +1,5 @@
 /** Structured logger that is silenced in production builds. */
-const IS_DEV = import.meta.env.DEV;
+import { IS_DEV } from "../env";
 
 const prefix = "[ciyo]";
 

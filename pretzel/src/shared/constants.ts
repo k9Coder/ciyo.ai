@@ -1,12 +1,13 @@
 import packageJson from "../../package.json";
+import { env } from "../env";
 
 export const EXTENSION_NAME = "ciyo";
 /** Single source of truth: version is read from package.json (also used by manifest.config.ts). */
 export const EXTENSION_VERSION = packageJson.version;
 
 /** Backend API */
-export const API_BASE = import.meta.env.VITE_API_BASE as string | undefined ?? "https://api.ciyo.ai";
-export const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
+export const API_BASE = env.VITE_API_BASE;
+export const CLERK_PUBLISHABLE_KEY = env.VITE_CLERK_PUBLISHABLE_KEY;
 
 /**
  * Chrome storage keys — intentionally kept with promptshield_ prefix
