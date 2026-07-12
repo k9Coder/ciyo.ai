@@ -1,13 +1,14 @@
 import axios, { type AxiosInstance } from 'axios'
 import { getContext } from '../context/request-context.js'
 import { logger } from '../logger/index.js'
+import { env } from '../env.js'
 
 function createClient(path: string): AxiosInstance {
   const client = axios.create({ timeout: 5000 })
 
   client.interceptors.request.use(config => {
-    const base   = process.env['INTERNAL_API_URL'] ?? 'http://localhost:3000'
-    const secret = process.env['INTERNAL_SECRET']  ?? ''
+    const base   = env.INTERNAL_API_URL ?? 'http://localhost:3000'
+    const secret = env.INTERNAL_SECRET
     config.baseURL = `${base}${path}`
     const ctx = getContext()
     config.headers['X-Internal-Secret'] = secret

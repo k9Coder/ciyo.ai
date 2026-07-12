@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAdminTokenOrClerkAdmin, requireClerkAuth } from '../auth/middleware.js'
 import { createInvite, getInvitePreview, acceptInvite } from './service.js'
+import { env } from '../env.js'
 
-const BASE_URL = process.env.ADMIN_BASE_URL ?? 'http://localhost:5173'
+const BASE_URL = env.ADMIN_BASE_URL ?? 'http://localhost:5173'
 
 const ALLOWED_ROLES = ['member', 'division_admin', 'super_admin'] as const
 type InviteRole = (typeof ALLOWED_ROLES)[number]

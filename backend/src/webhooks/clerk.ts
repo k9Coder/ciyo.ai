@@ -4,6 +4,7 @@ import { db } from '../db/client.js'
 import { tenants, members } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
 import { usersClient } from '../http/internal-client.js'
+import { env } from '../env.js'
 import type { FastifyInstance } from 'fastify'
 
 type ClerkWebhookEvent =
@@ -13,7 +14,7 @@ type ClerkWebhookEvent =
 
 export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void> {
   fastify.post('/webhooks/clerk', async (req, reply) => {
-    const secret = process.env.CLERK_WEBHOOK_SECRET
+    const secret = env.CLERK_WEBHOOK_SECRET
     if (!secret) return reply.status(500).send({ error: 'Webhook secret not configured' })
 
     let event: ClerkWebhookEvent
@@ -65,7 +66,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
           const orgSecret   = generateSecret()
           const adminSecret = generateSecret()
 
-          const autoPlan = process.env.PILOT_MODE === 'true' ? 'pilot' : 'free'
+          const autoPlan = env.PILOT_MODE === 'true' ? 'pilot' : 'free'
 
           const [tenant] = await db.insert(tenants).values({
             name:            `${first_name ?? localPart}'s Organization`,

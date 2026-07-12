@@ -3,8 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 // vitest loads backend/.env.test (see vitest.config.ts `env:`), so required
 // vars are present by default; individual tests knock them out via stubEnv.
 describe('env', () => {
-  beforeEach(() => vi.resetModules())
-  afterEach(() => vi.unstubAllEnvs())
+  beforeEach(() => {
+    vi.resetModules()
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
 
   it('parses a valid environment with defaults applied', async () => {
     const { env } = await import('./env.js')

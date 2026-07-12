@@ -38,6 +38,7 @@ import { meRouter } from './me/router.js'
 import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypal.js'
 import { requestLoggingPlugin } from './logger/request-logging.js'
 import { logger } from './logger/index.js'
+import { env } from './env.js'
 
 /**
  * Client-facing error body. 5xx (and untagged) errors must not leak internal
@@ -58,22 +59,21 @@ export function buildErrorBody(
 
 export function buildApp() {
   // Guard: CORS_ORIGIN must be set explicitly in production — never default to wildcard
-  if (process.env['NODE_ENV'] === 'production' && !process.env['CORS_ORIGIN']) {
+  if (env.NODE_ENV === 'production' && !env.CORS_ORIGIN) {
     throw new Error('CORS_ORIGIN env var must be set in production')
   }
 
   // Guard: INTERNAL_SECRET gates the privileged /internal/* mesh, which trusts the
   // X-Tenant-ID header outright. An empty/short secret means an internet caller can
   // reach it (see docs/PILOT_SECURITY_REVIEW). Refuse to boot misconfigured in prod.
-  if (process.env['NODE_ENV'] === 'production'
-      && (!process.env['INTERNAL_SECRET'] || process.env['INTERNAL_SECRET'].length < 32)) {
+  if (env.NODE_ENV === 'production' && env.INTERNAL_SECRET.length < 32) {
     throw new Error('INTERNAL_SECRET env var must be set (>=32 chars) in production')
   }
 
-  const corsOrigin = process.env['CORS_ORIGIN']
-    ? process.env['CORS_ORIGIN'].split(',')
-    : (process.env['NODE_ENV'] === 'test' ? true : ['https://console.ciyo.ai'])
-  const app = Fastify({ logger: process.env.NODE_ENV !== 'test', trustProxy: true })
+  const corsOrigin = env.CORS_ORIGIN
+    ? env.CORS_ORIGIN.split(',')
+    : (env.NODE_ENV === 'test' ? true : ['https://console.ciyo.ai'])
+  const app = Fastify({ logger: env.NODE_ENV !== 'test', trustProxy: true })
   void app.register(cors, {
     origin:      corsOrigin,
     credentials: true,
@@ -94,11 +94,11 @@ export function buildApp() {
   // requests are keyed by tenant (X-Tenant-Id) so one corporate NAT IP can't starve a
   // whole org; unauthenticated requests fall back to client IP. Per-route tighter
   // buckets are set on the abuse-prone routes via their own `config.rateLimit`.
-  if (process.env['RATE_LIMIT_DISABLED'] !== 'true') {
+  if (env.RATE_LIMIT_DISABLED !== 'true') {
     void app.register(rateLimit, {
       global:     true,
-      max:        Number(process.env['RATE_LIMIT_MAX'] ?? 100),
-      timeWindow: process.env['RATE_LIMIT_WINDOW'] ?? '1 minute',
+      max:        Number(env.RATE_LIMIT_MAX ?? 100),
+      timeWindow: env.RATE_LIMIT_WINDOW ?? '1 minute',
       keyGenerator: (req) => (req.headers['x-tenant-id'] as string) || req.ip,
       // Never throttle the health check — uptime monitors poll it frequently.
       allowList: (req) => req.url === '/health' || req.url.startsWith('/health?'),
@@ -122,7 +122,7 @@ export function buildApp() {
     requestContext.run({ traceId, isM2M: req.headers['x-m2m'] === 'true' }, done)
   })
 
-  const INTERNAL_SECRET = process.env['INTERNAL_SECRET'] ?? ''
+  const INTERNAL_SECRET = env.INTERNAL_SECRET
   app.addHook('onRequest', async (req, reply) => {
     if (!req.url.startsWith('/internal/')) return
     const provided = req.headers['x-internal-secret']

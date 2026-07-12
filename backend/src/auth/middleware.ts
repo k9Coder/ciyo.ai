@@ -5,6 +5,7 @@ import { parseToken, compareToken } from './tokens.js'
 import { db } from '../db/client.js'
 import { members, users, tenants } from '../db/schema.js'
 import type { Tenant } from '../db/schema.js'
+import { env } from '../env.js'
 
 const _tenantCache = new Map<string, { data: Tenant; expiresAt: number }>()
 
@@ -54,7 +55,7 @@ export async function resolveClerkJwt(
   reply: FastifyReply,
   token: string
 ): Promise<void> {
-  const secretKey = process.env.CLERK_SECRET_KEY
+  const secretKey = env.CLERK_SECRET_KEY
   if (!secretKey) {
     return reply.status(500).send({ error: 'Clerk not configured' })
   }
@@ -143,7 +144,7 @@ export async function requirePlatformAdmin(req: FastifyRequest, reply: FastifyRe
     return reply.status(401).send({ error: 'Missing bearer token' })
   }
 
-  const secretKey = process.env.CLERK_SECRET_KEY
+  const secretKey = env.CLERK_SECRET_KEY
   if (!secretKey) return reply.status(500).send({ error: 'Clerk not configured' })
 
   let clerkUserId: string

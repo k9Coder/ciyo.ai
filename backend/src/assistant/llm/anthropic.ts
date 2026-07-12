@@ -1,11 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions, Action } from './interface.js'
+import { env } from '../../env.js'
 
 export class AnthropicLlmService implements LlmService {
   private client: Anthropic
 
   constructor() {
-    this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
   }
 
   async chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse> {

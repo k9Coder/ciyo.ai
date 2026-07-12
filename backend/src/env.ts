@@ -51,6 +51,7 @@ const schema = z.object({
   RATE_LIMIT_WINDOW: z.string().optional(),
 })
 
+// Fail fast at import: the server must not boot with a missing/invalid env.
 const parsed = schema.safeParse(process.env)
 if (!parsed.success) {
   const issues = parsed.error.issues
@@ -59,6 +60,22 @@ if (!parsed.success) {
   throw new Error(`Invalid environment — fix .env or deployment config:\n${issues}`)
 }
 
+type Env = z.infer<typeof schema>
+
+// Live read-through, not a frozen snapshot: integration tests mutate
+// process.env at runtime (tests/helpers/setup.ts points INTERNAL_API_URL at the
+// in-process app's ephemeral port; others flip NODE_ENV). Each access
+// re-validates the single field so coercion and defaults still apply.
 // Boolean-ish vars (RATE_LIMIT_DISABLED, PILOT_MODE, PAYPAL_SANDBOX, …) stay
 // strings on purpose — call sites compare `=== 'true'`.
-export const env = parsed.data
+export const env = new Proxy({} as Env, {
+  get(_target, key) {
+    if (typeof key !== 'string' || !(key in schema.shape)) return undefined
+    const field = schema.shape[key as keyof typeof schema.shape]
+    const result = field.safeParse(process.env[key])
+    if (!result.success) {
+      throw new Error(`Invalid environment: ${key}: ${result.error.issues[0]?.message ?? 'invalid'}`)
+    }
+    return result.data
+  },
+}) as Env
