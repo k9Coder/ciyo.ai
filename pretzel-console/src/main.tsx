@@ -2,7 +2,8 @@ import { initSentry } from './lib/sentry'
 initSentry()
 
 import LogRocket from 'logrocket'
-const LOGROCKET_ID = import.meta.env['VITE_LOGROCKET_ID'] as string | undefined
+import { env } from './env'
+const LOGROCKET_ID = env.VITE_LOGROCKET_ID
 if (LOGROCKET_ID) LogRocket.init(LOGROCKET_ID)
 
 import React from 'react'
@@ -14,7 +15,7 @@ import { initTheme } from './utils/theme'
 
 initTheme()
 
-const CLERK_KEY = import.meta.env['VITE_CLERK_PUBLISHABLE_KEY'] as string
+const CLERK_KEY = env.VITE_CLERK_PUBLISHABLE_KEY
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -11,8 +11,9 @@ import { useTenant } from '../../hooks/useTenant'
 import { useMemberships } from '../../hooks/useMemberships'
 import { getSelectedTenantId, setSelectedTenantId } from '../../lib/tenant'
 import LogRocket from 'logrocket'
+import { env } from '../../env'
 
-const ONBOARDING_BADGE_ENABLED = import.meta.env['VITE_FEATURE_ONBOARDING_BADGE'] === 'true'
+const ONBOARDING_BADGE_ENABLED = env.VITE_FEATURE_ONBOARDING_BADGE === 'true'
 
 function OnboardingBadge() {
   const { data: tenant } = useTenant()
@@ -151,7 +152,7 @@ export function AppLayout() {
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
               by ciyo.ai
             </div>
-            {import.meta.env['VITE_APP_ENV'] === 'staging' && (
+            {env.VITE_APP_ENV === 'staging' && (
               <div style={{
                 display: 'inline-block', marginTop: 5,
                 background: '#f59e0b', color: '#fff',
