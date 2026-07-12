@@ -823,11 +823,7 @@ Content requirements (source of truth = spec sections 1-3; copy the tables, don'
 
 - [ ] **Step 2: Link from docs index**
 
-In `docs/index.md`, under the operations/link section that contains `[Release process](operations/release-process.md)`, add:
-
-```markdown
-- [Environments & secrets](ENVIRONMENT_AND_SECRETS.md)
-```
+In `docs/index.md`, under the Operations section (the one listing the release process page), add a line linking `ENVIRONMENT_AND_SECRETS.md` with the label "Environments & secrets".
 
 - [ ] **Step 3: Docs check + commit**
 
