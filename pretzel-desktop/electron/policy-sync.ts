@@ -7,9 +7,10 @@
 import { PolicyDocSchema, bridgePolicy } from '@ciyo/detect'
 import type { Policy, PolicyDoc } from '@ciyo/detect'
 import { loadToken } from './auth'
+import { env } from './env'
 
 const SYNC_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes — same as extension
-const CIYO_API_BASE = process.env.CIYO_API_URL ?? 'https://api.ciyo.ai'
+const CIYO_API_BASE = env.CIYO_API_URL
 
 type PolicyUpdateCallback = (policy: Policy) => void
 

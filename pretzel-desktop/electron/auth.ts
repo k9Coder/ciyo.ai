@@ -16,6 +16,7 @@ import crypto from 'crypto'
 import { app, shell } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { env } from './env'
 
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT_TOKEN = 'session-token'
@@ -145,8 +146,8 @@ function startCallbackServer(): Promise<{ port: number; codePromise: Promise<str
 
 // ─── Main sign-in flow ─────────────────────────────────────────────────────
 
-const CIYO_API_BASE = process.env.CIYO_API_URL ?? 'https://api.ciyo.ai'
-const CLERK_PUBLISHABLE_KEY = process.env.CLERK_PUBLISHABLE_KEY ?? ''
+const CIYO_API_BASE = env.CIYO_API_URL
+const CLERK_PUBLISHABLE_KEY = env.CLERK_PUBLISHABLE_KEY
 
 export async function signIn(): Promise<{ token: string; tenantId: string }> {
   const { verifier, challenge } = generatePKCE()
