@@ -3,8 +3,9 @@ import path from 'path'
 import { adminHeaders } from '../helpers/admin-headers.js'
 import { orgHeaders } from '../helpers/org-headers.js'
 import { getSeedState } from '../helpers/seed-state.js'
+import { env } from '../env'
 
-const BACKEND  = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
+const BACKEND  = env.E2E_BACKEND_URL
 const FIXTURES = 'http://localhost:9876'
 // Extension is built to pretzel/dist — two levels up from e2e/extension/
 const EXT_PATH = path.resolve(__dirname, '../../pretzel/dist')

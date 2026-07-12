@@ -1,9 +1,7 @@
 import { execSync } from 'child_process'
 import path from 'path'
-import { config } from 'dotenv'
 import { writeFileSync } from 'fs'
-
-config({ path: path.join(__dirname, '.env.e2e') })
+import { env } from './env'
 
 const BACKEND_DIR = path.resolve(__dirname, '../backend')
 
@@ -13,7 +11,7 @@ export default async function globalTeardown() {
     execSync('pnpm run teardown:e2e', {
       cwd: BACKEND_DIR,
       stdio: 'inherit',
-      env: { ...process.env, DATABASE_URL: process.env.E2E_DATABASE_URL },
+      env: { ...process.env, DATABASE_URL: env.E2E_DATABASE_URL },
     })
   } catch (err) {
     // Log but do not rethrow — a failed teardown should not mask test results.

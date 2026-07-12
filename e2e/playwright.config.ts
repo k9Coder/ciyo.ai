@@ -1,8 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 import path from 'path'
-import { config } from 'dotenv'
-
-config({ path: path.join(__dirname, '.env.e2e') })
+import { env } from './env'
 
 const DIST_PATH = path.resolve(__dirname, '../pretzel/dist')
 
@@ -21,15 +19,15 @@ export default defineConfig({
     // 15 s instead of the default 5 s so the first API call has time to land.
     timeout: 15_000,
   },
-  retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  retries: env.CI ? 2 : 0,
+  reporter: env.CI ? 'github' : 'list',
   outputDir: 'test-results',
   projects: [
     // ── API project ─────────────────────────────────────────────────────────
     // Backend REST API specs from backend/e2e/. No browser; parallel-safe.
     {
       name: 'api',
-      use: { baseURL: process.env.E2E_BACKEND_URL ?? 'http://localhost:3000' },
+      use: { baseURL: env.E2E_BACKEND_URL },
       testDir: path.resolve(__dirname, '../backend/e2e'),
       testMatch: '**/*.spec.ts',
       // API tests hit a real HTTP server — safe to parallelise.
@@ -102,7 +100,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: path.resolve(__dirname, '.auth/admin.json'),
-        baseURL: process.env.E2E_ADMIN_URL ?? 'http://localhost:5173',
+        baseURL: env.E2E_ADMIN_URL,
       },
       testDir: path.resolve(__dirname, '../pretzel-console/e2e'),
       testMatch: '**/*.spec.ts',
