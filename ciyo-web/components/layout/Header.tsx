@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { APP_URL, IS_PILOT_MODE } from '@/lib/config'
+import { env } from '@/lib/env'
 
 const NAV = [
   { href: '/product',   label: 'Product' },
@@ -36,7 +37,7 @@ export function Header() {
             <span className="text-white font-bold">yo</span>
             <span className="text-[#94a3b8] font-normal text-[12px]">.ai</span>
           </span>
-          {process.env.NEXT_PUBLIC_ENV === 'staging' && (
+          {env.NEXT_PUBLIC_ENV === 'staging' && (
             <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider bg-amber-500 text-white">
               STAGING
             </span>
