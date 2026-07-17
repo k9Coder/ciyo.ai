@@ -40,15 +40,16 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'master' && 'production' || 'staging' }}
     permissions:
       contents: read
     steps:
       - name: Trigger Render deploy
         env:
-          DEPLOY_HOOK: ${{ github.ref_name == 'master' && secrets.RENDER_CONSOLE_PROD_DEPLOY_HOOK || secrets.RENDER_CONSOLE_STAGING_DEPLOY_HOOK }}
+          DEPLOY_HOOK: ${{ secrets.CONSOLE_RENDER_DEPLOY_HOOK }}
         run: |
           if [ -z "$DEPLOY_HOOK" ]; then
-            echo "::error::Render deploy hook secret is not set (RENDER_CONSOLE_PROD_DEPLOY_HOOK for master, RENDER_CONSOLE_STAGING_DEPLOY_HOOK for staging). Create the deploy hook in the Render dashboard and add it as a repo secret."
+            echo "::error::CONSOLE_RENDER_DEPLOY_HOOK is not set in the ${{ github.ref_name == 'master' && 'production' || 'staging' }} environment. Create the deploy hook in the Render dashboard and add it as an environment secret."
             exit 1
           fi
           curl --silent --output /dev/null --fail -X POST "$DEPLOY_HOOK"
@@ -57,7 +58,7 @@ jobs:
         if: always()
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
           title: "pretzel-console → ${{ github.ref_name == 'master' && 'production' || 'staging' }}"
           description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"

@@ -1,11 +1,12 @@
 import OpenAI from 'openai'
 import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions, Action } from './interface.js'
+import { env } from '../../env.js'
 
 export class OpenAiLlmService implements LlmService {
   private client: OpenAI
 
   constructor() {
-    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    this.client = new OpenAI({ apiKey: env.OPENAI_API_KEY })
   }
 
   async chat(systemPrompt: string, history: LlmMessage[], userMessage: string, opts?: LlmChatOptions): Promise<LlmResponse> {

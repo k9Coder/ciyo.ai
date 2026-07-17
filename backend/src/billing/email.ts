@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { env } from '../env.js'
 
 interface WelcomeEmailInput {
   to: string
@@ -9,16 +10,16 @@ interface WelcomeEmailInput {
 
 function createTransport() {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST!,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
+    host: env.SMTP_HOST!,
+    port: Number(env.SMTP_PORT ?? 587),
+    auth: { user: env.SMTP_USER!, pass: env.SMTP_PASS! },
   })
 }
 
 export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> {
   const transport = createTransport()
   await transport.sendMail({
-    from: process.env.SMTP_FROM ?? 'noreply@ciyo.ai',
+    from: env.SMTP_FROM ?? 'noreply@ciyo.ai',
     to: input.to,
     subject: `Welcome to Pretzel — ${input.tenantName}`,
     text: [

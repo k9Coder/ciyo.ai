@@ -2,14 +2,15 @@ import { createHmac } from 'node:crypto'
 import { activateTenant, updateSubscriptionStatus, tenantIdBySubId } from './service.js'
 import { sendWelcomeEmail } from './email.js'
 import { logger } from '../logger/index.js'
+import { env } from '../env.js'
 
-const PAYPAL_API = process.env['PAYPAL_SANDBOX'] === 'true'
+const PAYPAL_API = env.PAYPAL_SANDBOX === 'true'
   ? 'https://api-m.sandbox.paypal.com'
   : 'https://api-m.paypal.com'
 
 async function getAccessToken(): Promise<string> {
-  const clientId     = process.env['PAYPAL_CLIENT_ID']
-  const clientSecret = process.env['PAYPAL_CLIENT_SECRET']
+  const clientId     = env.PAYPAL_CLIENT_ID
+  const clientSecret = env.PAYPAL_CLIENT_SECRET
   if (!clientId || !clientSecret) {
     throw new Error('PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET env vars are required')
   }
@@ -43,14 +44,14 @@ export async function verifyPayPalWebhookSignature(
   headers: PayPalWebhookHeaders,
 ): Promise<boolean> {
   // Test-mode escape hatch — only allowed when NODE_ENV !== 'production'
-  if (process.env['PAYPAL_SKIP_SIG_VERIFY'] === 'true') {
-    if (process.env['NODE_ENV'] === 'production') {
+  if (env.PAYPAL_SKIP_SIG_VERIFY === 'true') {
+    if (env.NODE_ENV === 'production') {
       throw new Error('PAYPAL_SKIP_SIG_VERIFY must not be set in production')
     }
     return true
   }
 
-  const webhookId = process.env['PAYPAL_WEBHOOK_ID']
+  const webhookId = env.PAYPAL_WEBHOOK_ID
   if (!webhookId) {
     throw new Error('PAYPAL_WEBHOOK_ID env var is required for webhook signature verification')
   }
@@ -95,8 +96,8 @@ export async function createPayPalSubscriptionUrl(opts: {
 }): Promise<{ url: string }> {
   const token   = await getAccessToken()
   const planId  = opts.plan === 'business'
-    ? process.env['PAYPAL_BUSINESS_PLAN_ID']!
-    : process.env['PAYPAL_STARTER_PLAN_ID']!
+    ? env.PAYPAL_BUSINESS_PLAN_ID!
+    : env.PAYPAL_STARTER_PLAN_ID!
   const customId = `${opts.tenantName}|${opts.email}|${opts.plan}|${opts.seatCount}`
 
   const res = await fetch(`${PAYPAL_API}/v1/billing/subscriptions`, {
@@ -108,8 +109,8 @@ export async function createPayPalSubscriptionUrl(opts: {
       custom_id: customId,
       subscriber: { email_address: opts.email },
       application_context: {
-        return_url: process.env['PAYPAL_RETURN_URL'] ?? 'https://ciyo.ai/welcome',
-        cancel_url: process.env['PAYPAL_CANCEL_URL'] ?? 'https://ciyo.ai/pricing',
+        return_url: env.PAYPAL_RETURN_URL ?? 'https://ciyo.ai/welcome',
+        cancel_url: env.PAYPAL_CANCEL_URL ?? 'https://ciyo.ai/pricing',
         user_action: 'SUBSCRIBE_NOW',
       },
     }),

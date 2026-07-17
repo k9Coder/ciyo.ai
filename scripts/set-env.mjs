@@ -7,10 +7,11 @@ if (!env || !["staging", "prod"].includes(env)) {
   process.exit(1);
 }
 
-// backend and ciyo-web need a file copy; Vite packages use --mode at build time
+// backend, ciyo-web and pretzel-desktop need a file copy; Vite packages use --mode at build time
 const copies = [
   { pkg: "backend", src: `.env.${env}`, dest: ".env" },
   { pkg: "ciyo-web", src: `.env.${env}`, dest: ".env.local" },
+  { pkg: "pretzel-desktop", src: `.env.${env}`, dest: ".env" },
 ];
 
 for (const { pkg, src, dest } of copies) {
@@ -28,3 +29,4 @@ console.log(`\nEnvironment set to: ${env}`);
 console.log("Vite packages (pretzel, pretzel-console) use --mode at build time.");
 console.log(`  pretzel:         pnpm build:${env}  or  pnpm dev:${env}`);
 console.log(`  pretzel-console: pnpm dev:${env}    or  pnpm build:${env}`);
+console.log("pretzel-desktop: .env copied — rebuild with pnpm build (values are baked at build time).");

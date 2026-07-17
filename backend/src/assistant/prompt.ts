@@ -1,4 +1,5 @@
 import type { Division, Team, Subject, Rule, Member } from '../db/schema.js'
+import { env } from '../env.js'
 
 export interface TenantSnapshot {
   divisions: Division[]
@@ -31,7 +32,7 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
   // actions (delete_member, assign_member_team, etc.), so labels lose no functional
   // value. Escape hatch: set ASSISTANT_SEND_PII=true to transmit real emails (e.g.
   // for a first-party/self-hosted model under a signed DPA); default is redacted.
-  const sendPII = process.env.ASSISTANT_SEND_PII === 'true'
+  const sendPII = env.ASSISTANT_SEND_PII === 'true'
   const memberSummaries = snapshot.members.map(m => ({
     id: m.id,
     email: sendPII ? m.email : `member-${m.id.slice(0, 8)}`,

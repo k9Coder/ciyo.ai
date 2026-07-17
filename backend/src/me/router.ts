@@ -3,6 +3,7 @@ import { eq, asc } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { db } from '../db/client.js'
 import { members, users, tenants } from '../db/schema.js'
+import { env } from '../env.js'
 
 export async function meRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/me/memberships', async (req, reply) => {
@@ -11,7 +12,7 @@ export async function meRouter(fastify: FastifyInstance): Promise<void> {
       return reply.status(401).send({ error: 'Missing bearer token' })
     }
 
-    const secretKey = process.env.CLERK_SECRET_KEY
+    const secretKey = env.CLERK_SECRET_KEY
     if (!secretKey) return reply.status(500).send({ error: 'Clerk not configured' })
 
     let clerkUserId: string

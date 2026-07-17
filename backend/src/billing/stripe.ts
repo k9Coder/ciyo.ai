@@ -11,9 +11,10 @@ import { db } from '../db/client.js'
 import { tenants } from '../db/schema.js'
 import { activateTenant, updateSubscriptionStatus, tenantIdBySubId } from './service.js'
 import { sendWelcomeEmail } from './email.js'
+import { env } from '../env.js'
 
 function stripe(): Stripe {
-  return new Stripe(process.env['STRIPE_SECRET_KEY']!)
+  return new Stripe(env.STRIPE_SECRET_KEY!)
 }
 
 export async function createCheckoutSession(opts: {
@@ -24,8 +25,8 @@ export async function createCheckoutSession(opts: {
 }): Promise<{ url: string }> {
   const stripeClient = stripe()
   const priceId = opts.plan === 'business'
-    ? process.env['STRIPE_BUSINESS_PRICE_ID']!
-    : process.env['STRIPE_STARTER_PRICE_ID']!
+    ? env.STRIPE_BUSINESS_PRICE_ID!
+    : env.STRIPE_STARTER_PRICE_ID!
   const trialDays = opts.plan === 'business' ? 14 : 0
 
   const session = await stripeClient.checkout.sessions.create({
@@ -49,8 +50,8 @@ export async function createCheckoutSession(opts: {
       plan:       opts.plan,
       seatCount:  String(opts.seatCount),
     },
-    success_url: process.env['STRIPE_SUCCESS_URL'] ?? 'https://ciyo.ai/welcome',
-    cancel_url:  process.env['STRIPE_CANCEL_URL']  ?? 'https://ciyo.ai/pricing',
+    success_url: env.STRIPE_SUCCESS_URL ?? 'https://ciyo.ai/welcome',
+    cancel_url:  env.STRIPE_CANCEL_URL  ?? 'https://ciyo.ai/pricing',
   })
 
   return { url: session.url! }
@@ -72,7 +73,7 @@ export async function handleStripeEvent(rawBody: string, sig: string): Promise<v
   // Signature verification is mandatory. Use `stripe listen --forward-to localhost:3000/webhooks/stripe`
   // with test-mode API keys for local development — there is no escape hatch here.
   const stripeClient = stripe()
-  const event = stripeClient.webhooks.constructEvent(rawBody, sig, process.env['STRIPE_WEBHOOK_SECRET']!)
+  const event = stripeClient.webhooks.constructEvent(rawBody, sig, env.STRIPE_WEBHOOK_SECRET!)
 
   switch (event.type) {
     case 'checkout.session.completed': {

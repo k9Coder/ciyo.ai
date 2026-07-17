@@ -9,6 +9,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    environment: staging
     permissions:
       contents: read
 
@@ -66,14 +67,14 @@ jobs:
         run: pnpm run build:e2e
         working-directory: pretzel
         env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           VITE_API_BASE: http://localhost:3000
 
       - name: Build pretzel-console
         run: pnpm run build:staging
         working-directory: pretzel-console
         env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           VITE_API_BASE: http://localhost:3000
 
       - name: Run DB migrations on test DB
@@ -91,8 +92,8 @@ jobs:
         working-directory: backend
         env:
           DATABASE_URL: postgres://e2e:e2e@localhost:5432/e2e
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
+          CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
           # The console is served at :5173; without this the backend falls back
           # to the prod allowlist (console.ciyo.ai) and the browser blocks every
           # cross-origin API call after preflight, so all data-driven admin
@@ -129,8 +130,11 @@ jobs:
           # global-setup runs seed:e2e, whose compilePolicy makes an internal-client call
           # to the backend on :3000 — must present the same secret the backend expects.
           INTERNAL_SECRET: test-secret-e2e-32chars-minimum-xxxx
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
+          # seed:e2e boots backend modules whose env validation requires this —
+          # the webhook route itself is not exercised by the suite.
+          CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
           E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
           E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
@@ -148,7 +152,7 @@ jobs:
         if: always()
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
           title: "E2E Tests · ${{ github.ref_name }}"
           description: |

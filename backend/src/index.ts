@@ -2,10 +2,11 @@ import { buildApp } from './app.js'
 import { logger } from './logger/index.js'
 import { pingDb } from './db/client.js'
 import { scheduleRetentionPurge } from './scans/service.js'
+import { env } from './env.js'
 
-const port = Number(process.env['PORT'] ?? 3000)
+const port = env.PORT
 
-const appEnv = process.env['APP_ENV']
+const appEnv = env.APP_ENV
 logger.info(`ciyo-api starting on :${port}${appEnv ? `  [ENV: ${appEnv}]` : ''}`)
 
 try {

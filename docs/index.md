@@ -33,6 +33,7 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Testing](operations/testing.md)
 - [Deployment](operations/deployment.md)
 - [Release process](operations/release-process.md)
+- [Environments & secrets](ENVIRONMENT_AND_SECRETS.md)
 
 ## Packages
 

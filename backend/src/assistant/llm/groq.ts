@@ -1,13 +1,14 @@
 import OpenAI from 'openai'
 import type { LlmService, LlmMessage, LlmResponse, LlmChatOptions } from './interface.js'
 import { parseResponse } from './openai.js'
+import { env } from '../../env.js'
 
 export class GroqLlmService implements LlmService {
   private client: OpenAI
 
   constructor() {
     this.client = new OpenAI({
-      apiKey:  process.env.GROQ_API_KEY,
+      apiKey:  env.GROQ_API_KEY,
       baseURL: 'https://api.groq.com/openai/v1',
     })
   }

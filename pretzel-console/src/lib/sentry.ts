@@ -1,12 +1,13 @@
 import * as Sentry from '@sentry/react'
+import { env, MODE } from '../env'
 
 export function initSentry(): void {
-  const dsn = import.meta.env['VITE_SENTRY_DSN'] as string | undefined
+  const dsn = env.VITE_SENTRY_DSN
   if (!dsn) return
 
   Sentry.init({
     dsn,
-    environment: import.meta.env.MODE,
+    environment: MODE,
     dataCollection: {
       // userInfo: false,    // disable sending user PII
       // httpBodies: [],     // disable capturing request/response bodies

@@ -58,6 +58,7 @@ jobs:
   build-mac:
     needs: test
     runs-on: macos-latest
+    environment: production
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -76,8 +77,8 @@ jobs:
       - name: Build & package macOS (arm64 + x64)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           # CSC_IDENTITY_AUTO_DISCOVERY=false tells electron-builder to skip
           # signing when no certificate is present instead of failing
           CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -103,6 +104,7 @@ jobs:
   build-windows:
     needs: test
     runs-on: windows-latest
+    environment: production
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -121,8 +123,8 @@ jobs:
       - name: Build & package Windows (x64)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           # Skip Authenticode signing for beta
           WIN_CSC_LINK: ''
         working-directory: pretzel-desktop
@@ -141,6 +143,7 @@ jobs:
   build-linux:
     needs: test
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -162,8 +165,8 @@ jobs:
       - name: Build Linux (AppImage + deb)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.CIYO_API_URL_PROD }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
         working-directory: pretzel-desktop
         run: |
           pnpm build
@@ -187,7 +190,7 @@ jobs:
       - name: Notify Discord
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ (needs.build-mac.result == 'success' && needs.build-windows.result == 'success') && 'success' || 'failure' }}
           title: "${{ github.ref_name }} desktop release"
           description: |

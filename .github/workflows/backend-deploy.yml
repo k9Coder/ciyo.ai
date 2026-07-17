@@ -86,6 +86,7 @@ jobs:
   build-and-deploy:
     needs: test
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'master' && 'production' || 'staging' }}
     permissions:
       contents: read
       packages: write
@@ -135,18 +136,18 @@ jobs:
         run: pnpm exec tsx src/db/migrate.ts
         working-directory: backend
         env:
-          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
       - name: Seed profession templates (idempotent)
         run: pnpm exec tsx src/db/seeds/run-profession-templates.ts
         working-directory: backend
         env:
-          DATABASE_URL: ${{ github.ref_name == 'master' && secrets.PROD_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
 
       - name: Deploy to Render
         env:
-          SERVICE_ID: ${{ github.ref_name == 'master' && secrets.RENDER_BACKEND_PROD_SERVICE_ID || secrets.RENDER_BACKEND_STAGING_SERVICE_ID }}
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ secrets.BACKEND_RENDER_SERVICE_ID }}
+          RENDER_API_KEY: ${{ secrets.SHARED_RENDER_API_KEY }}
           IMAGE_URL: ${{ env.IMAGE }}:${{ github.sha }}
         run: |
           HTTP_STATUS=$(curl --silent --show-error --write-out '%{http_code}' \
@@ -166,7 +167,7 @@ jobs:
         if: always()
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
           title: "Backend → ${{ github.ref_name == 'master' && 'production' || 'staging' }}"
           description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"
