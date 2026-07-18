@@ -68,22 +68,29 @@ Post and pin this message in `#share-your-policy`:
 3. Set expiry to **Never**, max uses **No limit**
 4. Copy the link — format: `https://discord.gg/XXXXXXX`
 
-This is your `DISCORD_INVITE_URL`.
+**Done — permanent invite link: `https://discord.gg/MUJP6bJX2J`**
 
 ---
 
 ## Step 6 — Add the Link to the Codebase
 
-Once you have the invite URL, add it as an environment variable:
+The invite URL is public (it ships in client bundles), so it is **not** a GitHub secret — it follows the deploy-env conventions in [`docs/ENVIRONMENT_AND_SECRETS.md`](../ENVIRONMENT_AND_SECRETS.md): add it to each package's `env.ts` module and committed `.env` files. Same value in staging and production, with a safe default in the schema so nothing breaks if the var is unset.
 
-### pretzel-console
-Add to `.env` (and your deployment secrets):
-```
-NEXT_PUBLIC_DISCORD_INVITE_URL=https://discord.gg/XXXXXXX
-```
+### pretzel-console (Vite — `VITE_` prefix, not `NEXT_PUBLIC_`)
+1. Add to `src/env.ts` (live-getter pattern like the existing vars):
+   ```
+   VITE_DISCORD_INVITE_URL: z.string().default('https://discord.gg/MUJP6bJX2J')
+   ```
+2. Add the same line to `.env.example` and `.env.staging`. No Render dashboard entry needed — the default covers it.
 
-### ciyo-web
-Same variable name — it's public so `NEXT_PUBLIC_` prefix is correct for Next.js.
+### ciyo-web (Next.js — `NEXT_PUBLIC_` prefix)
+1. Add to `lib/env.ts` (must be referenced literally — Next inlines at build):
+   ```
+   NEXT_PUBLIC_DISCORD_INVITE_URL: z.string().default('https://discord.gg/MUJP6bJX2J')
+   ```
+2. Add to `.env.example`. No Vercel dashboard entry needed — the default covers it.
+
+Access it only via the `env` modules — no raw `process.env` / `import.meta.env` reads (repo rule).
 
 ---
 
@@ -104,7 +111,50 @@ Carlos will produce Figma specs → Chloe implements in pretzel-console → whoe
 
 ---
 
+## Channel Seed Copy
+
+First message to post (and pin) in each channel before inviting anyone.
+
+### `#announcements` — welcome post (Ethan or Priya)
+
+> **Welcome to the ciyo.ai Security Community** 👋
+> This is the home for people building and running DLP policies with ciyo.ai.
+> What to expect here: product updates, launch notes, and our threat report releases.
+> Start in #general to introduce yourself, ask anything in #help-and-questions, and browse real-world configs in #share-your-policy.
+
+### `#general` — community guidelines (pin)
+
+Final Priya-reviewed version lives in [discord-seed-posts.md](discord-seed-posts.md) — use that one.
+
+### `#help-and-questions` — intro (pin)
+
+> Ask anything about ciyo.ai: setup, policy config, DLP concepts, integrations, billing.
+> To help us help you fast, include: what you're trying to do, what you tried, and any error text (sanitized).
+> Team members answer weekdays; the community may be faster.
+
+### `#template-requests` — how it works (pin)
+
+> Want a policy template we don't have yet? Post it here as:
+> **Scenario:** what you're trying to detect or block
+> **Data types involved:** e.g. PII, source code, financials
+> **Where:** e.g. ChatGPT, Claude, email, uploads
+> We triage requests weekly — 👍 reactions help us prioritize.
+
+### `#share-your-policy` — submission rule (pin)
+
+Already defined in Step 4 above — use that text verbatim.
+
+### `#security-news` — intro (pin, Megan)
+
+> Weekly curated links on DLP, data security, and AI-related leaks — posted every [pick a day].
+> Format per post: link, one-line summary, and why it matters for people running DLP.
+> Discussion welcome in threads; suggestions for inclusion → DM Megan.
+
+---
+
 ## Step 8 — Seed Before Launch
+
+All seed content is drafted and ready to paste: [discord-seed-posts.md](discord-seed-posts.md).
 
 Before opening to anyone:
 
