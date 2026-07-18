@@ -1,3 +1,5 @@
+// Load .env before ../db/client.js reads DATABASE_URL (dotenv is dev-only).
+import 'dotenv/config'
 import { db } from '../db/client.js'
 import {
   events, scans, memberTeams, rules, subjects,
