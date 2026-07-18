@@ -50,7 +50,9 @@ test.describe('Site configs', () => {
   test('can create a site config', async ({ page }) => {
     await page.goto('/sites')
 
-    await page.getByRole('button', { name: /add site|new site|\+/i }).click()
+    // Both the page header and the empty state render a "+ New site" button
+    // that opens the same modal; pick the first to avoid a strict-mode clash.
+    await page.getByRole('button', { name: /add site|new site|\+/i }).first().click()
 
     await page.getByLabel(/domain/i).fill(TEST_DOMAIN)
     await page.getByLabel(/input selector/i).fill('#prompt-input')
