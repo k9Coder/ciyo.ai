@@ -22,3 +22,7 @@ backend/e2e/test-results/
 backend/e2e/playwright-report/
 extension/e2e/test-results/
 extension/e2e/playwright-report/
+
+# Desktop build/test artifacts
+pretzel-desktop/dist-electron/
+pretzel-desktop/test-results/
