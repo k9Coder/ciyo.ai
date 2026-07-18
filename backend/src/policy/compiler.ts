@@ -19,6 +19,7 @@ export interface RulePolicy {
   destinationGroupIds: string[]
   action:              'warn' | 'block'
   message:             string | null
+  isOverridable:       boolean
   reportLevel:         'none' | 'minimal' | 'medium' | 'rich'
 }
 
@@ -47,6 +48,7 @@ function toRulePolicy(r: Rule): RulePolicy {
     destinationGroupIds: r.destinationGroupIds ?? [],
     action:              r.action,
     message:             r.message ?? null,
+    isOverridable:       r.isOverridable,
     reportLevel:         r.reportLevel,
   }
 }

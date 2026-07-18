@@ -127,6 +127,7 @@ export const rules = pgTable('rules', {
   destinationGroupIds: uuid('destination_group_ids').array().default(sql`'{}'`),
   action:              ruleActionEnum('action').notNull(),
   message:             text('message'),
+  isOverridable:       boolean('is_overridable').notNull().default(false),
   active:              boolean('active').notNull().default(true),
   reportLevel:         reportLevelEnum('report_level').notNull().default('none'),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -226,6 +227,7 @@ export interface SubjectSnapshot {
     destinationGroupIds: string[]
     action:              'warn' | 'block'
     message:             string | null
+    isOverridable:       boolean
     reportLevel:         'none' | 'minimal' | 'medium' | 'rich'
     active:              boolean
   }>

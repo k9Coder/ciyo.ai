@@ -1,12 +1,13 @@
 ---
 status: current
 owner: backend
-verified_at: 2026-06-13
+verified_at: 2026-06-17
 sources:
   - ../src/policy/compiler.ts
   - ../src/policy/resolver.ts
   - ../src/policy/router.ts
   - ../src/policy/service.ts
+  - ../src/rules/validation.ts
   - ../tests/policy-compiler.test.ts
   - ../tests/policy-resolver.test.ts
 ---
@@ -36,6 +37,7 @@ interface PolicyDoc {
       destinations: string[]
       destinationGroupIds: string[]
       action: 'warn' | 'block'
+      isOverridable: boolean
       message: string | null
       reportLevel: 'none' | 'minimal' | 'medium' | 'rich'
     }>
@@ -48,6 +50,8 @@ interface PolicyDoc {
 ```
 
 The inner `version: 1` is the policy document schema version. The separate database row `version` is the monotonically increasing publication version.
+
+Rule `destinations` are normalized lowercase hostnames. Empty `destinations` means all supported AI sites. A configured hostname matches itself and its subdomains at enforcement time; it does not grant the extension permission to new sites. Publishing rejects warning rules with blank user-facing messages.
 
 ## `GET /v1/policy` envelope
 
@@ -74,7 +78,7 @@ Rules are deduplicated by detection identity:
 - pattern: pattern string
 - entropy and score: rule kind
 
-When duplicates collide, team scope overrides division scope, which overrides global scope. At the same scope, a `block` rule overrides a `warn` rule. Destination-group domains are expanded and merged into `destinations`; resolved policies omit `destinationGroupIds`, scope IDs, `reportLevel`, and `siteConfigs`.
+When duplicates collide, team scope overrides division scope, which overrides global scope. At the same scope, a `block` rule overrides a `warn` rule. Destination-group domains are expanded through tenant-scoped lookup and merged into `destinations`; resolved policies omit `destinationGroupIds`, scope IDs, `reportLevel`, and `siteConfigs`, while preserving `isOverridable`.
 
 ## Versioning and updates
 

@@ -88,9 +88,14 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     })
   })
 
-  fastify.post('/policy/publish', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
+  fastify.post('/policy/publish', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const policy = await compilePolicy(req.tenant.id)
-    const version = await publishPolicy(req.tenant.id, policy)
+    let version
+    try {
+      version = await publishPolicy(req.tenant.id, policy)
+    } catch (err) {
+      return reply.status(400).send({ error: err instanceof Error ? err.message : 'Policy failed publish validation' })
+    }
     return { version }
   })
 

@@ -36,13 +36,14 @@ pnpm exec vitest run tests/billing-paypal.test.ts
 
 Prerequisites:
 
-1. Configure `backend/.env` with a test `DATABASE_URL`.
+1. Configure `backend/.env` with a disposable test `DATABASE_URL` whose database name contains `e2e` or `test`.
 2. Configure the E2E environment expected by the seed script, including Clerk test-user values.
-3. Seed the test database.
+3. Set `ALLOW_E2E_DATABASE_RESET=true` before seeding or tearing down the test database.
 4. Start the backend on `http://localhost:3000`, or set `E2E_BACKEND_URL`.
 
 ```powershell
 cd backend
+$env:ALLOW_E2E_DATABASE_RESET = "true"
 pnpm seed:e2e
 pnpm dev
 ```
@@ -52,6 +53,7 @@ In another terminal:
 ```powershell
 cd backend
 pnpm test:e2e
+$env:ALLOW_E2E_DATABASE_RESET = "true"
 pnpm teardown:e2e
 ```
 
@@ -69,4 +71,4 @@ The backend Playwright config runs one worker and reads auth/tenant state from r
 
 ## Safety
 
-`seed:e2e` deletes and recreates broad application data before writing seed state. `teardown:e2e` deletes seeded application records. Confirm `DATABASE_URL` is a disposable test database before running either command.
+`seed:e2e` deletes and recreates broad application data before writing seed state. `teardown:e2e` deletes seeded application records. Both commands refuse to run unless `ALLOW_E2E_DATABASE_RESET=true`, `NODE_ENV` is not `production`, and the configured database name is marked as `e2e` or `test`. Confirm `DATABASE_URL` is disposable before setting the reset flag.

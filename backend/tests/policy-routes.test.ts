@@ -140,7 +140,7 @@ describe('POST /v1/policy/rollback/:version', () => {
 describe('GET /v1/policy — member scope via org token (no filtering)', () => {
   it('returns full snapshot with org token regardless of member data', async () => {
     const subject1 = await createSubject(tenantId, { name: 'A' })
-    await createRule(tenantId, subject1.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })
+    await createRule(tenantId, subject1.id, { kind: 'keyword', keywords: ['x'], action: 'warn', message: 'Review this warning' })
     const subject2 = await createSubject(tenantId, { name: 'B' })
     await createRule(tenantId, subject2.id, { kind: 'keyword', keywords: ['y'], action: 'block' })
     await publishPolicy(tenantId, await compilePolicy(tenantId))

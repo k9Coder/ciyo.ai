@@ -6,12 +6,34 @@ on:
   push:
     branches: [master, staging]
 
+env:
+  CI: 'true'
+  E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pretzel_e2e
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pretzel_e2e
+  ALLOW_E2E_DATABASE_RESET: 'true'
+  E2E_BACKEND_URL: http://localhost:3000
+  E2E_ADMIN_URL: http://localhost:5173
+
 jobs:
-  e2e:
+  api-e2e:
+    name: Backend API E2E
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pretzel_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pretzel_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -23,63 +45,54 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-
-      - name: Install root dependencies
-        run: pnpm install --frozen-lockfile
+          cache-dependency-path: backend/pnpm-lock.yaml
 
       - name: Install backend dependencies
         run: pnpm install --frozen-lockfile
         working-directory: backend
 
-      - name: Install pretzel-console dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: pretzel-console
-
-      - name: Install Playwright Chromium
+      - name: Install backend Playwright browser
         run: pnpm exec playwright install chromium --with-deps
+        working-directory: backend
 
-      - name: Build extension
-        run: pnpm run build
-
-      - name: Build pretzel-console
-        run: pnpm run build:staging
-        working-directory: pretzel-console
-        env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_API_BASE: http://localhost:3000
-
-      - name: Run DB migrations on test DB
+      - name: Migrate disposable database
         run: pnpm run db:migrate
         working-directory: backend
+
+      - name: Seed disposable database
+        run: pnpm run seed:e2e
+        working-directory: backend
         env:
-          DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
 
       - name: Build backend
         run: pnpm run build
         working-directory: backend
 
-      - name: Start backend (test DB)
-        run: node dist/index.js &
+      - name: Start backend
+        run: |
+          node dist/index.js > ../backend-e2e.log 2>&1 &
+          echo $! > ../backend-e2e.pid
         working-directory: backend
         env:
-          DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
           PORT: 3000
 
-      - name: Serve pretzel-console
-        run: pnpm run preview -- --port 5173 &
-        working-directory: pretzel-console
+      - name: Wait for backend
+        run: |
+          for i in {1..60}; do
+            curl --silent --fail http://localhost:3000/health && exit 0
+            sleep 1
+          done
+          cat backend-e2e.log
+          exit 1
 
-      - name: Wait for services to be ready
-        run: npx wait-on http://localhost:3000/health http://localhost:5173 --timeout 30000
-
-      - name: Run E2E suite
-        run: pnpm test:e2e
+      - name: Run backend API E2E
+        run: pnpm run test:e2e
+        working-directory: backend
         env:
-          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
-          E2E_ADMIN_URL: http://localhost:5173
-          E2E_BACKEND_URL: http://localhost:3000
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
@@ -87,10 +100,273 @@ jobs:
           E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
           E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
 
-      - name: Upload Playwright report on failure
+      - name: Upload backend E2E artifacts
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: failure()
         with:
-          name: playwright-report
-          path: e2e/playwright-report/
+          name: backend-api-e2e
+          path: |
+            backend/e2e/test-results/
+            backend-e2e.log
+          retention-days: 7
+
+  extension-e2e:
+    name: Extension E2E
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pretzel/pnpm-lock.yaml
+
+      - name: Install extension dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: pretzel
+
+      - name: Install extension Playwright browser
+        run: pnpm exec playwright install chromium --with-deps
+        working-directory: pretzel
+
+      - name: Build extension
+        run: pnpm run build
+        working-directory: pretzel
+
+      - name: Run extension E2E
+        run: pnpm run test:e2e
+        working-directory: pretzel
+
+      - name: Upload extension E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: extension-e2e
+          path: pretzel/e2e/test-results/
+          retention-days: 7
+
+  admin-e2e:
+    name: Admin E2E
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pretzel_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pretzel_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+
+      - name: Install console dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: pretzel-console
+
+      - name: Install console Playwright browser
+        run: pnpm exec playwright install chromium --with-deps
+        working-directory: pretzel-console
+
+      - name: Migrate disposable database
+        run: pnpm run db:migrate
+        working-directory: backend
+
+      - name: Seed disposable database
+        run: pnpm run seed:e2e
+        working-directory: backend
+        env:
+          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+
+      - name: Build backend
+        run: pnpm run build
+        working-directory: backend
+
+      - name: Build console
+        run: pnpm run build:staging
+        working-directory: pretzel-console
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_API_BASE: http://localhost:3000
+
+      - name: Start backend
+        run: |
+          node dist/index.js > ../admin-backend.log 2>&1 &
+          echo $! > ../admin-backend.pid
+        working-directory: backend
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
+          PORT: 3000
+
+      - name: Start console
+        run: |
+          pnpm run preview -- --port 5173 > ../admin-console.log 2>&1 &
+          echo $! > ../admin-console.pid
+        working-directory: pretzel-console
+
+      - name: Wait for services
+        run: |
+          for i in {1..60}; do
+            if curl --silent --fail http://localhost:3000/health && curl --silent --fail http://localhost:5173; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat admin-backend.log
+          cat admin-console.log
+          exit 1
+
+      - name: Run admin E2E
+        run: pnpm run test:e2e
+        working-directory: pretzel-console
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+          E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+
+      - name: Upload admin E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: admin-e2e
+          path: |
+            pretzel-console/e2e/test-results/
+            admin-backend.log
+            admin-console.log
+          retention-days: 7
+
+  cross-service-e2e:
+    name: Cross-Service E2E
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pretzel_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pretzel_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+
+      - name: Install extension dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: pretzel
+
+      - name: Install cross-service dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: e2e
+
+      - name: Install cross-service Playwright browser
+        run: pnpm exec playwright install chromium --with-deps
+        working-directory: e2e
+
+      - name: Migrate disposable database
+        run: pnpm run db:migrate
+        working-directory: backend
+
+      - name: Seed disposable database
+        run: pnpm run seed:e2e
+        working-directory: backend
+        env:
+          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+
+      - name: Build backend
+        run: pnpm run build
+        working-directory: backend
+
+      - name: Build extension
+        run: pnpm run build
+        working-directory: pretzel
+
+      - name: Start backend
+        run: |
+          node dist/index.js > ../cross-service-backend.log 2>&1 &
+          echo $! > ../cross-service-backend.pid
+        working-directory: backend
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
+          PORT: 3000
+
+      - name: Wait for backend
+        run: |
+          for i in {1..60}; do
+            curl --silent --fail http://localhost:3000/health && exit 0
+            sleep 1
+          done
+          cat cross-service-backend.log
+          exit 1
+
+      - name: Run cross-service E2E
+        run: pnpm run test:e2e -- --project=cross-service
+        working-directory: e2e
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+          E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+
+      - name: Upload cross-service E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cross-service-e2e
+          path: |
+            e2e/test-results/
+            cross-service-backend.log
           retention-days: 7

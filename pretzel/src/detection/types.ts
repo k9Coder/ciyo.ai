@@ -6,6 +6,8 @@ export interface Finding {
   ruleName: string;
   severity: Severity;
   action: Action;
+  isOverridable?: boolean;
+  message?: string;
   /** The exact substring that matched. Never longer than ~200 chars (truncated). */
   matchedText: string;
   startOffset: number;

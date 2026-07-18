@@ -19,6 +19,7 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
       destinationGroupIds?: string[]
       action: 'warn' | 'block'
       message?: string
+      isOverridable?: boolean
       reportLevel?: 'none' | 'minimal' | 'medium' | 'rich'
     }
     const plan = req.tenant.plan as Plan
@@ -27,7 +28,14 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
         error: `Rule kind '${body.kind}' is not available on the ${plan} plan. Upgrade to unlock pattern, entropy, and score rules.`,
       })
     }
-    return reply.status(201).send(await createRule(req.tenant.id, subjectId, body))
+    if (body.action === 'warn' && !body.message?.trim()) {
+      return reply.status(400).send({ error: 'Warning rules require a user-facing message' })
+    }
+    try {
+      return reply.status(201).send(await createRule(req.tenant.id, subjectId, body))
+    } catch (err) {
+      return reply.status(400).send({ error: err instanceof Error ? err.message : 'Invalid rule' })
+    }
   })
 
   fastify.patch('/rules/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
@@ -40,10 +48,19 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
       destinationGroupIds: string[]
       action: 'warn' | 'block'
       message: string
+      isOverridable: boolean
       active: boolean
       reportLevel: 'none' | 'minimal' | 'medium' | 'rich'
     }>
-    const updated = await updateRule(req.tenant.id, id, body)
+    if (body.action === 'warn' && !body.message?.trim()) {
+      return reply.status(400).send({ error: 'Warning rules require a user-facing message' })
+    }
+    let updated
+    try {
+      updated = await updateRule(req.tenant.id, id, body)
+    } catch (err) {
+      return reply.status(400).send({ error: err instanceof Error ? err.message : 'Invalid rule' })
+    }
     if (!updated) return reply.status(404).send({ error: 'Rule not found' })
     return updated
   })

@@ -10,9 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      checks: read
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Wait for exact-SHA release checks
+        run: node .github/scripts/wait-for-checks.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUIRED_CHECKS: Backend API E2E,Extension E2E,Admin E2E,Cross-Service E2E
 
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -44,6 +51,16 @@ jobs:
           files: ${{ github.ref_name }}.zip
           generate_release_notes: true
           name: ${{ github.ref_name }}
+
+      - name: Write release summary
+        run: |
+          {
+            echo "### Pretzel extension release"
+            echo "- Tested SHA: \`${{ github.sha }}\`"
+            echo "- Released SHA: \`${{ github.sha }}\`"
+            echo "- Release tag: \`${{ github.ref_name }}\`"
+            echo "- Artifact: \`${{ github.ref_name }}.zip\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Discord
         if: always()

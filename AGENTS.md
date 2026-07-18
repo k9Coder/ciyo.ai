@@ -1,10 +1,10 @@
 ---
 status: current
 owner: repository
-verified_at: 2026-06-13
+verified_at: 2026-06-17
 sources:
   - package.json
-  - e2e/playwright.config.ts
+  - .github/workflows/e2e.yml
   - company/INDEX.md
   - docs/index.md
 ---
@@ -33,16 +33,28 @@ sources:
 
 The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `ciyo-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
 
-The unified Playwright configuration is `e2e/playwright.config.ts`. Run it from
-`e2e/`. These script forms forward project arguments to Playwright:
+Primary E2E ownership is package-local:
+
+```powershell
+cd backend
+pnpm test:e2e
+
+cd ../pretzel
+pnpm test:e2e
+
+cd ../pretzel-console
+pnpm test:e2e
+
+cd ../e2e
+pnpm test:e2e -- --project=cross-service
+```
+
+`e2e/playwright.config.ts` still contains a legacy multi-project config for
+local compatibility, but CI uses the package-local runners above.
 
 ```powershell
 cd e2e
-pnpm test:e2e
-pnpm test:e2e -- --project=api
-pnpm test:e2e -- --project=extension
 pnpm test:e2e -- --project=cross-service
-pnpm test:e2e -- --project=admin
 ```
 
 ## Regression Rules

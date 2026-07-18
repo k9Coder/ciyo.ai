@@ -8,6 +8,13 @@
       "when": 1780865644703,
       "tag": "0000_sticky_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781712000000,
+      "tag": "0001_policy_trust_controls",
+      "breakpoints": true
     }
   ]
 }

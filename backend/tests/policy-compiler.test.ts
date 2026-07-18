@@ -3,6 +3,8 @@ import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { createSubject } from '../src/subjects/service.js'
 import { createRule, updateRule } from '../src/rules/service.js'
 import { compilePolicy } from '../src/policy/compiler.js'
+import { db } from '../src/db/client.js'
+import { destinationGroups } from '../src/db/schema.js'
 
 let tenantId: string
 
@@ -66,13 +68,18 @@ describe('compilePolicy', () => {
 
   it('stores destinationGroupIds in snapshot (not expanded)', async () => {
     const subject = await createSubject(tenantId, { name: 'Test' })
+    const [group] = await db.insert(destinationGroups).values({
+      tenantId,
+      name: 'Approved AI',
+      domains: ['chatgpt.com'],
+    }).returning({ id: destinationGroups.id })
     await createRule(tenantId, subject.id, {
       kind: 'keyword',
       keywords: ['secret'],
       action: 'block',
-      destinationGroupIds: ['00000000-0000-0000-0000-000000000001'],
+      destinationGroupIds: [group!.id],
     })
     const policy = await compilePolicy(tenantId)
-    expect(policy.subjects[0]!.rules[0]!.destinationGroupIds).toContain('00000000-0000-0000-0000-000000000001')
+    expect(policy.subjects[0]!.rules[0]!.destinationGroupIds).toContain(group!.id)
   })
 })

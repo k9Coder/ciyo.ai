@@ -41,7 +41,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p className="mb-3 text-[15px] font-semibold text-white">Try Pretzel free — protect your team today</p>
           <Link href="https://app.ciyo.ai/onboarding"
             className="inline-block rounded-xl bg-[#7c6aff] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-[#6b59ee]">
-            Start Free — No Credit Card
+            Open Pretzel Console
           </Link>
         </div>
       </div>

@@ -1,7 +1,7 @@
 ---
 status: current
 owner: engineering
-verified_at: 2026-06-13
+verified_at: 2026-06-17
 sources:
   - e2e/playwright.config.ts
   - e2e/global-setup.ts
@@ -16,11 +16,19 @@ sources:
   - package.json
 ---
 
-# Cross-Package E2E Tests
+# Cross-Service E2E Tests
 
-This directory owns the Playwright configuration that combines backend API,
-extension, cross-service, and admin-console tests. Run this configuration from
-`e2e/`; the package-local Playwright configurations are separate runners.
+This directory owns the cross-service Playwright suite. It still contains the
+legacy multi-project configuration for local compatibility, but CI uses
+package-local runners as the primary gates:
+
+- Backend API E2E runs from `backend/`.
+- Extension E2E runs from `pretzel/`.
+- Admin E2E runs from `pretzel-console/`.
+- Cross-service E2E runs from `e2e/`.
+
+Each CI job installs and invokes the Playwright dependency from the package that
+owns the specs it runs.
 
 ## Projects
 
@@ -60,7 +68,8 @@ you do not need to start the fixture server separately when using this config.
   `E2E_CLERK_USER_ID`, and `E2E_CLERK_USER_EMAIL`.
 
 Never point `E2E_DATABASE_URL` at production. The seed and teardown scripts
-delete data directly.
+delete data directly and now refuse to run unless `ALLOW_E2E_DATABASE_RESET=true`
+and the configured database name is marked as `e2e` or `test`.
 
 ## Run The Suite
 
@@ -103,21 +112,24 @@ $env:VITE_CLERK_PUBLISHABLE_KEY = "<Clerk publishable key>"
 pnpm dev
 ```
 
-Run all projects:
+Run the cross-service project:
 
 ```powershell
 cd e2e
-pnpm test:e2e
+pnpm test:e2e -- --project=cross-service
 ```
 
-Run selected projects:
+The package-local runners are:
 
 ```powershell
-cd e2e
-pnpm exec playwright test --config playwright.config.ts --project=api
-pnpm exec playwright test --config playwright.config.ts --project=extension
-pnpm exec playwright test --config playwright.config.ts --project=cross-service
-pnpm exec playwright test --config playwright.config.ts --project=admin
+cd backend
+pnpm test:e2e
+
+cd ../pretzel
+pnpm test:e2e
+
+cd ../pretzel-console
+pnpm test:e2e
 ```
 
 Selecting `admin` also runs its `admin-setup` dependency. Playwright uses no
@@ -148,22 +160,15 @@ After the run, `global-teardown.ts`:
 Global setup already seeds the database. Do not manually run `seed:e2e`
 immediately before this runner unless you are debugging the seed itself.
 
-## Known CI Mismatch
+## CI Architecture
 
-The current `.github/workflows/e2e.yml` runs `pnpm run build` and
-`pnpm test:e2e` from the repository root. The root `package.json` defines
-neither script, so the workflow does not currently invoke this E2E runner as
-written. It also installs from the root rather than explicitly installing the
-standalone `e2e/` package.
+`.github/workflows/e2e.yml` runs four independent jobs with package-local
+installs and Playwright binaries. DB-dependent jobs receive a disposable
+PostgreSQL service named `pretzel_e2e`, migrate it, seed it with
+`ALLOW_E2E_DATABASE_RESET=true`, and upload Playwright results plus service logs
+on every run.
 
-This README records the mismatch only; it does not change the workflow.
-
-## Observed Local Runner Limitation
-
-On the verified checkout, even project discovery from `e2e/` fails with
-`Requiring @playwright/test second time`. Cross-package specs resolve their
-package-local `@playwright/test` installation while the runner uses the
-installation under `e2e/`. The commands above are the correct entry points for
-the configured runner, but the dependency-resolution conflict currently
-prevents a successful run. This README does not change package dependencies or
-the Playwright configuration.
+Deployment workflows call `.github/scripts/wait-for-checks.mjs` before
+publishing. The script polls required check runs for the exact `github.sha` and
+fails the deployment if any required E2E check is missing, pending past timeout,
+or failed.

@@ -1,4 +1,5 @@
 import type { PolicyDoc, ResolvedRule, Policy } from "./schema";
+import { DEFAULT_POLICY } from "./defaults";
 
 type EngineAction = "log" | "warn" | "require_confirmation" | "block"
 type Severity = "low" | "medium" | "high" | "critical"
@@ -28,6 +29,8 @@ function bridgeRule(rule: ResolvedRule, subjectName: string): Policy["custom"][n
     description: rule.message ?? "",
     severity:    toSeverity(rule.action),
     action:      toEngineAction(rule.action),
+    isOverridable: rule.isOverridable ?? rule.action === "warn",
+    destinations: rule.destinations,
     enabled:     true,
     tags:        [] as string[],
   }
@@ -57,7 +60,7 @@ export function bridgePolicy(doc: PolicyDoc, disabledSites: string[]): Policy {
   return {
     version:                   1,
     tenantId:                  doc.tenantId,
-    baseline:                  [],
+    baseline:                  DEFAULT_POLICY.baseline,
     custom:                    allRules,
     perSite,
     allowSendAnywayWithReason: false,

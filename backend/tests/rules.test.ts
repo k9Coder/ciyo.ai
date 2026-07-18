@@ -33,6 +33,7 @@ describe('POST /v1/subjects/:subjectId/rules', () => {
     expect(res.body.keywords).toContain('confidential')
     expect(res.body.action).toBe('block')
     expect(res.body.active).toBe(true)
+    expect(res.body.isOverridable).toBe(false)
     expect(res.body.id).toBeDefined()
     expect(res.body.reportLevel).toBe('none') // default
   })
@@ -55,12 +56,38 @@ describe('POST /v1/subjects/:subjectId/rules', () => {
     expect(res.body.kind).toBe('pattern')
     expect(res.body.pattern).toBe('\\d{4}-\\d{4}-\\d{4}-\\d{4}')
     expect(res.body.message).toBe('Credit card detected')
+    expect(res.body.isOverridable).toBe(true)
+  })
+
+  it('normalizes explicit destination hostnames', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'keyword', keywords: ['secret'], action: 'block', destinations: ['Chat.OpenAI.com', 'chat.openai.com'] })
+    expect(res.status).toBe(201)
+    expect(res.body.destinations).toEqual(['chat.openai.com'])
+  })
+
+  it('rejects destination hostnames with schemes or paths', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'keyword', keywords: ['secret'], action: 'block', destinations: ['https://chat.openai.com/path'] })
+    expect(res.status).toBe(400)
+  })
+
+  it('requires a message for warning rules created through the API', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'keyword', keywords: ['secret'], action: 'warn' })
+    expect(res.status).toBe(400)
   })
 })
 
 describe('GET /v1/subjects/:subjectId/rules', () => {
   it('lists active rules for the subject', async () => {
-    await supertest(app.server).post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['a'], action: 'warn' })
+    await supertest(app.server).post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['a'], action: 'warn', message: 'Review this warning' })
     await supertest(app.server).post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['b'], action: 'block' })
     const res = await supertest(app.server).get(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
@@ -71,7 +98,7 @@ describe('GET /v1/subjects/:subjectId/rules', () => {
 describe('PATCH /v1/rules/:id', () => {
   it('updates rule action', async () => {
     const { body: created } = await supertest(app.server)
-      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn' })
+      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn', message: 'Review this warning' })
     const res = await supertest(app.server)
       .patch(`/v1/rules/${created.id as string}`)
       .set('Authorization', `Bearer ${adminToken}`)
@@ -82,7 +109,7 @@ describe('PATCH /v1/rules/:id', () => {
 
   it('can deactivate a rule', async () => {
     const { body: created } = await supertest(app.server)
-      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn' })
+      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn', message: 'Review this warning' })
     await supertest(app.server).patch(`/v1/rules/${created.id as string}`).set('Authorization', `Bearer ${adminToken}`).send({ active: false })
     const list = await supertest(app.server).get(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`)
     expect(list.body.find((r: { id: string }) => r.id === created.id)).toBeUndefined()
@@ -92,7 +119,7 @@ describe('PATCH /v1/rules/:id', () => {
     const { body: created } = await supertest(app.server)
       .post(`/v1/subjects/${subjectId}/rules`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ kind: 'keyword', keywords: ['x'], action: 'warn' })
+      .send({ kind: 'keyword', keywords: ['x'], action: 'warn', message: 'Review this warning' })
     const res = await supertest(app.server)
       .patch(`/v1/rules/${created.id as string}`)
       .set('Authorization', `Bearer ${adminToken}`)
@@ -113,7 +140,7 @@ describe('PATCH /v1/rules/:id', () => {
 describe('DELETE /v1/rules/:id', () => {
   it('removes the rule', async () => {
     const { body: created } = await supertest(app.server)
-      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn' })
+      .post(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`).send({ kind: 'keyword', keywords: ['x'], action: 'warn', message: 'Review this warning' })
     expect((await supertest(app.server).delete(`/v1/rules/${created.id as string}`).set('Authorization', `Bearer ${adminToken}`)).status).toBe(204)
     const list = await supertest(app.server).get(`/v1/subjects/${subjectId}/rules`).set('Authorization', `Bearer ${adminToken}`)
     expect(list.body.find((r: { id: string }) => r.id === created.id)).toBeUndefined()

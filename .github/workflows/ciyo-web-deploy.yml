@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      checks: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -29,6 +30,10 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: ciyo-web
 
+      - name: Check marketing claims
+        run: pnpm claims:check
+        working-directory: ciyo-web
+
       - name: Lint
         run: pnpm lint
         working-directory: ciyo-web
@@ -39,6 +44,21 @@ jobs:
         env:
           NEXT_PUBLIC_API_BASE: http://localhost:3000
           NEXT_PUBLIC_ENV: staging
+
+      - name: Wait for exact-SHA release checks
+        run: node .github/scripts/wait-for-checks.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUIRED_CHECKS: Backend API E2E,Extension E2E,Admin E2E,Cross-Service E2E
+
+      - name: Write deployment summary
+        run: |
+          {
+            echo "### ciyo-web release gate"
+            echo "- Tested SHA: \`${{ github.sha }}\`"
+            echo "- Environment: \`${{ github.ref_name == 'master' && 'production' || 'staging' }}\`"
+            echo "- Provider deployment: Vercel auto-deploy must remain disabled or protected outside this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Discord
         if: always()

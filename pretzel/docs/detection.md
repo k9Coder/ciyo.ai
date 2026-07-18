@@ -1,7 +1,7 @@
 ---
 status: current
 owner: extension
-verified_at: 2026-06-13
+verified_at: 2026-06-17
 sources:
   - pretzel/src/detection/engine.ts
   - pretzel/src/detection/types.ts
@@ -24,7 +24,7 @@ Detection runs locally in the service worker against the active engine policy.
 1. Return an empty result when the current hostname is disabled.
 2. Normalize lookalike characters, line endings, tabs, and selected invisible characters.
 3. Find fenced and inline-code spans.
-4. Run every enabled baseline and custom rule.
+4. Run every enabled baseline and custom rule whose destinations match the current hostname.
 5. Select the highest action using `log < warn < require_confirmation < block`.
 6. Compute a SHA-256 hash of the normalized prompt.
 
@@ -43,17 +43,17 @@ Malformed pattern regexes are skipped. Fuzzy matching is limited to terms of at 
 
 ## Findings and actions
 
-Each finding contains rule ID/name, severity, action, matched text truncated to 200 characters, and offsets. The result contains all findings, the highest action, prompt hash, detection timestamp, and duration.
+Each finding contains rule ID/name, severity, action, overrideability, optional admin-authored message, matched text truncated to 200 characters, and offsets. The result contains all findings, the highest action, prompt hash, detection timestamp, and duration.
 
 - `log`: prompt proceeds without a modal.
-- `warn`: modal allows edit or send-anyway.
-- `require_confirmation`: the modal path treats it like warn and allows send-anyway.
-- `block`: modal allows only editing; the send is not re-fired.
+- `warn`: modal allows edit and allows send-anyway only when every matched finding is overridable.
+- `require_confirmation`: the modal path treats it like warn and uses the same all-findings overrideability check.
+- `block`: modal allows editing only unless every matched finding is explicitly overridable.
 
 The backend policy schema currently emits only `warn` and `block`. `log` and `require_confirmation` remain engine-policy actions.
 
 ## Built-in default policy
 
-`DEFAULT_POLICY` is used only when authenticated detection has no valid cached backend `policyDoc`. It includes conservative patterns for API keys, private keys, JWTs, secret-like environment assignments, database connection strings, payment/identity data, internal network identifiers, high-entropy tokens, classification labels, and legal privilege markers.
+`DEFAULT_POLICY` is used when authenticated detection has no valid cached backend `policyDoc`, and its baseline rules remain present when a valid backend policy is bridged. It includes conservative patterns for API keys, private keys, JWTs, secret-like environment assignments, database connection strings, payment/identity data, internal network identifiers, high-entropy tokens, classification labels, and legal privilege markers.
 
 No ML/NER or cloud detection stage is implemented. The engine source marks those as future insertion points.

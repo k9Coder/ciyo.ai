@@ -9,7 +9,7 @@
  * After the fix:
  *   - For log-only results (no modal): one "sent" event.
  *   - For warn/block + user edits: one "edited" event only.
- *   - For warn/block + user sends anyway: one "sent_with_reason" event only.
+ *   - For warn/block + user sends anyway: one override event only.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DetectionResult } from '@/detection/types'
@@ -152,14 +152,14 @@ describe('content-script audit event ordering', () => {
     expect(auditCalls[0][0]).toMatchObject({ userDecision: 'edited' })
   })
 
-  it('writes exactly one "sent_with_reason" event when user sends anyway', async () => {
+  it('writes exactly one override event when user sends anyway', async () => {
     const blockResult = makeResult('block')
     mockSendMessage.mockImplementation((msg: { type: string }) => {
       if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
       if (msg.type === 'DETECT') return Promise.resolve(blockResult)
       return Promise.resolve(null)
     })
-    mockShowWarningModal.mockResolvedValue({ type: 'send_anyway', reason: 'false positive' })
+    mockShowWarningModal.mockResolvedValue({ type: 'send_anyway' })
 
     await import('@/content/content-script')
     await triggerSendIntent()
@@ -167,8 +167,8 @@ describe('content-script audit event ordering', () => {
     const auditCalls = mockAppendAuditEvent.mock.calls
     expect(auditCalls).toHaveLength(1)
     expect(auditCalls[0][0]).toMatchObject({
-      userDecision: 'sent_with_reason',
-      reason: 'false positive',
+      userDecision: 'sent_with_override',
+      reason: undefined,
     })
   })
 })

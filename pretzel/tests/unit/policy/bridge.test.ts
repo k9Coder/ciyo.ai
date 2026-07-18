@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { bridgePolicy } from '@/policy/bridge'
+import { DEFAULT_POLICY } from '@/policy/defaults'
 import type { PolicyDoc } from '@/policy/schema'
 
 const MINIMAL_DOC: PolicyDoc = {
@@ -10,9 +11,9 @@ const MINIMAL_DOC: PolicyDoc = {
 }
 
 describe('bridgePolicy', () => {
-  it('returns a Policy with empty rules when no subjects', () => {
+  it('keeps built-in baseline rules when no subjects', () => {
     const p = bridgePolicy(MINIMAL_DOC, [])
-    expect(p.baseline).toHaveLength(0)
+    expect(p.baseline).toHaveLength(DEFAULT_POLICY.baseline.length)
     expect(p.custom).toHaveLength(0)
   })
 
@@ -21,7 +22,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Confidential',
-        rules: [{ id: 'r1', kind: 'keyword', keywords: ['secret', 'classified'], pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' }],
+        rules: [{ id: 'r1', kind: 'keyword', keywords: ['secret', 'classified'], pattern: null, destinations: [], action: 'warn', message: null, isOverridable: true, reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])
@@ -37,7 +38,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Keys',
-        rules: [{ id: 'r2', kind: 'pattern', keywords: null, pattern: 'sk-[A-Za-z0-9]{20,}', destinations: [], action: 'block', message: 'API key', reportLevel: 'none' }],
+        rules: [{ id: 'r2', kind: 'pattern', keywords: null, pattern: 'sk-[A-Za-z0-9]{20,}', destinations: [], action: 'block', message: 'API key', isOverridable: false, reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])
@@ -51,7 +52,7 @@ describe('bridgePolicy', () => {
       ...MINIMAL_DOC,
       subjects: [{
         id: 's1', name: 'Entropy',
-        rules: [{ id: 'r3', kind: 'entropy', keywords: null, pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' }],
+        rules: [{ id: 'r3', kind: 'entropy', keywords: null, pattern: null, destinations: [], action: 'warn', message: null, isOverridable: true, reportLevel: 'none' }],
       }],
     }
     const p = bridgePolicy(doc, [])

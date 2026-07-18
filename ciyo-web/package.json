@@ -6,7 +6,9 @@
     "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "claims:check": "node scripts/check-claims.mjs",
+    "claims:test": "node --test scripts/check-claims.test.mjs"
   },
   "dependencies": {
     "date-fns": "^4.4.0",

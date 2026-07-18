@@ -42,6 +42,7 @@ export async function snapshotSubject(
       destinationGroupIds: r.destinationGroupIds ?? [],
       action:              r.action,
       message:             r.message ?? null,
+      isOverridable:       r.isOverridable,
       reportLevel:         r.reportLevel,
       active:              r.active,
     })),

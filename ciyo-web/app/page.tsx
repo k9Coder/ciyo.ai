@@ -6,22 +6,10 @@ import { PricingPreview } from '@/components/sections/PricingPreview'
 import { CTABanner } from '@/components/sections/CTABanner'
 
 export const metadata: Metadata = {
-  title: 'Pretzel by ciyo.ai — Stop AI Prompt Data Leaks',
-  description: 'The Chrome extension that blocks PII, credentials, and IP from reaching ChatGPT, Claude, and Gemini. Installs in 30 seconds. Free for teams up to 3 users.',
-  openGraph: {
-    title: 'Pretzel — AI Prompt DLP for Enterprise',
-    description: 'Stop your team from leaking secrets to AI. Pretzel intercepts every prompt before it\'s sent — blocking PII, credentials, and IP automatically.',
-  },
+  title: 'Pretzel by ciyo.ai - AI Prompt Policy',
+  description: 'An authenticated Chrome extension that evaluates prompts locally on supported ChatGPT, Claude, and Gemini hosts.',
 }
 
 export default function HomePage() {
-  return (
-    <>
-      <Hero />
-      <HowItWorks />
-      <FeatureGrid />
-      <PricingPreview />
-      <CTABanner />
-    </>
-  )
+  return <><Hero /><HowItWorks /><FeatureGrid /><PricingPreview /><CTABanner /></>
 }

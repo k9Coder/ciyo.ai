@@ -1,6 +1,6 @@
 import type { Action, Finding } from "@/detection/types";
 
-export type UserDecision = "sent" | "edited" | "cancelled" | "sent_with_reason";
+export type UserDecision = "sent" | "edited" | "cancelled" | "sent_with_reason" | "sent_with_override";
 
 export interface AuditEvent {
   id: string;

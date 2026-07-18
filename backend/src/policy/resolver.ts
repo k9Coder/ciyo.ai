@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { memberTeams, teams, destinationGroups } from '../db/schema.js'
 import type { PolicyDoc, RulePolicy, SubjectPolicy } from './compiler.js'
@@ -11,6 +11,7 @@ export interface ResolvedRulePolicy {
   destinations: string[]
   action: 'warn' | 'block'
   message: string | null
+  isOverridable: boolean
 }
 
 export interface ResolvedSubjectPolicy {
@@ -93,7 +94,7 @@ export async function resolveMemberPolicy(
     const groupRows = await db
       .select({ id: destinationGroups.id, domains: destinationGroups.domains })
       .from(destinationGroups)
-      .where(inArray(destinationGroups.id, allGroupIds))
+      .where(and(eq(destinationGroups.tenantId, tenantId), inArray(destinationGroups.id, allGroupIds)))
     for (const row of groupRows) {
       groupDomainsMap[row.id] = row.domains ?? []
     }
@@ -116,6 +117,7 @@ export async function resolveMemberPolicy(
       destinations: [...new Set(merged)],
       action: rule.action,
       message: rule.message,
+      isOverridable: rule.isOverridable ?? (rule.action === 'warn'),
     })
   }
 

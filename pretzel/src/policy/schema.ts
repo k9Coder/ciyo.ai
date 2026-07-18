@@ -11,6 +11,8 @@ const RuleBaseSchema = z.object({
   description: z.string(),
   severity: SeveritySchema,
   action: ActionSchema,
+  isOverridable: z.boolean().optional(),
+  destinations: z.array(z.string()).optional(),
   enabled: z.boolean(),
   tags: z.array(z.string()),
 });
@@ -101,6 +103,7 @@ export const ResolvedRuleSchema = z.object({
   destinations: z.array(z.string()),
   action:       z.enum(["warn", "block"]),
   message:      z.string().nullable(),
+  isOverridable: z.boolean().default(false),
   reportLevel:  z.enum(["none", "minimal", "medium", "rich"]).default("none"),
 });
 

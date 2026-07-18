@@ -4,7 +4,7 @@ import { buildSnippet } from "@/detection/engine";
 
 export type ModalDecision =
   | { type: "edit" }
-  | { type: "send_anyway"; reason: string };
+  | { type: "send_anyway" };
 
 interface Props {
   findings: Finding[];
@@ -50,6 +50,7 @@ function FindingRow({ finding, promptText }: { finding: Finding; promptText: str
         {parts[1] && <mark>{parts[1]}</mark>}
         {parts[2]}
       </p>
+      {finding.message && <p className="ciyo-finding-message">{finding.message}</p>}
     </li>
   );
 }
@@ -67,7 +68,7 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
     return () => window.removeEventListener("keydown", onKey);
   }, [onDecision]);
 
-  const canSendAnyway = highestAction !== "block";
+  const canSendAnyway = findings.every(finding => finding.isOverridable === true);
 
   return (
     <div className="ciyo-backdrop" role="dialog" aria-modal="true" aria-labelledby="ciyo-modal-title">
@@ -96,7 +97,7 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
                 Sensitive content detected
               </h2>
               <p className="ciyo-modal-subtitle">
-                {findings.length} issue{findings.length !== 1 ? "s" : ""} found before sending.
+                {findings.length} issue{findings.length !== 1 ? "s" : ""} found before sending. Highest action: {highestAction}.
               </p>
             </div>
           </div>
@@ -115,7 +116,7 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
             {canSendAnyway && (
               <button
                 className="ciyo-btn-ghost"
-                onClick={() => onDecision({ type: "send_anyway", reason: "user acknowledged" })}
+                onClick={() => onDecision({ type: "send_anyway" })}
               >
                 Looks fine, send it
               </button>

@@ -4,8 +4,10 @@ import {
   destinationGroups, siteConfigs, members, teams, divisions, policies, tenants,
   chatMessages, chatSessions, invites,
 } from '../db/schema.js'
+import { assertDisposableE2EDatabase } from './e2e-db-guard.js'
 
 async function main() {
+  assertDisposableE2EDatabase('teardown-e2e')
   console.log('[teardown-e2e] Truncating test DB...')
   await db.delete(invites)
   await db.delete(chatMessages)

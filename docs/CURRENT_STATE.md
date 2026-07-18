@@ -1,7 +1,7 @@
 ---
 status: current
 owner: repository
-verified_at: 2026-06-13
+verified_at: 2026-06-17
 sources:
   - backend/src/app.ts
   - pretzel/manifest.config.ts
@@ -23,6 +23,9 @@ sources:
 ## Runtime Model
 
 - Admins edit configuration in the console and publish immutable policy snapshots.
+- Published extension policies retain built-in baseline detection rules and merge tenant custom rules into the runtime policy.
+- Rule destinations are hostname-only constraints; empty destinations mean all supported AI sites, while configured hostnames match themselves and subdomains.
+- Rules carry `isOverridable`; the extension shows send-anyway only when every matched finding allows override.
 - Console clients receive policy update notifications over SSE.
 - The extension syncs policy on install and polls for updates every two minutes.
 - Signed-in users receive a member-resolved policy; internal org-token requests receive the compiled tenant policy.
@@ -39,6 +42,7 @@ sources:
 
 - ciyo-guard, proxy/daemon protection, and `@ciyo/detect` extraction are roadmap work.
 - Arbitrary AI-site protection is not available; manifest-authorized hosts are required.
+- Tenant-configurable audit/event retention is not implemented yet.
 - Stripe code exists but Stripe routes/webhook registration are disabled.
 - The marketing site contains claims that are not evidenced by repository implementation; see `ciyo-web/CONTENT_CLAIMS.md`.
 

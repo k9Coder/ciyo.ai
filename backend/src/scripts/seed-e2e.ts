@@ -11,11 +11,13 @@ import {
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
+import { assertDisposableE2EDatabase } from './e2e-db-guard.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SEED_STATE_PATH = path.resolve(__dirname, '../../../e2e/.seed-state.json')
 
 async function main() {
+  assertDisposableE2EDatabase('seed-e2e')
   console.log('[seed-e2e] Truncating test DB...')
   await db.delete(invites)
   await db.delete(chatMessages)
@@ -95,6 +97,7 @@ async function main() {
       kind:        'keyword',
       keywords:    ['ACME_SECRET'],
       action:      'block',
+      isOverridable: false,
       active:      true,
       reportLevel: 'medium',
     },
@@ -104,6 +107,7 @@ async function main() {
       kind:        'keyword',
       keywords:    ['ACME_WARN'],
       action:      'warn',
+      isOverridable: true,
       active:      true,
       reportLevel: 'medium',
     },

@@ -107,6 +107,7 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
             destinationGroupIds: r.destinationGroupIds,
             action:              r.action,
             message:             r.message,
+            isOverridable:       r.isOverridable,
             reportLevel:         r.reportLevel,
             active:              r.active,
           }))

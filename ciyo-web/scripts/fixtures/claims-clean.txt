@@ -1,0 +1,2 @@
+Pretzel evaluates prompts locally on supported ChatGPT, Claude, and Gemini hosts.
+Administrators can configure warn or block actions and publish policy changes.

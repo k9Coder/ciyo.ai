@@ -52,11 +52,15 @@ Before adding or changing product, pricing, security, compliance, customer, stat
 | `pnpm dev` | Start Next.js on port `4000`. |
 | `pnpm lint` | Run ESLint. |
 | `pnpm build` | Build and type-check the production application. |
+| `pnpm claims:check` | Fail on known prohibited unsupported phrases in public source content. |
+| `pnpm claims:test` | Verify the claims checker against clean and prohibited fixtures. |
 | `pnpm start` | Start a previously built Next.js app using the default Next.js start port unless `PORT` is set. |
 
-There is no automated test command or test suite in this package. The current verification gate is:
+The claims checker has a fixture-based Node test. The current verification gate is:
 
 ```bash
+pnpm claims:test
+pnpm claims:check
 pnpm lint
 pnpm build
 ```

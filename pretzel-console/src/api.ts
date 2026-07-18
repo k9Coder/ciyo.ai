@@ -62,12 +62,12 @@ export const api = {
     create: (subjectId: string, data: {
       kind: Rule['kind']; action: Rule['action']
       keywords?: string[]; pattern?: string; message?: string
-      destinationGroupIds?: string[]; reportLevel?: Rule['reportLevel']
+      destinations?: string[]; destinationGroupIds?: string[]; isOverridable?: boolean; reportLevel?: Rule['reportLevel']
     }) => request<Rule>('POST', `/v1/subjects/${subjectId}/rules`, data),
     update: (id: string, data: Partial<{
       kind: Rule['kind']; action: Rule['action']
       keywords: string[]; pattern: string; message: string
-      destinationGroupIds: string[]; active: boolean; reportLevel: Rule['reportLevel']
+      destinations: string[]; destinationGroupIds: string[]; isOverridable: boolean; active: boolean; reportLevel: Rule['reportLevel']
     }>) => request<Rule>('PATCH', `/v1/rules/${id}`, data),
     remove: (id: string) => request<void>('DELETE', `/v1/rules/${id}`),
   },

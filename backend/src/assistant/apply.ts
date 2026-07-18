@@ -30,6 +30,7 @@ export async function executeActions(tenantId: string, actions: Action[]): Promi
             destinationGroupIds: action.destinationGroupIds ?? [],
             action:              action.action,
             message:             action.message ?? null,
+            isOverridable:       action.isOverridable,
             reportLevel:         action.reportLevel ?? 'none',
           })
           applied.push(action)

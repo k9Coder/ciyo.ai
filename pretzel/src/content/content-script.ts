@@ -70,7 +70,7 @@ async function bootstrap() {
           return { proceed: false };
 
         case "send_anyway":
-          await writeAuditEvent(result, promptText, hostname, "sent_with_reason", decision.reason);
+          await writeAuditEvent(result, promptText, hostname, "sent_with_override");
           return { proceed: true };
       }
     } catch (err) {

@@ -8,7 +8,8 @@ import { EntityModal } from '../components/ui/EntityModal'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useSubjects, useSubjectMutations } from '../hooks/useSubjects'
 import { useRules, useRuleMutations } from '../hooks/useRules'
-import type { Subject, Rule } from '../types'
+import { useDestinationGroups } from '../hooks/useDestinationGroups'
+import type { Subject, Rule, DestinationGroup } from '../types'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
@@ -53,11 +54,29 @@ type RuleFormState = {
   keywords:           string
   pattern:            string
   message:            string
+  destinations:       string
   destinationGroupIds: string
+  isOverridable:      boolean
   reportLevel:        Rule['reportLevel']
 }
 
-function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: RuleFormState) => void }) {
+function RuleForm({
+  value, onChange, destinationGroups,
+}: {
+  value: RuleFormState
+  onChange: (v: RuleFormState) => void
+  destinationGroups: DestinationGroup[]
+}) {
+  const selectedGroupIds = new Set(value.destinationGroupIds.split(',').map(s => s.trim()).filter(Boolean))
+  const hasDestinationLimits = value.destinations.split(',').some(s => s.trim()) || selectedGroupIds.size > 0
+
+  function toggleDestinationGroup(id: string) {
+    const next = new Set(selectedGroupIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onChange({ ...value, destinationGroupIds: [...next].join(', ') })
+  }
+
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -74,7 +93,10 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
         <label style={{ display: 'block' }}>
           <span style={labelStyle}>Action</span>
           <select style={selectStyle} value={value.action}
-            onChange={e => onChange({ ...value, action: e.target.value as Rule['action'] })}>
+            onChange={e => {
+              const action = e.target.value as Rule['action']
+              onChange({ ...value, action, isOverridable: action === 'warn' })
+            }}>
             <option value="warn">warn</option>
             <option value="block">block</option>
           </select>
@@ -111,10 +133,18 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
       )}
 
       <label style={{ display: 'block' }}>
-        <span style={labelStyle}>Message (optional)</span>
+        <span style={labelStyle}>User-facing message (required for warnings)</span>
         <input style={inputStyle} value={value.message}
           onChange={e => onChange({ ...value, message: e.target.value })}
-          placeholder="Sensitive content detected" />
+          placeholder="Explain what the user should remove or check before sending" />
+      </label>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+        <input
+          type="checkbox"
+          checked={value.isOverridable}
+          onChange={e => onChange({ ...value, isOverridable: e.target.checked })}
+        />
+        Allow user to send anyway
       </label>
 
       <label style={{ display: 'block' }}>
@@ -128,21 +158,48 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
         </select>
       </label>
 
-      <label style={{ display: 'block' }}>
-        <span style={labelStyle}>Destination Group IDs (comma-separated UUIDs, optional)</span>
-        <input style={monoInputStyle} value={value.destinationGroupIds}
-          onChange={e => onChange({ ...value, destinationGroupIds: e.target.value })}
-          placeholder="uuid1, uuid2" />
-      </label>
+      <div style={{ display: 'grid', gap: 8 }}>
+        <label style={{ display: 'block' }}>
+          <span style={labelStyle}>Destination hostnames (comma-separated, optional)</span>
+          <input style={monoInputStyle} value={value.destinations}
+            onChange={e => onChange({ ...value, destinations: e.target.value })}
+            placeholder="chatgpt.com, gemini.google.com" />
+        </label>
+        <div style={{ fontSize: 12, color: hasDestinationLimits ? 'var(--text-secondary)' : 'var(--brand-primary)' }}>
+          {hasDestinationLimits ? 'Restricted to selected destination hostnames or groups.' : 'All supported AI sites: ChatGPT, Claude, Gemini'}
+        </div>
+      </div>
+
+      {destinationGroups.length > 0 && (
+        <fieldset style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12 }}>
+          <legend style={{ ...labelStyle, padding: '0 4px' }}>Destination groups</legend>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {destinationGroups.map(group => (
+              <label key={group.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedGroupIds.has(group.id)}
+                  onChange={() => toggleDestinationGroup(group.id)}
+                />
+                <span>{group.name} <span style={{ color: 'var(--text-muted)' }}>({group.domains.join(', ') || 'empty'})</span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
     </>
   )
 }
 
 function RulesPanel({ subject }: { subject: Subject }) {
   const { data: rules = [], isLoading } = useRules(subject.id)
+  const { data: destinationGroups = [] } = useDestinationGroups()
   const mutations = useRuleMutations(subject.id)
 
-  const blankRule: RuleFormState = { kind: 'keyword', action: 'warn', keywords: '', pattern: '', message: '', destinationGroupIds: '', reportLevel: 'none' }
+  const blankRule: RuleFormState = {
+    kind: 'keyword', action: 'warn', keywords: '', pattern: '', message: '',
+    destinations: '', destinationGroupIds: '', isOverridable: true, reportLevel: 'none',
+  }
   const [modal, setModal] = useState<{ open: boolean; editing: Rule | null; form: RuleFormState }>({
     open: false, editing: null, form: blankRule,
   })
@@ -159,7 +216,9 @@ function RulesPanel({ subject }: { subject: Subject }) {
         keywords:           rule.keywords?.join(', ') ?? '',
         pattern:            rule.pattern ?? '',
         message:            rule.message ?? '',
+        destinations:       rule.destinations.join(', '),
         destinationGroupIds: rule.destinationGroupIds.join(', '),
+        isOverridable:      rule.isOverridable,
         reportLevel:        rule.reportLevel,
       },
     })
@@ -173,7 +232,9 @@ function RulesPanel({ subject }: { subject: Subject }) {
       keywords:           form.kind === 'keyword' ? form.keywords.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       pattern:            form.kind === 'pattern' ? form.pattern.trim() || undefined : undefined,
       message:            form.message.trim() || undefined,
+      destinations:        form.destinations.split(',').map(s => s.trim()).filter(Boolean),
       destinationGroupIds: form.destinationGroupIds.split(',').map(s => s.trim()).filter(Boolean),
+      isOverridable:      form.isOverridable,
       reportLevel:        form.reportLevel,
     }
   }
@@ -240,7 +301,11 @@ function RulesPanel({ subject }: { subject: Subject }) {
         onSave={handleSave}
         saving={mutations.create.isPending || mutations.update.isPending}
       >
-        <RuleForm value={modal.form} onChange={form => setModal(m => ({ ...m, form }))} />
+        <RuleForm
+          value={modal.form}
+          destinationGroups={destinationGroups}
+          onChange={form => setModal(m => ({ ...m, form }))}
+        />
       </EntityModal>
 
       <ConfirmModal

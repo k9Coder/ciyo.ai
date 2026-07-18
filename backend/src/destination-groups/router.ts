@@ -9,13 +9,22 @@ export async function destinationGroupsRouter(fastify: FastifyInstance): Promise
 
   fastify.post('/destination-groups', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const body = req.body as { name: string; domains: string[]; divisionId?: string; teamId?: string }
-    return reply.status(201).send(await createDestinationGroup(req.tenant.id, body))
+    try {
+      return reply.status(201).send(await createDestinationGroup(req.tenant.id, body))
+    } catch (err) {
+      return reply.status(400).send({ error: err instanceof Error ? err.message : 'Invalid destination group' })
+    }
   })
 
   fastify.patch('/destination-groups/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id } = req.params as { id: string }
     const body = req.body as Partial<{ name: string; domains: string[]; divisionId: string; teamId: string }>
-    const updated = await updateDestinationGroup(req.tenant.id, id, body)
+    let updated
+    try {
+      updated = await updateDestinationGroup(req.tenant.id, id, body)
+    } catch (err) {
+      return reply.status(400).send({ error: err instanceof Error ? err.message : 'Invalid destination group' })
+    }
     if (!updated) return reply.status(404).send({ error: 'Destination group not found' })
     return updated
   })

@@ -30,6 +30,22 @@ export function buildSnippet(text: string, start: number, end: number): string {
   return `${before}[${match}]${after}`;
 }
 
+function ruleIsOverridable(rule: { action: Finding["action"]; isOverridable?: boolean }): boolean {
+  return rule.isOverridable ?? rule.action === "warn";
+}
+
+function hostnameMatchesDestination(hostname: string, destination: string): boolean {
+  const host = hostname.toLowerCase();
+  const dest = destination.toLowerCase();
+  return host === dest || host.endsWith(`.${dest}`);
+}
+
+function ruleAppliesToHostname(rule: { destinations?: string[] }, hostname: string): boolean {
+  const destinations = rule.destinations ?? [];
+  if (destinations.length === 0) return true;
+  return destinations.some(destination => hostnameMatchesDestination(hostname, destination));
+}
+
 // ─── ScoreRule helpers ────────────────────────────────────────────────────────
 
 function countWords(text: string): number {
@@ -72,6 +88,8 @@ function runScoreRule(text: string, rule: ScoreRule, pasteDetected: boolean): Fi
       ruleName: rule.name,
       severity: rule.severity,
       action,
+      isOverridable: ruleIsOverridable({ ...rule, action }),
+      message: rule.description,
       matchedText: text.slice(0, 200),
       startOffset: 0,
       endOffset: text.length,
@@ -123,6 +141,8 @@ function runPatternRule(
       ruleName: rule.name,
       severity: rule.severity,
       action: rule.action,
+      isOverridable: ruleIsOverridable(rule),
+      message: rule.description,
       matchedText: text.slice(start, end).slice(0, 200),
       startOffset: start,
       endOffset: end,
@@ -144,6 +164,8 @@ function runEntropyRule(
     ruleName: rule.name,
     severity: rule.severity,
     action: rule.action,
+    isOverridable: ruleIsOverridable(rule),
+    message: rule.description,
     matchedText: token.slice(0, 200),
     startOffset: index,
     endOffset: index + token.length,
@@ -157,7 +179,11 @@ function runDictionaryRule(
   return [
     ...runExactDictionaryRule(text, rule),
     ...runFuzzyDictionaryRule(text, rule),
-  ];
+  ].map(finding => ({
+    ...finding,
+    isOverridable: ruleIsOverridable(rule),
+    message: rule.description,
+  }));
 }
 
 function runRule(
@@ -205,7 +231,10 @@ export async function detectPrompt(
 
   const normalised = normalizeText(promptText);
   const codeSpans = findCodeSpans(normalised);
-  const allRules = [...policy.baseline, ...policy.custom];
+  const normalizedHostname = hostname.toLowerCase();
+  const allRules = [...policy.baseline, ...policy.custom].filter(rule =>
+    ruleAppliesToHostname(rule, normalizedHostname)
+  );
 
   // Run all rules — pattern + entropy are sync; we can run them all inline.
   // TODO: Layer 2 (ML NER) and Layer 4 (cloud) would be inserted here as

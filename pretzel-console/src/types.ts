@@ -10,7 +10,7 @@ export type MemberRole  = 'member' | 'division_admin' | 'super_admin'
 export type AssistantAction =
   | { op: 'create_rule'; subjectId: string; kind: RuleKind; keywords?: string[]; pattern?: string;
       destinations?: string[]; destinationGroupIds?: string[];
-      action: RuleAction; message?: string; reportLevel?: ReportLevel }
+      action: RuleAction; message?: string; isOverridable?: boolean; reportLevel?: ReportLevel }
   | { op: 'update_rule';   ruleId: string;   patch: Record<string, unknown> }
   | { op: 'delete_rule';   ruleId: string }
   | { op: 'create_subject'; name: string; description?: string; divisionId?: string; teamId?: string }
@@ -49,6 +49,7 @@ export interface Rule {
   destinationGroupIds: string[]
   action: 'warn' | 'block'
   message: string | null
+  isOverridable: boolean
   reportLevel: 'none' | 'minimal' | 'medium' | 'rich'
   active: boolean
   createdAt: string

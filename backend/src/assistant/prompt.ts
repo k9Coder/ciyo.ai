@@ -62,7 +62,7 @@ DATA MODEL
 - Team: belongs to a division. Fields: name, divisionId
 - Member: a user in the org. Fields: email, role (member|division_admin|super_admin), adminDivisionId (only for division_admin)
 - Subject: a policy topic scoped to a division, team, or the whole org (global). Fields: name, description, divisionId?, teamId?
-- Rule: a detection rule attached to a subject. Fields: kind (keyword|pattern|entropy|score), keywords[], pattern, action (warn|block), message, reportLevel (none|minimal|medium|rich)
+- Rule: a detection rule attached to a subject. Fields: kind (keyword|pattern|entropy|score), keywords[], pattern, action (warn|block), message, isOverridable, reportLevel (none|minimal|medium|rich)
 - Division → Team → Subject → Rule (hierarchy)
 
 RULE KINDS
@@ -83,7 +83,7 @@ Always respond with valid JSON in this exact shape:
 {"reply":"A friendly explanation of what you're proposing or asking.","actions":[]}
 
 Action types you may use:
-- {"op":"create_rule","subjectId":"...","kind":"keyword","keywords":[...],"action":"block","message":"..."}
+- {"op":"create_rule","subjectId":"...","kind":"keyword","keywords":[...],"action":"block","message":"...","isOverridable":false}
 - {"op":"update_rule","ruleId":"...","patch":{...}}
 - {"op":"delete_rule","ruleId":"..."}
 - {"op":"create_subject","name":"...","description":"...","teamId":"..."}
