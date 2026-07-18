@@ -1,3 +1,6 @@
+// Load .env before ../db/client.js reads DATABASE_URL — dotenv is a devDependency,
+// so runtime code (dist/db/client.js in the Docker image) must not import it.
+import 'dotenv/config'
 import path from 'path'
 import { writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
