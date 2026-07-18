@@ -54,6 +54,13 @@ pnpm test:e2e -- --project=admin
 - Console route/API changes: run console tests and admin E2E.
 - Documentation changes: run `pnpm docs:check` from the repository root.
 
+## Branch & Deploy Workflow
+
+- `staging` is the default integration branch. Every fix, feature, or code change — unless the user explicitly says otherwise — starts on a new branch cut from `staging` and is merged via a PR whose base is `staging`.
+- `master` is production. Do not target `master` with feature PRs. Periodically, `staging` is aligned into `master` via a promotion PR (`staging` → `master`); only the user decides when.
+- Pushes to `staging` deploy backend and console to the Render staging environment; pushes to `master` deploy production. Tagged releases build the extension and desktop app from `master`.
+- CI secrets are environment-scoped (GitHub Environments `production`/`staging`); see [docs/ENVIRONMENT_AND_SECRETS.md](docs/ENVIRONMENT_AND_SECRETS.md).
+
 ## Editing Rules
 
 - Preserve unrelated dirty-worktree changes.
