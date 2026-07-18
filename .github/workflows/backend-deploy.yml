@@ -6,6 +6,7 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}/backend
