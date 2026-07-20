@@ -1,11 +1,11 @@
-name: Deploy ciyo-web
+name: Deploy mykka-web
 
 on:
   push:
     branches: [master, staging]
     paths:
-      - 'ciyo-web/**'
-      - '.github/workflows/ciyo-web-deploy.yml'
+      - 'mykka-web/**'
+      - '.github/workflows/mykka-web-deploy.yml'
 
 jobs:
   check:
@@ -23,19 +23,19 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
-          cache-dependency-path: ciyo-web/pnpm-lock.yaml
+          cache-dependency-path: mykka-web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: ciyo-web
+        working-directory: mykka-web
 
       - name: Lint
         run: pnpm lint
-        working-directory: ciyo-web
+        working-directory: mykka-web
 
       - name: Build (type-check)
         run: pnpm build
-        working-directory: ciyo-web
+        working-directory: mykka-web
         env:
           NEXT_PUBLIC_API_BASE: http://localhost:3000
           NEXT_PUBLIC_ENV: staging
@@ -46,5 +46,5 @@ jobs:
         with:
           webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
-          title: "ciyo-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
+          title: "mykka-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
           description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"
