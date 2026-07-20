@@ -78,9 +78,9 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
           <div className="mykka-brand-row">
             <MykkaLogo />
             <span className="mykka-brand-label">
-            <span style={{ color: "var(--text-primary)" }}>c</span>
-            <span style={{ color: "var(--brand)" }}>i</span>
-            <span style={{ color: "var(--text-primary)" }}>yo</span>
+            <span style={{ color: "var(--text-primary)" }}>m</span>
+            <span style={{ color: "var(--brand)" }}>y</span>
+            <span style={{ color: "var(--text-primary)" }}>kka</span>
           </span>
           </div>
           <div className="mykka-title-row">

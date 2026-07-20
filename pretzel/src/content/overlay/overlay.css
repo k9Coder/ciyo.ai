@@ -32,7 +32,7 @@
 }
 
 :host([data-theme="dark"]) {
-  --modal-bg:        #0d1525;
+  --modal-bg:        #10141f;
   --modal-border:    rgba(255,255,255,0.07);
   --text-primary:    #f0f4f8;
   --text-secondary:  #cbd5e1;
@@ -40,15 +40,15 @@
   --finding-bg:      rgba(255,255,255,0.04);
   --finding-border:  rgba(255,255,255,0.07);
   --snippet-text:    #94a3b8;
-  --mark-bg:         rgba(0,212,255,0.18);
-  --mark-text:       #00d4ff;
-  --btn-primary-bg:  #00d4ff;
-  --btn-primary-fg:  #0d1525;
+  --mark-bg:         rgba(91,140,255,0.18);
+  --mark-text:       #5b8cff;
+  --btn-primary-bg:  #5b8cff;
+  --btn-primary-fg:  #10141f;
   --btn-ghost-text:  #64748b;
   --blocked-text:    #f87171;
   --backdrop:        rgba(0,0,0,0.72);
-  --brand:           #00d4ff;
-  --brand-dim:       rgba(0,212,255,0.10);
+  --brand:           #5b8cff;
+  --brand-dim:       rgba(91,140,255,0.10);
   --sev-low-bg:      rgba(96,165,250,0.15);  --sev-low-text:      #60a5fa;
   --sev-medium-bg:   rgba(251,191,36,0.15);  --sev-medium-text:   #fbbf24;
   --sev-high-bg:     rgba(251,146,60,0.15);  --sev-high-text:     #fb923c;

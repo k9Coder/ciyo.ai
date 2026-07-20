@@ -20,7 +20,7 @@ export function Spinner({ size = "md", className = "" }: SpinnerProps) {
   const circumference = 2 * Math.PI * r;
   const arc = circumference * 0.72;
   const gap = circumference - arc;
-  const primary = "var(--brand-primary, #00d4ff)";
+  const primary = "var(--brand-primary, #5b8cff)";
 
   return (
     <span className={`mykka-spinner ${className}`} role="status" aria-label="Loading">

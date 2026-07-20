@@ -36,9 +36,9 @@ function Wordmark({ danger = false }: { danger?: boolean }) {
   const accent = danger ? "var(--status-danger)" : "var(--brand-primary)";
   return (
     <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.5px" }}>
-      <span style={{ color: "var(--text-primary)" }}>c</span>
-      <span style={{ color: accent }}>i</span>
-      <span style={{ color: "var(--text-primary)" }}>yo</span>
+      <span style={{ color: "var(--text-primary)" }}>m</span>
+      <span style={{ color: accent }}>y</span>
+      <span style={{ color: "var(--text-primary)" }}>kka</span>
     </span>
   );
 }
