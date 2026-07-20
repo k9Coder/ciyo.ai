@@ -1,5 +1,5 @@
 /**
- * Policy sync — fetches PolicyDoc from ciyo.ai backend using the stored token.
+ * Policy sync — fetches PolicyDoc from mykka.ai backend using the stored token.
  * Runs on startup and every SYNC_INTERVAL_MS.
  * On success: updates the proxy's active policy.
  * On failure: keeps last known policy (never clears it mid-session).
@@ -10,7 +10,7 @@ import { loadToken } from './auth'
 import { env } from './env'
 
 const SYNC_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes — same as extension
-const CIYO_API_BASE = env.CIYO_API_URL
+const PRETZEL_API_BASE = env.PRETZEL_API_URL
 
 type PolicyUpdateCallback = (policy: Policy) => void
 
@@ -23,7 +23,7 @@ export function getLastKnownPolicy(): Policy | null {
 }
 
 async function fetchPolicyDoc(token: string): Promise<PolicyDoc | null> {
-  const res = await fetch(`${CIYO_API_BASE}/v1/policy`, {
+  const res = await fetch(`${PRETZEL_API_BASE}/v1/policy`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   if (!res.ok) return null

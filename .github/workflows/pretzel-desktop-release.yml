@@ -77,7 +77,7 @@ jobs:
       - name: Build & package macOS (arm64 + x64)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           # CSC_IDENTITY_AUTO_DISCOVERY=false tells electron-builder to skip
           # signing when no certificate is present instead of failing
@@ -123,7 +123,7 @@ jobs:
       - name: Build & package Windows (x64)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
           # Skip Authenticode signing for beta
           WIN_CSC_LINK: ''
@@ -165,7 +165,7 @@ jobs:
       - name: Build Linux (AppImage + deb)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
         working-directory: pretzel-desktop
         run: |
