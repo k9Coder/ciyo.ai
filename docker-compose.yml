@@ -42,9 +42,9 @@ services:
     depends_on:
       - backend
 
-  ciyo-web:
+  mykka-web:
     build:
-      context: ./ciyo-web
+      context: ./mykka-web
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_BASE: http://localhost:3000

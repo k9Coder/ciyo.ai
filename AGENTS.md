@@ -31,7 +31,7 @@ sources:
 
 ## Repository Shape
 
-The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `ciyo-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
+The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
 
 The unified Playwright configuration is `e2e/playwright.config.ts`. Run it from
 `e2e/`. These script forms forward project arguments to Playwright:

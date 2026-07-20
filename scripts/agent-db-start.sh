@@ -16,7 +16,7 @@ set -euo pipefail
 
 SEED_CMD="${1:-}"
 AGENT_LABEL="${AGENT_LABEL:-agent-$$}"
-CONTAINER_NAME="ciyo-db-${AGENT_LABEL}"
+CONTAINER_NAME="mykka-db-${AGENT_LABEL}"
 
 # ── 1. Start postgres ──────────────────────────────────────────────────────────
 echo "[db] starting container: $CONTAINER_NAME"
