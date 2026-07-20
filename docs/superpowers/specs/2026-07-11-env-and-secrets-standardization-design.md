@@ -5,9 +5,9 @@
 
 ## Context
 
-The monorepo holds six deployable packages (`backend`, `ciyo-web`, `pretzel`, `pretzel-console`, `pretzel-desktop`, `e2e`) sharing one GitHub repository and therefore one secrets page. Secret names are currently inconsistent (`PROD_DATABASE_URL`, `RENDER_BACKEND_PROD_SERVICE_ID`, `VITE_CLERK_PUBLISHABLE_KEY` vs `VITE_CLERK_PUBLISHABLE_KEY_PROD`, `CIYO_API_URL_PROD`), which makes collisions and wrong-key wiring easy — the Clerk test/prod publishable keys already differ only by suffix. All secrets are repo-level, so every workflow can read every secret.
+The monorepo holds six deployable packages (`backend`, `mykka-web`, `pretzel`, `pretzel-console`, `pretzel-desktop`, `e2e`) sharing one GitHub repository and therefore one secrets page. Secret names are currently inconsistent (`PROD_DATABASE_URL`, `RENDER_BACKEND_PROD_SERVICE_ID`, `VITE_CLERK_PUBLISHABLE_KEY` vs `VITE_CLERK_PUBLISHABLE_KEY_PROD`, `MYKKA_API_URL_PROD`), which makes collisions and wrong-key wiring easy — the Clerk test/prod publishable keys already differ only by suffix. All secrets are repo-level, so every workflow can read every secret.
 
-`.env` file handling is partially standardized: most packages have `.env.example` / `.env.staging` (committed) / `.env.prod` (gitignored), a root `scripts/set-env.mjs` copies files for backend + ciyo-web, and Vite packages use `--mode`. Gaps: `pretzel-desktop` has no `.env` files at all (env comes only from CI or the developer's shell), `ciyo-web` has no `.env.example`, and env reads are scattered raw `process.env.X` / `import.meta.env.X` accesses with no validation.
+`.env` file handling is partially standardized: most packages have `.env.example` / `.env.staging` (committed) / `.env.prod` (gitignored), a root `scripts/set-env.mjs` copies files for backend + mykka-web, and Vite packages use `--mode`. Gaps: `pretzel-desktop` has no `.env` files at all (env comes only from CI or the developer's shell), `mykka-web` has no `.env.example`, and env reads are scattered raw `process.env.X` / `import.meta.env.X` accesses with no validation.
 
 ## Goals
 
@@ -65,7 +65,7 @@ env:
 | `CONSOLE_RENDER_DEPLOY_HOOK` | `RENDER_CONSOLE_PROD_DEPLOY_HOOK` / `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` | pretzel-console-deploy |
 | `PRETZEL_CLERK_PUBLISHABLE_KEY` | `VITE_CLERK_PUBLISHABLE_KEY_PROD` (prod) / `VITE_CLERK_PUBLISHABLE_KEY` (staging/test) | pretzel-release, pretzel-desktop-release, e2e (builds) |
 | `PRETZEL_API_BASE` | `VITE_API_BASE_PROD` | pretzel-release |
-| `PRETZEL_DESKTOP_API_URL` | `CIYO_API_URL_PROD` | pretzel-desktop-release |
+| `PRETZEL_DESKTOP_API_URL` | `MYKKA_API_URL_PROD` | pretzel-desktop-release |
 
 **`staging` environment only (e2e Clerk dev instance):**
 
@@ -84,7 +84,7 @@ There is **no** separate `E2E_CLERK_PUBLISHABLE_KEY`: the e2e workflow's extensi
 | `SHARED_DISCORD_WEBHOOK_URL` | `DISCORD_WEBHOOK_URL` |
 | `SHARED_RENDER_API_KEY` | `RENDER_API_KEY` |
 
-`GITHUB_TOKEN` is built-in and unchanged. ciyo-web deploys via Vercel; its runtime env lives in the Vercel dashboard and it consumes no GitHub secrets beyond the shared Discord webhook.
+`GITHUB_TOKEN` is built-in and unchanged. mykka-web deploys via Vercel; its runtime env lives in the Vercel dashboard and it consumes no GitHub secrets beyond the shared Discord webhook.
 
 ## 2. Workflow changes (6 files in `.github/workflows/`)
 
@@ -94,7 +94,7 @@ Common pattern: the job that consumes deploy secrets declares `environment:`; pe
 |---|---|---|
 | `backend-deploy.yml` | deploy job: `${{ github.ref_name == 'master' && 'production' \|\| 'staging' }}` | `BACKEND_DATABASE_URL`, `BACKEND_RENDER_SERVICE_ID`, `SHARED_RENDER_API_KEY`, `SHARED_DISCORD_WEBHOOK_URL`. Test job untouched (local postgres, dummy keys). |
 | `pretzel-console-deploy.yml` | deploy job: same ternary | `CONSOLE_RENDER_DEPLOY_HOOK` (ternary in `DEPLOY_HOOK` env deleted), `SHARED_DISCORD_WEBHOOK_URL`. Error message text updated to new secret name. Test job untouched. |
-| `ciyo-web-deploy.yml` | none (no deploy secrets) | `SHARED_DISCORD_WEBHOOK_URL` only. |
+| `mykka-web-deploy.yml` | none (no deploy secrets) | `SHARED_DISCORD_WEBHOOK_URL` only. |
 | `pretzel-release.yml` | build-release job: `production` (tag-triggered) | `PRETZEL_CLERK_PUBLISHABLE_KEY`, `PRETZEL_API_BASE`, `SHARED_DISCORD_WEBHOOK_URL`. |
 | `pretzel-desktop-release.yml` | all three build/package jobs: `production` | `PRETZEL_DESKTOP_API_URL`, `PRETZEL_CLERK_PUBLISHABLE_KEY`, `SHARED_DISCORD_WEBHOOK_URL`. |
 | `e2e.yml` | e2e job: `staging` | `PRETZEL_CLERK_PUBLISHABLE_KEY` (builds + `CLERK_PUBLISHABLE_KEY` runtime var), `E2E_CLERK_SECRET_KEY`, `E2E_CLERK_WEBHOOK_SECRET`, `E2E_CLERK_USER_*`, `SHARED_DISCORD_WEBHOOK_URL`. Postgres service container, hardcoded `E2E_DATABASE_URL`, and `INTERNAL_SECRET` literal stay as-is. |
@@ -108,10 +108,10 @@ Standard trio in every inner repo: `.env.example` (committed, documented placeho
 | Package | Active file | Loader | New files needed |
 |---|---|---|---|
 | backend | `.env` | `node --env-file=.env` | — (complete) |
-| ciyo-web | `.env.local` | Next.js convention | `.env.example` |
+| mykka-web | `.env.local` | Next.js convention | `.env.example` |
 | pretzel | `.env` or `--mode staging\|prod` | Vite | — (complete) |
 | pretzel-console | `.env` or `--mode` | Vite | — (complete) |
-| pretzel-desktop | `.env` | electron-vite / dotenv (verify exact mechanism during implementation) | **all four**: `.env.example`, `.env`, `.env.staging`, `.env.prod` — vars: `CIYO_API_URL`, `CLERK_PUBLISHABLE_KEY` |
+| pretzel-desktop | `.env` | electron-vite / dotenv (verify exact mechanism during implementation) | **all four**: `.env.example`, `.env`, `.env.staging`, `.env.prod` — vars: `MYKKA_API_URL`, `CLERK_PUBLISHABLE_KEY` |
 | e2e | `.env.e2e` (test axis — unchanged) | dotenv in global-setup | fix stale "create in Railway" comment in `.env.e2e.example` (infra is Render + Neon) |
 
 `scripts/set-env.mjs`: add `pretzel-desktop` to the copy list (`.env.<env>` → `.env`). Console output updated.
@@ -120,15 +120,15 @@ Test-axis files unchanged: `backend/.env.test` (committed, dummy keys, loaded by
 
 ## 4. `env.ts` per package (zod-validated, fail-fast)
 
-One module per package owns all env access. It parses at import time and throws a clear aggregated error listing every missing/invalid var (fail-fast beats `undefined` surfacing deep in runtime). All scattered `process.env.X` / `import.meta.env.X` reads across `src/` migrate to import from it. zod added as a dependency to `ciyo-web` and `e2e`; other packages already have it (backend v3, console v4 — versions stay as they are, schemas are package-local).
+One module per package owns all env access. It parses at import time and throws a clear aggregated error listing every missing/invalid var (fail-fast beats `undefined` surfacing deep in runtime). All scattered `process.env.X` / `import.meta.env.X` reads across `src/` migrate to import from it. zod added as a dependency to `mykka-web` and `e2e`; other packages already have it (backend v3, console v4 — versions stay as they are, schemas are package-local).
 
 | Package | File(s) | Source | Notes |
 |---|---|---|---|
 | backend | `src/env.ts` | `process.env` | Required: `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `INTERNAL_SECRET`. Optional with defaults: `PORT`, `CORS_ORIGIN`, `LLM_PROVIDER`, SMTP/Stripe/LLM keys, `APP_ENV`, `RATE_LIMIT_DISABLED`, `PAYPAL_SKIP_SIG_VERIFY`. Exact required/optional split decided during implementation from actual usage. |
-| ciyo-web | `src/env.ts` | `process.env.NEXT_PUBLIC_*` | Next.js inlines at build: each var must be referenced literally (`process.env.NEXT_PUBLIC_API_BASE`), never via dynamic key. |
+| mykka-web | `src/env.ts` | `process.env.NEXT_PUBLIC_*` | Next.js inlines at build: each var must be referenced literally (`process.env.NEXT_PUBLIC_API_BASE`), never via dynamic key. |
 | pretzel | `src/env.ts` | `import.meta.env.VITE_*` | Same literal-reference constraint (Vite static replacement). |
 | pretzel-console | `src/env.ts` | `import.meta.env.VITE_*` | Same. |
-| pretzel-desktop | main-process `env.ts`; renderer `env.ts` only if renderer reads env directly | `process.env` (main) | Currently reads `CIYO_API_URL`, `CLERK_PUBLISHABLE_KEY`, `NODE_ENV`. Build-time vs runtime injection verified during implementation. |
+| pretzel-desktop | main-process `env.ts`; renderer `env.ts` only if renderer reads env directly | `process.env` (main) | Currently reads `MYKKA_API_URL`, `CLERK_PUBLISHABLE_KEY`, `NODE_ENV`. Build-time vs runtime injection verified during implementation. |
 | e2e | `env.ts` | `process.env` (after dotenv) | Replaces the hand-rolled required-var loop in `global-setup.ts`. |
 
 Validation failure modes: server-side (backend, e2e, desktop main) throws on startup; client bundles (Vite, Next) fail at build/dev-server start when the schema module is first evaluated.

@@ -1045,7 +1045,7 @@ git commit -m "feat(webhooks): clerk user operations → internal HTTP client"
 
 ```bash
 aws secretsmanager create-secret \
-  --name ciyo/staging/INTERNAL_SECRET \
+  --name mykka/staging/INTERNAL_SECRET \
   --secret-string "$(openssl rand -base64 32)"
 ```
 
@@ -1058,7 +1058,7 @@ Add to `containerDefinitions[].secrets`:
 ```json
 {
   "name": "INTERNAL_SECRET",
-  "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:ciyo/staging/INTERNAL_SECRET"
+  "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:mykka/staging/INTERNAL_SECRET"
 }
 ```
 
@@ -1090,7 +1090,7 @@ git commit -m "feat(infra): INTERNAL_SECRET in Secrets Manager, ALB rule blocks 
 
 - [ ] **Step 1: Add log pipeline facets for `traceId`, `tenantId`, `initiatorId`**
 
-In Datadog → Logs → Pipelines → ciyo-api pipeline, add:
+In Datadog → Logs → Pipelines → mykka-api pipeline, add:
 
 | Attribute | Type | Display name |
 |---|---|---|

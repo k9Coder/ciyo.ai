@@ -14,14 +14,14 @@ The extension sends scan events to `POST /v1/scans` (backend). It is unclear fro
 
 `backend/src/scans/service.ts` shows only `tenantId` and `memberId` being inserted. But the router layer and the extension's `dispatch.ts` need to be verified — what exactly is sent in the POST body, and does the DB schema store it?
 
-This needs to be confirmed before we finalize the Privacy Policy claims on ciyo-web.
+This needs to be confirmed before we finalize the Privacy Policy claims on mykka-web.
 
 ---
 
 ## Acceptance criteria
 
 - [ ] Arjun reads `backend/src/scans/router.ts`, `backend/src/db/schema.ts` (scans table), and `pretzel/src/scans/dispatch.ts` — writes a 3-line summary of exactly what fields are stored
-- [ ] David reviews the summary against the Privacy Policy on ciyo-web
+- [ ] David reviews the summary against the Privacy Policy on mykka-web
 - [ ] If prompt content IS stored: Privacy Policy updated to disclose; retention policy defined
 - [ ] If only metadata: Privacy Policy confirmed accurate; document this so future engineers know not to add content storage silently
 

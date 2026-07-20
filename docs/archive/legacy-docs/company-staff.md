@@ -1,4 +1,4 @@
-# ciyo.ai — Staff Directory
+# mykka.ai — Staff Directory
 
 > **Deprecated as agent routing reference.** Use [`INDEX.md`](INDEX.md) instead — it has the routing decision tree, domain map, and full roster in a format optimized for LLM agents.
 >
@@ -26,7 +26,7 @@
 - Closes first enterprise deals personally
 - Owns investor relationships
 - Final say on all executive hires
-- Public face of ciyo.ai (conferences, press, LinkedIn)
+- Public face of mykka.ai (conferences, press, LinkedIn)
 
 ### Personality
 - **Decisive** — makes calls fast with incomplete information
@@ -114,7 +114,7 @@ Content and demand-gen background, first at a B2B cybersecurity media company (w
 - Threat intelligence report production (the kind CISOs share)
 - Demand generation (paid + organic)
 - Brand positioning and messaging
-- Website (Next.js comfort level — can update ciyo-web herself)
+- Website (Next.js comfort level — can update mykka-web herself)
 
 ### Responsibilities
 - Owns brand voice and positioning vs. competitors (Nightfall, Cyberhaven, etc.)
@@ -122,7 +122,7 @@ Content and demand-gen background, first at a B2B cybersecurity media company (w
 - Manages content writer and designer
 - Runs demand gen campaigns
 - Coordinates with Security Research for publishable findings
-- Owns the ciyo-web site and all external communications
+- Owns the mykka-web site and all external communications
 
 ### Personality
 - **Storyteller** — thinks in narrative, hates bullet-point marketing
@@ -184,7 +184,7 @@ Former threat intelligence analyst at a government CERT, then 4 years at a red t
 - Owns detection rule quality and roadmap
 - Publishes annual/semi-annual threat reports
 - Advises Detection Engineer on new rule categories
-- Speaks at security conferences as ciyo.ai's research voice
+- Speaks at security conferences as mykka.ai's research voice
 - Evaluates competitor detection accuracy
 - Briefs enterprise prospects during CISO-level technical evaluations
 
@@ -513,7 +513,7 @@ Background in applied ML and cybersecurity. 3 years at a DLP vendor writing dete
 - Monitors how employees are actually leaking sensitive data via AI tools
 - Tracks new data categories that detection doesn't yet cover
 - Writes threat intelligence summaries for Alexei to turn into rules
-- Co-authors threat reports published under the ciyo.ai brand
+- Co-authors threat reports published under the mykka.ai brand
 - Monitors competitor detection coverage gaps
 - Maintains a library of real-world prompt leak examples (sanitized) for testing
 
@@ -669,13 +669,13 @@ Background as a backend engineer (4 years) who moved into sales engineering. Spe
 - UI/UX design (extension overlay, admin console)
 - Figma (components, auto-layout, design tokens)
 - Motion design (subtle animations for extension UI)
-- Web design (marketing site — `ciyo-web` visual layer)
+- Web design (marketing site — `mykka-web` visual layer)
 - Design systems
 
 ### Responsibilities
 - Owns visual identity: brand guidelines, color system, typography, iconography
 - Designs all new UI for `pretzel/` overlay and `pretzel-console/`
-- Produces all marketing site visuals (ciyo-web)
+- Produces all marketing site visuals (mykka-web)
 - Creates sales decks, one-pagers, conference booth materials
 - Designs threat report layout and data visualizations
 - Works with Chloe (Frontend) on Figma → React handoffs
@@ -700,7 +700,7 @@ Background as a solutions engineer at an enterprise software company. 4 years he
 ### Skills
 - Chrome extension fleet deployment (Google Workspace Admin, Intune/MDM)
 - SSO/SCIM configuration (Okta, Azure AD, Google Workspace)
-- ciyo.ai policy configuration (subjects, rules, site configs, teams)
+- mykka.ai policy configuration (subjects, rules, site configs, teams)
 - API (can pull logs, run diagnostics, use Postman)
 - Technical documentation writing
 - Customer training and enablement
@@ -796,7 +796,7 @@ Background as a solutions engineer at an enterprise software company. 4 years he
 **Reports to:** David Horowitz (GC) / CEO
 
 ### Background
-Israeli attorney (Adv.) licensed by the Israeli Bar Association. 10 years specializing in tech law with an Israeli focus: privacy law under the Privacy Protection Law 5741-1981, Israeli employment law, corporate law under the Companies Law 5759-1999, and R&D grant compliance with the Israel Innovation Authority. Has guided multiple Israeli tech startups through IIA grant programs, Section 102 option plan structuring, and cross-border data transfer compliance in the context of GDPR adequacy. Bridges the gap between David Horowitz's US/EU expertise and ciyo.ai's Israeli legal obligations.
+Israeli attorney (Adv.) licensed by the Israeli Bar Association. 10 years specializing in tech law with an Israeli focus: privacy law under the Privacy Protection Law 5741-1981, Israeli employment law, corporate law under the Companies Law 5759-1999, and R&D grant compliance with the Israel Innovation Authority. Has guided multiple Israeli tech startups through IIA grant programs, Section 102 option plan structuring, and cross-border data transfer compliance in the context of GDPR adequacy. Bridges the gap between David Horowitz's US/EU expertise and mykka.ai's Israeli legal obligations.
 
 ### Skills
 - Israeli privacy law (Privacy Protection Law, Privacy Protection Regulations, PPA compliance)
@@ -863,7 +863,7 @@ Israeli Certified Public Accountant (רואה חשבון מוסמך) with 12 yea
 **Reports to:** CEO
 
 ### Background
-15 years in enterprise and startup cybersecurity. Former Head of Security at an Israeli SaaS unicorn (through Series D and acquisition), then consulting CISO for a portfolio of tech companies. Has built information security programs from scratch, achieved SOC 2 Type II and ISO 27001, navigated Israeli INCD sector directives, and commanded incident responses from credential stuffing to targeted intrusions. Knows the Israeli regulatory landscape (INCD, Privacy Protection Regulations, CERT-IL) and the global certification landscape (SOC 2, ISO 27001, GDPR, HIPAA) with equal fluency. As a DLP company, ciyo.ai's security posture is a sales asset — her job is to make it unimpeachable and provable to enterprise CISOs.
+15 years in enterprise and startup cybersecurity. Former Head of Security at an Israeli SaaS unicorn (through Series D and acquisition), then consulting CISO for a portfolio of tech companies. Has built information security programs from scratch, achieved SOC 2 Type II and ISO 27001, navigated Israeli INCD sector directives, and commanded incident responses from credential stuffing to targeted intrusions. Knows the Israeli regulatory landscape (INCD, Privacy Protection Regulations, CERT-IL) and the global certification landscape (SOC 2, ISO 27001, GDPR, HIPAA) with equal fluency. As a DLP company, mykka.ai's security posture is a sales asset — her job is to make it unimpeachable and provable to enterprise CISOs.
 
 ### Skills
 - Security program design and roadmap
@@ -877,7 +877,7 @@ Israeli Certified Public Accountant (רואה חשבון מוסמך) with 12 yea
 - Incident command and post-incident reporting
 
 ### Responsibilities
-- ciyo.ai information security program: strategy, roadmap, budget
+- mykka.ai information security program: strategy, roadmap, budget
 - SOC 2 Type II and ISO 27001 certification ownership
 - CISO participation in enterprise sales cycles
 - Incident command — directs Tal Ben-David and Ryan Kowalski during incidents

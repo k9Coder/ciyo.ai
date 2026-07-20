@@ -1,14 +1,14 @@
-# ciyo Rebrand — Design Spec
+# mykka Rebrand — Design Spec
 
 **Date:** 2026-05-21
 **Status:** Approved
-**Scope:** Full rebrand from SafeInput → ciyo across browser extension, admin console, and all string references.
+**Scope:** Full rebrand from SafeInput → mykka across browser extension, admin console, and all string references.
 
 ---
 
 ## 1. Product Context
 
-ciyo is a browser-based DLP tool for LLM chat interfaces with two user-facing surfaces:
+mykka is a browser-based DLP tool for LLM chat interfaces with two user-facing surfaces:
 
 - **Browser Extension** — intercepts prompts before they leave the browser, detects secrets and PII
 - **Admin Console** (`admin/`) — IT/security team manages policies, teams, members, audit logs
@@ -20,8 +20,8 @@ ciyo is a browser-based DLP tool for LLM chat interfaces with two user-facing su
 
 | Dimension | Decision |
 |---|---|
-| Name | **ciyo** (all lowercase) |
-| Domain | ciyo.ai |
+| Name | **mykka** (all lowercase) |
+| Domain | mykka.ai |
 | Personality | Enterprise security — dark, sharp, Wiz / Linear energy |
 | Default mode | Dark |
 | Light mode | Available via toggle |
@@ -116,19 +116,19 @@ Identical to current SafeInput tokens — no color changes.
 
 ## 5. String / Copy Changes
 
-All occurrences of "SafeInput" / "safeinput" / "safe-input" must be replaced with "ciyo".
+All occurrences of "SafeInput" / "safeinput" / "safe-input" must be replaced with "mykka".
 
 | File | Change |
 |---|---|
-| `manifest.config.ts` | `name: "ciyo"`, update description |
-| `package.json` (root) | `"name": "ciyo"` |
-| `backend/package.json` | `"name": "ciyo-backend"` |
-| `admin/package.json` | `"name": "ciyo-admin"` |
-| `admin/index.html` | `<title>ciyo Admin</title>` |
+| `manifest.config.ts` | `name: "mykka"`, update description |
+| `package.json` (root) | `"name": "mykka"` |
+| `backend/package.json` | `"name": "mykka-backend"` |
+| `admin/package.json` | `"name": "mykka-admin"` |
+| `admin/index.html` | `<title>mykka Admin</title>` |
 | `src/popup/Popup.tsx` | Wordmark component: `safe`/`input` → `ci`/`yo` split |
 | `admin/src/components/layout/AppLayout.tsx` | Same wordmark update |
 | `src/shared/constants.ts` | `EXTENSION_NAME`, `API_BASE` domain, `SEND_SENTINEL_ATTR` attr name |
-| `admin/src/utils/theme.ts` | Storage key `safeinput-theme` → `ciyo-theme` |
+| `admin/src/utils/theme.ts` | Storage key `safeinput-theme` → `mykka-theme` |
 | `README.md` | Product name + description |
 | `src/options/pages/AboutPage.tsx` | Any brand strings |
 | `backend/src/billing/email.ts` | Any brand strings in email copy |
@@ -225,7 +225,7 @@ Same structure, swap `#0d1525` → `#f0f4f8`, `#00d4ff` → `#0077aa`, `#ffffff`
 1. Replace SVG logo files in `public/`
 2. Update `LogoIcon` + `Wordmark` components in extension popup
 3. Update `LogoIcon` + `Wordmark` in admin sidebar
-4. Global string replace SafeInput → ciyo (manifest, package.json files, constants, theme key, HTML titles)
+4. Global string replace SafeInput → mykka (manifest, package.json files, constants, theme key, HTML titles)
 5. Update `README.md`
 6. Grep pass to catch stragglers
 7. Build + smoke test both surfaces

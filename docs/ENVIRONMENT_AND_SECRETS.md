@@ -69,7 +69,7 @@ There is deliberately no `E2E_CLERK_PUBLISHABLE_KEY` — e2e builds read `PRETZE
 | `RENDER_CONSOLE_PROD_DEPLOY_HOOK` / `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` | `CONSOLE_RENDER_DEPLOY_HOOK` | production / staging env |
 | `VITE_CLERK_PUBLISHABLE_KEY_PROD` / `VITE_CLERK_PUBLISHABLE_KEY` | `PRETZEL_CLERK_PUBLISHABLE_KEY` | production / staging env |
 | `VITE_API_BASE_PROD` | `PRETZEL_API_BASE` | production env (+ staging value) |
-| `CIYO_API_URL_PROD` | `PRETZEL_DESKTOP_API_URL` | production env (+ staging value) |
+| `MYKKA_API_URL_PROD` | `PRETZEL_DESKTOP_API_URL` | production env (+ staging value) |
 | `CLERK_SECRET_KEY` | `E2E_CLERK_SECRET_KEY` | staging env |
 | `CLERK_WEBHOOK_SECRET` | `E2E_CLERK_WEBHOOK_SECRET` | staging env |
 | `E2E_CLERK_USER_ID` / `_ORG_ID` / `_USER_EMAIL` / `_USER_PASSWORD` | unchanged names | move to staging env |

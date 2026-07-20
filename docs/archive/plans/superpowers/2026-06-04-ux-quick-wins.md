@@ -318,14 +318,14 @@ Nav label was 'Policies' but page header said 'Subjects & Rules' — now consist
 
 **Files:**
 - Modify: `pretzel-console/src/` (check Hero.tsx if it exists in console)
-- Modify: `ciyo-web/components/sections/Hero.tsx`
+- Modify: `mykka-web/components/sections/Hero.tsx`
 
 - [ ] Step 1: Find placeholder text.
 ```bash
-grep -rn "placeholder\|Placeholder\|screenshot placeholder" ciyo-web/components/sections/Hero.tsx pretzel-console/src/ 2>/dev/null
+grep -rn "placeholder\|Placeholder\|screenshot placeholder" mykka-web/components/sections/Hero.tsx pretzel-console/src/ 2>/dev/null
 ```
 
-- [ ] Step 2: In `ciyo-web/components/sections/Hero.tsx`, replace the placeholder image section with a styled placeholder that clearly shows a call-to-action for the real screenshot, rather than placeholder text visible to visitors. Use a dark gradient box with text "Product Demo" until a real screenshot is available:
+- [ ] Step 2: In `mykka-web/components/sections/Hero.tsx`, replace the placeholder image section with a styled placeholder that clearly shows a call-to-action for the real screenshot, rather than placeholder text visible to visitors. Use a dark gradient box with text "Product Demo" until a real screenshot is available:
 ```tsx
 // Replace: <div>Extension screenshot placeholder</div>
 // With:
@@ -343,7 +343,7 @@ grep -rn "placeholder\|Placeholder\|screenshot placeholder" ciyo-web/components/
 
 - [ ] Step 3: Commit.
 ```bash
-git add ciyo-web/components/sections/Hero.tsx
+git add mykka-web/components/sections/Hero.tsx
 git commit -m "fix(ux): replace visible placeholder text in Hero with styled empty state
 
 'Extension screenshot placeholder' text was visible to site visitors."

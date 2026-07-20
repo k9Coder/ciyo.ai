@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a conversational AI assistant to the ciyo admin web app that lets super admins create, update, and delete rules and subjects using natural language, with a preview-then-confirm flow.
+**Goal:** Add a conversational AI assistant to the mykka admin web app that lets super admins create, update, and delete rules and subjects using natural language, with a preview-then-confirm flow.
 
 **Architecture:** Single-turn LLM approach: each message fetches the tenant's full state snapshot, builds a system prompt, calls the LLM (Anthropic or OpenAI via a swappable interface), and returns `{ reply, actions[] }`. The admin reviews proposed actions in a 50/50 split preview pane and clicks Apply to execute them via existing services.
 
@@ -393,7 +393,7 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
     keywords: r.keywords, pattern: r.pattern, action: r.action, active: r.active,
   }))
 
-  return `You are the ciyo Assistant — an AI that helps administrators manage data-loss prevention policies for the ciyo platform. ciyo is a Chrome extension that intercepts AI prompts (ChatGPT, Gemini, etc.) and warns or blocks users when they attempt to send sensitive data.
+  return `You are the mykka Assistant — an AI that helps administrators manage data-loss prevention policies for the mykka platform. mykka is a Chrome extension that intercepts AI prompts (ChatGPT, Gemini, etc.) and warns or blocks users when they attempt to send sensitive data.
 
 You help admins create, edit, and delete rules and subjects using natural language. Always confirm what you're about to do before listing actions. If the user's intent is ambiguous (e.g. "all teams" when there are many), ask a clarifying question instead of guessing. Never apply changes yourself — return them as structured actions for human review.
 
@@ -1471,7 +1471,7 @@ export function ChatPane({
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', minWidth: 0 }}>
       <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Assistant</span>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>ciyo AI policy manager</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>mykka AI policy manager</span>
       </div>
 
       <SessionTabs

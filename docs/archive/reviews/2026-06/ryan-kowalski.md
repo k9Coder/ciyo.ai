@@ -1,7 +1,7 @@
 # Infrastructure & Security Review — Ryan Kowalski (DevOps/Platform Engineer)
 
 **Date:** 2026-06-08
-**Reviewer:** Ryan Kowalski — DevOps/Platform Engineer, ciyo.ai
+**Reviewer:** Ryan Kowalski — DevOps/Platform Engineer, mykka.ai
 **Scope:** Docker configs, nginx, CI/CD pipelines, DB client, logger
 
 ---
@@ -54,7 +54,7 @@
 
 ---
 
-#### `ciyo-web/Dockerfile` — Marketing / product site (Next.js)
+#### `mykka-web/Dockerfile` — Marketing / product site (Next.js)
 
 - [x] Reviewed
   **Verdict:** ISSUE
@@ -76,12 +76,12 @@
 
 ---
 
-#### `ciyo-web/nginx.conf` — File does not exist
+#### `mykka-web/nginx.conf` — File does not exist
 
 - [x] Reviewed
   **Verdict:** N/A
 
-  **Findings:** The file `ciyo-web/nginx.conf` does not exist on disk. The `ciyo-web` package is a Next.js app deployed to Vercel, so nginx is not used for it — the nginx config lives only under `pretzel-console/`. The review list appears to have included this path in error; see `pretzel-console/nginx.conf` below.
+  **Findings:** The file `mykka-web/nginx.conf` does not exist on disk. The `mykka-web` package is a Next.js app deployed to Vercel, so nginx is not used for it — the nginx config lives only under `pretzel-console/`. The review list appears to have included this path in error; see `pretzel-console/nginx.conf` below.
 
   **Proposed changes:** N/A — but `pretzel-console/nginx.conf` review below covers the actual nginx config in use.
 
@@ -117,7 +117,7 @@
       add_header X-Content-Type-Options "nosniff" always;
       add_header X-Frame-Options "DENY" always;
       add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-      add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.clerk.dev https://clerk.ciyo.ai;" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.clerk.dev https://clerk.mykka.ai;" always;
 
       location / {
           try_files $uri $uri/ /index.html;
@@ -131,7 +131,7 @@
 
 ---
 
-#### `ciyo-web/vercel.json` — Vercel deployment config for ciyo-web
+#### `mykka-web/vercel.json` — Vercel deployment config for mykka-web
 
 - [x] Reviewed
   **Verdict:** WARN
@@ -148,7 +148,7 @@
   Add to the headers array:
   ```json
   { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-  { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://clerk.ciyo.ai; connect-src 'self' https://api.clerk.dev;" },
+  { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://clerk.mykka.ai; connect-src 'self' https://api.clerk.dev;" },
   { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
   ```
 
@@ -204,7 +204,7 @@
 
 ---
 
-#### `.github/workflows/ciyo-web-deploy.yml` — Marketing site deploy pipeline
+#### `.github/workflows/mykka-web-deploy.yml` — Marketing site deploy pipeline
 
 - [x] Reviewed
   **Verdict:** WARN
@@ -371,13 +371,13 @@
 |---|---|---|
 | `docker-compose.yml` | ISSUE | 5 |
 | `pretzel-console/Dockerfile` | ISSUE | 4 |
-| `ciyo-web/Dockerfile` | ISSUE | 4 |
-| `ciyo-web/nginx.conf` | N/A | File missing |
+| `mykka-web/Dockerfile` | ISSUE | 4 |
+| `mykka-web/nginx.conf` | N/A | File missing |
 | `pretzel-console/nginx.conf` | ISSUE | 5 |
-| `ciyo-web/vercel.json` | WARN | 3 |
+| `mykka-web/vercel.json` | WARN | 3 |
 | `backend-deploy.yml` | ISSUE | 6 |
 | `pretzel-console-deploy.yml` | ISSUE | 4 |
-| `ciyo-web-deploy.yml` | WARN | 4 |
+| `mykka-web-deploy.yml` | WARN | 4 |
 | `pretzel-release.yml` | WARN | 4 |
 | `e2e.yml` | ISSUE | 7 |
 | `backend/src/db/client.ts` | ISSUE | 4 |

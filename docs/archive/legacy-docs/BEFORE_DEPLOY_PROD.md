@@ -78,7 +78,7 @@ These are separate from observability but easy to forget. Each service needs its
 
 **What to do:**
 1. [clerk.com](https://clerk.com) → your app → switch to **Production** at the top-left
-2. Clerk will ask you to configure a custom domain (e.g. `accounts.ciyo.ai`) and add a DNS record — follow the on-screen wizard to activate it
+2. Clerk will ask you to configure a custom domain (e.g. `accounts.mykka.ai`) and add a DNS record — follow the on-screen wizard to activate it
 3. Once active, go to **API Keys** and copy:
    - **Publishable key** (`pk_live_...`) → paste into `pretzel/.env.prod` and `pretzel-console/.env.prod`
    - **Secret key** (`sk_live_...`) → paste into `backend/.env.prod` as `CLERK_SECRET_KEY`
@@ -91,7 +91,7 @@ These are separate from observability but easy to forget. Each service needs its
 
 **What to do:**
 1. Clerk dashboard → **Production instance** → Webhooks → **Add endpoint**
-2. URL: `https://api.ciyo.ai/webhooks/clerk` (replace with your actual backend domain)
+2. URL: `https://api.mykka.ai/webhooks/clerk` (replace with your actual backend domain)
 3. Select these events at minimum: `user.created`, `user.deleted`, `organizationMembership.created`, `organizationMembership.deleted`
 4. Save → copy the **Signing secret** (`whsec_...`)
 5. Paste it into `backend/.env.prod` as `CLERK_WEBHOOK_SECRET`
@@ -123,7 +123,7 @@ Also fill in the Vite packages:
 | Variable | Value |
 |---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | `pk_live_...` from Clerk production instance |
-| `VITE_API_BASE` | `https://api.ciyo.ai` (your production backend URL) |
+| `VITE_API_BASE` | `https://api.mykka.ai` (your production backend URL) |
 
 > **Security reminder:** The `.env.prod` files are gitignored for good reason. Never paste live secrets into `.env.staging` (which is committed). If you accidentally commit a secret, rotate it immediately in the relevant dashboard.
 

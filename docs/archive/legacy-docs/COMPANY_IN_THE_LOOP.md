@@ -110,7 +110,7 @@
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/next.config.ts` — Next.js configuration for the marketing site
+#### `mykka-web/next.config.ts` — Next.js configuration for the marketing site
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
@@ -1545,7 +1545,7 @@
 ## 8. Carlos Mendes — Designer
 
 **Domain:** All UI that users see: extension overlay, popup, options pages, console components, marketing site visuals  
-**Lens:** Visual consistency with brand guidelines? ARIA attributes correct? Keyboard navigation works? Focus visible? Color contrast meets WCAG AA? Animations smooth and not jarring? Does the UI feel like ciyo.ai or like a dev built it without design input?
+**Lens:** Visual consistency with brand guidelines? ARIA attributes correct? Keyboard navigation works? Focus visible? Color contrast meets WCAG AA? Animations smooth and not jarring? Does the UI feel like mykka.ai or like a dev built it without design input?
 
 ---
 
@@ -1639,49 +1639,49 @@
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/layout/Header.tsx` — Marketing site header nav
+#### `mykka-web/components/layout/Header.tsx` — Marketing site header nav
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/layout/Footer.tsx` — Marketing site footer
+#### `mykka-web/components/layout/Footer.tsx` — Marketing site footer
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/Hero.tsx` — Marketing hero section
+#### `mykka-web/components/sections/Hero.tsx` — Marketing hero section
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/FeatureGrid.tsx` — Feature comparison grid
+#### `mykka-web/components/sections/FeatureGrid.tsx` — Feature comparison grid
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/CTABanner.tsx` — Call-to-action banner
+#### `mykka-web/components/sections/CTABanner.tsx` — Call-to-action banner
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/HowItWorks.tsx` — Product explainer section
+#### `mykka-web/components/sections/HowItWorks.tsx` — Product explainer section
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/PricingPreview.tsx` — Pricing preview section
+#### `mykka-web/components/sections/PricingPreview.tsx` — Pricing preview section
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/VideoDemo.tsx` — Product demo video embed section
+#### `mykka-web/components/sections/VideoDemo.tsx` — Product demo video embed section
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
@@ -1708,19 +1708,19 @@
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/Dockerfile` — Marketing site production Docker image
+#### `mykka-web/Dockerfile` — Marketing site production Docker image
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/nginx.conf` — nginx configuration for serving the marketing site
+#### `mykka-web/nginx.conf` — nginx configuration for serving the marketing site
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/vercel.json` — Vercel deployment configuration
+#### `mykka-web/vercel.json` — Vercel deployment configuration
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
@@ -1738,7 +1738,7 @@
   **Findings:**  
   **Proposed changes:**
 
-#### `.github/workflows/ciyo-web-deploy.yml` — Marketing site deployment pipeline
+#### `.github/workflows/mykka-web-deploy.yml` — Marketing site deployment pipeline
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
@@ -2431,19 +2431,19 @@
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/security/page.tsx` — Security claims page (do they match what we actually implement?)
+#### `mykka-web/app/security/page.tsx` — Security claims page (do they match what we actually implement?)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/accessibility/page.tsx` — Accessibility statement (is it accurate?)
+#### `mykka-web/app/accessibility/page.tsx` — Accessibility statement (is it accurate?)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/robots.ts` — robots.txt (are we disclosing too much about internal paths?)
+#### `mykka-web/app/robots.ts` — robots.txt (are we disclosing too much about internal paths?)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
@@ -2453,138 +2453,138 @@
 
 ## 13. Priya Nair — Head of Marketing
 
-**Domain:** `ciyo-web/` — the marketing website  
+**Domain:** `mykka-web/` — the marketing website  
 **Lens:** Are product claims accurate (not overpromising what the extension actually does)? Are SEO meta tags and Open Graph present on all pages? Is the copy sharp and on-brand? Is the pricing page up to date? Does the security page match what Engineering has actually built? Are there dead links, outdated competitor comparisons, or placeholder text still in prod?
 
 ---
 
-#### `ciyo-web/app/page.tsx` — Homepage
+#### `mykka-web/app/page.tsx` — Homepage
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/product/page.tsx` — Product feature detail page
+#### `mykka-web/app/product/page.tsx` — Product feature detail page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/pricing/page.tsx` — Pricing page
+#### `mykka-web/app/pricing/page.tsx` — Pricing page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/solutions/page.tsx` — Solutions landing page
+#### `mykka-web/app/solutions/page.tsx` — Solutions landing page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/solutions/[industry]/page.tsx` — Industry-specific solutions page
+#### `mykka-web/app/solutions/[industry]/page.tsx` — Industry-specific solutions page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/security/page.tsx` — Security/trust page
+#### `mykka-web/app/security/page.tsx` — Security/trust page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/blog/page.tsx` — Blog listing page
+#### `mykka-web/app/blog/page.tsx` — Blog listing page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/blog/[slug]/page.tsx` — Individual blog post page
+#### `mykka-web/app/blog/[slug]/page.tsx` — Individual blog post page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/about/page.tsx` — About/team page
+#### `mykka-web/app/about/page.tsx` — About/team page
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/layout.tsx` — Root layout: global meta tags, fonts, nav
+#### `mykka-web/app/layout.tsx` — Root layout: global meta tags, fonts, nav
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/sitemap.ts` — XML sitemap generation
+#### `mykka-web/app/sitemap.ts` — XML sitemap generation
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/app/robots.ts` — robots.txt generation
+#### `mykka-web/app/robots.ts` — robots.txt generation
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/Hero.tsx` — Hero section copy and CTA
+#### `mykka-web/components/sections/Hero.tsx` — Hero section copy and CTA
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/FeatureGrid.tsx` — Feature listing and copy
+#### `mykka-web/components/sections/FeatureGrid.tsx` — Feature listing and copy
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/PricingPreview.tsx` — Pricing section copy
+#### `mykka-web/components/sections/PricingPreview.tsx` — Pricing section copy
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/CTABanner.tsx` — Call-to-action copy and link
+#### `mykka-web/components/sections/CTABanner.tsx` — Call-to-action copy and link
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/HowItWorks.tsx` — Product explainer copy
+#### `mykka-web/components/sections/HowItWorks.tsx` — Product explainer copy
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/sections/VideoDemo.tsx` — Demo video (is it current/accurate?)
+#### `mykka-web/components/sections/VideoDemo.tsx` — Demo video (is it current/accurate?)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/layout/Header.tsx` — Site navigation links
+#### `mykka-web/components/layout/Header.tsx` — Site navigation links
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/components/layout/Footer.tsx` — Footer links and legal copy
+#### `mykka-web/components/layout/Footer.tsx` — Footer links and legal copy
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/lib/config.ts` — Site config (APP_URL, feature flags, environment vars)
+#### `mykka-web/lib/config.ts` — Site config (APP_URL, feature flags, environment vars)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  
   **Proposed changes:**
 
-#### `ciyo-web/lib/posts.ts` — Blog post loading logic (how posts are fetched/rendered)
+#### `mykka-web/lib/posts.ts` — Blog post loading logic (how posts are fetched/rendered)
 - [ ] Reviewed  
   **Verdict:**  
   **Findings:**  

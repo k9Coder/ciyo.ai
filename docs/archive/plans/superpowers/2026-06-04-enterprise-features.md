@@ -84,8 +84,8 @@ export async function dispatchSiemEvent(
         method:  'POST',
         headers: {
           'Content-Type':        'application/json',
-          'X-Ciyo-Signature':    `sha256=${sig}`,
-          'X-Ciyo-Event':        payload.event_type,
+          'X-Mykka-Signature':    `sha256=${sig}`,
+          'X-Mykka-Event':        payload.event_type,
         },
         body,
         signal: controller.signal,
@@ -197,7 +197,7 @@ git add backend/src/db/schema.ts backend/src/siem/ backend/src/app.ts
 git commit -m "feat(enterprise): SIEM webhook — configurable event forwarding endpoint
 
 Adds /v1/siem/webhooks CRUD API. Events dispatched with HMAC-SHA256
-signature in X-Ciyo-Signature header. Secret shown once at creation.
+signature in X-Mykka-Signature header. Secret shown once at creation.
 Most-requested enterprise feature (SOC/SIEM integration)."
 ```
 
@@ -281,7 +281,7 @@ Add a `storage` key for managed storage:
     "apiBase": {
       "type": "string",
       "title": "Pretzel API Base URL",
-      "description": "Base URL of the ciyo.ai API. Default: https://api.ciyo.ai"
+      "description": "Base URL of the mykka.ai API. Default: https://api.mykka.ai"
     },
     "orgToken": {
       "type": "string",
@@ -387,7 +387,7 @@ chrome.runtime.onStartup.addListener(async () => {
         <key>forceEnabled</key>
         <true/>
         <key>apiBase</key>
-        <string>https://api.ciyo.ai</string>
+        <string>https://api.mykka.ai</string>
       </dict>
     </dict>
   </dict>

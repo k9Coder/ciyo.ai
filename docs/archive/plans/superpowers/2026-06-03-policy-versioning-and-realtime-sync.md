@@ -1624,7 +1624,7 @@ All subjects always publish together (one `publishPolicy` call compiles everythi
   // ... rest of existing imports unchanged
 
   chrome.runtime.onInstalled.addListener(({ reason }) => {
-    logger.info('ciyo installed. Reason:', reason)
+    logger.info('mykka installed. Reason:', reason)
     void syncPolicy()                                           // full sync on first install
     chrome.alarms.create('policy-sync', { periodInMinutes: 2 }) // 2 min instead of 30
   })

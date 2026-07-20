@@ -1,10 +1,10 @@
-# ciyo Rebrand Implementation Plan
+# mykka Rebrand Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rename the product from SafeInput → ciyo across the browser extension, admin console, and all string references, replacing the input-field logo with the new bracket mark.
+**Goal:** Rename the product from SafeInput → mykka across the browser extension, admin console, and all string references, replacing the input-field logo with the new bracket mark.
 
-**Architecture:** Logo geometry changes in SVG files and inline React SVG components; wordmark split changes from `safe`/`input` to `c`/`i`/`yo`; all "SafeInput"/"safeinput" strings replaced with "ciyo"/"ciyo" throughout. No color token changes — cyan `#00d4ff` stays. Storage keys prefixed with `promptshield_` are intentionally preserved to avoid wiping existing user data.
+**Architecture:** Logo geometry changes in SVG files and inline React SVG components; wordmark split changes from `safe`/`input` to `c`/`i`/`yo`; all "SafeInput"/"safeinput" strings replaced with "mykka"/"mykka" throughout. No color token changes — cyan `#00d4ff` stays. Storage keys prefixed with `promptshield_` are intentionally preserved to avoid wiping existing user data.
 
 **Tech Stack:** React, TypeScript, Vite, Chrome Extension MV3, Vitest
 
@@ -126,7 +126,7 @@
 
 ```bash
 git add public/logo-icon.svg public/logo-dark.svg public/logo-light.svg
-git commit -m "feat(brand): replace logo assets with ciyo bracket mark"
+git commit -m "feat(brand): replace logo assets with mykka bracket mark"
 ```
 
 ---
@@ -171,13 +171,13 @@ function Wordmark({ danger = false }: { danger?: boolean }) {
 }
 ```
 
-- [ ] **Step 3: Update the fallback org name in `SignedInView` footer** — find `?? "SafeInput"` (line 244) and change to `?? "ciyo"`
+- [ ] **Step 3: Update the fallback org name in `SignedInView` footer** — find `?? "SafeInput"` (line 244) and change to `?? "mykka"`
 
 - [ ] **Step 4: Commit**
 
 ```bash
 git add src/popup/Popup.tsx
-git commit -m "feat(brand): update extension popup to ciyo bracket mark + wordmark"
+git commit -m "feat(brand): update extension popup to mykka bracket mark + wordmark"
 ```
 
 ---
@@ -240,7 +240,7 @@ Replace with:
 
 ```bash
 git add admin/src/components/layout/AppLayout.tsx
-git commit -m "feat(brand): update admin sidebar to ciyo bracket mark + wordmark"
+git commit -m "feat(brand): update admin sidebar to mykka bracket mark + wordmark"
 ```
 
 ---
@@ -264,11 +264,11 @@ git commit -m "feat(brand): update admin sidebar to ciyo bracket mark + wordmark
 - [ ] **Step 1: Update `src/shared/constants.ts`** — replace the entire file
 
 ```ts
-export const EXTENSION_NAME = "ciyo";
+export const EXTENSION_NAME = "mykka";
 export const EXTENSION_VERSION = "2.0.0";
 
 /** Backend API */
-export const API_BASE = import.meta.env.VITE_API_BASE as string | undefined ?? "https://api.ciyo.ai";
+export const API_BASE = import.meta.env.VITE_API_BASE as string | undefined ?? "https://api.mykka.ai";
 export const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 
 /**
@@ -284,7 +284,7 @@ export const AUDIT_DB_VERSION = 1;
 export const AUDIT_STORE_NAME = "events";
 
 /** Sentinel attribute set on programmatically re-fired events to avoid recursion */
-export const SEND_SENTINEL_ATTR = "data-ciyo-approved";
+export const SEND_SENTINEL_ATTR = "data-mykka-approved";
 
 /** Snippet context window (chars either side of a match) */
 export const SNIPPET_CONTEXT_CHARS = 20;
@@ -293,35 +293,35 @@ export const SNIPPET_CONTEXT_CHARS = 20;
 - [ ] **Step 2: Update `src/shared/logger.ts` line 4** — change prefix
 
 Find: `const prefix = "[SafeInput]";`
-Replace: `const prefix = "[ciyo]";`
+Replace: `const prefix = "[mykka]";`
 
 - [ ] **Step 3: Update `src/content/content-script.ts`** — update two log strings
 
 Find: `logger.error("SafeInput bootstrap failed:", err);`
-Replace: `logger.error("ciyo bootstrap failed:", err);`
+Replace: `logger.error("mykka bootstrap failed:", err);`
 
 Find: `logger.info("SafeInput active on", adapter.name);`
-Replace: `logger.info("ciyo active on", adapter.name);`
+Replace: `logger.info("mykka active on", adapter.name);`
 
 - [ ] **Step 4: Update `src/content/overlay/overlay-root.tsx` line 19**
 
 Find: `shadowHost.id = "safeinput-overlay-host";`
-Replace: `shadowHost.id = "ciyo-overlay-host";`
+Replace: `shadowHost.id = "mykka-overlay-host";`
 
 - [ ] **Step 5: Update `src/background/service-worker.ts` line 13**
 
 Find: `logger.info("SafeInput installed. Reason:", reason);`
-Replace: `logger.info("ciyo installed. Reason:", reason);`
+Replace: `logger.info("mykka installed. Reason:", reason);`
 
 - [ ] **Step 6: Update `src/options/index.html` line 6**
 
 Find: `<title>SafeInput Settings</title>`
-Replace: `<title>ciyo Settings</title>`
+Replace: `<title>mykka Settings</title>`
 
 - [ ] **Step 7: Update `src/popup/index.html` line 6**
 
 Find: `<title>SafeInput</title>`
-Replace: `<title>ciyo</title>`
+Replace: `<title>mykka</title>`
 
 - [ ] **Step 8: Replace `src/options/pages/AboutPage.tsx`** — update all brand text
 
@@ -338,7 +338,7 @@ export function AboutPage() {
 
       <div className="prose prose-sm text-gray-700 space-y-4">
         <p>
-          ciyo is a browser extension that inspects your prompts before they are sent
+          mykka is a browser extension that inspects your prompts before they are sent
           to LLM chat interfaces. It detects credentials, PII, and other sensitive content
           using a configurable policy, then warns you before anything leaves your browser.
         </p>
@@ -349,7 +349,7 @@ export function AboutPage() {
 
       <div className="space-y-2 text-sm">
         <a
-          href="https://github.com/your-org/ciyo"
+          href="https://github.com/your-org/mykka"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-2 text-blue-600 hover:underline"
@@ -357,10 +357,10 @@ export function AboutPage() {
           Documentation &amp; source code
         </a>
         <a
-          href="mailto:support@ciyo.ai"
+          href="mailto:support@mykka.ai"
           className="flex items-center gap-2 text-blue-600 hover:underline"
         >
-          support@ciyo.ai
+          support@mykka.ai
         </a>
       </div>
     </div>
@@ -371,22 +371,22 @@ export function AboutPage() {
 - [ ] **Step 9: Update `src/options/pages/AuditPage.tsx` line 56**
 
 Find: `a.download = \`safeinput-audit-${new Date().toISOString().slice(0, 10)}.csv\`;`
-Replace: `a.download = \`ciyo-audit-${new Date().toISOString().slice(0, 10)}.csv\`;`
+Replace: `a.download = \`mykka-audit-${new Date().toISOString().slice(0, 10)}.csv\`;`
 
 - [ ] **Step 10: Update `admin/src/pages/LoginPage.tsx` line 21**
 
 Find: `<h1 className="text-xl font-semibold text-gray-900">SafeInput Admin</h1>`
-Replace: `<h1 className="text-xl font-semibold text-gray-900">ciyo Admin</h1>`
+Replace: `<h1 className="text-xl font-semibold text-gray-900">mykka Admin</h1>`
 
 - [ ] **Step 11: Update `admin/src/pages/OnboardingPage.tsx` line 54**
 
 Find: `<h1 className="text-xl font-semibold text-gray-900">SafeInput Admin</h1>`
-Replace: `<h1 className="text-xl font-semibold text-gray-900">ciyo Admin</h1>`
+Replace: `<h1 className="text-xl font-semibold text-gray-900">mykka Admin</h1>`
 
 - [ ] **Step 12: Update `managed_schema.json`**
 
 Find: `"title": "SafeInput Policy"`
-Replace: `"title": "ciyo Policy"`
+Replace: `"title": "mykka Policy"`
 
 - [ ] **Step 13: Commit**
 
@@ -398,7 +398,7 @@ git add src/shared/constants.ts src/shared/logger.ts \
         src/options/pages/AboutPage.tsx src/options/pages/AuditPage.tsx \
         admin/src/pages/LoginPage.tsx admin/src/pages/OnboardingPage.tsx \
         managed_schema.json
-git commit -m "feat(brand): rename SafeInput → ciyo in source strings"
+git commit -m "feat(brand): rename SafeInput → mykka in source strings"
 ```
 
 ---
@@ -412,18 +412,18 @@ git commit -m "feat(brand): rename SafeInput → ciyo in source strings"
 - [ ] **Step 1: Update storage key in `admin/src/utils/theme.ts`**
 
 Find: `const STORAGE_KEY = 'safeinput-theme'`
-Replace: `const STORAGE_KEY = 'ciyo-theme'`
+Replace: `const STORAGE_KEY = 'mykka-theme'`
 
 - [ ] **Step 2: Update assertions in `admin/tests/theme.test.ts`** — 3 occurrences
 
 Find: `localStorage.getItem('safeinput-theme')` (line 17)
-Replace: `localStorage.getItem('ciyo-theme')`
+Replace: `localStorage.getItem('mykka-theme')`
 
 Find: `localStorage.getItem('safeinput-theme')` (line 24)
-Replace: `localStorage.getItem('ciyo-theme')`
+Replace: `localStorage.getItem('mykka-theme')`
 
 Find: `localStorage.setItem('safeinput-theme', 'light')` (line 28)
-Replace: `localStorage.setItem('ciyo-theme', 'light')`
+Replace: `localStorage.setItem('mykka-theme', 'light')`
 
 - [ ] **Step 3: Run admin tests to verify they pass**
 
@@ -431,14 +431,14 @@ Replace: `localStorage.setItem('ciyo-theme', 'light')`
 cd admin && pnpm test
 ```
 
-Expected: all tests pass (theme tests reference `ciyo-theme` and match the implementation).
+Expected: all tests pass (theme tests reference `mykka-theme` and match the implementation).
 
 - [ ] **Step 4: Commit**
 
 ```bash
 cd ..
 git add admin/src/utils/theme.ts admin/tests/theme.test.ts
-git commit -m "feat(brand): rename theme storage key safeinput-theme → ciyo-theme"
+git commit -m "feat(brand): rename theme storage key safeinput-theme → mykka-theme"
 ```
 
 ---
@@ -458,34 +458,34 @@ git commit -m "feat(brand): rename theme storage key safeinput-theme → ciyo-th
 - [ ] **Step 1: Update `manifest.config.ts`**
 
 Find: `name: "SafeInput",`
-Replace: `name: "ciyo",`
+Replace: `name: "mykka",`
 
 - [ ] **Step 2: Update `package.json` (root)**
 
 Find: `"name": "safeinput",`
-Replace: `"name": "ciyo",`
+Replace: `"name": "mykka",`
 
 - [ ] **Step 3: Update `backend/package.json`**
 
 Find: `"name": "safeinput-backend",`
-Replace: `"name": "ciyo-backend",`
+Replace: `"name": "mykka-backend",`
 
 - [ ] **Step 4: Update `admin/package.json`**
 
 Find: `"name": "safeinput-admin",`
-Replace: `"name": "ciyo-admin",`
+Replace: `"name": "mykka-admin",`
 
 - [ ] **Step 5: Update `admin/index.html`**
 
 Find: `<title>SafeInput Admin</title>`
-Replace: `<title>ciyo Admin</title>`
+Replace: `<title>mykka Admin</title>`
 
 - [ ] **Step 6: Update `README.md`** — replace the entire file
 
 ```markdown
-# ciyo
+# mykka
 
-AI prompt protection — detects secrets and PII before they leave your browser. ciyo is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the ciyo Admin Console.
+AI prompt protection — detects secrets and PII before they leave your browser. mykka is a browser-based DLP (Data Loss Prevention) tool for LLM chat interfaces. It inspects prompts before they are sent, warns on sensitive data, and gives admins full visibility via the mykka Admin Console.
 
 ## Supported Sites
 
@@ -594,18 +594,18 @@ See [docs/adding-a-site-adapter.md](docs/adding-a-site-adapter.md).
 - [ ] **Step 7: Update `backend/src/billing/email.ts`** — replace brand strings
 
 Find: `process.env.SMTP_FROM ?? 'noreply@safeinput.ai'`
-Replace: `process.env.SMTP_FROM ?? 'noreply@ciyo.ai'`
+Replace: `process.env.SMTP_FROM ?? 'noreply@mykka.ai'`
 
 Find: `` subject: `Welcome to SafeInput — ${input.tenantName}`, ``
-Replace: `` subject: `Welcome to ciyo — ${input.tenantName}`, ``
+Replace: `` subject: `Welcome to mykka — ${input.tenantName}`, ``
 
 Find: `` `Welcome to SafeInput, ${input.tenantName}!`, ``
-Replace: `` `Welcome to ciyo, ${input.tenantName}!`, ``
+Replace: `` `Welcome to mykka, ${input.tenantName}!`, ``
 
 - [ ] **Step 8: Update `tests/e2e/flow.spec.ts` line 20**
 
 Find: `test.describe("SafeInput E2E", () => {`
-Replace: `test.describe("ciyo E2E", () => {`
+Replace: `test.describe("mykka E2E", () => {`
 
 - [ ] **Step 9: Commit**
 
@@ -613,7 +613,7 @@ Replace: `test.describe("ciyo E2E", () => {`
 git add manifest.config.ts package.json backend/package.json admin/package.json \
         admin/index.html README.md backend/src/billing/email.ts \
         tests/e2e/flow.spec.ts
-git commit -m "feat(brand): rename SafeInput → ciyo in config, backend, and docs"
+git commit -m "feat(brand): rename SafeInput → mykka in config, backend, and docs"
 ```
 
 ---
@@ -668,13 +668,13 @@ Expected: no TypeScript errors, `admin/dist/` updated.
 - [ ] **Step 6: Load extension and smoke test**
 
 1. Go to `chrome://extensions`, enable Developer Mode, click "Load unpacked", select `dist/`
-2. Click the ciyo extension icon — verify dark popup with bracket mark, wordmark reads `c`(white)`i`(cyan)`yo`(white)
-3. Open Options page — verify title says "ciyo Settings", about page says "ciyo"
+2. Click the mykka extension icon — verify dark popup with bracket mark, wordmark reads `c`(white)`i`(cyan)`yo`(white)
+3. Open Options page — verify title says "mykka Settings", about page says "mykka"
 4. Toggle theme — verify light mode works
 
 - [ ] **Step 7: Final commit**
 
 ```bash
 git add -A
-git commit -m "feat(brand): ciyo rebrand complete"
+git commit -m "feat(brand): mykka rebrand complete"
 ```

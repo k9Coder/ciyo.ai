@@ -241,7 +241,7 @@ In the form component that renders the `reportLevel` select, add a warning after
     background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)',
     fontSize: 11, color: 'var(--status-danger)', lineHeight: 1.5,
   }}>
-    Privacy notice: "Rich" reporting stores matched prompt text on ciyo.ai servers.
+    Privacy notice: "Rich" reporting stores matched prompt text on mykka.ai servers.
     Ensure your organization's privacy policy discloses this to users.
   </div>
 )}

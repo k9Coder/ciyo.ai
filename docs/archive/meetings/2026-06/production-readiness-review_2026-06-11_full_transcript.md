@@ -1,4 +1,4 @@
-# ciyo.ai — Production Readiness & Launch Cost Review
+# mykka.ai — Production Readiness & Launch Cost Review
 ### Meeting Transcript — June 11, 2026
 **Attendees:** Ethan Cole (CEO), Marcus Webb (CTO), Ryan Kowalski (DevOps), Linda Park (CFO), Ben Cho (PM), Sofia Reyes (VP Sales), Priya Nair (Marketing)
 **Recorded by:** Nina Schulz (Finance & Ops)
@@ -6,7 +6,7 @@
 
 ---
 
-**ETHAN:** Quick context before we start. I want to go lean on launch infra. Here's what I'm thinking: GoDaddy domain I already own, Render free tier for the backend, cheapest Postgres available, Cloudflare free tier for ciyo.ai and the console at pretzel.ciyo.ai, and the $5 Chrome Web Store registration. Can we ship on that setup? Marcus, you and Ryan are the ones who'll shoot this down if it doesn't work.
+**ETHAN:** Quick context before we start. I want to go lean on launch infra. Here's what I'm thinking: GoDaddy domain I already own, Render free tier for the backend, cheapest Postgres available, Cloudflare free tier for mykka.ai and the console at pretzel.mykka.ai, and the $5 Chrome Web Store registration. Can we ship on that setup? Marcus, you and Ryan are the ones who'll shoot this down if it doesn't work.
 
 ---
 
@@ -46,11 +46,11 @@
 
 ---
 
-**MARCUS:** Let me be precise here because it depends on which surface. The marketing site — ciyo-web — is a Next.js app. Our deployment guide has it on Vercel because Vercel and Next.js are the same company. It just works, zero config. Cloudflare Pages does support Next.js but with one caveat: if we're using any server-side Next.js features — API routes, server components that hit external services — Cloudflare Pages handles those differently via Workers, and there can be edge cases. Ryan, do you know what we're using in ciyo-web?
+**MARCUS:** Let me be precise here because it depends on which surface. The marketing site — mykka-web — is a Next.js app. Our deployment guide has it on Vercel because Vercel and Next.js are the same company. It just works, zero config. Cloudflare Pages does support Next.js but with one caveat: if we're using any server-side Next.js features — API routes, server components that hit external services — Cloudflare Pages handles those differently via Workers, and there can be edge cases. Ryan, do you know what we're using in mykka-web?
 
 ---
 
-**RYAN:** Checked before this meeting. ciyo-web is basically a static marketing site. No API routes, no dynamic server components that matter. It's Next.js used mostly as a static site generator with some styling. Cloudflare Pages would be fine. But Vercel Hobby tier is also free and zero-risk. My call: keep ciyo-web on Vercel free. No cost, no migration risk, no edge cases to debug on launch day.
+**RYAN:** Checked before this meeting. mykka-web is basically a static marketing site. No API routes, no dynamic server components that matter. It's Next.js used mostly as a static site generator with some styling. Cloudflare Pages would be fine. But Vercel Hobby tier is also free and zero-risk. My call: keep mykka-web on Vercel free. No cost, no migration risk, no edge cases to debug on launch day.
 
 ---
 
@@ -58,7 +58,7 @@
 
 ---
 
-**ETHAN:** And the console — pretzel.ciyo.ai?
+**ETHAN:** And the console — pretzel.mykka.ai?
 
 ---
 
@@ -66,14 +66,14 @@
 
 ---
 
-**ETHAN:** So to summarize the infra: $25/month Standard Render backend, Neon free Postgres, Vercel free for marketing, Render free static for console. GoDaddy domain I already own. One thing I want to confirm — the domain routing. How does api.ciyo.ai point to Render? Does GoDaddy handle that directly or do I need Cloudflare?
+**ETHAN:** So to summarize the infra: $25/month Standard Render backend, Neon free Postgres, Vercel free for marketing, Render free static for console. GoDaddy domain I already own. One thing I want to confirm — the domain routing. How does api.mykka.ai point to Render? Does GoDaddy handle that directly or do I need Cloudflare?
 
 ---
 
-**RYAN:** You have two options. GoDaddy DNS directly — you add a CNAME record pointing api.ciyo.ai to the Render service hostname. That works. OR you point GoDaddy nameservers to Cloudflare (free), and let Cloudflare manage all DNS. I strongly recommend the Cloudflare option. Cloudflare DNS is faster, their proxy adds DDoS protection and hides your origin IP for free, and managing all subdomains in one place is cleaner. You'd set:
-- `ciyo.ai` → Vercel
-- `console.ciyo.ai` → Render console service  
-- `api.ciyo.ai` → Render backend service
+**RYAN:** You have two options. GoDaddy DNS directly — you add a CNAME record pointing api.mykka.ai to the Render service hostname. That works. OR you point GoDaddy nameservers to Cloudflare (free), and let Cloudflare manage all DNS. I strongly recommend the Cloudflare option. Cloudflare DNS is faster, their proxy adds DDoS protection and hides your origin IP for free, and managing all subdomains in one place is cleaner. You'd set:
+- `mykka.ai` → Vercel
+- `console.mykka.ai` → Render console service  
+- `api.mykka.ai` → Render backend service
 
 All in Cloudflare DNS. GoDaddy just holds the registrar — nameservers point to Cloudflare. That's a 15-minute setup.
 
@@ -101,11 +101,11 @@ One — **GitHub Secrets**. Five secrets: Render API key, two service IDs, two c
 
 Two — **Render backend env vars**. This is the long list. Twenty env vars including Clerk live keys, Stripe live keys and price IDs, PayPal live credentials, Anthropic API key, SMTP credentials. If every account is already set up and you have every credential in front of you, this is an hour. If you need to create Stripe products and PayPal plans from scratch, add another hour.
 
-Three — **Stripe**. Need to switch from test mode to live mode. Create Starter and Business subscription products. Get the `price_...` IDs. Configure the webhook endpoint pointing to `https://api.ciyo.ai/billing/stripe/webhook`. Customer portal needs to be enabled.
+Three — **Stripe**. Need to switch from test mode to live mode. Create Starter and Business subscription products. Get the `price_...` IDs. Configure the webhook endpoint pointing to `https://api.mykka.ai/billing/stripe/webhook`. Customer portal needs to be enabled.
 
 Four — **PayPal**. Create a live app (not sandbox). Create Starter and Business subscription plans. Get the `P-...` plan IDs. Configure webhook. Set `PAYPAL_SANDBOX=false`.
 
-Five — **Clerk**. Switch to live keys. Brand the email templates — right now they say "Clerk" not "ciyo.ai." Set the webhook endpoint to `https://api.ciyo.ai/webhooks/clerk`.
+Five — **Clerk**. Switch to live keys. Brand the email templates — right now they say "Clerk" not "mykka.ai." Set the webhook endpoint to `https://api.mykka.ai/webhooks/clerk`.
 
 Six — **Mailgun**. You're on a free trial for 3 months, 5,000 emails/month. Need an account, need to get SMTP credentials. The welcome email, invite emails — none of those send without this. This is ten minutes to set up.
 
@@ -203,7 +203,7 @@ Third: Clerk at scale. Free up to 10,000 monthly active users. At 10,001 you're 
 
 ---
 
-**MARCUS:** One last thing I want to make sure is on the checklist. The `CORS_ORIGIN` env var on the backend must be set to `https://console.ciyo.ai` before launch. If that's wrong, the console can't talk to the API and everything 403s immediately. It's the kind of thing that's obvious in theory and takes 20 minutes to debug at 11pm on launch night. Ryan — that goes in the top of the checklist.
+**MARCUS:** One last thing I want to make sure is on the checklist. The `CORS_ORIGIN` env var on the backend must be set to `https://console.mykka.ai` before launch. If that's wrong, the console can't talk to the API and everything 403s immediately. It's the kind of thing that's obvious in theory and takes 20 minutes to debug at 11pm on launch night. Ryan — that goes in the top of the checklist.
 
 ---
 
@@ -293,8 +293,8 @@ One more thing: that free trial on Mailgun runs out in 90 days. Nina, flag that 
 |---|---|---|
 | Backend API | Render **Standard** (NOT free — it sleeps) | **$25/month** |
 | Database | Neon free tier (Render has no free Postgres) | **$0** |
-| ciyo.ai marketing | Vercel Hobby (keep as-is, not Cloudflare) | **$0** |
-| console.ciyo.ai | Render static (keep as-is) | **$0** |
+| mykka.ai marketing | Vercel Hobby (keep as-is, not Cloudflare) | **$0** |
+| console.mykka.ai | Render static (keep as-is) | **$0** |
 | DNS | Cloudflare free (GoDaddy nameservers → Cloudflare) | **$0** |
 | Chrome Web Store | One-time already paid | **$5 done** |
 | **Total at launch** | | **$25/month** |

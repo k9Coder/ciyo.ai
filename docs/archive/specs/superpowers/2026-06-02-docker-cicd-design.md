@@ -17,7 +17,7 @@ Add lean Docker images, a root `docker-compose.yml` for local dev, GitHub Action
 |---|---|---|---|
 | `backend` | Yes — multi-stage | Render Web Service → GCP Cloud Run | Server process, needs a container |
 | `pretzel-console` | Yes — nginx static | Render Static Site | Vite SPA; ~25MB final image |
-| `ciyo-web` | Yes — Next.js standalone | Vercel (no change) | Dockerfile for local docker-compose only |
+| `mykka-web` | Yes — Next.js standalone | Vercel (no change) | Dockerfile for local docker-compose only |
 | `pretzel` | No | Chrome Web Store | Browser extension, produces a .zip artifact |
 | `e2e` | No | GitHub Actions CI | Test runner only |
 
@@ -67,7 +67,7 @@ nginx:alpine base is 7MB. Final image is almost entirely static files.
 
 Note: this Dockerfile is used only for local `docker-compose`. Render Static Site builds from source using `pnpm build:staging` or `pnpm build:prod` depending on which deploy hook is triggered — Render handles the mode selection itself.
 
-### ciyo-web (~200MB, local dev only)
+### mykka-web (~200MB, local dev only)
 
 ```
 Stage 1 — node:20-alpine
@@ -98,7 +98,7 @@ Starts the full stack locally with `docker-compose up`.
 postgres:16-alpine   port 5432  named volume postgres_data
 backend              port 3000  waits for postgres healthcheck
 pretzel-console      port 5173  nginx serving built SPA
-ciyo-web             port 3001  Next.js standalone
+mykka-web             port 3001  Next.js standalone
 ```
 
 - Postgres data persists across restarts via named volume.
@@ -176,13 +176,13 @@ job: deploy (needs: test)
 
 ---
 
-### ciyo-web-deploy.yml
+### mykka-web-deploy.yml
 
-**Trigger:** push to `master` or `staging`, paths `ciyo-web/**`
+**Trigger:** push to `master` or `staging`, paths `mykka-web/**`
 
 ```
 job: check
-  - pnpm install (ciyo-web/)
+  - pnpm install (mykka-web/)
   - pnpm lint
   - pnpm build (type-checks Next.js)
 
@@ -236,7 +236,7 @@ Each package README (and root README) gets a **"Deployment & Releases"** section
 
 - **Root README:** overview of all services, links to each package README, how to run the full stack locally with docker-compose
 - **backend README:** how staging/prod deploy works, how to run migrations manually, environment variables reference
-- **ciyo-web README:** Vercel auto-deploy explanation, how to promote staging → prod
+- **mykka-web README:** Vercel auto-deploy explanation, how to promote staging → prod
 - **pretzel-console README:** Render Static Site deploy, how staging/prod branches map to environments
 - **pretzel README:** full step-by-step extension release instructions (the 7-step flow above)
 
@@ -263,7 +263,7 @@ Same Docker image, new destination. Half-day migration:
 5. Deploy Cloud Run service pointing at the image SHA. Cloud Run provides a free HTTPS URL instantly.
 6. Point custom domain DNS at Cloud Run.
 7. `pretzel-console` → Cloud Storage bucket (website hosting) + Cloud CDN. Cost: ~$0 at low traffic.
-8. `ciyo-web` stays on Vercel.
+8. `mykka-web` stays on Vercel.
 
 **Cost:** Cloud SQL ~$25/mo + Cloud Run ~$0-5/mo = **~$30-35/mo total.**
 
@@ -313,8 +313,8 @@ Each service scales independently based on its own traffic. LLM/scan calls are e
 Files to create:
 - `backend/Dockerfile`
 - `backend/.dockerignore`
-- `ciyo-web/Dockerfile`
-- `ciyo-web/.dockerignore`
+- `mykka-web/Dockerfile`
+- `mykka-web/.dockerignore`
 - `pretzel-console/Dockerfile`
 - `pretzel-console/.dockerignore`
 - `pretzel-console/nginx.conf`
@@ -322,14 +322,14 @@ Files to create:
 - `.dockerignore` (root)
 - `.github/workflows/backend-deploy.yml`
 - `.github/workflows/pretzel-console-deploy.yml`
-- `.github/workflows/ciyo-web-deploy.yml`
+- `.github/workflows/mykka-web-deploy.yml`
 - `.github/workflows/pretzel-release.yml`
 
 Files to update:
-- `ciyo-web/next.config.ts` — add `output: 'standalone'`
+- `mykka-web/next.config.ts` — add `output: 'standalone'`
 - `.github/workflows/e2e.yml` — replace `admin/` references with `pretzel-console/`
 - `README.md` (root) — deployment overview
 - `backend/README.md` — deploy + migration docs
-- `ciyo-web/README.md` — Vercel deploy docs
+- `mykka-web/README.md` — Vercel deploy docs
 - `pretzel-console/README.md` — Render Static Site docs
 - `pretzel/README.md` — extension release step-by-step

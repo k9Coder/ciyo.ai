@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rename every user-visible and developer-visible reference from "ciyo" (as a product name) to "Pretzel" and "Pretzel Console" — across the Chrome extension, the admin web app, and the backend — while keeping `ciyo.ai` as the company/domain brand.
+**Goal:** Rename every user-visible and developer-visible reference from "mykka" (as a product name) to "Pretzel" and "Pretzel Console" — across the Chrome extension, the admin web app, and the backend — while keeping `mykka.ai` as the company/domain brand.
 
 **Architecture:** This is a search-and-replace + asset-replacement task across three packages (root extension, `admin/`, `backend/`). No schema migrations needed — the token prefixes (`ps_live`, `ps_adm`) stay unchanged to avoid breaking existing deployments. One task per logical surface area, with a verification run at the end.
 
@@ -12,9 +12,9 @@
 - Chrome extension → **Pretzel** (manifest name, store listing)
 - Admin web app → **Pretzel Console** (page title, sidebar logo, login screens)
 - AI assistant in sidebar → **Pretzel AI**
-- Company domain → **ciyo.ai** (unchanged — this is the company, not the product)
+- Company domain → **mykka.ai** (unchanged — this is the company, not the product)
 - Backend package name → `pretzel-api`
-- Email sender name → keep `noreply@ciyo.ai` domain; update subject/body copy
+- Email sender name → keep `noreply@mykka.ai` domain; update subject/body copy
 
 ---
 
@@ -22,21 +22,21 @@
 
 | File | What changes |
 |---|---|
-| `manifest.config.ts` | `name: "ciyo"` → `"Pretzel"`, description update |
-| `package.json` (root) | `name: "ciyo"` → `"pretzel-extension"` |
-| `admin/index.html` | `<title>ciyo Admin</title>` → `<title>Pretzel Console</title>` |
-| `admin/package.json` | `name: "ciyo-admin"` → `"pretzel-console"` |
-| `admin/src/components/layout/AppLayout.tsx` | Wordmark "ciyo" → "Pretzel" text + new logo SVG |
-| `admin/src/pages/LoginPage.tsx` | `"ciyo Admin"` → `"Pretzel Console"` |
-| `admin/src/pages/OnboardingPage.tsx` | `"ciyo Admin"` → `"Pretzel Console"` |
-| `admin/src/components/assistant/ChatPane.tsx` | `"ciyo policy manager"` → `"Pretzel AI"` + CSS anim rename |
-| `admin/src/components/assistant/MessageBubble.tsx` | CSS animation name `ciyo-msg-in` → `pretzel-msg-in` |
-| `admin/src/components/ui/Spinner.tsx` | CSS class names `ciyo-spin`, `ciyo-label` → `pretzel-*` |
-| `admin/src/index.css` | All `@keyframes ciyo-*` and `.ciyo-*` → `pretzel-*` |
-| `admin/src/utils/theme.ts` | `'ciyo-theme'` storage key → `'pretzel-theme'` |
-| `backend/package.json` | `name: "ciyo-backend"` → `"pretzel-api"` |
-| `backend/src/assistant/prompt.ts` | System prompt copy: "ciyo" → "Pretzel" / "Pretzel Console" |
-| `backend/src/billing/email.ts` | Email subject + body copy: "ciyo" → "Pretzel" |
+| `manifest.config.ts` | `name: "mykka"` → `"Pretzel"`, description update |
+| `package.json` (root) | `name: "mykka"` → `"pretzel-extension"` |
+| `admin/index.html` | `<title>mykka Admin</title>` → `<title>Pretzel Console</title>` |
+| `admin/package.json` | `name: "mykka-admin"` → `"pretzel-console"` |
+| `admin/src/components/layout/AppLayout.tsx` | Wordmark "mykka" → "Pretzel" text + new logo SVG |
+| `admin/src/pages/LoginPage.tsx` | `"mykka Admin"` → `"Pretzel Console"` |
+| `admin/src/pages/OnboardingPage.tsx` | `"mykka Admin"` → `"Pretzel Console"` |
+| `admin/src/components/assistant/ChatPane.tsx` | `"mykka policy manager"` → `"Pretzel AI"` + CSS anim rename |
+| `admin/src/components/assistant/MessageBubble.tsx` | CSS animation name `mykka-msg-in` → `pretzel-msg-in` |
+| `admin/src/components/ui/Spinner.tsx` | CSS class names `mykka-spin`, `mykka-label` → `pretzel-*` |
+| `admin/src/index.css` | All `@keyframes mykka-*` and `.mykka-*` → `pretzel-*` |
+| `admin/src/utils/theme.ts` | `'mykka-theme'` storage key → `'pretzel-theme'` |
+| `backend/package.json` | `name: "mykka-backend"` → `"pretzel-api"` |
+| `backend/src/assistant/prompt.ts` | System prompt copy: "mykka" → "Pretzel" / "Pretzel Console" |
+| `backend/src/billing/email.ts` | Email subject + body copy: "mykka" → "Pretzel" |
 | `public/icons/` | Replace PNG icons with Pretzel-branded versions (see Task 1) |
 
 ---
@@ -126,27 +126,27 @@ git commit -m "feat(brand): add Pretzel logo SVG component and icon assets"
 
 - [ ] **Step 1: Update `manifest.config.ts`**
 
-Open `manifest.config.ts`. Change line `name: "ciyo"` and update the description:
+Open `manifest.config.ts`. Change line `name: "mykka"` and update the description:
 
 ```typescript
 export default defineManifest({
   manifest_version: 3,
-  name: "Pretzel",                                          // was: "ciyo"
+  name: "Pretzel",                                          // was: "mykka"
   version: "2.0.0",
-  description: "Pretzel by ciyo.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",  // was: "AI prompt protection — detects secrets and PII before they leave your browser."
+  description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",  // was: "AI prompt protection — detects secrets and PII before they leave your browser."
   // ... rest unchanged
 })
 ```
 
 - [ ] **Step 2: Update root `package.json`**
 
-Change `"name": "ciyo"` to `"name": "pretzel-extension"`:
+Change `"name": "mykka"` to `"name": "pretzel-extension"`:
 
 ```json
 {
   "name": "pretzel-extension",
   "version": "0.1.0",
-  "description": "Pretzel by ciyo.ai — browser-based AI prompt DLP",
+  "description": "Pretzel by mykka.ai — browser-based AI prompt DLP",
   ...
 }
 ```
@@ -238,7 +238,7 @@ import { PretzelLogo } from './PretzelLogo'
       Pretzel
     </div>
     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-      by ciyo.ai
+      by mykka.ai
     </div>
   </div>
 </Link>
@@ -248,14 +248,14 @@ import { PretzelLogo } from './PretzelLogo'
 
 ```bash
 cd admin && npm run dev
-# Open http://localhost:5173 — sidebar should show Pretzel logo + "Pretzel / by ciyo.ai"
+# Open http://localhost:5173 — sidebar should show Pretzel logo + "Pretzel / by mykka.ai"
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add admin/src/components/layout/AppLayout.tsx admin/src/components/layout/PretzelLogo.tsx
-git commit -m "feat(brand): replace ciyo wordmark with Pretzel Console logo in sidebar"
+git commit -m "feat(brand): replace mykka wordmark with Pretzel Console logo in sidebar"
 ```
 
 ---
@@ -268,17 +268,17 @@ git commit -m "feat(brand): replace ciyo wordmark with Pretzel Console logo in s
 
 - [ ] **Step 1: Update `LoginPage.tsx`**
 
-Find `<h1 className="text-xl font-semibold text-gray-900">ciyo Admin</h1>` and replace:
+Find `<h1 className="text-xl font-semibold text-gray-900">mykka Admin</h1>` and replace:
 
 ```tsx
 <h1 className="text-xl font-semibold text-gray-900">Pretzel Console</h1>
 ```
 
-Also find any subtitle or description text mentioning "ciyo" and update to "Pretzel Console by ciyo.ai".
+Also find any subtitle or description text mentioning "mykka" and update to "Pretzel Console by mykka.ai".
 
 - [ ] **Step 2: Update `OnboardingPage.tsx`**
 
-Find `<h1 className="text-xl font-semibold text-gray-900">ciyo Admin</h1>` and replace:
+Find `<h1 className="text-xl font-semibold text-gray-900">mykka Admin</h1>` and replace:
 
 ```tsx
 <h1 className="text-xl font-semibold text-gray-900">Pretzel Console</h1>
@@ -305,11 +305,11 @@ git commit -m "feat(brand): update Login and Onboarding pages to Pretzel Console
 **Files:**
 - Modify: `admin/src/components/assistant/ChatPane.tsx`
 
-The ChatPane currently shows `"ciyo policy manager"` as the assistant label and uses `ciyo-dot-bounce` in an inline style animation.
+The ChatPane currently shows `"mykka policy manager"` as the assistant label and uses `mykka-dot-bounce` in an inline style animation.
 
 - [ ] **Step 1: Update the assistant label text**
 
-Find line 140: `<div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>ciyo policy manager</div>`
+Find line 140: `<div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>mykka policy manager</div>`
 
 Replace with:
 
@@ -319,7 +319,7 @@ Replace with:
 
 - [ ] **Step 2: Rename inline animation reference**
 
-Find `animation: \`ciyo-dot-bounce 1.3s ease-in-out ${i * 0.18}s infinite\`` and update:
+Find `animation: \`mykka-dot-bounce 1.3s ease-in-out ${i * 0.18}s infinite\`` and update:
 
 ```tsx
 animation: `pretzel-dot-bounce 1.3s ease-in-out ${i * 0.18}s infinite`,
@@ -329,8 +329,8 @@ Also find the inline `@keyframes` block in the same file and rename:
 
 ```tsx
 // Before:
-@keyframes ciyo-msg-in { ... }
-@keyframes ciyo-dot-bounce { ... }
+@keyframes mykka-msg-in { ... }
+@keyframes mykka-dot-bounce { ... }
 
 // After:
 @keyframes pretzel-msg-in { ... }
@@ -353,7 +353,7 @@ git commit -m "feat(brand): rename AI assistant to Pretzel AI in ChatPane"
 
 - [ ] **Step 1: Rename animation reference**
 
-Find `animation: 'ciyo-msg-in 0.22s ease-out forwards'` and replace:
+Find `animation: 'mykka-msg-in 0.22s ease-out forwards'` and replace:
 
 ```tsx
 animation: 'pretzel-msg-in 0.22s ease-out forwards',
@@ -365,7 +365,7 @@ The `@keyframes pretzel-msg-in` definition lives in `admin/src/index.css` (renam
 
 ```bash
 git add admin/src/components/assistant/MessageBubble.tsx
-git commit -m "feat(brand): rename ciyo-msg-in animation to pretzel-msg-in in MessageBubble"
+git commit -m "feat(brand): rename mykka-msg-in animation to pretzel-msg-in in MessageBubble"
 ```
 
 ---
@@ -376,7 +376,7 @@ git commit -m "feat(brand): rename ciyo-msg-in animation to pretzel-msg-in in Me
 - Modify: `admin/src/index.css`
 - Modify: `admin/src/components/ui/Spinner.tsx`
 
-This task renames all `ciyo-*` CSS identifiers to `pretzel-*`. The names are internal (not user-visible) but consistency matters for maintainability and avoids confusion for future contributors.
+This task renames all `mykka-*` CSS identifiers to `pretzel-*`. The names are internal (not user-visible) but consistency matters for maintainability and avoids confusion for future contributors.
 
 - [ ] **Step 1: Update `admin/src/index.css`**
 
@@ -384,16 +384,16 @@ Apply these renames (all occurrences):
 
 ```css
 /* Before → After */
-@keyframes ciyo-spin         → @keyframes pretzel-spin
-@keyframes ciyo-spin-reverse → @keyframes pretzel-spin-reverse
-@keyframes ciyo-pulse-glow   → @keyframes pretzel-pulse-glow
-@keyframes ciyo-fade-in      → @keyframes pretzel-fade-in
-@keyframes ciyo-dots         → @keyframes pretzel-dots
-@keyframes ciyo-msg-in       → @keyframes pretzel-msg-in
-@keyframes ciyo-dot-bounce   → @keyframes pretzel-dot-bounce
-.ciyo-label                  → .pretzel-label
-.ciyo-label::after           → .pretzel-label::after
-animation: ciyo-dots         → animation: pretzel-dots
+@keyframes mykka-spin         → @keyframes pretzel-spin
+@keyframes mykka-spin-reverse → @keyframes pretzel-spin-reverse
+@keyframes mykka-pulse-glow   → @keyframes pretzel-pulse-glow
+@keyframes mykka-fade-in      → @keyframes pretzel-fade-in
+@keyframes mykka-dots         → @keyframes pretzel-dots
+@keyframes mykka-msg-in       → @keyframes pretzel-msg-in
+@keyframes mykka-dot-bounce   → @keyframes pretzel-dot-bounce
+.mykka-label                  → .pretzel-label
+.mykka-label::after           → .pretzel-label::after
+animation: mykka-dots         → animation: pretzel-dots
 ```
 
 Full updated `admin/src/index.css` keyframe section:
@@ -434,7 +434,7 @@ Full updated `admin/src/index.css` keyframe section:
 
 - [ ] **Step 2: Update `admin/src/components/ui/Spinner.tsx`**
 
-Find all `ciyo-spin` and `ciyo-label` references:
+Find all `mykka-spin` and `mykka-label` references:
 
 ```tsx
 // Line with animation name:
@@ -449,10 +449,10 @@ Update the JSDoc comment:
 /** Full-page loading state — spinner only, optional context label in Pretzel style */
 ```
 
-- [ ] **Step 3: Verify no remaining `ciyo-` class/keyframe references in admin/src**
+- [ ] **Step 3: Verify no remaining `mykka-` class/keyframe references in admin/src**
 
 ```bash
-grep -rn "ciyo-" admin/src/
+grep -rn "mykka-" admin/src/
 # Expected: 0 results
 ```
 
@@ -467,7 +467,7 @@ cd admin && npm test
 
 ```bash
 git add admin/src/index.css admin/src/components/ui/Spinner.tsx
-git commit -m "feat(brand): rename all ciyo-* CSS keyframes and classes to pretzel-*"
+git commit -m "feat(brand): rename all mykka-* CSS keyframes and classes to pretzel-*"
 ```
 
 ---
@@ -479,17 +479,17 @@ git commit -m "feat(brand): rename all ciyo-* CSS keyframes and classes to pretz
 
 - [ ] **Step 1: Update storage key**
 
-Open `admin/src/utils/theme.ts`. Find `const STORAGE_KEY = 'ciyo-theme'` and change:
+Open `admin/src/utils/theme.ts`. Find `const STORAGE_KEY = 'mykka-theme'` and change:
 
 ```typescript
 const STORAGE_KEY = 'pretzel-theme'
 ```
 
-- [ ] **Step 2: Handle migration for existing users** — existing users have `ciyo-theme` in localStorage. Add a one-time migration:
+- [ ] **Step 2: Handle migration for existing users** — existing users have `mykka-theme` in localStorage. Add a one-time migration:
 
 ```typescript
 const STORAGE_KEY = 'pretzel-theme'
-const LEGACY_KEY  = 'ciyo-theme'
+const LEGACY_KEY  = 'mykka-theme'
 
 function migrateTheme() {
   const legacy = localStorage.getItem(LEGACY_KEY)
@@ -514,7 +514,7 @@ cd admin && npm test -- theme
 
 ```bash
 git add admin/src/utils/theme.ts
-git commit -m "feat(brand): rename ciyo-theme storage key to pretzel-theme with migration"
+git commit -m "feat(brand): rename mykka-theme storage key to pretzel-theme with migration"
 ```
 
 ---
@@ -548,14 +548,14 @@ git commit -m "feat(brand): rename backend package to pretzel-api"
 **Files:**
 - Modify: `backend/src/assistant/prompt.ts`
 
-The system prompt currently refers to "the ciyo platform" and "ciyo is a Chrome extension". Update all copy to use the new brand names.
+The system prompt currently refers to "the mykka platform" and "mykka is a Chrome extension". Update all copy to use the new brand names.
 
 - [ ] **Step 1: Update the system prompt string in `buildSystemPrompt`**
 
-Replace the template string beginning with `You are the ciyo Assistant`:
+Replace the template string beginning with `You are the mykka Assistant`:
 
 ```typescript
-return `You are Pretzel AI — an AI assistant built into the Pretzel Console that helps administrators manage data-loss prevention policies. Pretzel is a Chrome extension (by ciyo.ai) that intercepts AI prompts (ChatGPT, Gemini, Claude, etc.) and warns or blocks users when they attempt to send sensitive data.
+return `You are Pretzel AI — an AI assistant built into the Pretzel Console that helps administrators manage data-loss prevention policies. Pretzel is a Chrome extension (by mykka.ai) that intercepts AI prompts (ChatGPT, Gemini, Claude, etc.) and warns or blocks users when they attempt to send sensitive data.
 
 You help admins create, edit, and delete rules and subjects using natural language. Always confirm what you're about to do before listing actions. If the user's intent is ambiguous (e.g. "all teams" when there are many), ask a clarifying question instead of guessing. Never apply changes yourself — return them as structured actions for human review.
 
@@ -622,11 +622,11 @@ git commit -m "feat(brand): update assistant system prompt to Pretzel AI brandin
 export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> {
   const transport = createTransport()
   await transport.sendMail({
-    from: process.env.SMTP_FROM ?? 'noreply@ciyo.ai',   // domain stays ciyo.ai
+    from: process.env.SMTP_FROM ?? 'noreply@mykka.ai',   // domain stays mykka.ai
     to: input.to,
-    subject: `Welcome to Pretzel — ${input.tenantName}`,  // was: "Welcome to ciyo"
+    subject: `Welcome to Pretzel — ${input.tenantName}`,  // was: "Welcome to mykka"
     text: [
-      `Welcome to Pretzel Console, ${input.tenantName}!`,  // was: "Welcome to ciyo"
+      `Welcome to Pretzel Console, ${input.tenantName}!`,  // was: "Welcome to mykka"
       '',
       'Your deployment tokens are below. Keep these secure — anyone with these tokens can push policy to your team\'s browsers.',
       '',
@@ -638,9 +638,9 @@ export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> 
       '',
       'Deploy via Chrome managed storage keys "orgToken" and "adminToken".',
       '',
-      'Questions? Reply to this email or visit docs.ciyo.ai/getting-started',
+      'Questions? Reply to this email or visit docs.mykka.ai/getting-started',
       '',
-      '— The Pretzel team at ciyo.ai',
+      '— The Pretzel team at mykka.ai',
     ].join('\n'),
   })
 }
@@ -657,19 +657,19 @@ git commit -m "feat(brand): update welcome email copy to Pretzel branding"
 
 ## Task 13: Full Verification Pass
 
-- [ ] **Step 1: Grep for any remaining product-context "ciyo" references**
+- [ ] **Step 1: Grep for any remaining product-context "mykka" references**
 
 ```bash
 # In extension source (root src/)
-grep -rn "\"ciyo\"\|'ciyo'\|ciyo Admin\|ciyo platform\|ciyo is\|ciyo policy" src/ admin/src/ backend/src/
-# Expected: 0 results (AppLayout.tsx link to ciyo.ai homepage is fine — that's the company domain)
+grep -rn "\"mykka\"\|'mykka'\|mykka Admin\|mykka platform\|mykka is\|mykka policy" src/ admin/src/ backend/src/
+# Expected: 0 results (AppLayout.tsx link to mykka.ai homepage is fine — that's the company domain)
 ```
 
-- [ ] **Step 2: Verify ciyo.ai domain links are intentionally kept**
+- [ ] **Step 2: Verify mykka.ai domain links are intentionally kept**
 
-These should remain as `ciyo.ai` — they reference the company website, not the product name:
-- `admin/src/components/layout/AppLayout.tsx` line `<a href="https://ciyo.ai"` — intentional, keep
-- `backend/src/billing/email.ts` `noreply@ciyo.ai` sender address — intentional, keep
+These should remain as `mykka.ai` — they reference the company website, not the product name:
+- `admin/src/components/layout/AppLayout.tsx` line `<a href="https://mykka.ai"` — intentional, keep
+- `backend/src/billing/email.ts` `noreply@mykka.ai` sender address — intentional, keep
 
 - [ ] **Step 3: Run all test suites**
 
@@ -698,7 +698,7 @@ cat dist/manifest.json | grep '"name"'
 cd admin && npm run build
 grep -r "Pretzel Console" dist/
 # Expected: found in built HTML
-grep -r "ciyo Admin" dist/
+grep -r "mykka Admin" dist/
 # Expected: 0 results
 ```
 
@@ -707,7 +707,7 @@ grep -r "ciyo Admin" dist/
 ```bash
 cd .. && npm run test:e2e
 # Expected: all 34 E2E tests pass
-# If any test asserts page title "ciyo Admin" — update those assertions to "Pretzel Console"
+# If any test asserts page title "mykka Admin" — update those assertions to "Pretzel Console"
 ```
 
 - [ ] **Step 7: Final commit**
@@ -724,7 +724,7 @@ git commit -m "feat(brand): complete Pretzel rebranding — extension, console, 
 | Item | Why it stays |
 |---|---|
 | Token prefixes `ps_live`, `ps_adm` | Stored in DB and active installs. Changing requires a DB migration + coordinated extension update. Rename in a future minor release. |
-| `noreply@ciyo.ai` email domain | ciyo.ai is the company domain. Email should come from the company, not the product. |
-| `ciyo.ai` links in the footer | Correct — ciyo.ai is the company and marketing site. |
+| `noreply@mykka.ai` email domain | mykka.ai is the company domain. Email should come from the company, not the product. |
+| `mykka.ai` links in the footer | Correct — mykka.ai is the company and marketing site. |
 | Database table/column names | Internal implementation detail, not user-visible. No reason to rename. |
 | `CLERK_ORG_ID` / Clerk configuration | Clerk org names are separate from product branding. |

@@ -27,12 +27,12 @@ Call log:
 ```yaml
 - generic [ref=e3]:
   - complementary [ref=e4]:
-    - link "Pretzel logo Pretzel by ciyo.ai" [ref=e5] [cursor=pointer]:
+    - link "Pretzel logo Pretzel by mykka.ai" [ref=e5] [cursor=pointer]:
       - /url: /dashboard
       - img "Pretzel logo" [ref=e6]
       - generic [ref=e12]:
         - generic [ref=e13]: Pretzel
-        - generic [ref=e14]: by ciyo.ai
+        - generic [ref=e14]: by mykka.ai
     - generic [ref=e15]:
       - generic [ref=e16]: Organization
       - generic [ref=e17]: Test's Organization
@@ -78,13 +78,13 @@ Call log:
       - generic [ref=e58]: Business plan required
       - generic [ref=e59]: The AI Assistant is available on the Business plan. Upgrade to unlock intelligent policy suggestions and bulk apply.
       - link "View plans →" [ref=e60] [cursor=pointer]:
-        - /url: https://ciyo.ai/pricing
+        - /url: https://mykka.ai/pricing
     - generic [ref=e61]:
       - generic [ref=e62]:
         - text: Pretzel
         - generic [ref=e63]: © 2026 · DLP for the AI era
-      - link "ciyo.ai" [ref=e64] [cursor=pointer]:
-        - /url: https://ciyo.ai
+      - link "mykka.ai" [ref=e64] [cursor=pointer]:
+        - /url: https://mykka.ai
 ```
 
 # Test source

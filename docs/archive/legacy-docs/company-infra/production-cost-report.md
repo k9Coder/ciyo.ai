@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-10  
 **Author:** Ryan Kowalski (DevOps)  
-**Scope:** All infrastructure costs for running ciyo.ai in production
+**Scope:** All infrastructure costs for running mykka.ai in production
 
 ---
 
@@ -12,7 +12,7 @@
 |---|---|---|
 | Backend API (Fastify + Node.js) | **Render** | Docker image from GHCR, deployed via Render API on every `master` push |
 | Admin Console (pretzel-console) | **Render** | Static site via Render deploy hook on every `master` push |
-| Marketing site (ciyo-web, Next.js) | **Vercel** | Auto-deploy via Vercel Git integration on every `master` push |
+| Marketing site (mykka-web, Next.js) | **Vercel** | Auto-deploy via Vercel Git integration on every `master` push |
 | Postgres database | **Render** | Managed Postgres, same region as backend |
 | Docker image registry | **GHCR** (GitHub Container Registry) | Free, built in CI |
 | Chrome extension | **Chrome Web Store** | Manual ZIP upload after GitHub Release created by tag |
@@ -32,7 +32,7 @@
 | Render — Backend | **Standard** | $25 | 512 MB RAM, 0.5 vCPU. Do NOT use Free/Starter — those sleep after 15 min of inactivity, causing cold starts on API calls. |
 | Render — Postgres | **Starter** | $7 | 256 MB RAM, 1 GB storage. Fine for < 1M rows. |
 | Render — Console | **Free** | $0 | Static sites are free on Render, no sleeping. |
-| Vercel — ciyo-web | **Hobby** | $0 | Free for personal/small projects. Limits: 100 GB bandwidth, 6,000 build min/month. Fine pre-launch. |
+| Vercel — mykka-web | **Hobby** | $0 | Free for personal/small projects. Limits: 100 GB bandwidth, 6,000 build min/month. Fine pre-launch. |
 | Clerk — Auth | **Free** | $0 | Free up to 10,000 monthly active users. |
 | Sentry | **Developer** | $0 | Free: 5,000 errors/month, 10,000 performance events. More than enough. |
 | SMTP (Mailgun) | **Trial** | $0 | Free: 5,000 emails/month for first 3 months. After 3 months: $15/month Flex plan. |
@@ -98,7 +98,7 @@ At $99/month starter plan, Stripe takes ~$3.20 per renewal. At $299/month busine
 | Item | Cost | Status |
 |---|---|---|
 | Chrome Web Store developer registration | $5 | Needed once |
-| Domain registration (ciyo.ai) | Already paid | — |
+| Domain registration (mykka.ai) | Already paid | — |
 | Render account setup | $0 | Account needed |
 | Vercel account setup | $0 | Account needed |
 | Clerk account setup | $0 | Account needed |

@@ -52,7 +52,7 @@ Accept your invitation (expires in 72 hours):
 
 If you weren't expecting this invitation, you can ignore this email.
 
-— The Pretzel team at ciyo.ai
+— The Pretzel team at mykka.ai
 ```
 
 ---

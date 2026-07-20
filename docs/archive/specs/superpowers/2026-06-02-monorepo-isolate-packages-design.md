@@ -38,7 +38,7 @@ Remove all root-level package management artifacts (`package.json`, `pnpm-lock.y
 - Add `db:setup` and `check-db` scripts to `backend/package.json` pointing to the local `scripts/` paths
 - Tests: `pnpm test` (vitest) — no config changes needed
 
-### ciyo-web
+### mykka-web
 - Already has its own `pnpm-lock.yaml` — no changes needed
 - No test suite to verify
 

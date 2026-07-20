@@ -15,7 +15,7 @@
   2. The PayPal webhook endpoint (`POST /webhooks/paypal`) accepts raw JSON via the standard content-type parser (it falls through the `else` branch of the custom parser), but it is NOT signature-verified anywhere — `handlePayPalEvent` blindly trusts the body. Stripe is protected by `constructEvent`; PayPal has no equivalent check in this file or in `paypal.ts`.
   3. Both webhook routes return 200 even when `handleStripeEvent`/`handlePayPalEvent` throw — the `setErrorHandler` will catch and return 500, but Stripe expects 200 to stop retries; a 500 will cause Stripe to retry repeatedly.
   **Proposed changes:**
-  - Guard the CORS default: `origin: process.env.CORS_ORIGIN?.split(',') ?? ['https://console.ciyo.ai']`
+  - Guard the CORS default: `origin: process.env.CORS_ORIGIN?.split(',') ?? ['https://console.mykka.ai']`
   - Add PayPal webhook signature verification (see `paypal.ts` finding).
   - Wrap webhook handlers in try/catch and return 200 regardless on recoverable errors, or at minimum document the retry behaviour.
 

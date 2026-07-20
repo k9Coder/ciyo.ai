@@ -1,4 +1,4 @@
-# ciyo.ai Product Demo Video — Two Execution Plans
+# mykka.ai Product Demo Video — Two Execution Plans
 
 **Prepared by:** Priya Nair (Head of Marketing)
 **Stakeholders:** Ethan Cole (CEO), Carlos Mendes (Designer)
@@ -21,9 +21,9 @@ Target sellers who show B2B SaaS demo videos in their portfolio (not cartoon exp
 
 ### Brief to paste into the Fiverr order
 
-> **Project: 90-second SaaS product demo video for ciyo.ai**
+> **Project: 90-second SaaS product demo video for mykka.ai**
 >
-> **Product:** ciyo.ai — a Chrome extension that detects and blocks sensitive data before employees paste it into AI tools like ChatGPT, Claude, and Gemini. Think of it as DLP (data loss prevention) for AI.
+> **Product:** mykka.ai — a Chrome extension that detects and blocks sensitive data before employees paste it into AI tools like ChatGPT, Claude, and Gemini. Think of it as DLP (data loss prevention) for AI.
 >
 > **Style reference:** [Lovable.dev launch video](https://lovable.dev) or [base44.com](https://base44.com) — clean, fast-paced, screen recording of the real product with motion text overlay and AI voiceover. No cartoon characters, no stock footage of people shaking hands.
 >
@@ -35,10 +35,10 @@ Target sellers who show B2B SaaS demo videos in their portfolio (not cartoon exp
 > |-----------|-------|--------|-----------|
 > | 0–8s | Hook | Employee typing into ChatGPT; red highlight pulses on sensitive text | "Every day, your employees paste things into AI that should never leave your company." |
 > | 8–20s | Problem | Screen splits: user at laptop / "data exfiltration" abstract visual / news headline | "API keys. Client names. Internal code. They don't mean to. But they do it anyway." |
-> | 20–50s | Solution demo | Screen recording of ciyo.ai console: admin creates a rule, publishes policy. Cut to extension warning modal appearing in ChatGPT. | "ciyo.ai gives security teams control — without blocking productivity. Set the rules once. Protect every AI session." |
+> | 20–50s | Solution demo | Screen recording of mykka.ai console: admin creates a rule, publishes policy. Cut to extension warning modal appearing in ChatGPT. | "mykka.ai gives security teams control — without blocking productivity. Set the rules once. Protect every AI session." |
 > | 50–65s | Feature bullets | Bullet points animate in one by one | "Works on ChatGPT, Claude, Gemini. Deploys in minutes via Chrome Enterprise. No prompt content stored — ever." |
 > | 65–80s | Trust signal | Clean background, company logo | "Trusted by security-first teams." |
-> | 80–90s | CTA | ciyo.ai website mockup or URL | "Start free at ciyo.ai." |
+> | 80–90s | CTA | mykka.ai website mockup or URL | "Start free at mykka.ai." |
 >
 > **Assets I will provide you:**
 > - Screen recordings of the console and extension (MP4, I will record these)
@@ -109,13 +109,13 @@ Go to **ElevenLabs** (elevenlabs.io, free tier: 10,000 chars/month):
 Every day, your employees paste things into AI that should never leave your company.
 API keys. Client names. Internal code. They don't mean to. But they do it anyway.
 
-ciyo.ai gives your security team control — without blocking productivity.
+mykka.ai gives your security team control — without blocking productivity.
 Set the rules once. Protect every AI session.
 
 Works on ChatGPT, Claude, and Gemini. Deploys in minutes via Chrome Enterprise.
 No prompt content stored — ever.
 
-Start free at ciyo.ai.
+Start free at mykka.ai.
 ```
 
 4. Download as MP3
@@ -151,7 +151,7 @@ Timeline assembly order:
 [0:20–0:50] Screen recording 1 (console demo) — add text label "Admin sets the rules once"  
 [0:50–1:00] Screen recording 2 (extension warning) — add text label "Employee is protected automatically"
 [1:00–1:15] Runway clip 2 (blocked particles) — overlay bullet points animating in
-[1:15–1:30] Black screen with ciyo.ai logo — overlay: "Start free at ciyo.ai"
+[1:15–1:30] Black screen with mykka.ai logo — overlay: "Start free at mykka.ai"
 ```
 
 CapCut how-tos:
@@ -176,6 +176,6 @@ Or use **Cleft** (getcleft.com, free) to generate SRT from the MP3.
 - [ ] Voiceover synced to visuals (±0.5s tolerance)
 - [ ] Warning modal scene clearly visible (not cut off)
 - [ ] Logo readable in final frame
-- [ ] ciyo.ai URL spelled correctly
+- [ ] mykka.ai URL spelled correctly
 - [ ] No Loom watermark in export (free Loom adds watermark — trim around it or upgrade $12.50/mo)
 - [ ] Total length ≤ 90 seconds

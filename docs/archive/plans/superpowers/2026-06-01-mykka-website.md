@@ -1,21 +1,21 @@
-# ciyo.ai Marketing Website Implementation Plan
+# mykka.ai Marketing Website Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the ciyo.ai marketing website — a Next.js 15 app in a new `ciyo-web` repo — that explains Pretzel clearly to non-technical buyers, converts visitors to signups, and includes a video content plan for explainer videos.
+**Goal:** Build the mykka.ai marketing website — a Next.js 15 app in a new `mykka-web` repo — that explains Pretzel clearly to non-technical buyers, converts visitors to signups, and includes a video content plan for explainer videos.
 
-**Architecture:** Next.js 15 App Router + TypeScript + Tailwind CSS + shadcn/ui. Static pages served via Vercel edge. MDX blog via Contentlayer. No authentication needed — this is a pure marketing/content site that links to `app.ciyo.ai` (Pretzel Console).
+**Architecture:** Next.js 15 App Router + TypeScript + Tailwind CSS + shadcn/ui. Static pages served via Vercel edge. MDX blog via Contentlayer. No authentication needed — this is a pure marketing/content site that links to `app.mykka.ai` (Pretzel Console).
 
 **Tech Stack:** Next.js 15, TypeScript 5, Tailwind CSS 3, shadcn/ui, Contentlayer2 (MDX), Vercel, Lucide icons.
 
-**New Repo Location:** Create at `../ciyo-web` (sibling to this repo). All paths below are relative to that new repo root.
+**New Repo Location:** Create at `../mykka-web` (sibling to this repo). All paths below are relative to that new repo root.
 
 ---
 
 ## File Structure
 
 ```
-ciyo-web/
+mykka-web/
   app/
     layout.tsx                         — root layout, metadata, fonts
     page.tsx                           — Home (/)
@@ -25,7 +25,7 @@ ciyo-web/
       page.tsx                         — Solutions index
       [industry]/page.tsx              — Per-industry page
     security/page.tsx                  — Trust & security (/security)
-    about/page.tsx                     — About ciyo.ai (/about)
+    about/page.tsx                     — About mykka.ai (/about)
     blog/
       page.tsx                         — Blog index (/blog)
       [slug]/page.tsx                  — Blog post
@@ -83,14 +83,14 @@ ciyo-web/
 
 ```bash
 cd ..
-npx create-next-app@latest ciyo-web \
+npx create-next-app@latest mykka-web \
   --typescript \
   --tailwind \
   --eslint \
   --app \
   --src-dir=no \
   --import-alias="@/*"
-cd ciyo-web
+cd mykka-web
 ```
 
 - [ ] **Step 2: Install dependencies**
@@ -161,17 +161,17 @@ import { Footer } from '@/components/layout/Footer'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: { default: 'Pretzel by ciyo.ai — AI Prompt Data Loss Prevention', template: '%s | Pretzel' },
+  title: { default: 'Pretzel by mykka.ai — AI Prompt Data Loss Prevention', template: '%s | Pretzel' },
   description: 'Stop your team from leaking sensitive data to ChatGPT, Claude, and Gemini. Pretzel intercepts AI prompts in real time — blocking PII, secrets, and IP before they leave the browser.',
-  metadataBase: new URL('https://ciyo.ai'),
+  metadataBase: new URL('https://mykka.ai'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://ciyo.ai',
-    siteName: 'ciyo.ai',
+    url: 'https://mykka.ai',
+    siteName: 'mykka.ai',
     images: [{ url: '/images/og-default.png', width: 1200, height: 630 }],
   },
-  twitter: { card: 'summary_large_image', creator: '@ciyo_ai' },
+  twitter: { card: 'summary_large_image', creator: '@mykka_ai' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -191,7 +191,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```bash
 git init && git add -A
-git commit -m "feat: initialize ciyo-web Next.js 15 project"
+git commit -m "feat: initialize mykka-web Next.js 15 project"
 ```
 
 ---
@@ -228,7 +228,7 @@ export function Header() {
           {/* Pretzel wordmark — replace with SVG logo once designed */}
           <span className="text-[#a78bfa]">🥨</span>
           <span className="text-[15px] tracking-tight">Pretzel</span>
-          <span className="text-[11px] font-normal text-[#94a3b8]">by ciyo.ai</span>
+          <span className="text-[11px] font-normal text-[#94a3b8]">by mykka.ai</span>
         </Link>
 
         <nav className="hidden gap-1 md:flex">
@@ -241,11 +241,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="https://app.ciyo.ai"
+          <Link href="https://app.mykka.ai"
             className="hidden text-[13px] text-[#94a3b8] hover:text-white md:block">
             Sign in
           </Link>
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href="https://app.mykka.ai/onboarding"
             className="rounded-lg bg-[#7c6aff] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#6b59ee]">
             Start Free
           </Link>
@@ -279,7 +279,7 @@ const LINKS = {
   Product:  [['Product', '/product'], ['Pricing', '/pricing'], ['Changelog', '/changelog']],
   Solutions: [['Healthcare', '/solutions/healthcare'], ['Legal', '/solutions/legal'], ['Fintech', '/solutions/fintech'], ['Engineering', '/solutions/engineering']],
   Company:  [['About', '/about'], ['Blog', '/blog'], ['Security', '/security']],
-  Docs:     [['Getting Started', 'https://docs.ciyo.ai'], ['API Reference', 'https://docs.ciyo.ai/api'], ['Chrome Enterprise', 'https://docs.ciyo.ai/enterprise']],
+  Docs:     [['Getting Started', 'https://docs.mykka.ai'], ['API Reference', 'https://docs.mykka.ai/api'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise']],
 } as const
 
 export function Footer() {
@@ -300,7 +300,7 @@ export function Footer() {
           ))}
         </div>
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 text-[12px] text-[#64748b] md:flex-row">
-          <span>🥨 <strong className="text-[#94a3b8]">Pretzel</strong> by <strong className="text-[#94a3b8]">ciyo.ai</strong> — © {new Date().getFullYear()}</span>
+          <span>🥨 <strong className="text-[#94a3b8]">Pretzel</strong> by <strong className="text-[#94a3b8]">mykka.ai</strong> — © {new Date().getFullYear()}</span>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-[#94a3b8]">Privacy</Link>
             <Link href="/terms" className="hover:text-[#94a3b8]">Terms</Link>
@@ -361,7 +361,7 @@ export function Hero() {
 
       {/* CTAs */}
       <div className="mb-12 flex flex-wrap items-center justify-center gap-3">
-        <Link href="https://app.ciyo.ai/onboarding"
+        <Link href="https://app.mykka.ai/onboarding"
           className="rounded-xl bg-[#7c6aff] px-7 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee] hover:shadow-[#7c6aff]/40">
           Start Free — No Credit Card
         </Link>
@@ -601,9 +601,9 @@ git add -A && git commit -m "feat: FeatureGrid and VideoDemo sections"
 import Link from 'next/link'
 
 const TIERS = [
-  { name: 'Solo', price: 'Free', desc: 'For individuals exploring Pretzel.', cta: 'Get Started Free', href: 'https://app.ciyo.ai/onboarding', featured: false, features: ['3 users', '500 scans/month', 'Keyword detection', 'Basic Console'] },
-  { name: 'Starter', price: '$49', period: '/mo', desc: 'Small teams, flat rate.', cta: 'Start Starter', href: 'https://app.ciyo.ai/onboarding?plan=starter', featured: false, features: ['25 users', '50K scans/month', 'Keyword + regex', '30-day analytics'] },
-  { name: 'Business', price: '$15', period: '/user/mo', desc: 'Full protection for your whole org.', cta: 'Start Business', href: 'https://app.ciyo.ai/onboarding?plan=business', featured: true, features: ['Unlimited users', 'All detection types', 'AI policy assistant', 'Slack alerting', '12-month audit log'] },
+  { name: 'Solo', price: 'Free', desc: 'For individuals exploring Pretzel.', cta: 'Get Started Free', href: 'https://app.mykka.ai/onboarding', featured: false, features: ['3 users', '500 scans/month', 'Keyword detection', 'Basic Console'] },
+  { name: 'Starter', price: '$49', period: '/mo', desc: 'Small teams, flat rate.', cta: 'Start Starter', href: 'https://app.mykka.ai/onboarding?plan=starter', featured: false, features: ['25 users', '50K scans/month', 'Keyword + regex', '30-day analytics'] },
+  { name: 'Business', price: '$15', period: '/user/mo', desc: 'Full protection for your whole org.', cta: 'Start Business', href: 'https://app.mykka.ai/onboarding?plan=business', featured: true, features: ['Unlimited users', 'All detection types', 'AI policy assistant', 'Slack alerting', '12-month audit log'] },
 ]
 
 export function PricingPreview() {
@@ -670,11 +670,11 @@ export function CTABanner() {
           See results immediately.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href="https://app.mykka.ai/onboarding"
             className="rounded-xl bg-[#7c6aff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee]">
             Start Free — No Credit Card
           </Link>
-          <Link href="mailto:hello@ciyo.ai?subject=Enterprise enquiry"
+          <Link href="mailto:hello@mykka.ai?subject=Enterprise enquiry"
             className="rounded-xl border border-white/10 bg-white/5 px-8 py-3 text-[15px] font-semibold text-white transition hover:bg-white/10">
             Talk to Sales
           </Link>
@@ -711,28 +711,28 @@ const TIERS = [
   {
     name: 'Solo', monthly: 0, annual: 0, per: 'forever',
     desc: 'For individuals validating Pretzel before recommending it.',
-    cta: 'Get Started Free', href: 'https://app.ciyo.ai/onboarding', featured: false,
+    cta: 'Get Started Free', href: 'https://app.mykka.ai/onboarding', featured: false,
     features: ['3 users', '1 subject, 5 rules', 'Keyword detection only', '500 scans / month', 'Basic Console access'],
     missing: ['Analytics', 'Org hierarchy', 'Entropy/pattern detection', 'AI assistant', 'Alerting'],
   },
   {
     name: 'Starter', monthly: 49, annual: 40, per: '/mo flat',
     desc: 'Small teams. Easy to expense — no per-seat maths.',
-    cta: 'Start Starter', href: 'https://app.ciyo.ai/onboarding?plan=starter', featured: false,
+    cta: 'Start Starter', href: 'https://app.mykka.ai/onboarding?plan=starter', featured: false,
     features: ['25 users', 'Unlimited subjects + rules', 'Keyword + regex detection', '50,000 scans / month', '30-day analytics', 'Basic audit log', 'Email support'],
     missing: ['Entropy detection', 'AI assistant', 'Slack alerting'],
   },
   {
     name: 'Business', monthly: 15, annual: 12, per: '/user/mo',
     desc: 'Full protection for the whole org. Scales with headcount.',
-    cta: 'Start Business', href: 'https://app.ciyo.ai/onboarding?plan=business', featured: true,
+    cta: 'Start Business', href: 'https://app.mykka.ai/onboarding?plan=business', featured: true,
     features: ['Unlimited users', 'All detection types', 'Unlimited scans', '12-month audit log', 'Division & team hierarchy', 'AI policy assistant', 'Slack + email alerting', 'Priority support'],
     missing: [],
   },
   {
     name: 'Enterprise', monthly: null, annual: null, per: '/year',
     desc: 'Custom contract for 500+ seat deployments.',
-    cta: 'Talk to Sales', href: 'mailto:sales@ciyo.ai', featured: false,
+    cta: 'Talk to Sales', href: 'mailto:sales@mykka.ai', featured: false,
     features: ['Everything in Business', 'SSO / SAML', 'Chrome Enterprise push', 'SIEM integration (Splunk, Elastic)', 'On-premise policy option', 'Custom data retention + SLAs', 'Dedicated success manager'],
     missing: [],
   },
@@ -897,7 +897,7 @@ export default function ProductPage() {
         ))}
 
         <div className="text-center">
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href="https://app.mykka.ai/onboarding"
             className="rounded-xl bg-[#7c6aff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee]">
             Start Free — No Credit Card
           </Link>
@@ -969,7 +969,7 @@ const INDUSTRIES = {
     problem: 'Developers paste production configs, API keys, connection strings, and proprietary algorithms into AI coding assistants every day. This is the single most common Pretzel use case.',
     solution: 'Pretzel\'s entropy detection catches API keys and tokens even if they\'re not in your keyword list. Keyword rules catch specific internal project names, client names, and database schemas.',
     rules: ['High-entropy string detection (API keys, tokens)', 'AWS/GCP/Azure key pattern matching', 'Database connection string patterns', 'Internal project name blocklist'],
-    stat: { num: '1 in 3', label: 'developer AI prompts contain at least one credential or secret (ciyo.ai data, 2026)' },
+    stat: { num: '1 in 3', label: 'developer AI prompts contain at least one credential or secret (mykka.ai data, 2026)' },
     cta: 'Download Free Engineering AI Security Starter',
     ctaHref: '/blog/engineering-ai-security-starter',
   },
@@ -1024,7 +1024,7 @@ export default function SolutionPage({ params }: { params: { industry: string } 
         </ul>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="https://app.ciyo.ai/onboarding"
+          <Link href="https://app.mykka.ai/onboarding"
             className="rounded-xl bg-[#7c6aff] px-7 py-3 text-[14px] font-bold text-white transition hover:bg-[#6b59ee]">
             Start Free — Pre-built {data.name} Template Included
           </Link>
@@ -1107,7 +1107,7 @@ const POINTS = [
   { icon: '🔐', title: 'Encryption in transit and at rest', body: 'All API traffic uses TLS 1.3. Data at rest is encrypted with AES-256. Your org token is hashed with bcrypt — we cannot recover it.' },
   { icon: '📋', title: 'SOC 2 Type II — in progress', body: 'We are actively working toward SOC 2 Type II certification. Our security practices are designed to meet those controls now, before the audit.' },
   { icon: '🇪🇺', title: 'GDPR & CCPA ready', body: 'Data is stored in the EU by default. We support data deletion requests within 30 days. We are happy to sign a DPA (Data Processing Agreement) for enterprise customers.' },
-  { icon: '🐛', title: 'Responsible disclosure', body: 'Found a vulnerability? Email security@ciyo.ai. We aim to respond within 24 hours and fix within 7 days for critical issues.' },
+  { icon: '🐛', title: 'Responsible disclosure', body: 'Found a vulnerability? Email security@mykka.ai. We aim to respond within 24 hours and fix within 7 days for critical issues.' },
 ]
 
 export default function SecurityPage() {
@@ -1138,7 +1138,7 @@ export default function SecurityPage() {
 
 ```tsx
 import type { Metadata } from 'next'
-export const metadata: Metadata = { title: 'About', description: 'The story behind ciyo.ai and Pretzel.' }
+export const metadata: Metadata = { title: 'About', description: 'The story behind mykka.ai and Pretzel.' }
 
 export default function AboutPage() {
   return (
@@ -1149,11 +1149,11 @@ export default function AboutPage() {
         <div className="space-y-4 text-[15px] leading-relaxed text-[#94a3b8]">
           <p>We watched teams at fast-growing companies adopt ChatGPT overnight — and watched their security teams scramble to catch up. Existing DLP tools weren't built for a world where every employee has a direct line to a public AI model.</p>
           <p>Pretzel started as a simple Chrome extension to block PII from leaving the browser. It's grown into a full policy platform that lets security teams configure, enforce, and audit AI usage across their entire organization.</p>
-          <p>We're ciyo.ai — a small team obsessed with making enterprise security tools that people actually install, use, and recommend to peers. We're funded by customers, not VCs.</p>
+          <p>We're mykka.ai — a small team obsessed with making enterprise security tools that people actually install, use, and recommend to peers. We're funded by customers, not VCs.</p>
         </div>
         <div className="mt-12 rounded-2xl border border-[#7c6aff]/20 bg-[#7c6aff]/[0.06] p-6">
           <p className="text-[14px] font-semibold text-white">Want to talk?</p>
-          <p className="mt-1 text-[13px] text-[#94a3b8]">hello@ciyo.ai — we read every email and reply to most of them.</p>
+          <p className="mt-1 text-[13px] text-[#94a3b8]">hello@mykka.ai — we read every email and reply to most of them.</p>
         </div>
       </div>
     </div>
@@ -1264,7 +1264,7 @@ Companies use code names for products, M&A targets, and pending announcements. T
 
 ## Download the Free Policy Template
 
-We've compiled all of the above into a ready-to-import Pretzel policy template. [Start free and activate it in one click →](https://app.ciyo.ai/onboarding)
+We've compiled all of the above into a ready-to-import Pretzel policy template. [Start free and activate it in one click →](https://app.mykka.ai/onboarding)
 ```
 
 - [ ] **Step 4: Write `app/blog/page.tsx`** — blog index listing all posts sorted by date.
@@ -1323,9 +1323,9 @@ import type { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ['/', '/product', '/pricing', '/solutions', '/solutions/healthcare', '/solutions/legal', '/solutions/fintech', '/solutions/engineering', '/security', '/about', '/blog']
-  const posts = allPosts.map(p => ({ url: `https://ciyo.ai${p.url}`, lastModified: new Date(p.date) }))
+  const posts = allPosts.map(p => ({ url: `https://mykka.ai${p.url}`, lastModified: new Date(p.date) }))
   return [
-    ...staticRoutes.map(route => ({ url: `https://ciyo.ai${route}`, lastModified: new Date() })),
+    ...staticRoutes.map(route => ({ url: `https://mykka.ai${route}`, lastModified: new Date() })),
     ...posts,
   ]
 }
@@ -1336,7 +1336,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 ```typescript
 import type { MetadataRoute } from 'next'
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: '*', allow: '/' }, sitemap: 'https://ciyo.ai/sitemap.xml' }
+  return { rules: { userAgent: '*', allow: '/' }, sitemap: 'https://mykka.ai/sitemap.xml' }
 }
 ```
 
@@ -1364,9 +1364,9 @@ export default function robots(): MetadataRoute.Robots {
 
 ```bash
 git add -A && git commit -m "feat: sitemap, robots, and Vercel config"
-git remote add origin https://github.com/ciyo-ai/ciyo-web.git
+git remote add origin https://github.com/mykka-ai/mykka-web.git
 git push -u origin main
-# Then: vercel.com → Import Git Repository → ciyo-ai/ciyo-web → set domain to ciyo.ai
+# Then: vercel.com → Import Git Repository → mykka-ai/mykka-web → set domain to mykka.ai
 ```
 
 ---
@@ -1388,7 +1388,7 @@ This is a content/production plan, not an engineering task. Execute after the we
 [0:50–1:10] SETUP — show the Console: "Configure once, protect everyone. 
             Pretzel syncs your policy to every browser automatically."
 [1:10–1:25] AI ASSISTANT — "Ask it in plain English. 'Block SSNs for Finance.'"
-[1:25–1:30] CTA — "Start free at ciyo.ai. Installs in 30 seconds."
+[1:25–1:30] CTA — "Start free at mykka.ai. Installs in 30 seconds."
 ```
 
 **Production options (in order of cost):**
@@ -1415,7 +1415,7 @@ This is a content/production plan, not an engineering task. Execute after the we
 5. Inviting team members (2:45–3:30)
 6. Viewing your first analytics (3:30–4:00)
 
-**Tool:** Loom with chapter markers. Embed in docs.ciyo.ai getting-started guide.
+**Tool:** Loom with chapter markers. Embed in docs.mykka.ai getting-started guide.
 
 ### Video 3 — Industry-specific demos (2 min each)
 

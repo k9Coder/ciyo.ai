@@ -25,20 +25,20 @@ One enforcement client to cover every MCP-compatible AI tool (Claude Code, Curso
 - Audit & Compliance Report exports — Q3, Ben
 
 **Medium bets (new surface, same buyer):**
-- ciyo MCP Server — 30–45 days, Marcus + Yuki *(PRIORITY — decided this meeting)*
+- mykka MCP Server — 30–45 days, Marcus + Yuki *(PRIORITY — decided this meeting)*
 - VS Code / Cursor IDE extension — 60 days, Yuki
 
 **Big bets (parked, not this quarter):**
-- ciyo Desktop Agent / Local Proxy
-- ciyo API Gateway / Cloud Relay
-- ciyo Slack/Teams App (audit-first)
-- ciyo Solo PLG tier
+- mykka Desktop Agent / Local Proxy
+- mykka API Gateway / Cloud Relay
+- mykka Slack/Teams App (audit-first)
+- mykka Solo PLG tier
 
 ## Action items
 
 | Owner | Item | Deadline |
 |---|---|---|
-| Ben Cho | Write spec for ciyo MCP Server v1 | June 19 |
+| Ben Cho | Write spec for mykka MCP Server v1 | June 19 |
 | Marcus Webb + Yuki Tanaka | Technical architecture for MCP server | June 19 |
 | Sofia Reyes | Identify 5 private beta deal candidates | June 16 |
 | Ben Cho | Add Policy Templates to backlog, size it | June 16 |

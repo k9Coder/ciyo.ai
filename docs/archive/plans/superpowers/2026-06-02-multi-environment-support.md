@@ -5,7 +5,7 @@
 **Goal:** Add staging and production environment support across all four packages so that developers/testers run against staging (separate DB + Clerk dev instance) and customers run against production, switchable via `pnpm set-env:staging` or `pnpm set-env:prod` at the monorepo root.
 
 **Architecture:**
-- A single root script copies the right `.env.<env>` file to `.env` for the backend (which uses `--env-file=.env`) and to `.env.local` for ciyo-web (Next.js convention). Vite packages (pretzel, pretzel-console) use Vite's built-in `--mode` flag to load `.env.<env>` directly — no copy needed, just dedicated `dev:staging`, `build:staging` etc. npm scripts.
+- A single root script copies the right `.env.<env>` file to `.env` for the backend (which uses `--env-file=.env`) and to `.env.local` for mykka-web (Next.js convention). Vite packages (pretzel, pretzel-console) use Vite's built-in `--mode` flag to load `.env.<env>` directly — no copy needed, just dedicated `dev:staging`, `build:staging` etc. npm scripts.
 - **Clerk:** Staging maps to the existing Clerk *development* instance (`pk_test_`/`sk_test_`), production to the Clerk *production* instance (`pk_live_`/`sk_live_`). Same Clerk app, two environments, both within the free tier — no second account needed.
 - **Database:** A separate Postgres database (`promptshield_staging`) is created locally and on whatever hosted DB you use. Same schema, same migrations — just different data. Running `pnpm db:migrate` in backend applies migrations to whichever DB is in the current `.env`.
 - **Extension (pretzel):** Env vars are baked in at Vite build time. `pnpm build:staging` in `pretzel/` produces a `dist/` with staging API base + staging Clerk key. Testers load this `dist/` as an unpacked Chrome extension for staging testing.
@@ -21,7 +21,7 @@
 | `backend/` | `--env-file=.env` | `.env.staging` → copied to `.env` | `.env.prod` → copied to `.env` | Script does the copy |
 | `pretzel/` | Vite `import.meta.env` | `.env.staging` (loaded via `--mode staging`) | `.env.prod` (loaded via `--mode prod`) | No copy needed |
 | `pretzel-console/` | Vite `import.meta.env` | `.env.staging` (loaded via `--mode staging`) | `.env.prod` (loaded via `--mode prod`) | No copy needed |
-| `ciyo-web/` | Next.js env loading | `.env.staging` → copied to `.env.local` | `.env.prod` → copied to `.env.local` | Script does the copy |
+| `mykka-web/` | Next.js env loading | `.env.staging` → copied to `.env.local` | `.env.prod` → copied to `.env.local` | Script does the copy |
 
 ## Clerk Instance Mapping
 
@@ -57,8 +57,8 @@ Since the extension bakes `VITE_API_BASE` and `VITE_CLERK_PUBLISHABLE_KEY` at bu
 - `pretzel/.env.example` — documents required VITE_ vars
 - `pretzel-console/.env.staging` — staging API base + test Clerk publishable key
 - `pretzel-console/.env.prod` — prod API base + live Clerk publishable key
-- `ciyo-web/.env.staging` — staging public vars
-- `ciyo-web/.env.prod` — prod public vars
+- `mykka-web/.env.staging` — staging public vars
+- `mykka-web/.env.prod` — prod public vars
 
 **Modify:**
 - `package.json` (root) — add `set-env:staging`, `set-env:prod` scripts
@@ -94,10 +94,10 @@ if (!env || !["staging", "prod"].includes(env)) {
   process.exit(1);
 }
 
-// backend and ciyo-web need a file copy; Vite packages use --mode at build time
+// backend and mykka-web need a file copy; Vite packages use --mode at build time
 const copies = [
   { pkg: "backend", src: `.env.${env}`, dest: ".env" },
-  { pkg: "ciyo-web", src: `.env.${env}`, dest: ".env.local" },
+  { pkg: "mykka-web", src: `.env.${env}`, dest: ".env.local" },
 ];
 
 for (const { pkg, src, dest } of copies) {
@@ -147,7 +147,7 @@ node scripts/set-env.mjs staging
 Expected output (with warnings since files don't exist yet):
 ```
 ⚠  backend/.env.staging not found — skipped
-⚠  ciyo-web/.env.staging not found — skipped
+⚠  mykka-web/.env.staging not found — skipped
 
 Environment set to: staging
 Vite packages (pretzel, pretzel-console) use --mode at build time.
@@ -351,7 +351,7 @@ Fill in the real `pk_test_` value from the current `pretzel/.env`.
 ```dotenv
 # pretzel/.env.prod
 # Loaded by: pnpm build:prod  (vite build --mode prod)
-VITE_API_BASE=https://api.ciyo.ai
+VITE_API_BASE=https://api.mykka.ai
 VITE_CLERK_PUBLISHABLE_KEY=pk_live_FILL_IN_FROM_CLERK_PROD_INSTANCE
 ```
 
@@ -456,7 +456,7 @@ Fill in the real `pk_test_` value from the current `pretzel-console/.env`.
 # pretzel-console/.env.prod
 # Loaded by: pnpm build:prod (vite build --mode prod)
 VITE_CLERK_PUBLISHABLE_KEY=pk_live_FILL_IN_FROM_CLERK_PROD_INSTANCE
-VITE_API_BASE=https://api.ciyo.ai
+VITE_API_BASE=https://api.mykka.ai
 ```
 
 - [ ] **Step 3: Add scripts to `pretzel-console/package.json`**
@@ -515,42 +515,42 @@ git commit -m "feat(env): add pretzel-console staging/prod env files and dev/bui
 
 ---
 
-## Task 6: ciyo-web environment files
+## Task 6: mykka-web environment files
 
 **Files:**
-- Create: `ciyo-web/.env.staging`
-- Create: `ciyo-web/.env.prod`
-- Modify: `ciyo-web/.gitignore` (create if missing)
+- Create: `mykka-web/.env.staging`
+- Create: `mykka-web/.env.prod`
+- Modify: `mykka-web/.gitignore` (create if missing)
 
 Next.js loads `.env.local` at the highest priority in all modes. The `set-env` script copies `.env.<env>` to `.env.local`.
 
-- [ ] **Step 1: Check current `ciyo-web` for any public env vars used**
+- [ ] **Step 1: Check current `mykka-web` for any public env vars used**
 
 ```bash
-grep -r "NEXT_PUBLIC_" ciyo-web/src --include="*.ts" --include="*.tsx" -l 2>/dev/null || echo "none found"
+grep -r "NEXT_PUBLIC_" mykka-web/src --include="*.ts" --include="*.tsx" -l 2>/dev/null || echo "none found"
 ```
 
 If none found, the site currently has no env vars. The files below will be minimal stubs.
 
-- [ ] **Step 2: Create `ciyo-web/.env.staging`**
+- [ ] **Step 2: Create `mykka-web/.env.staging`**
 
 ```dotenv
-# ciyo-web/.env.staging
+# mykka-web/.env.staging
 # Copied to .env.local by: pnpm set-env:staging
 NEXT_PUBLIC_API_BASE=http://localhost:3000
 NEXT_PUBLIC_ENV=staging
 ```
 
-- [ ] **Step 3: Create `ciyo-web/.env.prod`**
+- [ ] **Step 3: Create `mykka-web/.env.prod`**
 
 ```dotenv
-# ciyo-web/.env.prod
+# mykka-web/.env.prod
 # Copied to .env.local by: pnpm set-env:prod
-NEXT_PUBLIC_API_BASE=https://api.ciyo.ai
+NEXT_PUBLIC_API_BASE=https://api.mykka.ai
 NEXT_PUBLIC_ENV=production
 ```
 
-- [ ] **Step 4: Create/update `ciyo-web/.gitignore`**
+- [ ] **Step 4: Create/update `mykka-web/.gitignore`**
 
 ```gitignore
 .next/
@@ -567,7 +567,7 @@ Note: `.env.local` is gitignored because it's generated by `set-env`. `.env.prod
 From the monorepo root:
 ```bash
 node scripts/set-env.mjs staging
-cat ciyo-web/.env.local
+cat mykka-web/.env.local
 ```
 
 Expected:
@@ -579,8 +579,8 @@ NEXT_PUBLIC_ENV=staging
 - [ ] **Step 6: Commit**
 
 ```bash
-git add ciyo-web/.env.staging ciyo-web/.env.prod ciyo-web/.gitignore
-git commit -m "feat(env): add ciyo-web staging/prod env files"
+git add mykka-web/.env.staging mykka-web/.env.prod mykka-web/.gitignore
+git commit -m "feat(env): add mykka-web staging/prod env files"
 ```
 
 ---
@@ -604,7 +604,7 @@ Add to root `.gitignore` (create if missing):
 # Prod env files — contain real secrets
 **/.env.prod
 # Generated .env files (produced by set-env script)
-ciyo-web/.env.local
+mykka-web/.env.local
 # Staging files are safe to commit (test keys only)
 # backend/.env.staging — committed
 # pretzel/.env.staging — committed
@@ -616,7 +616,7 @@ Using `**/.env.prod` catches all packages at once.
 - [ ] **Step 3: Verify all .env.prod files are gitignored**
 
 ```bash
-git check-ignore -v backend/.env.prod pretzel/.env.prod pretzel-console/.env.prod ciyo-web/.env.prod
+git check-ignore -v backend/.env.prod pretzel/.env.prod pretzel-console/.env.prod mykka-web/.env.prod
 ```
 
 Expected: each file listed with its gitignore rule.
@@ -624,7 +624,7 @@ Expected: each file listed with its gitignore rule.
 - [ ] **Step 4: Verify staging files are NOT gitignored**
 
 ```bash
-git check-ignore -v backend/.env.staging pretzel/.env.staging pretzel-console/.env.staging ciyo-web/.env.staging
+git check-ignore -v backend/.env.staging pretzel/.env.staging pretzel-console/.env.staging mykka-web/.env.staging
 ```
 
 Expected: no output (none are gitignored).
@@ -648,8 +648,8 @@ cd ../pretzel-console && pnpm dev:staging &
 sleep 5 && kill %1
 # Expected: Vite started without errors
 
-# ciyo-web — confirm .env.local was written
-cat ciyo-web/.env.local | grep NEXT_PUBLIC_ENV
+# mykka-web — confirm .env.local was written
+cat mykka-web/.env.local | grep NEXT_PUBLIC_ENV
 # Expected: NEXT_PUBLIC_ENV=staging
 ```
 
@@ -665,7 +665,7 @@ grep DATABASE_URL backend/.env
 grep VITE_API_BASE pretzel-console/.env   # this file isn't written — Vite uses --mode
 # Instead verify:
 cd pretzel && pnpm build:prod
-grep -r "api.ciyo.ai" dist/ --include="*.js" | head -3
+grep -r "api.mykka.ai" dist/ --include="*.js" | head -3
 # Expected: matches found
 ```
 
@@ -697,7 +697,7 @@ cd pretzel && pnpm build:staging
 # Then: Chrome → chrome://extensions → Load unpacked → select pretzel/dist/
 
 # Run marketing site:
-cd ciyo-web && pnpm dev   # reads .env.local which was set to staging
+cd mykka-web && pnpm dev   # reads .env.local which was set to staging
 ```
 
 ### Switching to production (deploy)
@@ -716,7 +716,7 @@ cd pretzel && pnpm build:prod
 # Then: zip dist/ and submit to Chrome Web Store
 
 # Marketing site:
-cd ciyo-web && pnpm build && pnpm start
+cd mykka-web && pnpm build && pnpm start
 ```
 
 ### Creating the staging DB (one-time)
@@ -745,7 +745,7 @@ These steps are done once in the Clerk dashboard, not automated.
 - [x] `set-env` script handles missing files gracefully (warns, continues)
 - [x] Vite packages use `--mode` flag — no file copy race conditions
 - [x] `.env.prod` is gitignored everywhere; `.env.staging` is committed (test keys)
-- [x] `ciyo-web/.env.local` is gitignored (generated file)
+- [x] `mykka-web/.env.local` is gitignored (generated file)
 - [x] Extension staging testing flow documented (unpacked load)
 - [x] Clerk two-instance approach explained — free tier preserved
 - [x] DB migration flow for staging DB documented
