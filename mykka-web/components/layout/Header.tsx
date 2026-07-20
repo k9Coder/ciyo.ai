@@ -22,19 +22,15 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
           <svg width="26" height="26" viewBox="0 0 56 56" fill="none" aria-label="mykka.ai logo">
-            <rect width="56" height="56" rx="14" fill="rgba(167,139,250,0.08)"/>
-            <path d="M20 14 L14 14 L14 42 L20 42"
-                  stroke="#a78bfa" strokeWidth="3"
-                  strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="34" cy="28" r="5" fill="#a78bfa"/>
-            <path d="M30 18 L38 18 L38 24"
-                  stroke="#a78bfa" strokeWidth="2.5"
-                  strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+            <rect width="56" height="56" rx="14" fill="rgba(91,140,255,0.08)"/>
+            <circle cx="28" cy="28" r="13"
+                    fill="none" stroke="#5b8cff" strokeWidth="7"/>
+            <circle cx="37.19" cy="18.81" r="4.5" fill="#5b8cff"/>
           </svg>
           <span className="text-[15px] tracking-tight">
-            <span className="text-white font-bold">c</span>
-            <span className="text-[#a78bfa] font-bold">i</span>
-            <span className="text-white font-bold">yo</span>
+            <span className="text-white font-bold">m</span>
+            <span className="text-[#5b8cff] font-bold">y</span>
+            <span className="text-white font-bold">kka</span>
             <span className="text-[#94a3b8] font-normal text-[12px]">.ai</span>
           </span>
           {env.NEXT_PUBLIC_ENV === 'staging' && (
@@ -50,7 +46,7 @@ export function Header() {
               className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] text-[#94a3b8] transition-colors hover:bg-white/[0.05] hover:text-white">
               {label}
               {IS_PILOT_MODE && href === '/pricing' && (
-                <span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-[#7c6aff]/20 text-[#a78bfa]">
+                <span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-[#5b8cff]/20 text-[#8fb3ff]">
                   Soon
                 </span>
               )}
@@ -64,7 +60,7 @@ export function Header() {
             Sign in
           </Link>
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-lg bg-[#7c6aff] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#6b59ee]">
+            className="rounded-lg bg-[#5b8cff] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#3f6fe0]">
             Start Free
           </Link>
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">

@@ -41,7 +41,7 @@ export default function PricingClient() {
     return (
       <div className="px-6 py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pilot Program</p>
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pilot Program</p>
           <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">
             You&apos;re In
           </h1>
@@ -51,7 +51,7 @@ export default function PricingClient() {
           </p>
           <Link
             href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-[#7c6aff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#6b59ee]"
+            className="inline-block rounded-xl bg-[#5b8cff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#3f6fe0]"
           >
             Access the Console →
           </Link>
@@ -63,7 +63,7 @@ export default function PricingClient() {
   return (
     <div className="px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pricing</p>
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pricing</p>
         <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-white">
           Transparent Pricing
         </h1>
@@ -74,7 +74,7 @@ export default function PricingClient() {
         <div className="mb-12 flex items-center justify-center gap-3">
           <span className={`text-[13px] font-semibold ${!annual ? 'text-white' : 'text-[#64748b]'}`}>Monthly</span>
           <button onClick={() => setAnnual(!annual)}
-            className={`relative h-6 w-11 rounded-full transition-colors ${annual ? 'bg-[#7c6aff]' : 'bg-white/10'}`}
+            className={`relative h-6 w-11 rounded-full transition-colors ${annual ? 'bg-[#5b8cff]' : 'bg-white/10'}`}
             aria-label="Toggle annual pricing">
             <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${annual ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
@@ -87,8 +87,8 @@ export default function PricingClient() {
           {TIERS.map(({ name, monthly, annual: annualPrice, per, desc, cta, href, featured, features, missing }) => {
             const price = annual ? annualPrice : monthly
             return (
-              <div key={name} className={`relative flex flex-col rounded-2xl border p-6 ${featured ? 'border-[#7c6aff] bg-gradient-to-b from-[#7c6aff]/10 to-[#17171e]' : 'border-white/[0.07] bg-[#17171e]'}`}>
-                {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#7c6aff] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most Popular</span>}
+              <div key={name} className={`relative flex flex-col rounded-2xl border p-6 ${featured ? 'border-[#5b8cff] bg-gradient-to-b from-[#5b8cff]/10 to-[#17171e]' : 'border-white/[0.07] bg-[#17171e]'}`}>
+                {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#5b8cff] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most Popular</span>}
                 <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-[#94a3b8]">{name}</p>
                 <div className="mb-2">
                   {price === null
@@ -101,7 +101,7 @@ export default function PricingClient() {
                   {features.map(f => <li key={f} className="flex gap-2 text-[12px] text-[#94a3b8]"><span className="shrink-0 text-[#34d399]">✓</span>{f}</li>)}
                   {missing.map(f => <li key={f} className="flex gap-2 text-[12px] text-[#4b5563]"><span className="shrink-0">–</span>{f}</li>)}
                 </ul>
-                <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-[#7c6aff] text-white hover:bg-[#6b59ee]' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'}`}>
+                <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-[#5b8cff] text-white hover:bg-[#3f6fe0]' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'}`}>
                   {cta}
                 </Link>
               </div>

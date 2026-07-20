@@ -12,7 +12,7 @@ export function PricingPreview() {
     return (
       <section className="border-t border-white/[0.05] px-6 py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pilot Program</p>
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pilot Program</p>
           <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-white">
             Pricing Coming Soon
           </h2>
@@ -22,7 +22,7 @@ export function PricingPreview() {
           </p>
           <Link
             href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-[#7c6aff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#6b59ee]"
+            className="inline-block rounded-xl bg-[#5b8cff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#3f6fe0]"
           >
             Access the Console →
           </Link>
@@ -34,7 +34,7 @@ export function PricingPreview() {
   return (
     <section className="border-t border-white/[0.05] px-6 py-24">
       <div className="mx-auto max-w-5xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Pricing</p>
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pricing</p>
         <h2 className="mb-4 text-center text-4xl font-extrabold tracking-tight text-white">
           Simple, transparent pricing
         </h2>
@@ -44,9 +44,9 @@ export function PricingPreview() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {TIERS.map(({ name, price, period, desc, cta, href, featured, features }) => (
-            <div key={name} className={`flex flex-col rounded-2xl border p-7 transition ${featured ? 'border-[#7c6aff] bg-gradient-to-b from-[#7c6aff]/10 to-[#17171e]' : 'border-white/[0.07] bg-[#17171e] hover:border-white/[0.14]'}`}>
+            <div key={name} className={`flex flex-col rounded-2xl border p-7 transition ${featured ? 'border-[#5b8cff] bg-gradient-to-b from-[#5b8cff]/10 to-[#17171e]' : 'border-white/[0.07] bg-[#17171e] hover:border-white/[0.14]'}`}>
               {featured && (
-                <span className="-mt-10 mb-5 block w-fit self-center rounded-full bg-[#7c6aff] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most Popular</span>
+                <span className="-mt-10 mb-5 block w-fit self-center rounded-full bg-[#5b8cff] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most Popular</span>
               )}
               <p className="text-[11px] font-bold uppercase tracking-widest text-[#94a3b8]">{name}</p>
               <p className="mt-2 mb-1 text-4xl font-extrabold text-white">{price}<span className="text-[14px] font-normal text-[#94a3b8]">{period}</span></p>
@@ -58,7 +58,7 @@ export function PricingPreview() {
                   </li>
                 ))}
               </ul>
-              <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-[#7c6aff] text-white hover:bg-[#6b59ee]' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'}`}>
+              <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-[#5b8cff] text-white hover:bg-[#3f6fe0]' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'}`}>
                 {cta}
               </Link>
             </div>
@@ -66,7 +66,7 @@ export function PricingPreview() {
         </div>
 
         <p className="mt-8 text-center">
-          <Link href="/pricing" className="text-[13px] text-[#7c6aff] hover:text-[#a78bfa]">
+          <Link href="/pricing" className="text-[13px] text-[#5b8cff] hover:text-[#8fb3ff]">
             See full pricing comparison including Enterprise →
           </Link>
         </p>

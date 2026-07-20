@@ -11,7 +11,7 @@ export default function TermsPage() {
   return (
     <div className="px-6 py-24">
       <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Legal</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Legal</p>
         <h1 className="mb-2 text-5xl font-extrabold tracking-tight text-white">Terms of Service</h1>
         <p className="mb-12 text-[13px] text-[#64748b]">Last updated: {LAST_UPDATED}</p>
 
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">3. Accounts and Eligibility</h2>
             <ul className="space-y-2">
               <li>— You must be at least 18 years of age to create an account.</li>
-              <li>— You are responsible for maintaining the security of your account credentials. You must notify us immediately of any unauthorised access at <a href="mailto:security@mykka.ai" className="text-[#a78bfa] hover:underline">security@mykka.ai</a>.</li>
+              <li>— You are responsible for maintaining the security of your account credentials. You must notify us immediately of any unauthorised access at <a href="mailto:security@mykka.ai" className="text-[#8fb3ff] hover:underline">security@mykka.ai</a>.</li>
               <li>— One organisation account may have multiple administrator users. Each administrator is responsible for compliance with these Terms.</li>
               <li>— You are responsible for all activity that occurs under your account.</li>
             </ul>
@@ -59,7 +59,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">5. Subscription, Billing, and Cancellation</h2>
             <ul className="space-y-2">
-              <li>— The Service is offered on a subscription basis. Current pricing is available at <a href="/pricing" className="text-[#a78bfa] hover:underline">mykka.ai/pricing</a>.</li>
+              <li>— The Service is offered on a subscription basis. Current pricing is available at <a href="/pricing" className="text-[#8fb3ff] hover:underline">mykka.ai/pricing</a>.</li>
               <li>— Subscriptions renew automatically at the end of each billing period unless cancelled. You may cancel at any time from the Console Settings page. Cancellation takes effect at the end of the current billing period.</li>
               <li>— Payments are processed by Stripe. By providing payment information, you authorise us to charge your payment method for the applicable subscription fees.</li>
               <li>— All fees are non-refundable except as required by applicable law or as expressly stated in these Terms.</li>
@@ -71,9 +71,9 @@ export default function TermsPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">6. Data and Privacy</h2>
             <p>
               Our collection and use of data is governed by our{' '}
-              <a href="/privacy" className="text-[#a78bfa] hover:underline">Privacy Policy</a>,
+              <a href="/privacy" className="text-[#8fb3ff] hover:underline">Privacy Policy</a>,
               which is incorporated into these Terms by reference. For enterprise customers, a Data Processing Agreement (DPA) is available on request at{' '}
-              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
@@ -136,9 +136,9 @@ export default function TermsPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">14. Contact</h2>
             <p>
               Questions about these Terms? Contact us at{' '}
-              <a href="mailto:hello@mykka.ai" className="text-[#a78bfa] hover:underline">hello@mykka.ai</a>
+              <a href="mailto:hello@mykka.ai" className="text-[#8fb3ff] hover:underline">hello@mykka.ai</a>
               {' '}or{' '}
-              <a href="mailto:sales@mykka.ai" className="text-[#a78bfa] hover:underline">sales@mykka.ai</a>
+              <a href="mailto:sales@mykka.ai" className="text-[#8fb3ff] hover:underline">sales@mykka.ai</a>
               {' '}for enterprise contract inquiries.
             </p>
           </section>

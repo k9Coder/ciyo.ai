@@ -98,10 +98,10 @@ export default async function SolutionPage({ params }: { params: Promise<{ indus
         <Link href="/solutions" className="mb-8 inline-flex items-center gap-1.5 text-[13px] text-[#94a3b8] hover:text-white">
           ← All solutions
         </Link>
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">{data.name}</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">{data.name}</p>
         <h1 className="mb-5 text-5xl font-extrabold tracking-tight text-white">{data.headline}</h1>
 
-        <div className="mb-12 rounded-2xl border border-[#7c6aff]/20 bg-[#7c6aff]/[0.06] p-6 text-center">
+        <div className="mb-12 rounded-2xl border border-[#5b8cff]/20 bg-[#5b8cff]/[0.06] p-6 text-center">
           <span className="text-4xl font-extrabold text-white">{data.stat.num}</span>
           <p className="mt-1 text-[13px] text-[#94a3b8]">{data.stat.label}</p>
           <p className="mt-1.5 text-[11px] text-[#64748b]">Source: {data.stat.source}</p>
@@ -124,7 +124,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ indus
 
         <div className="flex flex-wrap gap-3">
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-xl bg-[#7c6aff] px-7 py-3 text-[14px] font-bold text-white transition hover:bg-[#6b59ee]">
+            className="rounded-xl bg-[#5b8cff] px-7 py-3 text-[14px] font-bold text-white transition hover:bg-[#3f6fe0]">
             Start Free — Pre-built {data.name} Template Included
           </Link>
           <Link href={data.ctaHref}
