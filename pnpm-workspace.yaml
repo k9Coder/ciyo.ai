@@ -3,6 +3,6 @@ packages:
   - 'pretzel-console'
   - 'pretzel-desktop'
   - 'backend'
-  - 'ciyo-web'
+  - 'mykka-web'
   - 'e2e'
   - 'packages/*'

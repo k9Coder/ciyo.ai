@@ -3,7 +3,7 @@ import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
 import { appendAuditEvent } from "@/audit/log";
-import type { DetectionResult } from "@ciyo/detect";
+import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
 import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";

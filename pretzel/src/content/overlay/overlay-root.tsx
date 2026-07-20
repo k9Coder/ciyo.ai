@@ -1,6 +1,6 @@
 import { createRoot, type Root } from "react-dom/client";
 import { WarningModal, type ModalDecision } from "./WarningModal";
-import type { DetectionResult } from "@ciyo/detect";
+import type { DetectionResult } from "@mykka/detect";
 import { logger } from "@/shared/logger";
 // Vite's ?inline suffix gives us the compiled Tailwind CSS as a plain string,
 // which we inject into the shadow root so it's scoped there and can't be

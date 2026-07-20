@@ -1,9 +1,9 @@
 import { initSentry, Sentry } from "@/lib/sentry";
-import { detectPrompt } from "@ciyo/detect";
+import { detectPrompt } from "@mykka/detect";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
-import type { DetectionResult } from "@ciyo/detect";
+import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
 import { getRole } from "@/policy/role";

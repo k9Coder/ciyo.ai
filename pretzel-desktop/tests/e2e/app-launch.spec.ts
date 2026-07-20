@@ -72,15 +72,15 @@ test.describe('pretzel-desktop app', () => {
 test.describe('detection integration via proxy', () => {
   test('detectPrompt identifies AWS key in request body', async () => {
     // Test the detection logic in Node context (not Electron-specific)
-    // This verifies @ciyo/detect works in the same Node runtime as the proxy
-    const { detectPrompt, DEFAULT_POLICY } = await import('@ciyo/detect')
+    // This verifies @mykka/detect works in the same Node runtime as the proxy
+    const { detectPrompt, DEFAULT_POLICY } = await import('@mykka/detect')
     const text = 'AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
     const result = await detectPrompt({ text, inputType: 'prompt', hostname: 'chatgpt.com' }, DEFAULT_POLICY)
     expect(['warn', 'require_confirmation', 'block']).toContain(result.highestAction)
   })
 
   test('detectPrompt allows clean traffic', async () => {
-    const { detectPrompt, DEFAULT_POLICY } = await import('@ciyo/detect')
+    const { detectPrompt, DEFAULT_POLICY } = await import('@mykka/detect')
     const result = await detectPrompt({ text: 'Summarize this article for me', inputType: 'prompt', hostname: 'chatgpt.com' }, DEFAULT_POLICY)
     expect(['log', 'warn']).toContain(result.highestAction)
   })

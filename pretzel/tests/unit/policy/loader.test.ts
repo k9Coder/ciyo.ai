@@ -10,14 +10,14 @@ vi.stubGlobal('chrome', {
 })
 
 const mockBridgePolicy = vi.fn()
-vi.mock('@ciyo/detect', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@ciyo/detect')>()
+vi.mock('@mykka/detect', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@mykka/detect')>()
   return { ...actual, bridgePolicy: mockBridgePolicy }
 })
 vi.mock('@/shared/logger', () => ({ logger: { warn: vi.fn(), error: vi.fn() } }))
 
 const { loadPolicy, getSiteConfigs } = await import('@/policy/loader')
-const { DEFAULT_POLICY } = await import('@ciyo/detect')
+const { DEFAULT_POLICY } = await import('@mykka/detect')
 
 const SITE_OVERRIDES_KEY = 'promptshield_site_overrides'
 

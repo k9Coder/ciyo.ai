@@ -1,5 +1,5 @@
-import type { DetectionResult, InputType } from "@ciyo/detect";
-import type { Policy } from "@ciyo/detect";
+import type { DetectionResult, InputType } from "@mykka/detect";
+import type { Policy } from "@mykka/detect";
 
 /** Typed message bus for runtime.sendMessage / onMessage. */
 

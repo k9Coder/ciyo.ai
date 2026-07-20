@@ -4,8 +4,8 @@
  * On success: updates the proxy's active policy.
  * On failure: keeps last known policy (never clears it mid-session).
  */
-import { PolicyDocSchema, bridgePolicy } from '@ciyo/detect'
-import type { Policy, PolicyDoc } from '@ciyo/detect'
+import { PolicyDocSchema, bridgePolicy } from '@mykka/detect'
+import type { Policy, PolicyDoc } from '@mykka/detect'
 import { loadToken } from './auth'
 import { env } from './env'
 

@@ -1,4 +1,4 @@
-import type { Action, Finding } from "@ciyo/detect";
+import type { Action, Finding } from "@mykka/detect";
 
 export type UserDecision = "sent" | "edited" | "cancelled" | "sent_with_reason";
 

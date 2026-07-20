@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { Finding, Action } from "@ciyo/detect";
-import { buildSnippet } from "@ciyo/detect";
+import type { Finding, Action } from "@mykka/detect";
+import { buildSnippet } from "@mykka/detect";
 
 export type ModalDecision =
   | { type: "edit" }

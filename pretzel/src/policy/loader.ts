@@ -1,6 +1,6 @@
-import { PolicyDocSchema, type Policy, type PolicyDoc } from "@ciyo/detect";
-import { bridgePolicy } from "@ciyo/detect";
-import { DEFAULT_POLICY } from "@ciyo/detect";
+import { PolicyDocSchema, type Policy, type PolicyDoc } from "@mykka/detect";
+import { bridgePolicy } from "@mykka/detect";
+import { DEFAULT_POLICY } from "@mykka/detect";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
 
