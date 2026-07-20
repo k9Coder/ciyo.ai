@@ -94,7 +94,7 @@ function TrayUI() {
               cursor: signingIn ? 'default' : 'pointer', fontWeight: 600, fontSize: '0.85rem',
             }}
           >
-            {signingIn ? 'Opening browser…' : 'Sign in with ciyo.ai'}
+            {signingIn ? 'Opening browser…' : 'Sign in with mykka.ai'}
           </button>
         </div>
       )}
