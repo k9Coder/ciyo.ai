@@ -117,7 +117,7 @@ test.describe('Billing API', () => {
     }
     const api = await playwrightRequest.newContext()
     const res = await api.post(`${BACKEND}/v1/billing/paypal/checkout`, {
-      data: { plan: 'starter', seatCount: 1, tenantName: 'E2E PayPal Test', email: 'e2e@ciyo.ai' },
+      data: { plan: 'starter', seatCount: 1, tenantName: 'E2E PayPal Test', email: 'e2e@mykka.ai' },
     })
     expect(res.status()).toBe(200)
     const body = await res.json() as { url: string }

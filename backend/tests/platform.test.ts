@@ -28,14 +28,14 @@ beforeEach(async () => {
 afterAll(async () => { await app.close() })
 
 async function buildPlatformAdmin() {
-  const user = await buildTestUser(MOCK_PLATFORM_USER_ID, 'admin@ciyo.ai')
+  const user = await buildTestUser(MOCK_PLATFORM_USER_ID, 'admin@mykka.ai')
   await db.update(users).set({ isPlatformAdmin: true }).where(eq(users.id, user.id))
   return user
 }
 
 describe('GET /platform/v1/tenants', () => {
   it('returns 403 for a non-platform-admin user', async () => {
-    await buildTestUser(MOCK_PLATFORM_USER_ID, 'regular@ciyo.ai')
+    await buildTestUser(MOCK_PLATFORM_USER_ID, 'regular@mykka.ai')
     const res = await supertest(app.server)
       .get('/platform/v1/tenants')
       .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
