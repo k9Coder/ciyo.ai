@@ -32,7 +32,7 @@ export function generateCACert(): CACert {
 
   const attrs = [
     { name: 'commonName', value: 'Pretzel Desktop Local CA' },
-    { name: 'organizationName', value: 'ciyo.ai' },
+    { name: 'organizationName', value: 'mykka.ai' },
   ]
   cert.setSubject(attrs)
   cert.setIssuer(attrs)

@@ -1,4 +1,4 @@
-const TENANT_KEY = 'ciyo.selectedTenantId'
+const TENANT_KEY = 'mykka.selectedTenantId'
 
 export function getSelectedTenantId(): string | null {
   return localStorage.getItem(TENANT_KEY)

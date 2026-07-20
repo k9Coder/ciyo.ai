@@ -17,7 +17,7 @@ let _shadowRoot: ShadowRoot | null = null;
 function ensureShadowHost(): ShadowRoot {
   if (!shadowHost) {
     shadowHost = document.createElement("div");
-    shadowHost.id = "ciyo-overlay-host";
+    shadowHost.id = "mykka-overlay-host";
     Object.assign(shadowHost.style, {
       position: "fixed",
       top: "0",

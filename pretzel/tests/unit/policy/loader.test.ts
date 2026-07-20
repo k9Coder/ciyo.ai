@@ -59,8 +59,8 @@ describe('loadPolicy — no cached doc', () => {
     mockStorage({ failMode: 'closed' })
     const policy = await loadPolicy()
     expect(policy.failMode).toBe('closed')
-    expect(policy.baseline.some(r => r.id === 'ciyo-failmode-closed')).toBe(true)
-    const blockRule = policy.baseline.find(r => r.id === 'ciyo-failmode-closed')
+    expect(policy.baseline.some(r => r.id === 'mykka-failmode-closed')).toBe(true)
+    const blockRule = policy.baseline.find(r => r.id === 'mykka-failmode-closed')
     expect(blockRule?.action).toBe('block')
   })
 
@@ -131,7 +131,7 @@ describe('loadPolicy — corrupt or missing doc', () => {
     mockStorage({ policyDoc: { bad: 'data' }, failMode: 'closed' })
     const policy = await loadPolicy()
     expect(policy.failMode).toBe('closed')
-    expect(policy.baseline.some(r => r.id === 'ciyo-failmode-closed')).toBe(true)
+    expect(policy.baseline.some(r => r.id === 'mykka-failmode-closed')).toBe(true)
   })
 
   it('returns DEFAULT_POLICY and does not throw when storage rejects', async () => {

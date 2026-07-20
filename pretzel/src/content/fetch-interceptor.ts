@@ -6,9 +6,9 @@
  * sends it to the ISOLATED world content script for detection via postMessage.
  *
  * Message protocol (window.postMessage, same origin):
- *   MAIN → ISOLATED  { type: "CIYO_INTERCEPT", id, payload }
- *   ISOLATED → MAIN  { type: "CIYO_DECISION",  id, proceed }
- *   ISOLATED → MAIN  { type: "CIYO_UNLOCK_FETCH" }  (button-click pre-approval)
+ *   MAIN → ISOLATED  { type: "MYKKA_INTERCEPT", id, payload }
+ *   ISOLATED → MAIN  { type: "MYKKA_DECISION",  id, proceed }
+ *   ISOLATED → MAIN  { type: "MYKKA_UNLOCK_FETCH" }  (button-click pre-approval)
  *
  * Fail-open: if the ISOLATED world does not respond within 5 s, the request proceeds.
  */
@@ -23,7 +23,7 @@ const DECISION_TIMEOUT_MS = 5_000;
 
 // ─── Button-click pre-approval flag ──────────────────────────────────────────
 // When the ISOLATED world button-click handler approves a send, it posts
-// CIYO_UNLOCK_FETCH. The next fetch that fires is allowed through immediately
+// MYKKA_UNLOCK_FETCH. The next fetch that fires is allowed through immediately
 // (it was already detected by the button-click path).
 
 let nextFetchApproved = false;
@@ -130,7 +130,7 @@ async function inspectFormData(body: FormData): Promise<InterceptPayload | null>
 
 const originalFetch = window.fetch.bind(window);
 
-window.fetch = async function ciyoFetch(
+window.fetch = async function mykkaFetch(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
@@ -179,12 +179,12 @@ window.fetch = async function ciyoFetch(
 
 const OriginalXHR = window.XMLHttpRequest;
 
-class CiyoXHR extends OriginalXHR {
-  private _ciyoBody: FormData | null = null;
-  private _ciyoUrl = "";
+class MykkaXHR extends OriginalXHR {
+  private _mykkaBody: FormData | null = null;
+  private _mykkaUrl = "";
 
   open(method: string, url: string | URL, ...rest: unknown[]): void {
-    this._ciyoUrl = typeof url === "string" ? url : url.toString();
+    this._mykkaUrl = typeof url === "string" ? url : url.toString();
     // @ts-expect-error — forwarding the full native open signature
     super.open(method, url, ...rest);
   }
@@ -197,7 +197,7 @@ class CiyoXHR extends OriginalXHR {
     }
 
     if (body instanceof FormData) {
-      this._ciyoBody = body;
+      this._mykkaBody = body;
       inspectFormData(body).then(async (payload) => {
         if (payload) {
           const proceed = await requestDetection(payload);
@@ -207,16 +207,16 @@ class CiyoXHR extends OriginalXHR {
             return;
           }
         }
-        super.send(this._ciyoBody ?? undefined);
+        super.send(this._mykkaBody ?? undefined);
       }).catch(() => {
-        super.send(this._ciyoBody ?? undefined); // fail open
+        super.send(this._mykkaBody ?? undefined); // fail open
       });
       return;
     }
 
     // JSON prompt body — network backstop (mirrors the fetch path).
     if (typeof body === "string") {
-      const payload = inspectPromptBody(this._ciyoUrl, body);
+      const payload = inspectPromptBody(this._mykkaUrl, body);
       if (payload) {
         requestDetection(payload).then((proceed) => {
           if (!proceed) { this.dispatchEvent(new ProgressEvent("error")); return; }
@@ -232,5 +232,5 @@ class CiyoXHR extends OriginalXHR {
 
 // Only replace XHR if the site actually uses it (check avoids unnecessary patching).
 if (typeof window.XMLHttpRequest !== "undefined") {
-  window.XMLHttpRequest = CiyoXHR as typeof XMLHttpRequest;
+  window.XMLHttpRequest = MykkaXHR as typeof XMLHttpRequest;
 }

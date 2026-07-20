@@ -7,7 +7,7 @@ import { env } from './env.js'
 const port = env.PORT
 
 const appEnv = env.APP_ENV
-logger.info(`ciyo-api starting on :${port}${appEnv ? `  [ENV: ${appEnv}]` : ''}`)
+logger.info(`mykka-api starting on :${port}${appEnv ? `  [ENV: ${appEnv}]` : ''}`)
 
 try {
   logger.info('connecting to database...')

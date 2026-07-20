@@ -27,7 +27,7 @@ export function useLoading(): LoadingContextValue {
   return ctx;
 }
 
-function CiyoLogo() {
+function MykkaLogo() {
   const [theme, setThemeState] = useState(() => getTheme());
   useEffect(() => {
     const observer = new MutationObserver(() => setThemeState(getTheme()));
@@ -36,7 +36,7 @@ function CiyoLogo() {
   }, []);
   const src = chrome.runtime.getURL(theme === "light" ? "logo-light.png" : "logo-dark.png");
   return (
-    <div className="ciyo-overlay-brand">
+    <div className="mykka-overlay-brand">
       <img src={src} alt="Pretzel" style={{ height: 28, width: "auto", display: "block" }} />
     </div>
   );
@@ -46,9 +46,9 @@ function OverlaySpinnerRings() {
   const primary = "var(--brand-primary, #00d4ff)";
 
   return (
-    <div className="ciyo-ring-wrap">
+    <div className="mykka-ring-wrap">
       {/* Outer arc */}
-      <div className="ciyo-ring-outer">
+      <div className="mykka-ring-outer">
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
           <circle cx="40" cy="40" r="37" stroke={primary} strokeOpacity="0.12" strokeWidth="2" />
           <circle
@@ -65,7 +65,7 @@ function OverlaySpinnerRings() {
       </div>
 
       {/* Inner counter-rotating arc */}
-      <div className="ciyo-ring-inner">
+      <div className="mykka-ring-inner">
         <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
           <circle cx="28" cy="28" r="25" stroke={primary} strokeOpacity="0.08" strokeWidth="1.5" />
           <circle
@@ -82,7 +82,7 @@ function OverlaySpinnerRings() {
       </div>
 
       {/* Center glowing dot */}
-      <div className="ciyo-ring-center">
+      <div className="mykka-ring-center">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle
             cx="12" cy="12" r="5"
@@ -98,12 +98,12 @@ function OverlaySpinnerRings() {
 
 function LoadingOverlay({ message }: { message: string }) {
   return (
-    <div className="ciyo-overlay" role="status" aria-live="polite" aria-label="Loading">
-      <div className="ciyo-overlay-card">
+    <div className="mykka-overlay" role="status" aria-live="polite" aria-label="Loading">
+      <div className="mykka-overlay-card">
         <OverlaySpinnerRings />
-        <CiyoLogo />
+        <MykkaLogo />
         {message && (
-          <div className="ciyo-label">{message}</div>
+          <div className="mykka-label">{message}</div>
         )}
       </div>
     </div>

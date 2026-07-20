@@ -5,7 +5,7 @@
  *   1. MDM-managed org token (`chrome.storage.managed`) — set by enterprise
  *      IT policy. This MUST take precedence over personal Clerk sessions so
  *      an employee cannot bypass the organisation-wide DLP policy by logging
- *      in with their personal ciyo account.
+ *      in with their personal mykka account.
  *   2. Locally stored org token — manually entered org token from options page.
  *   3. Clerk session token — personal account JWT. Used when no org token is
  *      present (e.g. individual / non-enterprise users).

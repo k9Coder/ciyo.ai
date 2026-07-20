@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const schema = z.object({
-  VITE_API_BASE: z.string().default("https://api.ciyo.ai"),
+  VITE_API_BASE: z.string().default("https://api.mykka.ai"),
   // Default '' (not required): this parse runs in the browser at bundle eval,
   // so a hard throw would brick the extension instead of failing the build.
   // Clerk init surfaces a missing key loudly at runtime.

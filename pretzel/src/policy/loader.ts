@@ -33,7 +33,7 @@ const CLOSED_POLICY: Policy = {
   baseline: [
     {
       kind: "pattern",
-      id: "ciyo-failmode-closed",
+      id: "mykka-failmode-closed",
       name: "Policy unavailable (fail-closed)",
       description: "No policy available and organisation requires fail-closed enforcement.",
       severity: "critical",

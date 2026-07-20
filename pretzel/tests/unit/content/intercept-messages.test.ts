@@ -8,8 +8,8 @@ describe('intercept message constants', () => {
   })
 
   it('have expected values', () => {
-    expect(MSG_INTERCEPT).toBe('CIYO_INTERCEPT')
-    expect(MSG_DECISION).toBe('CIYO_DECISION')
-    expect(MSG_UNLOCK_FETCH).toBe('CIYO_UNLOCK_FETCH')
+    expect(MSG_INTERCEPT).toBe('MYKKA_INTERCEPT')
+    expect(MSG_DECISION).toBe('MYKKA_DECISION')
+    expect(MSG_UNLOCK_FETCH).toBe('MYKKA_UNLOCK_FETCH')
   })
 })

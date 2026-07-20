@@ -17,7 +17,7 @@ initSentry();
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
-  logger.info("ciyo installed. Reason:", reason);
+  logger.info("mykka installed. Reason:", reason);
   void syncPolicy();                                            // full sync on first install
   chrome.alarms.create("policy-sync", { periodInMinutes: 2 }); // reduced from 30
 });
