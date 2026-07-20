@@ -300,7 +300,7 @@ jobs:
       - run: pnpm exec playwright install chromium --with-deps
 
       - run: pnpm run build
-      - run: pnpm --filter ciyo-admin run build
+      - run: pnpm --filter mykka-admin run build
 
       - name: Run migrations on test DB
         run: pnpm --filter backend run db:migrate
@@ -316,7 +316,7 @@ jobs:
           PORT: 3000
 
       - name: Serve admin app
-        run: pnpm --filter ciyo-admin run preview -- --port 5173 &
+        run: pnpm --filter mykka-admin run preview -- --port 5173 &
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           VITE_API_BASE: http://localhost:3000

@@ -12,7 +12,7 @@
 
 **Claude Code hooks are the correct architecture.** Hooks run as OS subprocesses — zero tokens, outside model context entirely, cannot be bypassed with `--dangerously-skip-permissions`.
 
-## Product definition: ciyo-guard
+## Product definition: mykka-guard
 
 A compiled binary. Two modes, same binary:
 
@@ -28,17 +28,17 @@ A compiled binary. Two modes, same binary:
 
 | Product | Token cost | Timeline |
 |---|---|---|
-| ciyo-guard (hooks mode) | Zero | 4 weeks |
-| ciyo-guard (proxy/daemon mode) | Zero | 8 weeks |
-| `@ciyo/detect` npm package (extracted) | N/A | 2 weeks |
-| ciyo LSP (IDE inline warnings) | N/A | 6–8 weeks |
-| ciyo JupyterLab extension | Zero | 6 weeks |
-| ciyo git hook (pre-commit scan) | N/A | 3 weeks |
-| ciyo GitHub Action (PR pipeline scan) | N/A | 4 weeks |
+| mykka-guard (hooks mode) | Zero | 4 weeks |
+| mykka-guard (proxy/daemon mode) | Zero | 8 weeks |
+| `@mykka/detect` npm package (extracted) | N/A | 2 weeks |
+| mykka LSP (IDE inline warnings) | N/A | 6–8 weeks |
+| mykka JupyterLab extension | Zero | 6 weeks |
+| mykka git hook (pre-commit scan) | N/A | 3 weeks |
+| mykka GitHub Action (PR pipeline scan) | N/A | 4 weeks |
 
 ## Action items
 | Owner | Item |
 |---|---|
-| Marcus Webb + Yuki Tanaka | Build ciyo-guard hooks mode binary |
+| Marcus Webb + Yuki Tanaka | Build mykka-guard hooks mode binary |
 | Ben Cho | Write spec (Monday, June 15) |
 | Sofia Reyes | Tell 3 enterprise prospects before product ships — validate reaction |

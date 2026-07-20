@@ -8,7 +8,7 @@
 ## Context
 
 Ethan called this meeting specifically to think *outside* the existing product surface.
-The agenda is not roadmap features. It is: **what new products could ciyo.ai build?**
+The agenda is not roadmap features. It is: **what new products could mykka.ai build?**
 
 ---
 
@@ -80,7 +80,7 @@ The agenda is not roadmap features. It is: **what new products could ciyo.ai bui
 
 ---
 
-**MARCUS:** The proxy approach is the only robust option long-term. You're not hooking into someone else's UI — you're sitting in the network path. Company deploys ciyo's local proxy or cloud relay. All AI API traffic — Claude, OpenAI, whatever — routes through it. We scan at that layer. Works for browser extensions, IDE tools, Claude Code, scripts, *everything*. One interception point.
+**MARCUS:** The proxy approach is the only robust option long-term. You're not hooking into someone else's UI — you're sitting in the network path. Company deploys mykka's local proxy or cloud relay. All AI API traffic — Claude, OpenAI, whatever — routes through it. We scan at that layer. Works for browser extensions, IDE tools, Claude Code, scripts, *everything*. One interception point.
 
 ---
 
@@ -98,11 +98,11 @@ The agenda is not roadmap features. It is: **what new products could ciyo.ai bui
 
 **BEN:** Let me name the three things I'm hearing and see if people agree on scope:
 
-One — **ciyo for Claude Code specifically.** Not a proxy, not an IDE extension. A CLI wrapper or an MCP server that integrates with Claude Code's tool use. It audits what files Claude Code is reading and what context it's building before the API call. Narrow, focused, ships in weeks.
+One — **mykka for Claude Code specifically.** Not a proxy, not an IDE extension. A CLI wrapper or an MCP server that integrates with Claude Code's tool use. It audits what files Claude Code is reading and what context it's building before the API call. Narrow, focused, ships in weeks.
 
-Two — **ciyo Desktop Agent.** A local proxy binary that covers all AI API traffic at the network level. Works for everything — IDEs, CLI, scripts, browser. Enterprise play, slower to ship, hard to deploy, but no adapter fragility.
+Two — **mykka Desktop Agent.** A local proxy binary that covers all AI API traffic at the network level. Works for everything — IDEs, CLI, scripts, browser. Enterprise play, slower to ship, hard to deploy, but no adapter fragility.
 
-Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPENAI_BASE_URL` or `ANTHROPIC_BASE_URL` at us. We scan, log, enforce policy, send through. B2B SaaS, usage-based pricing. Requires significant trust but massive TAM.
+Three — **mykka API Gateway.** Cloud-hosted relay. Enterprise points their `OPENAI_BASE_URL` or `ANTHROPIC_BASE_URL` at us. We scan, log, enforce policy, send through. B2B SaaS, usage-based pricing. Requires significant trust but massive TAM.
 
 ---
 
@@ -110,7 +110,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**ALEXEI:** Claude Code exposes hooks. There's a `PreToolUse` hook that fires before any tool call — file read, bash command, API call. Right now developers use these hooks for things like "require approval before writing files." We could ship an MCP server that plugs into that hook and applies ciyo policy. Developer adds two lines to their `claude.json`. Every file Claude reads gets scanned. If the file contains secrets or PII categories that the company has flagged, the tool call gets blocked or redacted. No proxy, no network interception, no security review. It's just an MCP server.
+**ALEXEI:** Claude Code exposes hooks. There's a `PreToolUse` hook that fires before any tool call — file read, bash command, API call. Right now developers use these hooks for things like "require approval before writing files." We could ship an MCP server that plugs into that hook and applies mykka policy. Developer adds two lines to their `claude.json`. Every file Claude reads gets scanned. If the file contains secrets or PII categories that the company has flagged, the tool call gets blocked or redacted. No proxy, no network interception, no security review. It's just an MCP server.
 
 ---
 
@@ -126,11 +126,11 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**YUKI:** Basically yes. MCP is Anthropic's protocol but it's being adopted widely. Every serious AI tool is either supporting it or losing developer adoption. We ship a ciyo MCP server, any AI agent a developer adds it to immediately gains data loss prevention. They're opting *in* to enforcement. The admin configures policy centrally, same as today.
+**YUKI:** Basically yes. MCP is Anthropic's protocol but it's being adopted widely. Every serious AI tool is either supporting it or losing developer adoption. We ship a mykka MCP server, any AI agent a developer adds it to immediately gains data loss prevention. They're opting *in* to enforcement. The admin configures policy centrally, same as today.
 
 ---
 
-**ETHAN:** That's a completely different go-to-market story. Not "we intercept without you knowing." It's "developers install ciyo MCP to protect themselves *and* their company." The developer wants it. The CISO wants it. There's no tension.
+**ETHAN:** That's a completely different go-to-market story. Not "we intercept without you knowing." It's "developers install mykka MCP to protect themselves *and* their company." The developer wants it. The CISO wants it. There's no tension.
 
 ---
 
@@ -170,7 +170,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**PRIYA:** Okay, I have a product I want to pitch. Forget the enterprise for a second. There are millions of individual developers and freelancers using Claude Code, Cursor, GitHub Copilot. They're working on client projects. They're handling PII, database credentials, API keys from five different clients. They have *no* DLP. They'd never pay for an enterprise product. But they would pay $10/month for something that protects them from accidentally leaking client data and getting sued. **ciyo Solo.** Personal tier. You install the MCP server, connect your ciyo account, get a sensible default policy — credentials, API keys, PII — and it just works. Self-serve, credit card, no sales motion.
+**PRIYA:** Okay, I have a product I want to pitch. Forget the enterprise for a second. There are millions of individual developers and freelancers using Claude Code, Cursor, GitHub Copilot. They're working on client projects. They're handling PII, database credentials, API keys from five different clients. They have *no* DLP. They'd never pay for an enterprise product. But they would pay $10/month for something that protects them from accidentally leaking client data and getting sued. **mykka Solo.** Personal tier. You install the MCP server, connect your mykka account, get a sensible default policy — credentials, API keys, PII — and it just works. Self-serve, credit card, no sales motion.
 
 ---
 
@@ -182,7 +182,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**PRIYA:** Unless the Solo tier is a *funnel* into enterprise. Individual developer uses it, loves it, brings it up at work. "Hey I use ciyo for my own projects — can we get it for the company?" That's bottom-up enterprise. Dropbox 101.
+**PRIYA:** Unless the Solo tier is a *funnel* into enterprise. Individual developer uses it, loves it, brings it up at work. "Hey I use mykka for my own projects — can we get it for the company?" That's bottom-up enterprise. Dropbox 101.
 
 ---
 
@@ -190,7 +190,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**JAMES:** I want to add one more product that came directly from customer calls: **ciyo Audit & Compliance Reports.** Every enterprise customer we have runs quarterly security reviews. They need to show their board or their auditors what AI risk management looks like. Right now they export a raw scan log and their compliance team spends two days making it into a slide deck. We already have all the data — scans, blocks, violations by team, by department, by data category. We could auto-generate a quarterly report: "In Q2, your organization made 4.2M AI prompts. 847 were blocked. 2,300 triggered warnings. Top risk category: credential exposure, primarily from the Engineering division." That's a $50K/year add-on for an enterprise that's already paying us. The data exists. We just need a template engine.
+**JAMES:** I want to add one more product that came directly from customer calls: **mykka Audit & Compliance Reports.** Every enterprise customer we have runs quarterly security reviews. They need to show their board or their auditors what AI risk management looks like. Right now they export a raw scan log and their compliance team spends two days making it into a slide deck. We already have all the data — scans, blocks, violations by team, by department, by data category. We could auto-generate a quarterly report: "In Q2, your organization made 4.2M AI prompts. 847 were blocked. 2,300 triggered warnings. Top risk category: credential exposure, primarily from the Engineering division." That's a $50K/year add-on for an enterprise that's already paying us. The data exists. We just need a template engine.
 
 ---
 
@@ -198,7 +198,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ---
 
-**BEN:** Agreed. I'll take that. There's one more I want to put on the table that nobody has said yet: **ciyo for Slack and Teams.** Microsoft Copilot in Teams, Slack AI, Notion AI — these are hitting enterprise seats *fast*. An employee can now ask Slack AI to summarize a channel, and Slack AI will include whatever sensitive content was in that channel in its context. Our Chrome extension doesn't catch that because Slack AI processes on Slack's servers, not in a browser form. Enterprise IT has no visibility into what their employees are asking Slack AI. A native Slack app or Teams app integration could give them that.
+**BEN:** Agreed. I'll take that. There's one more I want to put on the table that nobody has said yet: **mykka for Slack and Teams.** Microsoft Copilot in Teams, Slack AI, Notion AI — these are hitting enterprise seats *fast*. An employee can now ask Slack AI to summarize a channel, and Slack AI will include whatever sensitive content was in that channel in its context. Our Chrome extension doesn't catch that because Slack AI processes on Slack's servers, not in a browser form. Enterprise IT has no visibility into what their employees are asking Slack AI. A native Slack app or Teams app integration could give them that.
 
 ---
 
@@ -218,13 +218,13 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 **Medium bets — new surface, same buyer:**
 - VS Code / Cursor IDE extension (Yuki, 60 days, same enterprise customers)
-- ciyo MCP Server for Claude Code (Marcus + Yuki, 30-45 days, developer-first)
+- mykka MCP Server for Claude Code (Marcus + Yuki, 30-45 days, developer-first)
 
 **Big bets — new product lines:**
-- ciyo Desktop Agent / Local Proxy (Marcus, 6+ months, hard enterprise play)
-- ciyo API Gateway / Cloud Relay (Marcus + Ryan, 6-12 months, large enterprise)
-- ciyo Slack/Teams App (Yuki + Arjun, 3-4 months, audit-first)
-- ciyo Solo — PLG developer tier (Ethan + Ben, 2 months for MCP self-serve, needs own motion)
+- mykka Desktop Agent / Local Proxy (Marcus, 6+ months, hard enterprise play)
+- mykka API Gateway / Cloud Relay (Marcus + Ryan, 6-12 months, large enterprise)
+- mykka Slack/Teams App (Yuki + Arjun, 3-4 months, audit-first)
+- mykka Solo — PLG developer tier (Ethan + Ben, 2 months for MCP self-serve, needs own motion)
 
 ---
 
@@ -268,7 +268,7 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 | Owner | Item | Deadline |
 |---|---|---|
-| Ben | Write spec for ciyo MCP Server v1 | June 19 |
+| Ben | Write spec for mykka MCP Server v1 | June 19 |
 | Marcus + Yuki | Technical architecture for MCP server | June 19 |
 | Sofia | Identify 5 private beta deal candidates | June 16 |
 | Ben | Add Policy Templates to backlog, size it | June 16 |
@@ -281,10 +281,10 @@ Three — **ciyo API Gateway.** Cloud-hosted relay. Enterprise points their `OPE
 
 ## Ideas Parked (Not This Quarter)
 
-- **ciyo Desktop Agent / Local Proxy** — architecturally right, commercially early. Revisit when MCP server has traction.
-- **ciyo API Gateway / Cloud Relay** — large enterprise play. Needs sales proof before engineering investment.
-- **ciyo Slack/Teams App** — audit-first is viable, but thin value without blocking. Revisit when compliance reporting has traction.
-- **ciyo Solo PLG tier** — strategically interesting as bottom-up funnel. Defer to post-MCP. Requires own marketing motion.
+- **mykka Desktop Agent / Local Proxy** — architecturally right, commercially early. Revisit when MCP server has traction.
+- **mykka API Gateway / Cloud Relay** — large enterprise play. Needs sales proof before engineering investment.
+- **mykka Slack/Teams App** — audit-first is viable, but thin value without blocking. Revisit when compliance reporting has traction.
+- **mykka Solo PLG tier** — strategically interesting as bottom-up funnel. Defer to post-MCP. Requires own marketing motion.
 - **AI Agent Security (prompt injection, malicious tool defs)** — adjacent market, different buyer (DevSecOps vs CISO). Valid future product, not now.
 - **Product/Policy Marketplace** — full two-sided marketplace later; Policy Templates shipped first as simpler version.
 

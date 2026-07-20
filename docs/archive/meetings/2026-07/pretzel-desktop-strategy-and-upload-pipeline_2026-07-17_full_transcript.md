@@ -101,9 +101,9 @@ If the extension is anything else — unknown binary, `.doc`, video, audio — w
 
 **OMAR:** And the detection engine receives: the extracted text string, `inputType: "file"`, the original filename, and the MIME type. Same interface we defined yesterday.
 
-**ETHAN:** Same for pretzel-desktop — it does the same file upload scanning when it intercepts a multipart upload through the proxy. Same pipeline, same libraries, same detection engine via `@ciyo/detect`.
+**ETHAN:** Same for pretzel-desktop — it does the same file upload scanning when it intercepts a multipart upload through the proxy. Same pipeline, same libraries, same detection engine via `@mykka/detect`.
 
-**MARCUS:** Confirmed. Once `@ciyo/detect` is extracted, both the extension and pretzel-desktop import the same package and the file scanning logic lives there too, not duplicated in both clients.
+**MARCUS:** Confirmed. Once `@mykka/detect` is extracted, both the extension and pretzel-desktop import the same package and the file scanning logic lives there too, not duplicated in both clients.
 
 **ETHAN:** Good. We're done.
 
@@ -123,4 +123,4 @@ If the extension is anything else — unknown binary, `.doc`, video, audio — w
 | 8 | Document: scanned image PDFs produce empty extraction, fall through to filename-only | Omar | July 28 |
 | 9 | Document: `.doc` (binary Word) not supported, `.docx` only | Omar | July 28 |
 | 10 | Update detection doc and runtime doc to reflect final file upload scope | Ben + Omar | July 28 |
-| 11 | Ensure `@ciyo/detect` extraction includes file upload scanning pipeline for pretzel-desktop reuse | Marcus | Q3 sprint |
+| 11 | Ensure `@mykka/detect` extraction includes file upload scanning pipeline for pretzel-desktop reuse | Marcus | Q3 sprint |

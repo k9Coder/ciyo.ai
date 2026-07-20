@@ -16,7 +16,7 @@
   ```ts
   // Guard LogRocket the same way Sentry guards itself
   if (import.meta.env.PROD) {
-    LogRocket.init('ciyoai/pretzel-console')
+    LogRocket.init('mykkaai/pretzel-console')
   }
   ```
 

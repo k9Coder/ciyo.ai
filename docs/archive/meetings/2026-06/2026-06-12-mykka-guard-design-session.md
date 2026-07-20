@@ -1,7 +1,7 @@
-# ciyo-guard Design Session
+# mykka-guard Design Session
 **Date:** June 12, 2026 (evening)  
 **Attendees:** Marcus Webb (CTO), Yuki Tanaka (Extension Engineer), Ben Cho (PM)  
-**Goal:** Sharpen ciyo-guard — hooks mode and proxy mode — to a spec ready for implementation planning.  
+**Goal:** Sharpen mykka-guard — hooks mode and proxy mode — to a spec ready for implementation planning.  
 **Input:** Previous meeting conclusions: MCP killed, Claude Code hooks are the correct zero-token approach, local proxy covers everything else.
 
 ---
@@ -10,7 +10,7 @@
 
 ---
 
-**MARCUS:** Before we go wide, I want to nail three technical constraints that everything else has to fit inside. One: sub-15ms latency per hook invocation. Developers feel latency on every tool call. If ciyo-guard adds 100ms to every file read, it's gone within a week. Two: works fully offline with cached policy — no internet, no change in behavior. Three: one binary, two modes, no separate install. If a developer has to install different packages for hooks mode versus proxy mode, they won't.
+**MARCUS:** Before we go wide, I want to nail three technical constraints that everything else has to fit inside. One: sub-15ms latency per hook invocation. Developers feel latency on every tool call. If mykka-guard adds 100ms to every file read, it's gone within a week. Two: works fully offline with cached policy — no internet, no change in behavior. Three: one binary, two modes, no separate install. If a developer has to install different packages for hooks mode versus proxy mode, they won't.
 
 ---
 
@@ -26,7 +26,7 @@
 
 ---
 
-**MARCUS:** Developer installs ciyo-guard. They run `ciyo-guard login` — browser opens, they authenticate via Clerk (same account as pretzel-console), token stored in `~/.ciyo/token`. Done. Then `ciyo-guard setup --claude-code` — this reads their existing `~/.claude/settings.json` (or creates it), and appends the hook entries for `PreToolUse` and `PostToolUse`. From that point forward, every Claude Code tool call goes through the guard. Nothing else to configure.
+**MARCUS:** Developer installs mykka-guard. They run `mykka-guard login` — browser opens, they authenticate via Clerk (same account as pretzel-console), token stored in `~/.mykka/token`. Done. Then `mykka-guard setup --claude-code` — this reads their existing `~/.claude/settings.json` (or creates it), and appends the hook entries for `PreToolUse` and `PostToolUse`. From that point forward, every Claude Code tool call goes through the guard. Nothing else to configure.
 
 ---
 
@@ -34,7 +34,7 @@
 
 ---
 
-**MARCUS:** Noted. Write that as a flag: `ciyo-guard setup --claude-code [--scope=global|project]`. Default: global.
+**MARCUS:** Noted. Write that as a flag: `mykka-guard setup --claude-code [--scope=global|project]`. Default: global.
 
 ---
 
@@ -50,13 +50,13 @@
     "PreToolUse": [
       {
         "matcher": ".*",
-        "hooks": [{ "type": "command", "command": "ciyo-guard hook --event pre" }]
+        "hooks": [{ "type": "command", "command": "mykka-guard hook --event pre" }]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Read|Write|Edit|MultiEdit",
-        "hooks": [{ "type": "command", "command": "ciyo-guard hook --event post" }]
+        "hooks": [{ "type": "command", "command": "mykka-guard hook --event post" }]
       }
     ]
   }
@@ -90,7 +90,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**YUKI:** That's the right call. Same file, read twice. Totally acceptable. And it means ciyo-guard fully intercepts the content before it ever touches the model context.
+**YUKI:** That's the right call. Same file, read twice. Totally acceptable. And it means mykka-guard fully intercepts the content before it ever touches the model context.
 
 ---
 
@@ -114,15 +114,15 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**BEN:** Now I need to understand how the PolicyDoc maps to what ciyo-guard actually runs. In the browser extension, `PolicyDoc.subjects[].rules[]` is the compiled policy per member. The subject tells us which rules apply to which user. For ciyo-guard, how does the guard know which subject it belongs to?
+**BEN:** Now I need to understand how the PolicyDoc maps to what mykka-guard actually runs. In the browser extension, `PolicyDoc.subjects[].rules[]` is the compiled policy per member. The subject tells us which rules apply to which user. For mykka-guard, how does the guard know which subject it belongs to?
 
 ---
 
-**MARCUS:** Same as the extension. `ciyo-guard login` authenticates as a specific user. The `GET /v1/policy` endpoint on the backend compiles the policy for that user — resolving their subject memberships — and returns the compiled rule set. ciyo-guard caches it. At enforcement time it just runs the compiled rules. No subject resolution at runtime.
+**MARCUS:** Same as the extension. `mykka-guard login` authenticates as a specific user. The `GET /v1/policy` endpoint on the backend compiles the policy for that user — resolving their subject memberships — and returns the compiled rule set. mykka-guard caches it. At enforcement time it just runs the compiled rules. No subject resolution at runtime.
 
 ---
 
-**YUKI:** There's one thing that doesn't translate: `ResolvedRule.destinations`. In the browser extension, `destinations` filters which AI sites trigger a rule — "only apply credential rule on chatgpt.com, not on internal tools." For ciyo-guard, there's no concept of destination. We're enforcing at the data layer, not the destination layer. The right behavior: ignore `destinations` entirely in ciyo-guard. Every rule that applies to the user applies everywhere they use Claude Code.
+**YUKI:** There's one thing that doesn't translate: `ResolvedRule.destinations`. In the browser extension, `destinations` filters which AI sites trigger a rule — "only apply credential rule on chatgpt.com, not on internal tools." For mykka-guard, there's no concept of destination. We're enforcing at the data layer, not the destination layer. The right behavior: ignore `destinations` entirely in mykka-guard. Every rule that applies to the user applies everywhere they use Claude Code.
 
 ---
 
@@ -130,7 +130,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**BEN:** Backend change is also needed to add `clientType` on scan records. How does ciyo-guard report violations back to our servers?
+**BEN:** Backend change is also needed to add `clientType` on scan records. How does mykka-guard report violations back to our servers?
 
 ---
 
@@ -142,7 +142,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** Bun ships with SQLite support built-in. `bun:sqlite`. No extra binary. Single file at `~/.ciyo/queue.db`. Auto-created, auto-migrated on startup. Violations queue when offline, drain when connection is restored.
+**MARCUS:** Bun ships with SQLite support built-in. `bun:sqlite`. No extra binary. Single file at `~/.mykka/queue.db`. Auto-created, auto-migrated on startup. Violations queue when offline, drain when connection is restored.
 
 ---
 
@@ -150,7 +150,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** I'll drive it. The proxy daemon solves a different problem: tools that don't have hooks — Cursor, GitHub Copilot, Python scripts, anything that calls an AI API directly. The approach: a local HTTPS MITM proxy. `ciyo-guard daemon start`. Listens on `127.0.0.1:8877`. Generates a local CA on first run, installs to OS trust store.
+**MARCUS:** I'll drive it. The proxy daemon solves a different problem: tools that don't have hooks — Cursor, GitHub Copilot, Python scripts, anything that calls an AI API directly. The approach: a local HTTPS MITM proxy. `mykka-guard daemon start`. Listens on `127.0.0.1:8877`. Generates a local CA on first run, installs to OS trust store.
 
 ---
 
@@ -158,7 +158,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** Two paths. Path one: `ciyo-guard daemon setup --install-cert` explicitly requests it once. The user understands why — they type their password, it's done. This is exactly how Charles Proxy, mitmproxy, Zscaler, every corporate DLP tool works. It's one-time, it's understood in enterprise contexts. Path two: for environments where the cert can't be trusted (consumer), we can set the proxy address in VS Code / Cursor settings directly — `"http.proxy": "http://127.0.0.1:8877"` — and Cursor uses the proxy for all extension/API traffic without needing the OS trust store.
+**MARCUS:** Two paths. Path one: `mykka-guard daemon setup --install-cert` explicitly requests it once. The user understands why — they type their password, it's done. This is exactly how Charles Proxy, mitmproxy, Zscaler, every corporate DLP tool works. It's one-time, it's understood in enterprise contexts. Path two: for environments where the cert can't be trusted (consumer), we can set the proxy address in VS Code / Cursor settings directly — `"http.proxy": "http://127.0.0.1:8877"` — and Cursor uses the proxy for all extension/API traffic without needing the OS trust store.
 
 ---
 
@@ -166,7 +166,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** So we support both. `ciyo-guard daemon setup --cursor` patches Cursor settings only, no cert. `ciyo-guard daemon setup --system` installs the cert globally and sets `HTTPS_PROXY` in the shell profile, covering everything.
+**MARCUS:** So we support both. `mykka-guard daemon setup --cursor` patches Cursor settings only, no cert. `mykka-guard daemon setup --system` installs the cert globally and sets `HTTPS_PROXY` in the shell profile, covering everything.
 
 ---
 
@@ -204,19 +204,19 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** That's the complete backend surface. One more: the `GET /v1/policy` endpoint currently expects Clerk JWT in the Authorization header. For ciyo-guard, we authenticate with an API key (Bearer token format). The backend middleware needs to handle both. That's already partially there since the token model (`ps_live_` prefix tokens) exists — it's just a matter of issuing tokens scoped to a specific user identity.
+**MARCUS:** That's the complete backend surface. One more: the `GET /v1/policy` endpoint currently expects Clerk JWT in the Authorization header. For mykka-guard, we authenticate with an API key (Bearer token format). The backend middleware needs to handle both. That's already partially there since the token model (`ps_live_` prefix tokens) exists — it's just a matter of issuing tokens scoped to a specific user identity.
 
 ---
 
-**BEN:** One thing I want to flag from a product standpoint. The hooks mode and proxy mode feel like two separate features right now. But the developer mental model should be: "I installed ciyo-guard, I'm protected." They shouldn't have to think about which mode covers which tool. The recommended path for a developer should be: install → login → setup auto, which runs both `--claude-code` and `--cursor` setup automatically, and gives them a coverage summary: "You are now protected for: Claude Code ✅, Cursor ✅. For full OS-level coverage, run setup --system."
+**BEN:** One thing I want to flag from a product standpoint. The hooks mode and proxy mode feel like two separate features right now. But the developer mental model should be: "I installed mykka-guard, I'm protected." They shouldn't have to think about which mode covers which tool. The recommended path for a developer should be: install → login → setup auto, which runs both `--claude-code` and `--cursor` setup automatically, and gives them a coverage summary: "You are now protected for: Claude Code ✅, Cursor ✅. For full OS-level coverage, run setup --system."
 
 ---
 
-**MARCUS:** That's the install command design. `ciyo-guard install` does everything — detects what AI tools are present, sets up the relevant hooks or proxy config, shows a coverage summary. The individual `setup --claude-code` etc. are advanced flags for manual control.
+**MARCUS:** That's the install command design. `mykka-guard install` does everything — detects what AI tools are present, sets up the relevant hooks or proxy config, shows a coverage summary. The individual `setup --claude-code` etc. are advanced flags for manual control.
 
 ---
 
-**YUKI:** One last thing: the binary needs to be auto-updatable. Every time Anthropic changes the Claude Code settings format or the hooks API, we need to ship an update fast. `ciyo-guard update` checks GitHub releases for a new binary, downloads, replaces itself. Standard self-update pattern.
+**YUKI:** One last thing: the binary needs to be auto-updatable. Every time Anthropic changes the Claude Code settings format or the hooks API, we need to ship an update fast. `mykka-guard update` checks GitHub releases for a new binary, downloads, replaces itself. Standard self-update pattern.
 
 ---
 
@@ -226,7 +226,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 **BEN:** I have enough to write the spec. Let me summarize what we've decided and see if anyone objects before I go write it.
 
-**ciyo-guard hooks mode (Claude Code specific):**
+**mykka-guard hooks mode (Claude Code specific):**
 - `PreToolUse` on `Read|Write|Edit|MultiEdit|Bash|WebFetch`
 - For `Read`: guard reads file itself, scans content, returns allow/block before Claude Code touches it
 - For `Write/Edit`: scans the content being written
@@ -235,7 +235,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 - PolicyDoc from `GET /v1/policy` with user's API key, ignored `destinations` field in v1
 - Violations queued offline via Bun SQLite, drained async
 
-**ciyo-guard proxy mode (everything else):**
+**mykka-guard proxy mode (everything else):**
 - Local HTTPS proxy on `127.0.0.1:8877`
 - Self-signed CA, installable to OS trust store OR VS Code/Cursor settings.json
 - Scan outbound request bodies to AI API endpoints
@@ -244,7 +244,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 **One binary, `bun build --compile`, 4 platform targets**
 
-**`ciyo-guard install` — smart setup command that detects present tools and configures both modes**
+**`mykka-guard install` — smart setup command that detects present tools and configures both modes**
 
 **Backend changes:** `clientType` on scans, API key issuance, policy endpoint handles API keys, Coverage Map data endpoint
 
@@ -256,7 +256,7 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 
 ---
 
-**MARCUS:** One more thing before we close. The extraction of `@ciyo/detect` is a prerequisite for shipping ciyo-guard. Right now `engine.ts` uses `@/` path aliases that are Vite-specific. We need to extract the detection module (engine.ts + all its imports: normalize.ts, code-block.ts, layer1-patterns/, layer3-dictionary/) into a standalone package with proper relative imports, tested independently with Node/Bun test runner, published to npm or our private registry. That package is what ciyo-guard imports. The extension also imports it. Single source of truth for detection logic.
+**MARCUS:** One more thing before we close. The extraction of `@mykka/detect` is a prerequisite for shipping mykka-guard. Right now `engine.ts` uses `@/` path aliases that are Vite-specific. We need to extract the detection module (engine.ts + all its imports: normalize.ts, code-block.ts, layer1-patterns/, layer3-dictionary/) into a standalone package with proper relative imports, tested independently with Node/Bun test runner, published to npm or our private registry. That package is what mykka-guard imports. The extension also imports it. Single source of truth for detection logic.
 
 ---
 
@@ -284,6 +284,6 @@ The mitigation: for Read specifically, we move to PreToolUse as well. Hook recei
 | Narrow tool matchers, not `.*` | Avoid latency on non-sensitive tools (TodoWrite, LS, etc.) |
 | Ignore `destinations` field in v1 | No concept of AI destination in file/command context; add `toolConfigs` later |
 | Async violation reporting via Bun SQLite queue | Hook latency must be deterministic; never block on network |
-| `ciyo-guard install` auto-detects and configures | Developer should not need to understand hooks vs proxy |
-| Extract `@ciyo/detect` as prerequisite | Engine must be portable; currently has Vite-specific path aliases |
+| `mykka-guard install` auto-detects and configures | Developer should not need to understand hooks vs proxy |
+| Extract `@mykka/detect` as prerequisite | Engine must be portable; currently has Vite-specific path aliases |
 | Proxy scans requests only, streams responses | Request = user data (risky); response = AI-generated (safe to stream) |

@@ -11,19 +11,19 @@
   **Verdict:** WARN
   **Findings:**
   1. Focus management is good — `editBtnRef` focuses the primary action on mount, Escape closes the modal. That's correct.
-  2. No `aria-describedby` pointing at the subtitle/findings list. The dialog has `aria-labelledby="ciyo-modal-title"` but a screen reader landing on the dialog gets no description of what the list contains.
+  2. No `aria-describedby` pointing at the subtitle/findings list. The dialog has `aria-labelledby="mykka-modal-title"` but a screen reader landing on the dialog gets no description of what the list contains.
   3. The "Looks fine, send it" ghost button has zero aria context — no `aria-label` indicating it bypasses a security warning. A screen reader user just hears "Looks fine, send it" without understanding the consequence.
-  4. The warning SVG icon (`ciyo-warn-icon`) has no `aria-hidden="true"`. It is decorative (the `<h2>` already conveys the warning) but it will be read by some AT as an unlabelled image.
+  4. The warning SVG icon (`mykka-warn-icon`) has no `aria-hidden="true"`. It is decorative (the `<h2>` already conveys the warning) but it will be read by some AT as an unlabelled image.
   5. `FindingRow` renders a `<li>` but the containing `<ul>` has `style={{ listStyle: "none" }}` — Safari VoiceOver de-lists elements with `list-style: none` unless `role="list"` is explicitly added to the `<ul>`.
   6. The `<mark>` inside FindingRow has no accessible context — a screen reader user hears the highlighted text but doesn't know it is the flagged portion.
-  7. No visible focus ring is enforced on the ghost button (`ciyo-btn-ghost`). If the host page's CSS bleeds through (shadow DOM should prevent it, but the CSS is injected as a string), the focus state may be invisible.
+  7. No visible focus ring is enforced on the ghost button (`mykka-btn-ghost`). If the host page's CSS bleeds through (shadow DOM should prevent it, but the CSS is injected as a string), the focus state may be invisible.
   8. `highestAction !== "block"` controls whether "send anyway" appears but there is no live region or announcement when the modal opens — a user relying on a screen reader may not know the modal appeared at all.
 
   **Proposed changes:**
-  - Add `aria-describedby="ciyo-modal-subtitle"` to the backdrop div; give the subtitle `<p>` `id="ciyo-modal-subtitle"`.
+  - Add `aria-describedby="mykka-modal-subtitle"` to the backdrop div; give the subtitle `<p>` `id="mykka-modal-subtitle"`.
   - Add `aria-label="Bypass security warning and send prompt"` to the "Looks fine, send it" button.
   - Add `aria-hidden="true"` to the warning SVG.
-  - Add `role="list"` to the `<ul className="ciyo-modal-body">`.
+  - Add `role="list"` to the `<ul className="mykka-modal-body">`.
   - Wrap the `<mark>` with a visually hidden prefix: `<span className="sr-only">Flagged text: </span>`.
   - Add `aria-live="assertive"` to the backdrop on mount so AT announces the modal.
 
@@ -57,7 +57,7 @@
 
   **Proposed changes:**
   - Save a reference to `document.activeElement` before `showWarningModal` is called and restore focus to it after `dismissModal` or after the promise resolves.
-  - Verify the shadow stylesheet uses `:host([data-theme="light"]) { ... }` selectors rather than `[data-theme="light"] .ciyo-modal { ... }` which won't work across shadow boundaries.
+  - Verify the shadow stylesheet uses `:host([data-theme="light"]) { ... }` selectors rather than `[data-theme="light"] .mykka-modal { ... }` which won't work across shadow boundaries.
   - Add `aria-hidden="true"` to `shadowHost` and flip it to `false` only while the modal is mounted, so the zero-size host is invisible to AT when no modal is shown.
 
 ---
@@ -70,17 +70,17 @@
   **Findings:**
   1. `ThemeToggle` button: renders emoji characters `☀` and `🌙` as the button's only content. Both are invisible to screen readers (emoji are read inconsistently across AT — `☀` may read as "black sun with rays" or nothing). The `title` attribute is not a reliable accessible name on buttons — use `aria-label` instead.
   2. The site enable/disable button (`ACTIVE` / `PAUSED`) has no `aria-label`, no `role`, and no `aria-pressed`/`aria-checked`. It looks like a toggle but is a `<button>` with a textual label that changes. A screen reader user hears "ACTIVE" or "PAUSED" but doesn't know clicking it toggles the site. Add `aria-pressed={siteEnabled}` and a meaningful `aria-label`.
-  3. The header logo+wordmark button (`onClick={() => chrome.runtime.openOptionsPage()}`) has no `aria-label`. A screen reader will try to compute a label from children: `<img alt="Pretzel logo">` + `<span>ciyo</span>` — the resulting label would be something like "Pretzel logo ciyo", which is workable but the action ("Opens settings") is not described.
+  3. The header logo+wordmark button (`onClick={() => chrome.runtime.openOptionsPage()}`) has no `aria-label`. A screen reader will try to compute a label from children: `<img alt="Pretzel logo">` + `<span>mykka</span>` — the resulting label would be something like "Pretzel logo mykka", which is workable but the action ("Opens settings") is not described.
   4. Status banner (the colored box with "All clear" / "Sensitive data detected"): uses color alone to convey status — a green dot or red dot plus text. Color-blind users (red-green in particular) may not distinguish the dot colors. The text fallback ("All clear", "Sensitive data detected") is present, which is good, but there's no ARIA live region to announce when status changes while the popup is open.
   5. Recent event items: action badge text sizes at `fontSize: 9` — that's sub-accessible, below 11px which is already borderline. WCAG SC 1.4.4 (Resize Text) requires text to scale 200% without loss of content; at 9px even 200% is only 18px, which is fine mathematically, but 9px base is genuinely illegible for users with moderate vision impairment without zooming.
   6. Footer "Settings →" link is a `<button>` with `fontSize: 10` — same issue. Also, the arrow character is read by some screen readers as "right arrow" rather than being treated as decorative.
-  7. The `Wordmark` component renders the brand name as individual `<span>` elements per letter with different colors. Screen readers will concatenate these as "c i yo" with potential spacing depending on the AT. This is a cosmetic issue — the logo meaning is carried by context, but it could be improved with `aria-label="ciyo"` on the wrapper span.
+  7. The `Wordmark` component renders the brand name as individual `<span>` elements per letter with different colors. Screen readers will concatenate these as "c i yo" with potential spacing depending on the AT. This is a cosmetic issue — the logo meaning is carried by context, but it could be improved with `aria-label="mykka"` on the wrapper span.
   8. No `<main>` landmark or `role="main"` on the popup body — popup content is all in a flat `<div>` structure with no navigation landmarks.
 
   **Proposed changes:**
   - Replace `title` with `aria-label` on `ThemeToggle`: `aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}`.
   - Add `aria-pressed={siteEnabled}` and `aria-label={`${hostname} protection ${siteEnabled ? "active" : "paused"}, click to toggle`}` to the toggle button.
-  - Add `aria-label="Open ciyo settings"` to the header logo button.
+  - Add `aria-label="Open mykka settings"` to the header logo button.
   - Add `aria-live="polite"` to the status banner div so status changes are announced.
   - Increase minimum font sizes: event badge text to at least 11px, footer button to 11px.
   - Add `aria-hidden="true"` to the "→" arrow character in the Settings button and use visible text only.
@@ -104,7 +104,7 @@
   - Add `role="tab"` and `aria-selected={activeTab === tab.id}` and `aria-controls={`panel-${tab.id}`}` to each tab button.
   - Add `role="tabpanel"` and `id={`panel-${activeTab}`}` to the `<main>` wrapper (or an inner div).
   - Implement arrow-key navigation between tabs per ARIA Authoring Practices.
-  - Add `aria-hidden="true"` to the decorative SVG logo, or give it `aria-label="ciyo logo"` if meaningful.
+  - Add `aria-hidden="true"` to the decorative SVG logo, or give it `aria-label="mykka logo"` if meaningful.
   - Replace emoji in `ThemeToggleButton` with `aria-label`.
 
 ---
@@ -151,9 +151,9 @@
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
-  1. The external link "Documentation & source code" points to `https://github.com/your-org/ciyo` — this is a placeholder URL that was never replaced. Shipping this to production would be embarrassing.
+  1. The external link "Documentation & source code" points to `https://github.com/your-org/mykka` — this is a placeholder URL that was never replaced. Shipping this to production would be embarrassing.
   2. External links (`target="_blank"`) have no visual indication they open in a new tab, and no `aria-label` or visually hidden text like `(opens in new tab)`. WCAG 2.4.4 / user expectation.
-  3. The "support@ciyo.ai" `<a href="mailto:...">` link has no indication it opens a mail client. A visually hidden `(opens email client)` would be courteous.
+  3. The "support@mykka.ai" `<a href="mailto:...">` link has no indication it opens a mail client. A visually hidden `(opens email client)` would be courteous.
   4. Both links use `className="flex items-center gap-2 text-blue-600 hover:underline"` — the gap-2 implies an icon should be present (common pattern), but there's no icon. The flex+gap is unnecessary and leaves phantom spacing.
 
   **Proposed changes:**
@@ -313,7 +313,7 @@
   1. The progress bar (`<div style={{ height: 4 ... }}>`) has no ARIA. Screen readers see a decorative div with no label. It should be a `<progress>` element or a `<div role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Scan usage">`.
   2. The "Approaching scan limit" / "Scan limit reached" label is `fontSize: 9` — the smallest text on any surface in this codebase. This is below any reasonable legibility floor.
   3. The "Upgrade plan" button uses `color-mix()` for background and border — `color-mix(in srgb, ...)` has good browser support but may render incorrectly in older Chromium versions still in enterprise. No fallback is provided.
-  4. The external link (`<a href="https://ciyo.ai/pricing" target="_blank">`) has no `rel="noreferrer"` — wait, it does have `rel="noreferrer"`. Good. But it has no `aria-label` indicating it opens a new tab.
+  4. The external link (`<a href="https://mykka.ai/pricing" target="_blank">`) has no `rel="noreferrer"` — wait, it does have `rel="noreferrer"`. Good. But it has no `aria-label` indicating it opens a new tab.
   5. The `PlanBadge` sub-component uses `fontSize: 9` as well.
   6. `color-mix` is used for the `PlanBadge` background too — `color-mix(in srgb, ${color} 12%, transparent)` — the `transparent` keyword in `color-mix` is not universally supported and the result may differ per browser.
 
@@ -326,14 +326,14 @@
 
 ## Marketing Site — Layout
 
-#### `ciyo-web/components/layout/Header.tsx` — Site header with responsive navigation
+#### `mykka-web/components/layout/Header.tsx` — Site header with responsive navigation
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
   1. The `<nav>` element (desktop nav) has no `aria-label`. When a page has multiple navigation landmarks (header nav + footer nav + potentially breadcrumbs), WCAG requires each `<nav>` to have a distinct label. Add `aria-label="Main navigation"`.
   2. Mobile menu toggle button has `aria-label="Toggle menu"` — good, but it's missing `aria-expanded={open}` to communicate the state to screen readers.
   3. The mobile menu dropdown (`{open && <div ...>}`) is not a proper ARIA navigation list and lacks `aria-label`. When opened, screen readers won't know this is the mobile nav equivalent of the desktop nav.
-  4. The wordmark SVG has `aria-label="ciyo.ai logo"` directly on the SVG — good. However the `<Link>` wrapping it also produces a label computed from its children (the SVG label + the wordmark spans). The screen reader may read: "ciyo.ai logo c i yo .ai link" — redundant and confusing. The outer `<Link>` should have `aria-label="ciyo.ai home"` and the SVG should have `aria-hidden="true"` since the Link's label covers it.
+  4. The wordmark SVG has `aria-label="mykka.ai logo"` directly on the SVG — good. However the `<Link>` wrapping it also produces a label computed from its children (the SVG label + the wordmark spans). The screen reader may read: "mykka.ai logo c i yo .ai link" — redundant and confusing. The outer `<Link>` should have `aria-label="mykka.ai home"` and the SVG should have `aria-hidden="true"` since the Link's label covers it.
   5. `process.env.NEXT_PUBLIC_ENV === 'staging'` renders a STAGING badge — fine for staging, but confirm there's no scenario where this leaks to production (env check relies on a build-time env var, which is correct).
   6. "Sign in" link has no visual distinction from nav items — same text color, no icon. In a marketing header, the hierarchy between nav links and CTAs should be clearer. "Start Free" is visually distinct (filled button), but "Sign in" blends into the nav.
 
@@ -341,19 +341,19 @@
   - Add `aria-label="Main navigation"` to the `<nav>`.
   - Add `aria-expanded={open}` to the mobile menu toggle button.
   - Add `aria-label="Mobile navigation"` to the mobile menu div.
-  - Set `aria-label="ciyo.ai home"` on the header `<Link>` and `aria-hidden="true"` on the child SVG.
+  - Set `aria-label="mykka.ai home"` on the header `<Link>` and `aria-hidden="true"` on the child SVG.
   - Give "Sign in" a subtle border or underline to visually separate it from plain nav links.
 
 ---
 
-#### `ciyo-web/components/layout/Footer.tsx` — Site footer with link groups
+#### `mykka-web/components/layout/Footer.tsx` — Site footer with link groups
 - [x] Reviewed
   **Verdict:** ISSUE
   **Findings:**
   1. The footer link groups are rendered as `<p>` (group title) + raw `<Link>` elements — no `<nav>`, no `<ul>`, no semantic grouping. Screen reader users browsing by landmark or list will not be able to navigate these link groups efficiently. Each group should be a `<nav aria-label="{group}">` with a `<ul>` and `<li>` per link.
   2. The accessibility page link reads `נגישות` (Hebrew: "Accessibility") — this is the only RTL text on an otherwise LTR page. Without `dir="rtl"` on the span/link, the Hebrew characters may render incorrectly in some AT. Also, mixing script directions without a `lang` attribute change could confuse screen readers that don't auto-detect script direction.
   3. `© {new Date().getFullYear()}` produces the current year — fine. But it's rendered as a `<span>` rather than plain text, which is unnecessary DOM complexity.
-  4. External documentation links (`https://docs.ciyo.ai`) open in the same tab per the current implementation (no `target="_blank"`) — inconsistent with typical docs link behavior. Minor UX issue.
+  4. External documentation links (`https://docs.mykka.ai`) open in the same tab per the current implementation (no `target="_blank"`) — inconsistent with typical docs link behavior. Minor UX issue.
   5. The pretzel emoji `🥨` in the copyright line is decorative — add `aria-hidden="true"` to the emoji span or wrap it: `<span aria-hidden="true">🥨</span>`.
 
   **Proposed changes:**
@@ -366,7 +366,7 @@
 
 ## Marketing Site — Sections
 
-#### `ciyo-web/components/sections/Hero.tsx` — Homepage hero section
+#### `mykka-web/components/sections/Hero.tsx` — Homepage hero section
 - [x] Reviewed
   **Verdict:** ISSUE
   **Findings:**
@@ -386,7 +386,7 @@
 
 ---
 
-#### `ciyo-web/components/sections/FeatureGrid.tsx` — Feature cards grid
+#### `mykka-web/components/sections/FeatureGrid.tsx` — Feature cards grid
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
@@ -402,7 +402,7 @@
 
 ---
 
-#### `ciyo-web/components/sections/CTABanner.tsx` — Bottom CTA section
+#### `mykka-web/components/sections/CTABanner.tsx` — Bottom CTA section
 - [x] Reviewed
   **Verdict:** PASS
   **Findings:** Clean section. Both CTAs are `<Link>` elements with clear descriptive text. The "Talk to Sales" mailto link works correctly. No ARIA issues beyond the section lacking `aria-labelledby` (consistent issue across all sections). The gradient background and box-shadow are purely decorative. Color contrast: `text-[#94a3b8]` on the gradient dark background — passes.
@@ -410,7 +410,7 @@
 
 ---
 
-#### `ciyo-web/components/sections/HowItWorks.tsx` — Three-step onboarding explainer
+#### `mykka-web/components/sections/HowItWorks.tsx` — Three-step onboarding explainer
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
@@ -428,26 +428,26 @@
 
 ---
 
-#### `ciyo-web/components/sections/PricingPreview.tsx` — Pricing tier cards
+#### `mykka-web/components/sections/PricingPreview.tsx` — Pricing tier cards
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
   1. The "Most Popular" badge is positioned with `-mt-10` which pulls it outside the card boundary. If the card above has a background, the badge will overlap it. This is visually fragile and depends on section-level padding being sufficient.
   2. The "Most Popular" badge is inside the featured `<div>` but visually appears to float above — it has no `aria-label` or `role`. Screen readers will read "Most Popular" as inline text within the Business card, which is acceptable.
   3. Feature list checkmarks (`<span className="text-[#34d399]">✓</span>`) are decorative — but `✓` (U+2713) is read by some screen readers as "check mark". Add `aria-hidden="true"` to each checkmark span and rely on the text content of each `<li>` for the accessible name.
-  4. CTA links all go to hardcoded `https://app.ciyo.ai/onboarding...` URLs — not using `APP_URL` from config, unlike `Hero.tsx` and `CTABanner.tsx`. This is inconsistent and will point to the wrong URL in staging environments.
+  4. CTA links all go to hardcoded `https://app.mykka.ai/onboarding...` URLs — not using `APP_URL` from config, unlike `Hero.tsx` and `CTABanner.tsx`. This is inconsistent and will point to the wrong URL in staging environments.
   5. No `aria-labelledby` on the `<section>`.
   6. `text-[#64748b]` for plan descriptions — same contrast failure as Hero and HowItWorks (3.7:1 on `#17171e`).
 
   **Proposed changes:**
   - Add `aria-hidden="true"` to each `✓` checkmark span.
-  - Replace hardcoded `https://app.ciyo.ai/...` href values with `${APP_URL}/...` for environment consistency.
+  - Replace hardcoded `https://app.mykka.ai/...` href values with `${APP_URL}/...` for environment consistency.
   - Add `aria-labelledby` to the `<section>`.
   - Upgrade `text-[#64748b]` to `text-[#94a3b8]` throughout.
 
 ---
 
-#### `ciyo-web/components/sections/VideoDemo.tsx` — Video placeholder section
+#### `mykka-web/components/sections/VideoDemo.tsx` — Video placeholder section
 - [x] Reviewed
   **Verdict:** ISSUE
   **Findings:**
@@ -485,14 +485,14 @@
 | `pretzel-console/src/components/ui/Badge.tsx` | WARN |
 | `pretzel-console/src/components/ui/EmptyState.tsx` | PASS |
 | `pretzel-console/src/components/billing/UpgradeBanner.tsx` | WARN |
-| `ciyo-web/components/layout/Header.tsx` | WARN |
-| `ciyo-web/components/layout/Footer.tsx` | ISSUE |
-| `ciyo-web/components/sections/Hero.tsx` | ISSUE |
-| `ciyo-web/components/sections/FeatureGrid.tsx` | WARN |
-| `ciyo-web/components/sections/CTABanner.tsx` | PASS |
-| `ciyo-web/components/sections/HowItWorks.tsx` | WARN |
-| `ciyo-web/components/sections/PricingPreview.tsx` | WARN |
-| `ciyo-web/components/sections/VideoDemo.tsx` | ISSUE |
+| `mykka-web/components/layout/Header.tsx` | WARN |
+| `mykka-web/components/layout/Footer.tsx` | ISSUE |
+| `mykka-web/components/sections/Hero.tsx` | ISSUE |
+| `mykka-web/components/sections/FeatureGrid.tsx` | WARN |
+| `mykka-web/components/sections/CTABanner.tsx` | PASS |
+| `mykka-web/components/sections/HowItWorks.tsx` | WARN |
+| `mykka-web/components/sections/PricingPreview.tsx` | WARN |
+| `mykka-web/components/sections/VideoDemo.tsx` | ISSUE |
 
 **PASS: 3 | WARN: 12 | ISSUE: 11**
 

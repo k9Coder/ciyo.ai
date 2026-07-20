@@ -1,4 +1,4 @@
-# ciyo.ai — Entity Decision Follow-Up: עוסק פטור as Starting Point
+# mykka.ai — Entity Decision Follow-Up: עוסק פטור as Starting Point
 **Date:** June 13, 2026 (same day, reconvened)
 **Chair:** Ethan Cole (CEO)
 **Attendees:** Yael Mizrahi (Israeli Tech Lawyer), Avi Shapiro (Israeli CPA), Noa Katz (CISO), Tal Ben-David (Cybersecurity Specialist)
@@ -82,7 +82,7 @@ Register both under your personal Israeli ID. Revenue lands in your personal ban
 
 Privacy Policy: must accurately describe data flows, storage location (Render US East), retention periods. Yael drafts, I review the technical accuracy section. One week.
 
-GDPR cookie consent on the website: if any third-party tracker exists on ciyo.ai. Tal checks today.
+GDPR cookie consent on the website: if any third-party tracker exists on mykka.ai. Tal checks today.
 
 Incident response procedure: one page. If there is a data breach, what happens. Who does the owner notify, within what timeframe (72 hours for GDPR, PPA equivalent for Israeli data). I write this in two days. As a solo operator, this document is "what I do when I wake up and something is wrong" — it can be simple.
 
@@ -104,12 +104,12 @@ SOC 2 becomes relevant only when enterprise customers ask for it. At the עוס�
 - gitleaks scan: no secrets in git history
 - npm audit: no critical/high unpatched CVEs
 - API auth verification: tenant isolation confirmed, JWT validation on every route
-- CORS: confirm no wildcard, only console.ciyo.ai
+- CORS: confirm no wildcard, only console.mykka.ai
 - Rate limiting on /scan endpoint: confirm it exists, or flag Arjun to add it
 - Violations table review: what PII is actually stored, is it encrypted at rest on Neon
 - Neon free tier security posture: acceptable for production or not
 - Extension manifest permissions: minimum necessary scope
-- ciyo-web tracker check: any scripts needing cookie consent
+- mykka-web tracker check: any scripts needing cookie consent
 
 **One thing that changes at עוסק פטור scale:**
 
@@ -145,14 +145,14 @@ The "security officer" requirement under Privacy Protection Regulations kicks in
 |---|---|---|
 | Register עוסק פטור on mas.gov.il | Ethan | Today — 10 min |
 | Register with Bituach Leumi as עצמאי | Ethan (Avi guides) | Today — 20 min |
-| Cookie consent / tracker check on ciyo-web | Tal | June 14 |
+| Cookie consent / tracker check on mykka-web | Tal | June 14 |
 | Incident response procedure | Noa | June 16 |
 | Pre-launch security review (8-point) | Tal | June 20 |
 | Privacy Policy + ToS draft | Yael | June 20 |
 | Privacy Policy technical review | Noa | June 21 |
 | Data retention policy | Noa | June 20 |
 | PPA database registration (owner's name) | Yael | June 21 |
-| Privacy Policy + ToS live on ciyo.ai | Ethan | June 21 |
+| Privacy Policy + ToS live on mykka.ai | Ethan | June 21 |
 | **Web stack production deploy** | Ryan | **June 21–22** |
 | Chrome extension submitted | Marcus + Ryan | June 21–22 |
 | Revenue tracker alert at ₪90K | Avi | Ongoing |
@@ -182,7 +182,7 @@ The "security officer" requirement under Privacy Protection Regulations kicks in
 |---|---|---|---|
 | 1 | Register as עוסק פטור on mas.gov.il | Ethan | Today |
 | 2 | Register with Bituach Leumi as עצמאי | Ethan (Avi guides) | Today |
-| 3 | Cookie consent / tracker audit on ciyo-web | Tal | June 14 |
+| 3 | Cookie consent / tracker audit on mykka-web | Tal | June 14 |
 | 4 | Incident response + breach notification procedure | Noa | June 16 |
 | 5 | Pre-launch security review (8-point checklist) | Tal | June 20 |
 | 6 | Privacy Policy + ToS draft | Yael | June 20 |

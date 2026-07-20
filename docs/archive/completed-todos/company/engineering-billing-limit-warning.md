@@ -62,7 +62,7 @@ until your plan resets next month.
 To get unlimited scans, upgrade to the Business plan:
 {ADMIN_BASE_URL}/settings/billing
 
-— The Pretzel team at ciyo.ai
+— The Pretzel team at mykka.ai
 ```
 
 ---

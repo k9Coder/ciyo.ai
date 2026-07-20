@@ -63,7 +63,7 @@ To add more seats, upgrade your plan in the billing settings.
 
 Manage your plan: {ADMIN_BASE_URL}/settings/billing
 
-— The Pretzel team at ciyo.ai
+— The Pretzel team at mykka.ai
 ```
 
 ---

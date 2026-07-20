@@ -1,6 +1,6 @@
 # Architecture Review — Marcus Webb, CTO
 **Date:** 2026-06-08
-**Scope:** 19 files across backend, pretzel, pretzel-console, ciyo-web, e2e, scripts
+**Scope:** 19 files across backend, pretzel, pretzel-console, mykka-web, e2e, scripts
 
 ---
 
@@ -51,7 +51,7 @@
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
-  1. **`promptshield_` prefixes on storage keys.** The comments explain the legacy reason (preserve existing users' data on upgrade from "PromptShield"), but these keys are a permanent architectural scar. Any future schema migration must account for the mismatch between the product name ("ciyo" / "pretzel") and the storage namespace. There is no migration path documented, no version flag, and `AUDIT_DB_VERSION = 1` is hardcoded — if the IndexedDB schema ever changes, there is no upgrade handler referenced here.
+  1. **`promptshield_` prefixes on storage keys.** The comments explain the legacy reason (preserve existing users' data on upgrade from "PromptShield"), but these keys are a permanent architectural scar. Any future schema migration must account for the mismatch between the product name ("mykka" / "pretzel") and the storage namespace. There is no migration path documented, no version flag, and `AUDIT_DB_VERSION = 1` is hardcoded — if the IndexedDB schema ever changes, there is no upgrade handler referenced here.
   2. **`EXTENSION_VERSION = "2.0.0"` duplicated** between this file and `manifest.config.ts`. Two sources of truth for the same value; they will drift.
   3. **`AUDIT_DB_VERSION` is a magic number** with no enum or comment explaining what version 1 means schema-wise.
   **Proposed changes:**
@@ -172,7 +172,7 @@
 
 ---
 
-#### `ciyo-web/next.config.ts` — Marketing site Next.js config
+#### `mykka-web/next.config.ts` — Marketing site Next.js config
 - [x] Reviewed
   **Verdict:** WARN
   **Findings:**
@@ -248,7 +248,7 @@
 | `e2e/playwright.config.ts` | ISSUE |
 | `e2e/global-setup.ts` | WARN |
 | `e2e/global-teardown.ts` | WARN |
-| `ciyo-web/next.config.ts` | WARN |
+| `mykka-web/next.config.ts` | WARN |
 | `scripts/set-env.mjs` | WARN |
 | `e2e/helpers/admin-headers.ts` | PASS |
 | `e2e/helpers/org-headers.ts` | PASS |

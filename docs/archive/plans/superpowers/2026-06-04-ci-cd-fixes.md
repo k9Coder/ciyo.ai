@@ -74,7 +74,7 @@ on:
     branches: [main]
 ```
 
-The deploy workflows (`backend-deploy.yml`, `ciyo-web-deploy.yml`, `pretzel-console-deploy.yml`) all trigger on `branches: [master]`. The default branch is `master`. E2E tests therefore never run on deploy pushes.
+The deploy workflows (`backend-deploy.yml`, `mykka-web-deploy.yml`, `pretzel-console-deploy.yml`) all trigger on `branches: [master]`. The default branch is `master`. E2E tests therefore never run on deploy pushes.
 
 Replace with:
 ```yaml

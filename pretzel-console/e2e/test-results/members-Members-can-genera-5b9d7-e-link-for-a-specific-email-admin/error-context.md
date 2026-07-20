@@ -27,10 +27,10 @@ Call log:
 
 ```yaml
 - complementary:
-  - link "Pretzel logo Pretzel by ciyo.ai":
+  - link "Pretzel logo Pretzel by mykka.ai":
     - /url: /dashboard
     - img "Pretzel logo"
-    - text: Pretzel by ciyo.ai
+    - text: Pretzel by mykka.ai
   - text: Organization Test's Organization
   - navigation:
     - link "▦ Dashboard":
@@ -69,8 +69,8 @@ Call log:
 - status "Loading":
   - img
 - text: Pretzel© 2026 · DLP for the AI era
-- link "ciyo.ai":
-  - /url: https://ciyo.ai
+- link "mykka.ai":
+  - /url: https://mykka.ai
 ```
 
 # Test source

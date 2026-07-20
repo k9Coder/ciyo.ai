@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a legally-required Israeli accessibility statement ("הצהרת נגישות לנכים באתר") to both the ciyo-web marketing site and the pretzel-console admin app.
+**Goal:** Add a legally-required Israeli accessibility statement ("הצהרת נגישות לנכים באתר") to both the mykka-web marketing site and the pretzel-console admin app.
 
 **Architecture:** Each app gets a dedicated `/accessibility` page containing the Hebrew + English statement, plus a footer link pointing to it. No backend changes needed — static content only.
 
-**Tech Stack:** ciyo-web (Next.js App Router, Tailwind CSS), pretzel-console (React SPA, React Router, inline styles)
+**Tech Stack:** mykka-web (Next.js App Router, Tailwind CSS), pretzel-console (React SPA, React Router, inline styles)
 
 ---
 
@@ -14,29 +14,29 @@
 
 | Action | File |
 |---|---|
-| Create | `ciyo-web/app/accessibility/page.tsx` |
-| Modify | `ciyo-web/components/layout/Footer.tsx` |
-| Modify | `ciyo-web/app/sitemap.ts` |
+| Create | `mykka-web/app/accessibility/page.tsx` |
+| Modify | `mykka-web/components/layout/Footer.tsx` |
+| Modify | `mykka-web/app/sitemap.ts` |
 | Create | `pretzel-console/src/pages/AccessibilityPage.tsx` |
 | Modify | `pretzel-console/src/App.tsx` |
 | Modify | `pretzel-console/src/components/layout/AppLayout.tsx` |
 
 ---
 
-## Task 1: ciyo-web — Accessibility page
+## Task 1: mykka-web — Accessibility page
 
 **Files:**
-- Create: `ciyo-web/app/accessibility/page.tsx`
+- Create: `mykka-web/app/accessibility/page.tsx`
 
 - [ ] **Step 1: Create the page**
 
 ```tsx
-// ciyo-web/app/accessibility/page.tsx
+// mykka-web/app/accessibility/page.tsx
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'הצהרת נגישות | Accessibility Statement',
-  description: 'הצהרת נגישות לנכים באתר ciyo.ai',
+  description: 'הצהרת נגישות לנכים באתר mykka.ai',
 }
 
 export default function AccessibilityPage() {
@@ -48,7 +48,7 @@ export default function AccessibilityPage() {
         <p className="mb-8 text-sm text-[#64748b]">עודכן לאחרונה: יוני 2026</p>
 
         <p className="mb-6 leading-relaxed">
-          <strong className="text-white">ciyo.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
+          <strong className="text-white">mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
           אנו פועלים לשיפור מתמיד של חוויית המשתמש עבור כלל האוכלוסייה,
           ומיישמים את תקני הנגישות הרלוונטיים.
         </p>
@@ -74,7 +74,7 @@ export default function AccessibilityPage() {
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">מגבלות ידועות</h2>
         <ul className="mb-4 list-inside list-disc space-y-2 leading-relaxed">
           <li>תכנים שמוטמעים מצד שלישי (סרטוני YouTube, וידג&apos;טים חיצוניים) עשויים שלא לעמוד במלוא הדרישות</li>
-          <li>אנו עובדים על שיפור נגישות פורטל הניהול (console.ciyo.ai) באופן שוטף</li>
+          <li>אנו עובדים על שיפור נגישות פורטל הניהול (console.mykka.ai) באופן שוטף</li>
         </ul>
 
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">יצירת קשר בנושא נגישות</h2>
@@ -84,8 +84,8 @@ export default function AccessibilityPage() {
         <ul className="mb-4 list-inside list-disc space-y-2 leading-relaxed">
           <li>
             <strong className="text-white">אימייל: </strong>
-            <a href="mailto:accessibility@ciyo.ai" className="underline hover:text-white">
-              accessibility@ciyo.ai
+            <a href="mailto:accessibility@mykka.ai" className="underline hover:text-white">
+              accessibility@mykka.ai
             </a>
           </li>
         </ul>
@@ -100,7 +100,7 @@ export default function AccessibilityPage() {
         <p className="mb-8 text-sm text-[#64748b]">Last updated: June 2026</p>
 
         <p className="mb-6 leading-relaxed">
-          <strong className="text-white">ciyo.ai</strong> is committed to digital accessibility for people with disabilities.
+          <strong className="text-white">mykka.ai</strong> is committed to digital accessibility for people with disabilities.
           We continually improve the user experience for everyone and apply relevant accessibility standards.
         </p>
 
@@ -117,8 +117,8 @@ export default function AccessibilityPage() {
         <h3 className="mb-3 mt-6 text-base font-semibold text-white">Contact</h3>
         <p className="leading-relaxed">
           Report accessibility issues to{' '}
-          <a href="mailto:accessibility@ciyo.ai" className="underline hover:text-white">
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" className="underline hover:text-white">
+            accessibility@mykka.ai
           </a>
           . We respond within 5 business days.
         </p>
@@ -131,7 +131,7 @@ export default function AccessibilityPage() {
 - [ ] **Step 2: Verify page renders (no build error)**
 
 ```bash
-# in ciyo-web/
+# in mykka-web/
 pnpm dev
 # navigate to http://localhost:3000/accessibility
 # expect: page loads, Hebrew text visible, RTL layout correct
@@ -140,21 +140,21 @@ pnpm dev
 - [ ] **Step 3: Commit**
 
 ```bash
-git add ciyo-web/app/accessibility/page.tsx
-git commit -m "feat(ciyo-web): add accessibility statement page (/accessibility)"
+git add mykka-web/app/accessibility/page.tsx
+git commit -m "feat(mykka-web): add accessibility statement page (/accessibility)"
 ```
 
 ---
 
-## Task 2: ciyo-web — Footer link + sitemap
+## Task 2: mykka-web — Footer link + sitemap
 
 **Files:**
-- Modify: `ciyo-web/components/layout/Footer.tsx`
-- Modify: `ciyo-web/app/sitemap.ts`
+- Modify: `mykka-web/components/layout/Footer.tsx`
+- Modify: `mykka-web/app/sitemap.ts`
 
 - [ ] **Step 1: Add link to Footer**
 
-In `ciyo-web/components/layout/Footer.tsx`, the bottom bar currently has:
+In `mykka-web/components/layout/Footer.tsx`, the bottom bar currently has:
 
 ```tsx
 <div className="flex gap-6">
@@ -175,7 +175,7 @@ Replace with:
 
 - [ ] **Step 2: Add to sitemap**
 
-In `ciyo-web/app/sitemap.ts`, add `/accessibility` to `staticRoutes`:
+In `mykka-web/app/sitemap.ts`, add `/accessibility` to `staticRoutes`:
 
 ```ts
 const staticRoutes = [
@@ -188,7 +188,7 @@ const staticRoutes = [
 - [ ] **Step 3: Verify in browser**
 
 ```bash
-# in ciyo-web/
+# in mykka-web/
 pnpm dev
 # check footer on http://localhost:3000 — "נגישות" link visible
 # click it — lands on /accessibility page
@@ -197,8 +197,8 @@ pnpm dev
 - [ ] **Step 4: Commit**
 
 ```bash
-git add ciyo-web/components/layout/Footer.tsx ciyo-web/app/sitemap.ts
-git commit -m "feat(ciyo-web): link accessibility page from footer + sitemap"
+git add mykka-web/components/layout/Footer.tsx mykka-web/app/sitemap.ts
+git commit -m "feat(mykka-web): link accessibility page from footer + sitemap"
 ```
 
 ---
@@ -226,7 +226,7 @@ export function AccessibilityPage() {
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by ciyo.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
+          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
           אנו פועלים לשיפור מתמיד של חוויית המשתמש עבור כלל האוכלוסייה,
           ומיישמים את תקני הנגישות הרלוונטיים.
         </p>
@@ -267,8 +267,8 @@ export function AccessibilityPage() {
         </p>
         <p>
           <strong style={{ color: 'var(--text-primary, #fff)' }}>אימייל: </strong>
-          <a href="mailto:accessibility@ciyo.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+            accessibility@mykka.ai
           </a>
         </p>
       </div>
@@ -286,7 +286,7 @@ export function AccessibilityPage() {
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by ciyo.ai</strong> is committed to digital
+          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> is committed to digital
           accessibility for people with disabilities. We continually improve the user experience for everyone.
         </p>
 
@@ -309,8 +309,8 @@ export function AccessibilityPage() {
         </h3>
         <p style={{ lineHeight: 1.7 }}>
           Report accessibility issues to{' '}
-          <a href="mailto:accessibility@ciyo.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+            accessibility@mykka.ai
           </a>
           . We respond within 5 business days.
         </p>
@@ -385,9 +385,9 @@ Full `<Routes>` block after change:
 In `pretzel-console/src/components/layout/AppLayout.tsx`, the footer `<div>` currently ends with:
 
 ```tsx
-<a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+<a href="https://mykka.ai" target="_blank" rel="noreferrer"
   style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-  ciyo.ai
+  mykka.ai
 </a>
 ```
 
@@ -399,9 +399,9 @@ Replace with:
     style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
     נגישות
   </Link>
-  <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+  <a href="https://mykka.ai" target="_blank" rel="noreferrer"
     style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-    ciyo.ai
+    mykka.ai
   </a>
 </div>
 ```
@@ -432,11 +432,11 @@ git commit -m "feat(pretzel-console): add /accessibility route + footer link"
 **Spec coverage:**
 - ✅ Hebrew accessibility statement — both apps
 - ✅ English accessibility statement — both apps
-- ✅ Footer link in ciyo-web
+- ✅ Footer link in mykka-web
 - ✅ Footer link in pretzel-console
 - ✅ Route accessible without auth in pretzel-console
-- ✅ Sitemap entry in ciyo-web
-- ✅ Contact method (accessibility@ciyo.ai)
+- ✅ Sitemap entry in mykka-web
+- ✅ Contact method (accessibility@mykka.ai)
 - ✅ Conformance level stated (WCAG 2.1 AA + IS 5568)
 - ✅ Last-updated date
 - ✅ Known limitations section

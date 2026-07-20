@@ -7,7 +7,7 @@
 
 ## Opening — Ethan
 
-**ETHAN:** Before we start — name change. We're calling it pretzel-desktop, not ciyo-guard. Pretzel is the brand. We have Pretzel the extension, we'll have pretzel-desktop the daemon, eventually pretzel-guard or pretzel-git or whatever comes next. Everything in the pretzel family. Ben, make sure the roadmap doc reflects this after this meeting.
+**ETHAN:** Before we start — name change. We're calling it pretzel-desktop, not mykka-guard. Pretzel is the brand. We have Pretzel the extension, we'll have pretzel-desktop the daemon, eventually pretzel-guard or pretzel-git or whatever comes next. Everything in the pretzel family. Ben, make sure the roadmap doc reflects this after this meeting.
 
 Now. The extension is getting upgraded — fetch/XHR override, request interception in the browser. That meeting happened a week ago. This meeting is about the thing the extension can never be: a daemon that catches AI API calls that don't go through the browser at all. Cursor. Python scripts. Jupyter notebooks. Claude Code. Everything our developers are using that we have zero visibility into today.
 
@@ -71,7 +71,7 @@ MDM enterprise packaging. Silent install, pre-trusted cert, MSI/PKG. That's a Q4
 
 **ETHAN:** Marcus, does that scope match your technical estimate?
 
-**MARCUS:** Yes. One prerequisite the scope assumes: `@ciyo/detect` needs to be extracted from the extension into a shared package before pretzel-desktop can use the same detection engine. That extraction is the first engineering task. Yuki and Omar own it, I'm assigning them after this meeting.
+**MARCUS:** Yes. One prerequisite the scope assumes: `@mykka/detect` needs to be extracted from the extension into a shared package before pretzel-desktop can use the same detection engine. That extraction is the first engineering task. Yuki and Omar own it, I'm assigning them after this meeting.
 
 **ETHAN:** How long is that extraction?
 
@@ -157,7 +157,7 @@ Third — the policy itself. Is the policy compiled and distributed by a central
 
 **ETHAN:** Marcus. Timeline.
 
-**MARCUS:** Q3 is the design sprint. Architecture doc, threat model, `@ciyo/detect` extraction, initial proxy scaffolding. By end of Q3 we have a working internal prototype — proxy runs locally, intercepts requests, detection fires.
+**MARCUS:** Q3 is the design sprint. Architecture doc, threat model, `@mykka/detect` extraction, initial proxy scaffolding. By end of Q3 we have a working internal prototype — proxy runs locally, intercepts requests, detection fires.
 
 Q4 is the build sprint. MVP features, platform testing on macOS and Windows, extension integration for coverage deduplication research, Console coverage map. MVP target is end of Q4.
 
@@ -165,13 +165,13 @@ That gives us pretzel-desktop MVP by end of 2026. Enterprise pilot customers in 
 
 **ETHAN:** What's the risk to that timeline?
 
-**MARCUS:** The `@ciyo/detect` extraction. If Yuki and Omar find the detection engine is more tightly coupled to the extension than we think, the extraction takes longer and blocks everything downstream. I'll know within two weeks of starting it.
+**MARCUS:** The `@mykka/detect` extraction. If Yuki and Omar find the detection engine is more tightly coupled to the extension than we think, the extraction takes longer and blocks everything downstream. I'll know within two weeks of starting it.
 
 Second risk: cert trust UX on Windows. macOS cert trust is well-understood. Windows Cert Store manipulation in an installer is finicky — sometimes requires elevation, sometimes triggers Windows Defender alerts depending on how it's packaged. I'd allocate a week of platform testing specifically for Windows cert trust before we call MVP done.
 
 **ETHAN:** Noted. Those are the two risks I'll watch. Marcus, flag immediately if detect extraction slips — I'll reprioritize if needed.
 
-One last thing. Ben, the roadmap document. Update it today: ciyo-guard is now pretzel-desktop everywhere. MVP scope matches what we decided in this room. Timeline is Q3 design, Q4 build. Don't let the old name sit in docs.
+One last thing. Ben, the roadmap document. Update it today: mykka-guard is now pretzel-desktop everywhere. MVP scope matches what we decided in this room. Timeline is Q3 design, Q4 build. Don't let the old name sit in docs.
 
 **BEN:** Done today.
 
@@ -183,8 +183,8 @@ One last thing. Ben, the roadmap document. Update it today: ciyo-guard is now pr
 
 | # | Action | Owner | By |
 |---|---|---|---|
-| 1 | Update roadmap doc: ciyo-guard → pretzel-desktop, MVP scope, Q3/Q4 timeline | Ben | July 16 |
-| 2 | Extract `@ciyo/detect` shared package (detection engine out of extension) | Marcus assigns Yuki + Omar | Q3 sprint start |
+| 1 | Update roadmap doc: mykka-guard → pretzel-desktop, MVP scope, Q3/Q4 timeline | Ben | July 16 |
+| 2 | Extract `@mykka/detect` shared package (detection engine out of extension) | Marcus assigns Yuki + Omar | Q3 sprint start |
 | 3 | Architecture design doc: proxy daemon, CA cert, OS proxy config, policy sync, policy signature verification | Marcus | July 28 |
 | 4 | Threat model: local proxy attack surface, CA cert theft, policy tamper vectors | Noa + Tal Ben-David | July 28 |
 | 5 | Enterprise CISO evaluation checklist | Noa | July 21 |

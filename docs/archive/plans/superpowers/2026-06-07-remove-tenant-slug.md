@@ -602,8 +602,8 @@ export async function createCheckoutSession(opts: {
       plan:       opts.plan,
       seatCount:  String(opts.seatCount),
     },
-    success_url: process.env['STRIPE_SUCCESS_URL'] ?? 'https://ciyo.ai/welcome',
-    cancel_url:  process.env['STRIPE_CANCEL_URL']  ?? 'https://ciyo.ai/pricing',
+    success_url: process.env['STRIPE_SUCCESS_URL'] ?? 'https://mykka.ai/welcome',
+    cancel_url:  process.env['STRIPE_CANCEL_URL']  ?? 'https://mykka.ai/pricing',
   })
 
   return { url: session.url! }
@@ -679,8 +679,8 @@ export async function createPayPalSubscriptionUrl(opts: {
       custom_id: customId,
       subscriber: { email_address: opts.email },
       application_context: {
-        return_url: process.env['PAYPAL_RETURN_URL'] ?? 'https://ciyo.ai/welcome',
-        cancel_url: process.env['PAYPAL_CANCEL_URL'] ?? 'https://ciyo.ai/pricing',
+        return_url: process.env['PAYPAL_RETURN_URL'] ?? 'https://mykka.ai/welcome',
+        cancel_url: process.env['PAYPAL_CANCEL_URL'] ?? 'https://mykka.ai/pricing',
         user_action: 'SUBSCRIBE_NOW',
       },
     }),
