@@ -35,6 +35,10 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Release process](operations/release-process.md)
 - [Environments & secrets](ENVIRONMENT_AND_SECRETS.md)
 
+## Brand
+
+- [Brand guidelines](brand/mykka-brand-guidelines.md)
+
 ## Packages
 
 - [Backend](../backend/README.md)
