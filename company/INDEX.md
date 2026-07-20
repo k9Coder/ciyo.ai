@@ -1,4 +1,4 @@
-# ciyo.ai — Staff Index & Routing Guide
+# mykka.ai — Staff Index & Routing Guide
 
 > **Agent-routing document only.** Technical reality is defined by code and the
 > canonical documentation index at [`../docs/index.md`](../docs/index.md).
@@ -65,7 +65,7 @@ Use this to skip the division head and go straight to the right person.
 | Enterprise sales cycle, demos, POCs, contract negotiation, closing | Rachel Kim | `staff:rachel-kim` |
 | Technical demos, POC config, security questionnaires, RFP technical sections | Dimitri Stavros | `staff:dimitri-stavros` |
 | Blog posts, threat reports, SEO, case studies, white papers, email copy | Megan O'Brien | `staff:megan-obrien` |
-| Brand, UI/UX design, Figma, ciyo-web visuals, sales decks, report layouts | Carlos Mendes | `staff:carlos-mendes` |
+| Brand, UI/UX design, Figma, mykka-web visuals, sales decks, report layouts | Carlos Mendes | `staff:carlos-mendes` |
 | All sales — unclear, or pipeline/revenue strategy | Sofia Reyes (VP Sales) | `staff:sofia-reyes` |
 | All marketing — unclear, or brand/campaign strategy | Priya Nair | `staff:priya-nair` |
 

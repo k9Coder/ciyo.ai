@@ -1,4 +1,4 @@
-# ciyo.ai — Agent Orchestration Guide
+# mykka.ai — Agent Orchestration Guide
 
 > How to assign tasks to company agents, run them in parallel, and track progress.
 
@@ -37,7 +37,7 @@ Daily cleanup removes stale worktrees
 | Ryan Kowalski | `.github/workflows/`, `Dockerfile*`, `nginx.conf`, `docker-compose.yml` | everything else |
 | Natasha Ivanova | `*/e2e/**` | everything else |
 | Lena Hartmann | `*/tests/**` (unit only) | everything else |
-| Priya Nair | `ciyo-web/` | everything else |
+| Priya Nair | `mykka-web/` | everything else |
 | Marcus Webb | `e2e/playwright.config.ts`, shared types, configs | feature code |
 
 ---
@@ -98,7 +98,7 @@ source scripts/agent-db-start.sh seed:fintech
 pnpm test          # runs against isolated DB
 pnpm test:e2e      # same
 # ... implement fixes ...
-# EXIT → docker rm -f ciyo-db-arjun-gdpr-erasure
+# EXIT → docker rm -f mykka-db-arjun-gdpr-erasure
 ```
 
 Agents that only touch frontend/extension/CI code: skip the DB step entirely.
