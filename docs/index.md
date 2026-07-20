@@ -40,7 +40,7 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Backend](../backend/README.md)
 - [Pretzel extension](../pretzel/README.md)
 - [Pretzel Console](../pretzel-console/README.md)
-- [ciyo-web](../ciyo-web/README.md)
+- [mykka-web](../mykka-web/README.md)
 - [Cross-package E2E](../e2e/README.md)
 - [Repository scripts](../scripts/README.md)
 

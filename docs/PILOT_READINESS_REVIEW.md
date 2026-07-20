@@ -1,7 +1,7 @@
-# Pilot Readiness Review — ciyo.ai / Pretzel
+# Pilot Readiness Review — mykka.ai / Pretzel
 
 Date: 2026-07-06
-Scope: extension (`pretzel`), backend, `pretzel-console`, `pretzel-desktop`, `@ciyo/detect`, CI/deploy, marketing site.
+Scope: extension (`pretzel`), backend, `pretzel-console`, `pretzel-desktop`, `@mykka/detect`, CI/deploy, marketing site.
 Method: code read against `docs/CURRENT_STATE.md` and `docs/KNOWN_ISSUES.md`.
 
 ## Verdict
@@ -50,7 +50,7 @@ The **extension + backend + console** path is close to pilot-ready with a handfu
 - The public route `rules/router.ts:25` enforces `isRuleKindAllowed(plan, kind)`. The assistant path does not. A free/starter tenant can have the assistant create `pattern`/`entropy`/`score` rules it shouldn't have. Monetization leak, not a security hole (seat limits *are* enforced on the assistant `create_member` path via `members/service.ts:44`). Add the same rule-kind check in `createRule` or the internal router.
 
 ### 7. AI-generated regex is compiled and run in the user's browser
-`assistant/apply.ts` create_rule with `kind: 'pattern'` → stored → shipped in policy → `@ciyo/detect` runs it.
+`assistant/apply.ts` create_rule with `kind: 'pattern'` → stored → shipped in policy → `@mykka/detect` runs it.
 - The assistant can author arbitrary regex (see the credit-card example in `assistant/prompt.ts:107`). A catastrophic-backtracking pattern would cause ReDoS in every user's content script. Add a regex safety/complexity check (or timeout the matcher) on rule ingest.
 
 ### 8. Member PII sent to third-party LLMs

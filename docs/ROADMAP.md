@@ -3,7 +3,7 @@ status: planned
 owner: product
 verified_at: 2026-06-13
 sources:
-  - docs/product/ciyo-guard.md
+  - docs/product/mykka-guard.md
   - company/meetings/product-strategy-followup-mcp-killed_2026-06-12.md
 ---
 
@@ -13,7 +13,7 @@ Nothing in this file is implemented unless also described in current-state packa
 
 ## Active Direction
 
-### ciyo-guard
+### mykka-guard
 
 A compiled local enforcement client intended to protect developer AI workflows beyond browser sites.
 
@@ -24,7 +24,7 @@ A compiled local enforcement client intended to protect developer AI workflows b
 
 ### Shared Detection Package
 
-Extract the extension detection engine into a portable `@ciyo/detect` package used by both Pretzel and ciyo-guard.
+Extract the extension detection engine into a portable `@mykka/detect` package used by both Pretzel and mykka-guard.
 
 ## Future Candidates
 

@@ -6,7 +6,7 @@ sources:
   - backend/src/app.ts
   - pretzel/manifest.config.ts
   - pretzel-console/src/App.tsx
-  - ciyo-web/app
+  - mykka-web/app
   - e2e/playwright.config.ts
 ---
 
@@ -18,7 +18,7 @@ sources:
 - Detection runs locally using pattern, entropy, keyword/dictionary, and score rules.
 - Pretzel Console manages organization structure, subjects/rules, destinations, sites, publishing, members, audit data, settings, and an AI-assisted policy editor.
 - The Fastify backend provides tenant-scoped APIs, policy compilation/resolution, Clerk auth, internal tokens, PayPal billing, scans/events, analytics, audit logs, invites, and assistant actions.
-- ciyo-web is the public marketing site.
+- mykka-web is the public marketing site.
 
 ## Runtime Model
 
@@ -37,10 +37,10 @@ sources:
 
 ## Not Implemented
 
-- ciyo-guard, proxy/daemon protection, and `@ciyo/detect` extraction are roadmap work.
+- mykka-guard, proxy/daemon protection, and `@mykka/detect` extraction are roadmap work.
 - Arbitrary AI-site protection is not available; manifest-authorized hosts are required.
 - Stripe code exists but Stripe routes/webhook registration are disabled.
-- The marketing site contains claims that are not evidenced by repository implementation; see `ciyo-web/CONTENT_CLAIMS.md`.
+- The marketing site contains claims that are not evidenced by repository implementation; see `mykka-web/CONTENT_CLAIMS.md`.
 
 ## Documentation Rule
 

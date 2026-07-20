@@ -17,7 +17,7 @@ Files: `backend/src/index.ts:25` (`host: '0.0.0.0'`), `backend/src/app.ts:62-68`
 The whole app — public `/v1/*` AND privileged `/internal/*` — listens on one public port. `/internal/*` routes do **no auth beyond one header check**: `if (req.headers['x-internal-secret'] !== INTERNAL_SECRET) return 404`, where `INTERNAL_SECRET = process.env['INTERNAL_SECRET'] ?? ''`. Internal routes then trust the `X-Tenant-ID` header outright — `membersInternalRouter` will `createMember(role:'super_admin')` into **any** tenant id, with no membership verification (`internal/members.router.ts:22-25`, `tid()` just reads the header).
 
 Exploit:
-- If `INTERNAL_SECRET` is unset in prod (nothing forces it — unlike `CORS_ORIGIN`, which throws at boot if missing, `app.ts:42`), it is `''`. An attacker sends `POST https://api.ciyo.ai/internal/v1/members/` with `X-Internal-Secret:` (empty value) + `X-Tenant-ID: <victim-tenant-uuid>` + `{"email":"attacker@evil.com","role":"super_admin"}` → mints themselves a super_admin in the victim tenant. From there: read every member, rule, scan; rewrite policy; disable enforcement org-wide.
+- If `INTERNAL_SECRET` is unset in prod (nothing forces it — unlike `CORS_ORIGIN`, which throws at boot if missing, `app.ts:42`), it is `''`. An attacker sends `POST https://api.mykka.ai/internal/v1/members/` with `X-Internal-Secret:` (empty value) + `X-Tenant-ID: <victim-tenant-uuid>` + `{"email":"attacker@evil.com","role":"super_admin"}` → mints themselves a super_admin in the victim tenant. From there: read every member, rule, scan; rewrite policy; disable enforcement org-wide.
 - The empty-header match works because absent header is `undefined` (`undefined !== ''` → blocked) but an explicitly-sent empty header is `''` (`'' !== ''` → **passes**).
 - Even with a secret set, comparison is `!==` (not constant-time) and the internal surface is reachable from the internet — pure defense-in-depth failure.
 
@@ -47,7 +47,7 @@ Fix: register `@fastify/rate-limit` globally with a sane default (e.g. 100 req/m
 
 File: `backend/src/invites/router.ts:35-41`, `service.ts getInvitePreview`.
 
-`GET /v1/invites/:token` is unauthenticated and returns `{ tenantName, role, email, expiresAt, valid }`. Combined with no rate limit (H-1): an attacker who obtains/guesses a token learns the organization name and the **specific email address the invite is locked to** (useful for targeted phishing: "your ciyo invite for <Company>"). 404-vs-200 also oracle-confirms token existence.
+`GET /v1/invites/:token` is unauthenticated and returns `{ tenantName, role, email, expiresAt, valid }`. Combined with no rate limit (H-1): an attacker who obtains/guesses a token learns the organization name and the **specific email address the invite is locked to** (useful for targeted phishing: "your mykka invite for <Company>"). 404-vs-200 also oracle-confirms token existence.
 
 Fix: keep the endpoint (the landing page needs it) but (a) rate-limit hard, (b) drop `email` from the unauthenticated payload — the accept flow already re-checks email server-side, so the preview doesn't need to echo it; (c) return a generic shape for invalid/expired rather than 404 to reduce the oracle.
 

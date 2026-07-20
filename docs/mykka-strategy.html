@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ciyo.ai × Pretzel — Full Strategy Brief</title>
+  <title>mykka.ai × Pretzel — Full Strategy Brief</title>
   <style>
     :root {
       --bg:       #0f0f13;
@@ -263,7 +263,7 @@
 
 <!-- ══════════════════ HERO ══════════════════ -->
 <div class="hero">
-  <div class="badge">Full Strategy Brief · ciyo.ai × Pretzel · June 2026</div>
+  <div class="badge">Full Strategy Brief · mykka.ai × Pretzel · June 2026</div>
   <h1>The Complete <span>Pretzel</span> Playbook</h1>
   <p>Brand, product, pricing, marketing, AI, website, and execution — everything needed to turn what's built into a real business.</p>
   <div class="meta">
@@ -306,8 +306,8 @@
       <div class="name-option recommended">
         <div style="flex:1">
           <div class="name-rec" style="color:var(--green)">Company</div>
-          <div class="name-val">ciyo.ai</div>
-          <div class="name-why">The umbrella brand. Everything is "by ciyo.ai." As you launch more products this becomes the parent — think how Atlassian makes Jira, Confluence, and Bitbucket.</div>
+          <div class="name-val">mykka.ai</div>
+          <div class="name-why">The umbrella brand. Everything is "by mykka.ai." As you launch more products this becomes the parent — think how Atlassian makes Jira, Confluence, and Bitbucket.</div>
         </div>
       </div>
 
@@ -315,7 +315,7 @@
         <div style="flex:1">
           <div class="name-rec" style="color:var(--green)">Browser Extension</div>
           <div class="name-val">Pretzel</div>
-          <div class="name-why">Listed in Chrome Web Store as <em>"Pretzel · AI Prompt Guard by ciyo.ai"</em>. Short, memorable, non-threatening — doesn't scream "security" which makes non-security buyers less defensive about installing it.</div>
+          <div class="name-why">Listed in Chrome Web Store as <em>"Pretzel · AI Prompt Guard by mykka.ai"</em>. Short, memorable, non-threatening — doesn't scream "security" which makes non-security buyers less defensive about installing it.</div>
         </div>
       </div>
 
@@ -323,7 +323,7 @@
         <div style="flex:1">
           <div class="name-rec" style="color:var(--green)">Admin Dashboard — Recommended</div>
           <div class="name-val">Pretzel Console</div>
-          <div class="name-why">"Console" is security-adjacent (cloud console, SOC console, ops console) — it signals control and authority without being jargony. Cleaner than "Manager." Lives at <code>app.ciyo.ai</code>.</div>
+          <div class="name-why">"Console" is security-adjacent (cloud console, SOC console, ops console) — it signals control and authority without being jargony. Cleaner than "Manager." Lives at <code>app.mykka.ai</code>.</div>
         </div>
       </div>
     </div>
@@ -350,13 +350,13 @@
       <div class="name-option" style="opacity:.75">
         <div style="flex:1">
           <div class="name-rec" style="color:var(--yellow)">Alternative C</div>
-          <div class="name-val" style="font-size:18px">ciyo Console</div>
-          <div class="name-why" style="font-size:12px">Drop "Pretzel" from the admin name — keeps Pretzel purely as the extension brand. Makes sense if you plan more products: ciyo Console could manage them all.</div>
+          <div class="name-val" style="font-size:18px">mykka Console</div>
+          <div class="name-why" style="font-size:12px">Drop "Pretzel" from the admin name — keeps Pretzel purely as the extension brand. Makes sense if you plan more products: mykka Console could manage them all.</div>
         </div>
       </div>
 
       <div class="callout callout-yellow" style="margin-top:16px">
-        <strong>Recommended call:</strong> Keep both surfaces under the "Pretzel" name. The extension is Pretzel. The dashboard is Pretzel Console. Together they are <em>Pretzel by ciyo.ai</em>. You don't explain two brands, you explain one product with two surfaces.
+        <strong>Recommended call:</strong> Keep both surfaces under the "Pretzel" name. The extension is Pretzel. The dashboard is Pretzel Console. Together they are <em>Pretzel by mykka.ai</em>. You don't explain two brands, you explain one product with two surfaces.
       </div>
     </div>
   </div>
@@ -364,40 +364,40 @@
   <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Repository & URL Structure</div>
   <div class="repo-grid">
     <div class="repo-card">
-      <div class="repo-name">ciyo-web</div>
-      <div class="repo-url">ciyo.ai</div>
+      <div class="repo-name">mykka-web</div>
+      <div class="repo-url">mykka.ai</div>
       <div class="repo-desc">Marketing site. New repo. Next.js + Tailwind. Completely separate from the product — different deploy, different team velocity.</div>
     </div>
     <div class="repo-card">
       <div class="repo-name">pretzel-console</div>
-      <div class="repo-url">app.ciyo.ai</div>
-      <div class="repo-desc">Current admin/ folder. The Pretzel Console. Authenticated, per-tenant, Clerk-gated. Links back to ciyo.ai for marketing.</div>
+      <div class="repo-url">app.mykka.ai</div>
+      <div class="repo-desc">Current admin/ folder. The Pretzel Console. Authenticated, per-tenant, Clerk-gated. Links back to mykka.ai for marketing.</div>
     </div>
     <div class="repo-card">
       <div class="repo-name">pretzel-extension</div>
       <div class="repo-url">Chrome Web Store</div>
-      <div class="repo-desc">The browser extension. Fetches policy from the backend. Intercepts prompts. Communicates only with api.ciyo.ai.</div>
+      <div class="repo-desc">The browser extension. Fetches policy from the backend. Intercepts prompts. Communicates only with api.mykka.ai.</div>
     </div>
     <div class="repo-card">
       <div class="repo-name">pretzel-api</div>
-      <div class="repo-url">api.ciyo.ai</div>
+      <div class="repo-url">api.mykka.ai</div>
       <div class="repo-desc">Current backend/. The engine: auth, policies, events, billing, assistant. Shared by console + extension.</div>
     </div>
   </div>
 
   <div class="callout" style="margin-top:20px">
-    <strong>Why a separate ciyo-web repo?</strong> The marketing site ships 5× faster than the product. It needs design freedom, SEO experiments, and A/B tests without touching production infrastructure. Coupling them slows both down.
+    <strong>Why a separate mykka-web repo?</strong> The marketing site ships 5× faster than the product. It needs design freedom, SEO experiments, and A/B tests without touching production infrastructure. Coupling them slows both down.
   </div>
 </section>
 
 <!-- ══════════════════ 02 WEBSITE PAGES ══════════════════ -->
 <section class="section" id="website">
-  <div class="section-label">02 · ciyo.ai Website</div>
+  <div class="section-label">02 · mykka.ai Website</div>
   <h2 class="section-title">Pages to Build</h2>
   <p class="section-sub">The marketing site is the first thing a CISO, IT director, or employee sees. It needs to do three things: convince them the problem is real, show them the solution is simple, and remove friction from the first click.</p>
 
   <div class="callout callout-green">
-    <strong>Tech recommendation:</strong> Next.js 15 (App Router) + Tailwind + shadcn/ui. Deploy to Vercel. CMS-backed blog via Sanity or Contentlayer. Keep it in <code>ciyo-web</code> repo, completely independent of the product repos. Spend 80% of design effort on the homepage — it's the only page most people see.
+    <strong>Tech recommendation:</strong> Next.js 15 (App Router) + Tailwind + shadcn/ui. Deploy to Vercel. CMS-backed blog via Sanity or Contentlayer. Keep it in <code>mykka-web</code> repo, completely independent of the product repos. Spend 80% of design effort on the homepage — it's the only page most people see.
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px">
@@ -407,7 +407,7 @@
         <div class="page-card-icon" style="background:rgba(124,106,255,.15)">🏠</div>
         <div>
           <div class="page-card-title">Home</div>
-          <div class="page-card-url">ciyo.ai</div>
+          <div class="page-card-url">mykka.ai</div>
         </div>
       </div>
       <div class="page-card-body">The most important page. Do the work of a sales deck in 60 seconds of scrolling. Above the fold: one-line problem statement, one-line solution, one CTA. No carousel, no buzzwords.</div>
@@ -426,7 +426,7 @@
         <div class="page-card-icon" style="background:rgba(96,165,250,.15)">🧩</div>
         <div>
           <div class="page-card-title">Product</div>
-          <div class="page-card-url">ciyo.ai/product</div>
+          <div class="page-card-url">mykka.ai/product</div>
         </div>
       </div>
       <div class="page-card-body">Deep dive for buyers doing due diligence. Show the extension in action (screenshot/GIF of a blocked prompt), show the Console UI, show the AI assistant. This converts the "technically curious" buyer.</div>
@@ -445,7 +445,7 @@
         <div class="page-card-icon" style="background:rgba(52,211,153,.15)">💰</div>
         <div>
           <div class="page-card-title">Pricing</div>
-          <div class="page-card-url">ciyo.ai/pricing</div>
+          <div class="page-card-url">mykka.ai/pricing</div>
         </div>
       </div>
       <div class="page-card-body">All 4 tiers with a monthly/annual toggle. FAQ section below the table. "Talk to Sales" for Enterprise. Make the Business tier visually dominant — it's your main revenue driver.</div>
@@ -463,7 +463,7 @@
         <div class="page-card-icon" style="background:rgba(251,191,36,.15)">🏭</div>
         <div>
           <div class="page-card-title">Solutions by Industry</div>
-          <div class="page-card-url">ciyo.ai/solutions/[industry]</div>
+          <div class="page-card-url">mykka.ai/solutions/[industry]</div>
         </div>
       </div>
       <div class="page-card-body">One page per vertical: Healthcare, Legal, Fintech, Engineering. Each page names the regulation (HIPAA, attorney-client privilege, PCI-DSS, IP protection), lists the risk, shows how Pretzel solves it specifically. These pages rank well on search and convert high-intent visitors.</div>
@@ -480,7 +480,7 @@
         <div class="page-card-icon" style="background:rgba(248,113,113,.15)">🛡️</div>
         <div>
           <div class="page-card-title">Security & Trust</div>
-          <div class="page-card-url">ciyo.ai/security</div>
+          <div class="page-card-url">mykka.ai/security</div>
         </div>
       </div>
       <div class="page-card-body">CISOs will look for this before recommending Pretzel internally. Data handling, encryption at rest/transit, no prompt content stored (only metadata), SOC2 roadmap, uptime SLA, GDPR compliance. A single well-written page removes a major enterprise sales objection.</div>
@@ -498,7 +498,7 @@
         <div class="page-card-icon" style="background:rgba(251,146,60,.15)">📝</div>
         <div>
           <div class="page-card-title">Blog</div>
-          <div class="page-card-url">ciyo.ai/blog</div>
+          <div class="page-card-url">mykka.ai/blog</div>
         </div>
       </div>
       <div class="page-card-body">Thought leadership and SEO. Target long-tail: "HIPAA ChatGPT compliance", "AI prompt data leakage", "enterprise AI security policy template." Publish 2 articles/month. The quarterly "AI Prompt Leakage Report" lives here and generates press coverage.</div>
@@ -515,7 +515,7 @@
         <div class="page-card-icon" style="background:rgba(96,165,250,.15)">📖</div>
         <div>
           <div class="page-card-title">Docs</div>
-          <div class="page-card-url">docs.ciyo.ai</div>
+          <div class="page-card-url">docs.mykka.ai</div>
         </div>
       </div>
       <div class="page-card-body">Getting started guide, extension install walkthrough, policy configuration reference, API docs (for the scanning API tier), Chrome Enterprise deployment guide for IT teams. Nextra (Next.js docs framework) is perfect for this. Separate subdomain gives it search authority.</div>
@@ -533,7 +533,7 @@
         <div class="page-card-icon" style="background:rgba(167,139,250,.15)">🙋</div>
         <div>
           <div class="page-card-title">About</div>
-          <div class="page-card-url">ciyo.ai/about</div>
+          <div class="page-card-url">mykka.ai/about</div>
         </div>
       </div>
       <div class="page-card-body">Brief, human, honest. Who built this, why, what's the mission. Enterprise buyers check who's behind a security product — a real founding story builds more trust than polished corporate copy. Keep it under 400 words.</div>
@@ -790,7 +790,7 @@
     <div class="hook-step"><div class="hook-step-title">Breaks exactly when team use starts</div><div class="hook-step-desc">4th user can't join. No org hierarchy. 500 scans hit in ~2 weeks for a moderately active AI user. These are genuine team blockers, not artificial ones.</div></div>
     <div class="hook-step"><div class="hook-step-title">Analytics absence creates FOMO</div><div class="hook-step-desc">"Your policy has been running for 14 days. <strong style="color:var(--yellow)">Upgrade to see what's been blocked.</strong>" They know it's working — they just can't see the data.</div></div>
     <div class="hook-step"><div class="hook-step-title">No time-bomb — permanent free tier</div><div class="hook-step-desc">Never expire the free tier. Cancelled paid plans drop back to free. They stay in orbit and re-upgrade when budget opens.</div></div>
-    <div class="hook-step"><div class="hook-step-title">Viral mechanic: the shareable security report</div><div class="hook-step-desc">"Share your security report" generates a PDF: "Pretzel blocked 47 potential data leaks this month — protected by ciyo.ai." It has your logo. Users email it to leadership. Leadership asks "can we roll this out company-wide?" — that's a sales call you never had to make.</div></div>
+    <div class="hook-step"><div class="hook-step-title">Viral mechanic: the shareable security report</div><div class="hook-step-desc">"Share your security report" generates a PDF: "Pretzel blocked 47 potential data leaks this month — protected by mykka.ai." It has your logo. Users email it to leadership. Leadership asks "can we roll this out company-wide?" — that's a sales call you never had to make.</div></div>
   </div>
 </section>
 
@@ -922,7 +922,7 @@
       </div>
       <div class="card" style="padding:18px">
         <div style="font-weight:700;margin-bottom:6px">Model: Claude claude-sonnet-4-6</div>
-        <div style="font-size:13px;color:var(--muted)">The assistant prompt explicitly says <em>"You are the ciyo Assistant."</em> Lean into it — use Anthropic's Claude claude-sonnet-4-6 as the model. It understands the tool-use pattern natively, handles the JSON action schema well, and the quality gap over cheaper models is very visible in complex policy reasoning.</div>
+        <div style="font-size:13px;color:var(--muted)">The assistant prompt explicitly says <em>"You are the mykka Assistant."</em> Lean into it — use Anthropic's Claude claude-sonnet-4-6 as the model. It understands the tool-use pattern natively, handles the JSON action schema well, and the quality gap over cheaper models is very visible in complex policy reasoning.</div>
       </div>
       <div class="card" style="padding:18px">
         <div style="font-weight:700;margin-bottom:6px">Rate Limiting by Plan</div>
@@ -950,7 +950,7 @@
     <div class="expand-card"><div class="expand-icon">🔌</div><span class="tag tag-soon">Q4 2026</span><div class="expand-title">SIEM Connector</div><div class="expand-desc">Export events to Splunk, Elastic, Microsoft Sentinel. Every 500+ seat enterprise has a SIEM. Making Pretzel a data source gets you into existing security dashboards — instant visibility without a new tool.</div></div>
     <div class="expand-card"><div class="expand-icon">⚡</div><span class="tag tag-soon">Q4 2026</span><div class="expand-title">Pretzel Scan API</div><div class="expand-desc">Enterprises build internal AI tools. POST /v1/scan → { action: "block", reason: "SSN detected" }. Charge per 1,000 API calls. Completely new buyer: platform engineering teams.</div></div>
     <div class="expand-card"><div class="expand-icon">🏢</div><span class="tag tag-later">2027</span><div class="expand-title">Microsoft Copilot DLP</div><div class="expand-desc">Extend the concept to Copilot inside Teams and SharePoint. Copilot adoption is exploding and enterprise security teams are actively looking for governance tools. Same policy engine, new surface.</div></div>
-    <div class="expand-card"><div class="expand-icon">🛡️</div><span class="tag tag-later">2027</span><div class="expand-title">ciyo Posture Platform</div><div class="expand-desc">Grow ciyo.ai from "the company behind Pretzel" into "the AI Security Posture Platform." Shadow AI + response filtering + the API all converge here. Multiple products, one brand.</div></div>
+    <div class="expand-card"><div class="expand-icon">🛡️</div><span class="tag tag-later">2027</span><div class="expand-title">mykka Posture Platform</div><div class="expand-desc">Grow mykka.ai from "the company behind Pretzel" into "the AI Security Posture Platform." Shadow AI + response filtering + the API all converge here. Multiple products, one brand.</div></div>
   </div>
 </section>
 
@@ -970,10 +970,10 @@
       <div><div class="mkt-phase-title">Foundation</div><div class="mkt-phase-date">Weeks 1–4 · Before anything public</div></div>
     </div>
 
-    <div class="mkt-task"><div class="mkt-task-icon">🌐</div><div><div class="mkt-task-title">Launch ciyo.ai website</div><div class="mkt-task-desc">Homepage + Pricing + Product pages at minimum. Include an email waitlist capture: "Get early access — be the first to protect your team." Even if the product is ready, a waitlist signals demand and creates an audience to announce to.</div></div></div>
+    <div class="mkt-task"><div class="mkt-task-icon">🌐</div><div><div class="mkt-task-title">Launch mykka.ai website</div><div class="mkt-task-desc">Homepage + Pricing + Product pages at minimum. Include an email waitlist capture: "Get early access — be the first to protect your team." Even if the product is ready, a waitlist signals demand and creates an audience to announce to.</div></div></div>
     <div class="mkt-task"><div class="mkt-task-icon">🧲</div><div><div class="mkt-task-title">Create one lead magnet</div><div class="mkt-task-desc">"Free HIPAA AI Prompt Policy Template" — a downloadable PDF of 30 rules any healthcare company should have. Gated by email. This is your #1 organic lead source for the first 12 months. Costs 1 day to write, pays dividends for years.</div></div></div>
     <div class="mkt-task"><div class="mkt-task-icon">🔍</div><div><div class="mkt-task-title">SEO foundation — 5 cornerstone articles</div><div class="mkt-task-desc">Target: "ChatGPT data loss prevention", "HIPAA compliance AI tools", "enterprise AI security policy", "stop employees leaking data to AI". Write 1,500-word authoritative posts. These take 3–6 months to rank but compound forever.</div></div></div>
-    <div class="mkt-task"><div class="mkt-task-icon">💼</div><div><div class="mkt-task-title">LinkedIn presence</div><div class="mkt-task-desc">ciyo.ai company page + founder personal account. Post 3× per week: one industry insight, one product update, one opinion/take. Don't sell — educate. "3 ways your employees are leaking IP to ChatGPT right now" gets more reach than product posts.</div></div></div>
+    <div class="mkt-task"><div class="mkt-task-icon">💼</div><div><div class="mkt-task-title">LinkedIn presence</div><div class="mkt-task-desc">mykka.ai company page + founder personal account. Post 3× per week: one industry insight, one product update, one opinion/take. Don't sell — educate. "3 ways your employees are leaking IP to ChatGPT right now" gets more reach than product posts.</div></div></div>
     <div class="mkt-task"><div class="mkt-task-icon">🏪</div><div><div class="mkt-task-title">Chrome Web Store listing (public)</div><div class="mkt-task-desc">Get the extension out of developer mode and publicly listed. Write a strong description with target keywords. Add screenshots showing a blocked prompt and the Console dashboard. 5-star reviews from early users compound over time.</div></div></div>
   </div>
 
@@ -1124,8 +1124,8 @@
     <div class="roadmap-week">Wk 9–13</div>
     <div class="roadmap-line"><div class="roadmap-dot"></div><div class="roadmap-connector" style="display:none"></div></div>
     <div class="roadmap-content">
-      <div class="roadmap-title">ciyo.ai Website Launch + Public Chrome Store Listing</div>
-      <div class="roadmap-desc">Marketing site live at ciyo.ai (separate repo, Next.js). Homepage, Product, Pricing, Security pages minimum. Extension publicly listed in Chrome Web Store. Product Hunt launch date booked. Email list for early access already collecting signups.</div>
+      <div class="roadmap-title">mykka.ai Website Launch + Public Chrome Store Listing</div>
+      <div class="roadmap-desc">Marketing site live at mykka.ai (separate repo, Next.js). Homepage, Product, Pricing, Security pages minimum. Extension publicly listed in Chrome Web Store. Product Hunt launch date booked. Email list for early access already collecting signups.</div>
       <span class="roadmap-why">Everything before this is launch readiness — this is the actual launch</span>
     </div>
   </div>
@@ -1134,7 +1134,7 @@
 </div><!-- /container -->
 
 <footer class="footer">
-  <div style="margin-bottom:8px"><strong>ciyo.ai</strong> · Product: <strong>Pretzel Console + Pretzel Extension</strong> · Strategy brief · June 2026</div>
+  <div style="margin-bottom:8px"><strong>mykka.ai</strong> · Product: <strong>Pretzel Console + Pretzel Extension</strong> · Strategy brief · June 2026</div>
   <div style="font-size:12px;max-width:600px;margin:0 auto">The 30-minute deploy is your moat. The AI assistant — once properly powered — is your differentiator. The compliance audit trail is your lock-in. Start with metering. Ship streaming. Launch loud.</div>
 </footer>
 

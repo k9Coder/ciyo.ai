@@ -5,7 +5,7 @@ verified_at: 2026-06-13
 sources:
   - .github/workflows/backend-deploy.yml
   - .github/workflows/pretzel-console-deploy.yml
-  - .github/workflows/ciyo-web-deploy.yml
+  - .github/workflows/mykka-web-deploy.yml
   - .github/workflows/pretzel-release.yml
 ---
 
@@ -15,7 +15,7 @@ sources:
 |---|---|---|
 | Backend | Push to `master` or `staging` affecting backend | Test, build/push GHCR image, trigger Render deploy, then run migrations |
 | Pretzel Console | Push to `master` or `staging` affecting console | Test/typecheck, trigger Render static-site deploy hook |
-| ciyo-web | Push to `master` or `staging` affecting website | GitHub Actions lint/build check; Vercel Git integration deploys |
+| mykka-web | Push to `master` or `staging` affecting website | GitHub Actions lint/build check; Vercel Git integration deploys |
 | Pretzel extension | Push tag `pretzel-v*` | Build production ZIP and GitHub Release; manual Chrome Web Store upload |
 
 Production configuration is injected by GitHub, Render, and Vercel. Do not depend on local `.env.prod` files being present in CI.

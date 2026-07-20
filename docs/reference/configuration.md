@@ -6,7 +6,7 @@ sources:
   - backend/src
   - pretzel/src/shared/constants.ts
   - pretzel-console/src
-  - ciyo-web/lib/config.ts
+  - mykka-web/lib/config.ts
 ---
 
 # Configuration
@@ -32,7 +32,7 @@ These are baked into the extension at build time.
 - `VITE_SENTRY_DSN`
 - `VITE_APP_ENV`
 
-## ciyo-web
+## mykka-web
 
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_ENV`
