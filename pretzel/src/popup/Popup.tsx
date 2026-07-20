@@ -253,7 +253,7 @@ function SignedInView() {
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
-          {user?.organizationMemberships?.[0]?.organization?.name ?? "ciyo"}
+          {user?.organizationMemberships?.[0]?.organization?.name ?? "mykka"}
         </span>
         <button
           onClick={() => chrome.runtime.openOptionsPage()}

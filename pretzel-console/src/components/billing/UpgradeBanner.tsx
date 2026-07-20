@@ -104,7 +104,7 @@ export function UpgradeBanner() {
       )}
       {!data.paymentProvider && (
         <a
-          href="https://ciyo.ai/pricing"
+          href="https://mykka.ai/pricing"
           target="_blank"
           rel="noreferrer"
           style={{

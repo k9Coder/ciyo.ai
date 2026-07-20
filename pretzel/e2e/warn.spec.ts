@@ -71,7 +71,7 @@ test.describe('Warn vs block modal behaviour (seeded policy)', () => {
     await page.locator('#prompt-textarea').fill('Please review ACME_WARN data')
     await page.locator('#send-button').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Warn action — "Looks fine, send it" must be present
@@ -88,7 +88,7 @@ test.describe('Warn vs block modal behaviour (seeded policy)', () => {
     await page.locator('#prompt-textarea').fill('This contains ACME_SECRET credentials')
     await page.locator('#send-button').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Block action — "Looks fine, send it" must NOT appear

@@ -1,5 +1,5 @@
 import React from "react";
-import type { Finding } from "@ciyo/detect";
+import type { Finding } from "@mykka/detect";
 
 interface Props {
   findings: Finding[];

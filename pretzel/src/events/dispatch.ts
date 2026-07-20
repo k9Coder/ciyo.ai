@@ -1,6 +1,6 @@
 import { API_BASE } from "@/shared/constants";
-import { PolicyDocSchema } from "@ciyo/detect";
-import type { DetectionResult } from "@ciyo/detect";
+import { PolicyDocSchema } from "@mykka/detect";
+import type { DetectionResult } from "@mykka/detect";
 import { getAuthToken } from "@/policy/auth";
 import { buildAuthHeaders } from "@/auth/headers";
 

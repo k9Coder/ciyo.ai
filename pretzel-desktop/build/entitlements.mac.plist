@@ -14,7 +14,7 @@
     <true/>
     <key>com.apple.security.keychain-access-groups</key>
     <array>
-      <string>$(AppIdentifierPrefix)ai.ciyo.pretzel-desktop</string>
+      <string>$(AppIdentifierPrefix)ai.mykka.pretzel-desktop</string>
     </array>
   </dict>
 </plist>

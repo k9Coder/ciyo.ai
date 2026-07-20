@@ -7,7 +7,7 @@ sources:
   - backend/package.json
   - pretzel/package.json
   - pretzel-console/package.json
-  - ciyo-web/package.json
+  - mykka-web/package.json
   - e2e/package.json
 ---
 
@@ -18,7 +18,7 @@ sources:
 | `backend/` | Node.js 20, Fastify | `src/index.ts`, `src/app.ts` | Backend |
 | `pretzel/` | Chrome MV3, React/Vite | `manifest.config.ts`, `src/background/service-worker.ts`, `src/content/content-script.ts` | Extension |
 | `pretzel-console/` | React/Vite SPA | `src/main.tsx`, `src/App.tsx` | Frontend |
-| `ciyo-web/` | Next.js App Router | `app/layout.tsx`, `app/page.tsx` | Marketing |
+| `mykka-web/` | Next.js App Router | `app/layout.tsx`, `app/page.tsx` | Marketing |
 | `e2e/` | Playwright | `playwright.config.ts` | QA |
 | `scripts/` | Shell/Node helpers | individual scripts | Platform |
 | `company/` | Ownership and process docs | `INDEX.md` | Company operations |

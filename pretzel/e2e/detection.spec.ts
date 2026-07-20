@@ -31,12 +31,12 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('#prompt-textarea').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('#send-button').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
 
     // Block action: only "Edit prompt" is shown (no "Looks fine, send it")
@@ -50,14 +50,14 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     // JWT token triggers a warn action (not block), enabling the "Looks fine, send it" button
     const fakeJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.fake_sig_AABBCCDDEE'
     await page.locator('#prompt-textarea').fill(`Token: ${fakeJwt}`)
     await page.locator('#send-button').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
 
     // Warn action: "Looks fine, send it" button is present — clicking sends immediately
@@ -71,12 +71,12 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/claude-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('.ProseMirror').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('button[aria-label="Send Message"]').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
     await modal.getByRole('button', { name: 'Edit prompt' }).click()
 
@@ -87,12 +87,12 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/gemini-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('.ql-editor').fill('My key is sk-ABCDEFGHIJKLMNOPQRSTUVabcdefghijklmno')
     await page.locator('button[aria-label="Send message"]').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
     await modal.getByRole('button', { name: 'Edit prompt' }).click()
 
@@ -103,7 +103,7 @@ test.describe('Extension detection', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     await page.locator('#prompt-textarea').fill('Hello, can you help me write a cover letter?')
     await page.locator('#send-button').click()
@@ -117,7 +117,7 @@ test.describe('Extension detection', () => {
     // Now assert the modal never appeared — detection has already processed the
     // send event so the absence check is deterministic, not race-prone.
     await expect(
-      page.locator('#ciyo-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected'),
+      page.locator('#mykka-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected'),
       'No rule should match safe text — block/warn modal must not appear'
     ).not.toBeVisible({ timeout: 500 })
 

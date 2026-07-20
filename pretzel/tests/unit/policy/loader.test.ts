@@ -10,14 +10,14 @@ vi.stubGlobal('chrome', {
 })
 
 const mockBridgePolicy = vi.fn()
-vi.mock('@ciyo/detect', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@ciyo/detect')>()
+vi.mock('@mykka/detect', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@mykka/detect')>()
   return { ...actual, bridgePolicy: mockBridgePolicy }
 })
 vi.mock('@/shared/logger', () => ({ logger: { warn: vi.fn(), error: vi.fn() } }))
 
 const { loadPolicy, getSiteConfigs } = await import('@/policy/loader')
-const { DEFAULT_POLICY } = await import('@ciyo/detect')
+const { DEFAULT_POLICY } = await import('@mykka/detect')
 
 const SITE_OVERRIDES_KEY = 'promptshield_site_overrides'
 
@@ -59,8 +59,8 @@ describe('loadPolicy — no cached doc', () => {
     mockStorage({ failMode: 'closed' })
     const policy = await loadPolicy()
     expect(policy.failMode).toBe('closed')
-    expect(policy.baseline.some(r => r.id === 'ciyo-failmode-closed')).toBe(true)
-    const blockRule = policy.baseline.find(r => r.id === 'ciyo-failmode-closed')
+    expect(policy.baseline.some(r => r.id === 'mykka-failmode-closed')).toBe(true)
+    const blockRule = policy.baseline.find(r => r.id === 'mykka-failmode-closed')
     expect(blockRule?.action).toBe('block')
   })
 
@@ -131,7 +131,7 @@ describe('loadPolicy — corrupt or missing doc', () => {
     mockStorage({ policyDoc: { bad: 'data' }, failMode: 'closed' })
     const policy = await loadPolicy()
     expect(policy.failMode).toBe('closed')
-    expect(policy.baseline.some(r => r.id === 'ciyo-failmode-closed')).toBe(true)
+    expect(policy.baseline.some(r => r.id === 'mykka-failmode-closed')).toBe(true)
   })
 
   it('returns DEFAULT_POLICY and does not throw when storage rejects', async () => {

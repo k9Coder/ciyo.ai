@@ -1,0 +1,38 @@
+# mykka.ai
+
+> mykka.ai builds Pretzel — a Chrome browser extension that prevents employees from sending sensitive organizational data to AI tools like ChatGPT, Claude, and Gemini. Pretzel intercepts every AI prompt before submission, scanning for PII, source code, API keys, credentials, and other sensitive content. When a policy violation is detected, Pretzel blocks the prompt and shows the user exactly what was caught. Security administrators manage organization-wide policies through Pretzel Console, a centralized dashboard with rule management, publish/rollback, audit logs, and analytics. Detection runs locally in the browser — prompt text is never transmitted to mykka.ai servers.
+
+## Product
+
+- [Pretzel Extension](https://mykka.ai/product): Browser-native AI DLP Chrome extension. Works on ChatGPT, Claude, Gemini, and other AI sites. Real-time prompt scanning, entropy-based credential detection, PII blocking.
+- [Pretzel Console](https://mykka.ai): Admin dashboard for policy management, member management, audit logs, analytics, and publish/rollback of immutable policy snapshots.
+- [Download](https://mykka.ai/download): Install Pretzel from the Chrome Web Store.
+- [Pricing](https://mykka.ai/pricing): Free plan (3 users), Starter $49/mo (25 users), Business $15/user/mo (unlimited). Enterprise available.
+
+## Solutions by Industry
+
+- [Healthcare AI Security](https://mykka.ai/solutions/healthcare): Prevent patient PII, PHI, and HIPAA-regulated data from reaching AI tools.
+- [Legal AI Security](https://mykka.ai/solutions/legal): Protect privileged attorney-client communications and case data.
+- [Fintech AI Security](https://mykka.ai/solutions/fintech): Block financial account data, PCI-DSS regulated fields, and customer records.
+- [Engineering AI Security](https://mykka.ai/solutions/engineering): Stop source code, API keys, tokens, and credentials from leaking to AI coding assistants.
+
+## Security & Compliance
+
+- [Security](https://mykka.ai/security): Architecture overview, data handling, SOC 2 Type II in progress (targeted Q3 2026), GDPR/CCPA alignment.
+- [Privacy Policy](https://mykka.ai/privacy): Data processing details and subprocessor list.
+
+## Company
+
+- [About](https://mykka.ai/about): mykka.ai was founded after witnessing employees paste source code and API keys into ChatGPT at a prior company. The company is customer-funded.
+- [Blog](https://mykka.ai/blog): Research on AI data leakage, enterprise AI governance, and security policy.
+
+## Key Facts
+
+- Pretzel intercepts prompts on ChatGPT, Claude, and Gemini before the send button is pressed
+- Detection is local — the full prompt text is never transmitted to mykka.ai infrastructure
+- Policy is managed centrally via Pretzel Console with immutable publish snapshots and rollback
+- Supports pattern, entropy, keyword/dictionary, and score-based detection rules
+- Organization structure, team-scoped policies, and member management supported
+- SOC 2 Type II audit in progress, targeted completion Q3 2026
+- Competitors: Nightfall AI, Cyberhaven, Microsoft Purview, Forcepoint
+- mykka.ai differentiator: browser-native interception at the point of input, before data is transmitted

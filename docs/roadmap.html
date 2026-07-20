@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ciyo.ai — Product Roadmap</title>
+  <title>mykka.ai — Product Roadmap</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -346,7 +346,7 @@
 <div class="header">
   <div class="header-top">
     <div class="logo">c</div>
-    <h1>ciyo.ai — Product Roadmap</h1>
+    <h1>mykka.ai — Product Roadmap</h1>
     <span class="updated">Updated June 12, 2026</span>
   </div>
   <p class="subtitle">Prepared by Ben Cho (PM) · Reviewed by Ethan Cole (CEO) · Marcus Webb (CTO)</p>
@@ -388,7 +388,7 @@
       </div>
       <div class="product-card">
         <div class="card-icon card-green">🌐</div>
-        <div class="card-name">ciyo.ai Web (Marketing)</div>
+        <div class="card-name">mykka.ai Web (Marketing)</div>
         <div class="card-desc">Landing site, pricing, signup flow. Next.js, deployed on Vercel.</div>
         <div class="card-status status-ready">● Ready</div>
       </div>
@@ -499,7 +499,7 @@
     <div class="phase-header">
       <span class="phase-status-dot"></span>
       <span class="phase-badge">Phase 2 — Planned</span>
-      <span class="phase-title">ciyo-guard — Beyond the Browser</span>
+      <span class="phase-title">mykka-guard — Beyond the Browser</span>
       <span class="phase-window">Sep 2026 — Jan 2027</span>
     </div>
 
@@ -507,14 +507,14 @@
     <div class="product-cards">
       <div class="product-card">
         <div class="card-icon card-violet">🛡️</div>
-        <div class="card-name">ciyo-guard (Proxy Mode)</div>
+        <div class="card-name">mykka-guard (Proxy Mode)</div>
         <div class="card-desc">Local HTTPS proxy. Intercepts all AI API traffic — Cursor, Claude Code, scripts, any tool. Same policy from Pretzel Console.</div>
         <div class="card-status status-building">◐ Spec complete · Design approved</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-violet">📦</div>
-        <div class="card-name">@ciyo/detect (npm library)</div>
-        <div class="card-desc">Detection engine extracted from Pretzel extension. Open-source. Powers ciyo-guard and future enforcement clients.</div>
+        <div class="card-name">@mykka/detect (npm library)</div>
+        <div class="card-desc">Detection engine extracted from Pretzel extension. Open-source. Powers mykka-guard and future enforcement clients.</div>
         <div class="card-status status-building">◐ Planned (prerequisite)</div>
       </div>
       <div class="product-card">
@@ -526,7 +526,7 @@
       <div class="product-card">
         <div class="card-icon card-violet">🔑</div>
         <div class="card-name">API Key Management</div>
-        <div class="card-desc">Non-browser clients (ciyo-guard, future CI/CD) authenticate with long-lived API keys managed in the Console.</div>
+        <div class="card-desc">Non-browser clients (mykka-guard, future CI/CD) authenticate with long-lived API keys managed in the Console.</div>
         <div class="card-status status-building">◐ Planned</div>
       </div>
     </div>
@@ -554,7 +554,7 @@
         <div class="gantt-section">Prerequisites</div>
 
         <div class="gantt-row">
-          <div class="gantt-label"><span class="icon">📦</span> Extract @ciyo/detect <span class="tag tag-new">NEW</span></div>
+          <div class="gantt-label"><span class="icon">📦</span> Extract @mykka/detect <span class="tag tag-new">NEW</span></div>
           <div class="gantt-track">
             <div class="gantt-bar bar-indigo" style="left:0%;width:20%;">Port engine to standalone pkg</div>
           </div>
@@ -567,7 +567,7 @@
           </div>
         </div>
 
-        <div class="gantt-section">ciyo-guard build</div>
+        <div class="gantt-section">mykka-guard build</div>
 
         <div class="gantt-row">
           <div class="gantt-label"><span class="icon">🏗️</span> Binary scaffold + login flow</div>
@@ -631,7 +631,7 @@
         </div>
 
         <div class="gantt-row">
-          <div class="gantt-label"><span class="icon">🚀</span> ciyo-guard GA <span class="tag tag-launch">LAUNCH</span></div>
+          <div class="gantt-label"><span class="icon">🚀</span> mykka-guard GA <span class="tag tag-launch">LAUNCH</span></div>
           <div class="gantt-track" style="position:relative;">
             <div class="milestone ms-violet" style="left:88%;"></div>
             <div class="milestone-label" style="left:88%;">GA</div>
@@ -659,37 +659,37 @@
     <div class="product-cards">
       <div class="product-card">
         <div class="card-icon card-slate">🔗</div>
-        <div class="card-name">ciyo git hook</div>
+        <div class="card-name">mykka git hook</div>
         <div class="card-desc">Pre-commit scan. Flags sensitive files before they enter repos that AI agents will later read.</div>
         <div class="card-status status-future">○ Parked</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-slate">⚡</div>
-        <div class="card-name">ciyo GitHub Action</div>
+        <div class="card-name">mykka GitHub Action</div>
         <div class="card-desc">PR pipeline scan. Repo API key. Violations in same audit log.</div>
         <div class="card-status status-future">○ Parked</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-slate">📓</div>
-        <div class="card-name">ciyo Jupyter Extension</div>
+        <div class="card-name">mykka Jupyter Extension</div>
         <div class="card-desc">Data science enforcement. Intercepts Jupyter AI calls. Same policy, different buyer (Head of Data).</div>
         <div class="card-status status-future">○ Parked</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-slate">🔤</div>
-        <div class="card-name">ciyo LSP</div>
+        <div class="card-name">mykka LSP</div>
         <div class="card-desc">Language Server for any IDE. Inline warnings: "this file would be blocked if sent to AI."</div>
         <div class="card-status status-future">○ Parked</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-slate">💬</div>
-        <div class="card-name">ciyo Slack/Teams App</div>
+        <div class="card-name">mykka Slack/Teams App</div>
         <div class="card-desc">Audit Slack AI, Microsoft Copilot in Teams. Audit-first (no real-time block in v1).</div>
         <div class="card-status status-future">○ Parked</div>
       </div>
       <div class="product-card">
         <div class="card-icon card-slate">👤</div>
-        <div class="card-name">ciyo Solo (PLG)</div>
+        <div class="card-name">mykka Solo (PLG)</div>
         <div class="card-desc">$10/month self-serve for individual developers. Bottom-up enterprise funnel.</div>
         <div class="card-status status-future">○ Parked · needs own GTM motion</div>
       </div>
@@ -707,7 +707,7 @@
   </div>
   <div class="legend-item">
     <div class="legend-dot" style="background:#6d28d9;"></div>
-    Phase 2 — ciyo-guard
+    Phase 2 — mykka-guard
   </div>
   <div class="legend-item">
     <div class="legend-dot" style="background:#334155;"></div>

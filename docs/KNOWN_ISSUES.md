@@ -10,7 +10,7 @@ sources:
   - pretzel/src/policy/bridge.ts
   - pretzel/managed_schema.json
   - pretzel-console/nginx.conf
-  - ciyo-web
+  - mykka-web
 ---
 
 # Known Issues

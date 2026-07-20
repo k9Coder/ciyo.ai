@@ -4,9 +4,9 @@
 
 **Goal:** Add a `pilot` plan with per-day assistant prompt limits, a one-env-var pilot mode toggle that freezes billing and auto-provisions all new tenants on the pilot plan, and hide pricing on the marketing site when pilot mode is active.
 
-**Architecture:** `PLAN_LIMITS` in `billing/limits.ts` is the single source of truth for all feature gates — extending it with `assistantMaximumTokens` and `assistantPromptsADay` means every consumer (router, console, status API) picks up limits automatically. Pilot mode is activated per-package via environment variables (`PILOT_MODE` on backend, `NEXT_PUBLIC_PILOT_MODE` on ciyo-web); no database migrations are needed because the `plan` column is free-text. The console hides billing UI when the plan returned from the API is `pilot` — no extra env var required there.
+**Architecture:** `PLAN_LIMITS` in `billing/limits.ts` is the single source of truth for all feature gates — extending it with `assistantMaximumTokens` and `assistantPromptsADay` means every consumer (router, console, status API) picks up limits automatically. Pilot mode is activated per-package via environment variables (`PILOT_MODE` on backend, `NEXT_PUBLIC_PILOT_MODE` on mykka-web); no database migrations are needed because the `plan` column is free-text. The console hides billing UI when the plan returned from the API is `pilot` — no extra env var required there.
 
-**Tech Stack:** Fastify + TypeScript (backend), Drizzle ORM (DB access), React (pretzel-console), Next.js (ciyo-web), Vitest (unit tests)
+**Tech Stack:** Fastify + TypeScript (backend), Drizzle ORM (DB access), React (pretzel-console), Next.js (mykka-web), Vitest (unit tests)
 
 ## Responsible Personnel
 
@@ -14,7 +14,7 @@
 |--------|-------|
 | Merge & deploy | Marcus Webb (CTO) |
 | Set `PILOT_MODE=true` on Render (backend) | Ryan Kowalski (DevOps) |
-| Set `NEXT_PUBLIC_PILOT_MODE=true` on Vercel (ciyo-web) | Ryan Kowalski (DevOps) |
+| Set `NEXT_PUBLIC_PILOT_MODE=true` on Vercel (mykka-web) | Ryan Kowalski (DevOps) |
 | Decide when to enter / exit pilot | Ethan Cole (CEO) + Marcus Webb |
 | QA sign-off | Natasha Ivanova (QA) |
 
@@ -26,7 +26,7 @@
 - Do not break existing plan behaviour for `free`, `starter`, `business`, `enterprise`.
 - All backend changes live in the `backend/` package; run `pnpm typecheck` from there to verify.
 - All console changes live in `pretzel-console/`; run `pnpm typecheck` from there.
-- All ciyo-web changes live in `ciyo-web/`; run `pnpm build` from there.
+- All mykka-web changes live in `mykka-web/`; run `pnpm build` from there.
 - Tests use Vitest; run `pnpm test` from the relevant package root.
 
 ---
@@ -45,8 +45,8 @@
 | `backend/src/assistant/llm/groq.ts` | Modify | Pass `opts.maxTokens ?? 2048` to API call |
 | `backend/src/assistant/router.ts` | Modify | Enforce `assistantPromptsADay` before calling LLM; pass `assistantMaximumTokens` as `maxTokens` |
 | `backend/src/webhooks/clerk.ts` | Modify | Auto-provision on `'pilot'` when `PILOT_MODE=true`, else `'free'` |
-| `ciyo-web/lib/config.ts` | Modify | Export `IS_PILOT_MODE` from `NEXT_PUBLIC_PILOT_MODE` env var |
-| `ciyo-web/app/pricing/PricingClient.tsx` | Modify | When `IS_PILOT_MODE`, render pilot banner instead of pricing grid |
+| `mykka-web/lib/config.ts` | Modify | Export `IS_PILOT_MODE` from `NEXT_PUBLIC_PILOT_MODE` env var |
+| `mykka-web/app/pricing/PricingClient.tsx` | Modify | When `IS_PILOT_MODE`, render pilot banner instead of pricing grid |
 | `pretzel-console/src/pages/SettingsPage.tsx` | Modify | Hide Billing section when `billing?.plan === 'pilot'` |
 
 ---
@@ -915,11 +915,11 @@ git commit -m "feat(auth): auto-provision pilot plan when PILOT_MODE=true"
 
 ---
 
-## Task 6: ciyo-web pilot mode — hide pricing
+## Task 6: mykka-web pilot mode — hide pricing
 
 **Files:**
-- Modify: `ciyo-web/lib/config.ts`
-- Modify: `ciyo-web/app/pricing/PricingClient.tsx`
+- Modify: `mykka-web/lib/config.ts`
+- Modify: `mykka-web/app/pricing/PricingClient.tsx`
 
 **Interfaces:**
 - Produces: `IS_PILOT_MODE: boolean` exported from `config.ts`; pricing page renders a pilot banner when true
@@ -928,16 +928,16 @@ git commit -m "feat(auth): auto-provision pilot plan when PILOT_MODE=true"
 
 - [ ] **Step 1: Add IS_PILOT_MODE to config**
 
-In `ciyo-web/lib/config.ts`, replace the entire file:
+In `mykka-web/lib/config.ts`, replace the entire file:
 
 ```typescript
-export const APP_URL      = process.env.NEXT_PUBLIC_APP_URL      ?? 'https://app.ciyo.ai'
+export const APP_URL      = process.env.NEXT_PUBLIC_APP_URL      ?? 'https://app.mykka.ai'
 export const IS_PILOT_MODE = process.env.NEXT_PUBLIC_PILOT_MODE  === 'true'
 ```
 
 - [ ] **Step 2: Update PricingClient to render pilot banner when active**
 
-In `ciyo-web/app/pricing/PricingClient.tsx`, add the import and early return after the existing imports:
+In `mykka-web/app/pricing/PricingClient.tsx`, add the import and early return after the existing imports:
 
 ```typescript
 'use client'
@@ -976,7 +976,7 @@ Then, immediately before the `return (` statement inside `PricingClient()`, add:
 - [ ] **Step 3: Build to verify no errors**
 
 ```powershell
-cd ciyo-web
+cd mykka-web
 pnpm build
 ```
 
@@ -985,8 +985,8 @@ Expected: build succeeds with zero TypeScript errors.
 - [ ] **Step 4: Commit**
 
 ```powershell
-git add ciyo-web/lib/config.ts ciyo-web/app/pricing/PricingClient.tsx
-git commit -m "feat(ciyo-web): hide pricing grid and show pilot banner when NEXT_PUBLIC_PILOT_MODE=true"
+git add mykka-web/lib/config.ts mykka-web/app/pricing/PricingClient.tsx
+git commit -m "feat(mykka-web): hide pricing grid and show pilot banner when NEXT_PUBLIC_PILOT_MODE=true"
 ```
 
 ---
@@ -1043,7 +1043,7 @@ Once all tasks are merged to `master`:
 ### Turn ON pilot mode
 
 1. **Ryan** sets `PILOT_MODE=true` in Render → backend service → Environment → redeploy.
-2. **Ryan** sets `NEXT_PUBLIC_PILOT_MODE=true` in Vercel → ciyo-web → Production (master branch) → redeploy.
+2. **Ryan** sets `NEXT_PUBLIC_PILOT_MODE=true` in Vercel → mykka-web → Production (master branch) → redeploy.
 3. **Marcus** verifies: sign up as a fresh user → check console Settings → plan should show `pilot`, Billing section hidden.
 4. **Natasha** runs smoke test: assistant accessible, 5-prompt limit enforced, pricing page shows pilot banner.
 
@@ -1062,7 +1062,7 @@ Once all tasks are merged to `master`:
 - [x] `-1` = don't care / unlimited — enforced in router (`!== -1` guards) — Task 3
 - [x] `pilot` plan added to `PLAN_LIMITS` — Task 1
 - [x] New tenants auto-provisioned on `pilot` when `PILOT_MODE=true` — Task 5
-- [x] Billing hidden in ciyo-web when pilot — Task 6
+- [x] Billing hidden in mykka-web when pilot — Task 6
 - [x] Billing hidden in console when plan is pilot — Task 7
 - [x] Easy one-env-var toggle documented — Activation Runbook
 - [x] Responsible staff listed — Responsible Personnel table + Activation Runbook

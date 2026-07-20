@@ -7,25 +7,25 @@ sources:
   - backend/package.json
   - pretzel/package.json
   - pretzel-console/package.json
-  - ciyo-web/package.json
+  - mykka-web/package.json
 ---
 
 # Local Development
 
 ## Install
 
-Install dependencies independently in `backend`, `pretzel`, `pretzel-console`, `ciyo-web`, and `e2e`.
+Install dependencies independently in `backend`, `pretzel`, `pretzel-console`, `mykka-web`, and `e2e`.
 
 ## Environment
 
-From the repository root, `node scripts/set-env.mjs staging` copies staging files for backend and ciyo-web. Pretzel and Pretzel Console use Vite modes directly.
+From the repository root, `node scripts/set-env.mjs staging` copies staging files for backend and mykka-web. Pretzel and Pretzel Console use Vite modes directly.
 
 ## Start The Main Surfaces
 
 ```powershell
 cd backend; pnpm dev
 cd pretzel-console; pnpm dev:staging
-cd ciyo-web; pnpm dev
+cd mykka-web; pnpm dev
 cd pretzel; pnpm build:staging
 ```
 

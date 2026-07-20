@@ -1,4 +1,4 @@
-import { PolicyDocSchema } from '@ciyo/detect'
+import { PolicyDocSchema } from '@mykka/detect'
 import { getAuthToken } from './auth'
 import { buildAuthHeaders } from '@/auth/headers'
 import { ensureTenantSelected } from '@/auth/tenant'

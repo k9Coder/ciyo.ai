@@ -4,8 +4,8 @@
 
 1. Open Discord → click **+** (Add a Server) in the left sidebar
 2. Choose **Create My Own** → **For a club or community**
-3. Server name: `ciyo.ai Security Community`
-4. Upload a server icon (use the ciyo.ai logo — ask Carlos for a square PNG, 512×512)
+3. Server name: `mykka.ai Security Community`
+4. Upload a server icon (use the mykka.ai logo — ask Carlos for a square PNG, 512×512)
 5. Click **Create**
 
 ---
@@ -19,7 +19,7 @@ Delete the default channels Discord creates (`#general`, `#voice`), then create 
 |---|---|---|
 | `#announcements` | Text | Product updates, launches, threat report releases. Only Ethan/Priya can post. |
 | `#general` | Text | Open conversation. Everyone can post. |
-| `#help-and-questions` | Text | Users ask questions about ciyo.ai, DLP, policy config. |
+| `#help-and-questions` | Text | Users ask questions about mykka.ai, DLP, policy config. |
 | `#template-requests` | Text | Members request new policy templates. |
 | `#share-your-policy` | Text | Curated only — users submit via form, we post on their behalf. Pin this rule at the top. |
 
@@ -42,10 +42,10 @@ Go to **Server Settings → Roles**, create these:
 
 | Role | Color | Who gets it | Permissions |
 |---|---|---|---|
-| `ciyo.ai Team` | Brand color (ask Carlos for hex) | All ciyo.ai staff | Can post in #announcements, can manage messages |
+| `mykka.ai Team` | Brand color (ask Carlos for hex) | All mykka.ai staff | Can post in #announcements, can manage messages |
 | `Member` | Default | Everyone who joins | Standard — read + post everywhere except #announcements |
 
-Assign yourself and any staff `ciyo.ai Team`.
+Assign yourself and any staff `mykka.ai Team`.
 
 ---
 
@@ -83,7 +83,7 @@ The invite URL is public (it ships in client bundles), so it is **not** a GitHub
    ```
 2. Add the same line to `.env.example` and `.env.staging`. No Render dashboard entry needed — the default covers it.
 
-### ciyo-web (Next.js — `NEXT_PUBLIC_` prefix)
+### mykka-web (Next.js — `NEXT_PUBLIC_` prefix)
 1. Add to `lib/env.ts` (must be referenced literally — Next inlines at build):
    ```
    NEXT_PUBLIC_DISCORD_INVITE_URL: z.string().default('https://discord.gg/MUJP6bJX2J')
@@ -102,12 +102,12 @@ Access it only via the `env` modules — no raw `process.env` / `import.meta.env
 - **Color:** Muted — match secondary icon treatment, not primary action color
 - **Behavior:** Always visible, no badge, no animation
 
-### ciyo-web
+### mykka-web
 - **Location 1:** Global nav — text link "Community" between Blog and Contact
 - **Location 2:** Footer — Discord icon alongside LinkedIn/Twitter social icons
 - **Optional:** Small "Join our Discord" strip on blog index and docs pages
 
-Carlos will produce Figma specs → Chloe implements in pretzel-console → whoever owns ciyo-web implements the nav/footer.
+Carlos will produce Figma specs → Chloe implements in pretzel-console → whoever owns mykka-web implements the nav/footer.
 
 ---
 
@@ -117,8 +117,8 @@ First message to post (and pin) in each channel before inviting anyone.
 
 ### `#announcements` — welcome post (Ethan or Priya)
 
-> **Welcome to the ciyo.ai Security Community** 👋
-> This is the home for people building and running DLP policies with ciyo.ai.
+> **Welcome to the mykka.ai Security Community** 👋
+> This is the home for people building and running DLP policies with mykka.ai.
 > What to expect here: product updates, launch notes, and our threat report releases.
 > Start in #general to introduce yourself, ask anything in #help-and-questions, and browse real-world configs in #share-your-policy.
 
@@ -128,7 +128,7 @@ Final Priya-reviewed version lives in [discord-seed-posts.md](discord-seed-posts
 
 ### `#help-and-questions` — intro (pin)
 
-> Ask anything about ciyo.ai: setup, policy config, DLP concepts, integrations, billing.
+> Ask anything about mykka.ai: setup, policy config, DLP concepts, integrations, billing.
 > To help us help you fast, include: what you're trying to do, what you tried, and any error text (sanitized).
 > Team members answer weekdays; the community may be faster.
 
@@ -162,7 +162,7 @@ Before opening to anyone:
 - [ ] Priya posts 25 policy template entries (configs from engineering + Priya's threat-scenario headers)
 - [ ] Community guidelines pinned in `#general`
 - [ ] `#security-news` has at least 3 posts ready to publish day one
-- [ ] Aisha Johnson added with `ciyo.ai Team` role, moderation briefed (3-4 hrs/week in Q3 OKRs)
+- [ ] Aisha Johnson added with `mykka.ai Team` role, moderation briefed (3-4 hrs/week in Q3 OKRs)
 
 **Do not share the invite link publicly until all of the above are done.**
 

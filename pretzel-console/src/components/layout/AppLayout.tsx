@@ -150,7 +150,7 @@ export function AppLayout() {
               Pretzel
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-              by ciyo.ai
+              by mykka.ai
             </div>
             {env.VITE_APP_ENV === 'staging' && (
               <div style={{
@@ -280,9 +280,9 @@ export function AppLayout() {
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
               Accessibility
             </Link>
-            <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+            <a href="https://mykka.ai" target="_blank" rel="noreferrer"
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-              ciyo.ai
+              mykka.ai
             </a>
           </div>
         </div>

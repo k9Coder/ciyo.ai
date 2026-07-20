@@ -50,7 +50,7 @@ s.close()
 }
 
 # ── 1. Postgres ───────────────────────────────────────────────────────────────
-CONTAINER_NAME="ciyo-db-${AGENT_LABEL}"
+CONTAINER_NAME="mykka-db-${AGENT_LABEL}"
 echo "[stack] starting postgres: $CONTAINER_NAME"
 
 docker run -d \

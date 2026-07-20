@@ -109,8 +109,8 @@ export async function createPayPalSubscriptionUrl(opts: {
       custom_id: customId,
       subscriber: { email_address: opts.email },
       application_context: {
-        return_url: env.PAYPAL_RETURN_URL ?? 'https://ciyo.ai/welcome',
-        cancel_url: env.PAYPAL_CANCEL_URL ?? 'https://ciyo.ai/pricing',
+        return_url: env.PAYPAL_RETURN_URL ?? 'https://mykka.ai/welcome',
+        cancel_url: env.PAYPAL_CANCEL_URL ?? 'https://mykka.ai/pricing',
         user_action: 'SUBSCRIBE_NOW',
       },
     }),

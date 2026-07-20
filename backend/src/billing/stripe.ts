@@ -50,8 +50,8 @@ export async function createCheckoutSession(opts: {
       plan:       opts.plan,
       seatCount:  String(opts.seatCount),
     },
-    success_url: env.STRIPE_SUCCESS_URL ?? 'https://ciyo.ai/welcome',
-    cancel_url:  env.STRIPE_CANCEL_URL  ?? 'https://ciyo.ai/pricing',
+    success_url: env.STRIPE_SUCCESS_URL ?? 'https://mykka.ai/welcome',
+    cancel_url:  env.STRIPE_CANCEL_URL  ?? 'https://mykka.ai/pricing',
   })
 
   return { url: session.url! }

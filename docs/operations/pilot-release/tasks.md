@@ -21,11 +21,11 @@ See [payments.md](./payments.md) for infrastructure decisions and cost rationale
   - `CLERK_SECRET_KEY`
   - `DATABASE_URL` (Neon or Fly Postgres connection string)
   - Internal service URLs between backend microservices
-- [ ] Set Vercel env var: `NEXT_PUBLIC_PILOT_MODE=true` (ciyo-web project).
+- [ ] Set Vercel env var: `NEXT_PUBLIC_PILOT_MODE=true` (mykka-web project).
 - [ ] Configure Clerk **production** instance — webhook URL must point to Fly.io backend (`https://<prod-domain>/webhooks/clerk`), not localhost or staging.
-- [ ] Configure DNS: domain → Vercel (ciyo-web), API subdomain → Fly.io backend.
+- [ ] Configure DNS: domain → Vercel (mykka-web), API subdomain → Fly.io backend.
 - [ ] Set up uptime monitor — Better Stack free tier (1 monitor). Alert goes to Marcus and Ryan.
-- [ ] Create `privacy@ciyo.ai` email alias — forwards to Marcus during pilot. Must exist before privacy page goes live.
+- [ ] Create `privacy@mykka.ai` email alias — forwards to Marcus during pilot. Must exist before privacy page goes live.
 - [ ] Confirm Neon DB backups enabled, or schedule a manual export before pilot start.
 - [ ] Fix pretzel-console deploy job: repo secrets `RENDER_CONSOLE_PROD_DEPLOY_HOOK` (master) and `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` (staging) were never created — the `Deploy pretzel-console` workflow's deploy step has failed on every run since June 2 (test job green as of PR #12, 2026-07-06; step now errors explicitly naming the missing secret). Either create the deploy hooks in the Render dashboard and `gh secret set` them, **or** — since Chloe's plan deploys the console to Vercel — retarget/remove the Render deploy step in `.github/workflows/pretzel-console-deploy.yml` as part of the Vercel migration. Decide one; don't leave CI permanently red.
 
@@ -47,7 +47,7 @@ See [payments.md](./payments.md) for infrastructure decisions and cost rationale
 - [ ] **Register Chrome Web Store developer account — $5 one-time.** Do this today. CWS review takes 3–7 days; it's the longest lead-time item.
 - [ ] Production build: verify `VITE_API_URL` (or equivalent) points to production backend, not localhost.
 - [ ] Production Clerk publishable key baked into extension build.
-- [ ] Prepare CWS listing: name, description, screenshots (min 1), category, privacy policy URL (`https://ciyo.ai/privacy`).
+- [ ] Prepare CWS listing: name, description, screenshots (min 1), category, privacy policy URL (`https://mykka.ai/privacy`).
 - [ ] Submit extension to CWS only after privacy policy page is live at that URL (see Chloe's tasks below).
 - [ ] Full end-to-end install test in production: install extension → sign in → paste something on ChatGPT → scan fires → event appears in console.
 
@@ -61,14 +61,14 @@ See [payments.md](./payments.md) for infrastructure decisions and cost rationale
 - [x] ~~Remove Sentry from sub-processor table (not wired up for pilot)~~ ✅ done 2026-06-29
 - [x] ~~Add note to Stripe row: "paid plans only; not active during the pilot period"~~ ✅ done 2026-06-29
 - [ ] Add pilot plan retention note to Section 5: *"During the pilot program, scan event data is retained for the full duration of the pilot period."*
-- [ ] After David Horowitz approves content: deploy ciyo-web to Vercel **production** (not preview). Verify `https://ciyo.ai/privacy` resolves and renders correctly.
+- [ ] After David Horowitz approves content: deploy mykka-web to Vercel **production** (not preview). Verify `https://mykka.ai/privacy` resolves and renders correctly.
 
 ### Console
 
 - [ ] Deploy pretzel-console to Vercel with production Clerk publishable key and production API base URL.
 - [ ] Verify full happy path in production: sign in → see org token → invite member → member accepts → member shows up in console → scan events appear.
 - [ ] Confirm Settings page hides Billing section for pilot tenants (`billing.plan === 'pilot'`).
-- [ ] Confirm pricing page on ciyo-web shows pilot banner (not pricing tiers).
+- [ ] Confirm pricing page on mykka-web shows pilot banner (not pricing tiers).
 
 ---
 
@@ -109,7 +109,7 @@ See [payments.md](./payments.md) for infrastructure decisions and cost rationale
 
 - [ ] Name on-call person for week 1 of pilot. Someone reachable for production outages — not a full rotation, just a named person.
 - [ ] Final read-through of privacy policy against what the product actually does. Approve for publish.
-- [ ] Confirm `privacy@ciyo.ai` is reachable (Ryan's task, but Marcus verifies it by sending a test email).
+- [ ] Confirm `privacy@mykka.ai` is reachable (Ryan's task, but Marcus verifies it by sending a test email).
 - [ ] No production secret in any git commit — run `git log -p | grep -iE "api_key|secret|password|token"` before go-live.
 
 ---
@@ -133,8 +133,8 @@ Do not open pilot to any company until every item is checked:
 
 - [ ] E2E suite passed on staging (Natasha signed off)
 - [ ] Extension submitted to Chrome Web Store (can be in review, but submitted)
-- [ ] Privacy policy live at `https://ciyo.ai/privacy` (David approved, Chloe deployed)
-- [ ] `privacy@ciyo.ai` inbox works (Ryan created, Marcus tested)
+- [ ] Privacy policy live at `https://mykka.ai/privacy` (David approved, Chloe deployed)
+- [ ] `privacy@mykka.ai` inbox works (Ryan created, Marcus tested)
 - [ ] Production DB confirmed not on Render free tier
 - [ ] All production env vars verified on Fly.io and Vercel
 - [ ] On-call person named for week 1

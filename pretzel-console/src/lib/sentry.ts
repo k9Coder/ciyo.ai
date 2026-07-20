@@ -21,7 +21,7 @@ export function initSentry(): void {
     ],
     tracePropagationTargets: [
       'localhost',
-      /^https:\/\/api\.ciyo\.ai/,
+      /^https:\/\/api\.mykka\.ai/,
     ],
     beforeSend: (event) => {
       if (window.location.hostname === 'localhost') return null

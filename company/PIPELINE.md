@@ -30,7 +30,7 @@ This document defines the intended engineering gate. Current CI defects are list
 cd backend; pnpm test; pnpm build
 cd pretzel; pnpm test; pnpm typecheck; pnpm build:staging
 cd pretzel-console; pnpm test; pnpm typecheck; pnpm build:staging
-cd ciyo-web; pnpm lint; pnpm build
+cd mykka-web; pnpm lint; pnpm build
 ```
 
 ## Unified E2E

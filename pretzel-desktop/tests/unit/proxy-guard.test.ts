@@ -3,7 +3,7 @@
  * keep us from MITMing unrelated traffic and that decide when to hold a request.
  */
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_POLICY } from '@ciyo/detect'
+import { DEFAULT_POLICY } from '@mykka/detect'
 import { evaluateRequest, needsDecision, isMonitoredHost } from '../../electron/proxy'
 
 describe('isMonitoredHost', () => {

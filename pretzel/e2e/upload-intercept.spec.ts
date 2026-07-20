@@ -45,7 +45,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     // Upload a text file containing an OpenAI API key (triggers block rule)
     await page.locator('#file-input').setInputFiles({
@@ -56,7 +56,7 @@ test.describe('File upload fetch interception', () => {
     await page.locator('button[aria-label="Upload file"]').click()
 
     // The block modal must appear from the fetch interceptor path
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Block action: "Edit prompt" only, no "Looks fine, send it"
@@ -74,7 +74,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     // Upload a plain safe text file — no detection rule should match
     await page.locator('#file-input').setInputFiles({
@@ -89,7 +89,7 @@ test.describe('File upload fetch interception', () => {
 
     // Confirm the modal never appeared
     await expect(
-      page.locator('#ciyo-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected'),
+      page.locator('#mykka-overlay-host').locator('#ps-react-root').getByText('Sensitive content detected'),
       'Safe file must not trigger a block/warn modal'
     ).not.toBeVisible({ timeout: 500 })
 
@@ -100,7 +100,7 @@ test.describe('File upload fetch interception', () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/upload-mock.html`)
-    await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
     const fakeJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.fake_sig_AABBCCDDEE'
     await page.locator('#file-input').setInputFiles({
@@ -110,7 +110,7 @@ test.describe('File upload fetch interception', () => {
     })
     await page.locator('button[aria-label="Upload file"]').click()
 
-    const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
     // Warn action: "Looks fine, send it" IS available

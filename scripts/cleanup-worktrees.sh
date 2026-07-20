@@ -18,7 +18,7 @@ ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
 echo ""
-echo "=== ciyo.ai worktree cleanup ==="
+echo "=== mykka.ai worktree cleanup ==="
 echo ""
 
 # Step 1: Fetch + prune remote refs so we know which branches are gone

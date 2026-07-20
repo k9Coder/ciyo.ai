@@ -21,8 +21,8 @@ import {
   pushDecisionRequired,
   pushStatusUpdate,
 } from '../../electron/ipc-handlers'
-import type { Policy } from '@ciyo/detect'
-import { DEFAULT_POLICY } from '@ciyo/detect'
+import type { Policy } from '@mykka/detect'
+import { DEFAULT_POLICY } from '@mykka/detect'
 
 const mockIpcMain = ipcMain as unknown as {
   on: ReturnType<typeof vi.fn>

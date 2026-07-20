@@ -41,7 +41,7 @@ The script overwrites these local files when the source exists:
 | Source | Destination |
 |---|---|
 | `backend/.env.<environment>` | `backend/.env` |
-| `ciyo-web/.env.<environment>` | `ciyo-web/.env.local` |
+| `mykka-web/.env.<environment>` | `mykka-web/.env.local` |
 
 Missing source files produce a warning and are skipped, so a run can leave a
 partially switched environment. The script does not copy files for the Vite
@@ -73,7 +73,7 @@ Requirements:
 
 - Bash, Docker, Git, pnpm, and backend dependencies.
 - A unique `AGENT_LABEL` when multiple sessions could otherwise share the same
-  process ID namespace. The container name is `ciyo-db-$AGENT_LABEL`; the
+  process ID namespace. The container name is `mykka-db-$AGENT_LABEL`; the
   default label is `agent-$$`.
 - Any environment variables required by the selected seed. In particular,
   `seed:e2e` depends on the E2E Clerk identity variables.

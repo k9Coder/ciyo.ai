@@ -6,12 +6,12 @@ sources:
   - backend/src/app.ts
   - pretzel/src
   - pretzel-console/src/App.tsx
-  - ciyo-web/app
+  - mykka-web/app
 ---
 
 # Architecture Overview
 
-ciyo.ai is a modular monolith with browser enforcement.
+mykka.ai is a modular monolith with browser enforcement.
 
 ```text
 Pretzel Console -- Clerk JWT --> Fastify API --> PostgreSQL
@@ -23,7 +23,7 @@ Pretzel Chrome extension <-- policy API / two-minute polling
        +-- local prompt detection on ChatGPT, Claude, Gemini
        +-- scan/event reporting to backend
 
-ciyo-web is a separate public Next.js marketing site.
+mykka-web is a separate public Next.js marketing site.
 ```
 
 The backend is one Fastify process. Domain routers share one PostgreSQL database and direct TypeScript imports. Do not describe it as microservices.

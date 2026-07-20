@@ -48,7 +48,7 @@ pnpm test:e2e
 
 Load `pretzel/dist/` through `chrome://extensions` with Developer mode enabled. Environment variables are baked into the bundle at build time:
 
-- `VITE_API_BASE`, defaulting to `https://api.ciyo.ai` when absent
+- `VITE_API_BASE`, defaulting to `https://api.mykka.ai` when absent
 - `VITE_CLERK_PUBLISHABLE_KEY`
 - optional `VITE_SENTRY_DSN_EXTENSION`
 

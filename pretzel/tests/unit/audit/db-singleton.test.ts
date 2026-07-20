@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // ─── Mock constants ───────────────────────────────────────────────────────────
 
 vi.mock('@/shared/constants', () => ({
-  AUDIT_DB_NAME:    'ciyo-audit',
+  AUDIT_DB_NAME:    'mykka-audit',
   AUDIT_DB_VERSION: 1,
   AUDIT_STORE_NAME: 'events',
 }))

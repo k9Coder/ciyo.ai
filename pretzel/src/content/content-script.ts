@@ -3,7 +3,7 @@ import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
 import { appendAuditEvent } from "@/audit/log";
-import type { DetectionResult } from "@ciyo/detect";
+import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
 import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
@@ -22,7 +22,7 @@ initSentry();
   try {
     await bootstrap();
   } catch (err) {
-    logger.error("ciyo bootstrap failed:", err);
+    logger.error("mykka bootstrap failed:", err);
     Sentry.captureException(err, { tags: { context: 'bootstrap' } });
   }
 })();
@@ -31,7 +31,7 @@ async function bootstrap() {
   const hostname = location.hostname;
   const adapter = getAdapter(hostname);
 
-  logger.info("ciyo active on", adapter.name);
+  logger.info("mykka active on", adapter.name);
 
   let lastPasteAt = 0;
   document.addEventListener("paste", () => { lastPasteAt = Date.now(); }, { capture: true });
@@ -45,9 +45,9 @@ async function bootstrap() {
   });
 
   // ── Fetch interceptor bridge ─────────────────────────────────────────────
-  // The MAIN world fetch-interceptor posts CIYO_INTERCEPT when it catches a
+  // The MAIN world fetch-interceptor posts MYKKA_INTERCEPT when it catches a
   // file upload that wasn't triggered by the button-click path. We detect it
-  // here (ISOLATED world has chrome API access) and post back CIYO_DECISION.
+  // here (ISOLATED world has chrome API access) and post back MYKKA_DECISION.
   if (typeof window !== "undefined") window.addEventListener("message", async (e: MessageEvent) => {
     if (e.source !== window) return;
     const data = e.data as { type?: string; id?: string; payload?: Record<string, unknown> };
@@ -158,7 +158,7 @@ async function bootstrap() {
 
   // Mark extension as ready for E2E test synchronisation — set synchronously
   // after ALL listeners so tests can waitFor this before interacting with the page.
-  document.documentElement.dataset.ciyoReady = '1';
+  document.documentElement.dataset.mykkaReady = '1';
 
   // Cosmetic scan-limit banner — checked after all security listeners are registered
   // so service-worker startup latency cannot delay click interception.
@@ -230,7 +230,7 @@ function showBanner(opts: BannerOpts): void {
 
 function showScanLimitBanner(): void {
   showBanner({
-    id:         "ciyo-scan-limit-banner",
+    id:         "mykka-scan-limit-banner",
     background: "#1a0a0a",
     border:     "1px solid rgba(239,68,68,0.4)",
     alignItems: "flex-start",
@@ -244,13 +244,13 @@ function showScanLimitBanner(): void {
 
 function showSignInNudge(): void {
   showBanner({
-    id:         "ciyo-signin-nudge",
+    id:         "mykka-signin-nudge",
     background: "#16213e",
     border:     "1px solid rgba(255,255,255,0.1)",
     alignItems: "center",
     maxWidth:   "300px",
     setContent: (span) => {
-      span.textContent = "Sign in to Ciyo to start protecting your prompts.";
+      span.textContent = "Sign in to Mykka to start protecting your prompts.";
     },
     autoDismissMs: 8000,
   });

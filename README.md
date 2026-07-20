@@ -7,13 +7,13 @@ sources:
   - backend/package.json
   - pretzel/package.json
   - pretzel-console/package.json
-  - ciyo-web/package.json
+  - mykka-web/package.json
   - e2e/playwright.config.ts
 ---
 
-# ciyo.ai
+# mykka.ai
 
-ciyo.ai is a browser-based data-loss-prevention product for AI prompts. Administrators configure detection policy in Pretzel Console; the Pretzel Chrome extension enforces the published policy on ChatGPT, Claude, and Gemini.
+mykka.ai is a browser-based data-loss-prevention product for AI prompts. Administrators configure detection policy in Pretzel Console; the Pretzel Chrome extension enforces the published policy on ChatGPT, Claude, and Gemini.
 
 ## Repository
 
@@ -24,7 +24,7 @@ This repository contains five independently installed pnpm projects. It is **not
 | `backend/` | Fastify API, PostgreSQL/Drizzle data model, policy compiler, billing, analytics, and assistant |
 | `pretzel/` | Chrome Manifest V3 extension and local detection engine |
 | `pretzel-console/` | React/Vite administration SPA |
-| `ciyo-web/` | Next.js marketing website |
+| `mykka-web/` | Next.js marketing website |
 | `e2e/` | Cross-package Playwright harness |
 
 The root `package.json` is a thin command launcher. Some root recursive/filter commands are currently invalid because no `pnpm-workspace.yaml` exists; see [Known Issues](docs/KNOWN_ISSUES.md).
@@ -46,7 +46,7 @@ Install each project independently:
 cd backend; pnpm install
 cd ..\pretzel; pnpm install
 cd ..\pretzel-console; pnpm install
-cd ..\ciyo-web; pnpm install
+cd ..\mykka-web; pnpm install
 cd ..\e2e; pnpm install
 ```
 

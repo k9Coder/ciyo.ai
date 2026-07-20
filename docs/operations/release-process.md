@@ -43,18 +43,18 @@ Changes on `staging` deploy to staging services. Changes on `master` deploy to p
    - **Notify job**: posts result to Discord with download link.
 5. CI takes ~10–15 min. Check Actions tab for progress.
 6. GitHub Release is created automatically at:
-   `https://github.com/ciyo-ai/pretzel-desktop/releases/tag/pretzel-desktop-v1.1.0`
+   `https://github.com/mykka-ai/pretzel-desktop/releases/tag/pretzel-desktop-v1.1.0`
 
-### How download links stay current on ciyo.ai and the console
+### How download links stay current on mykka.ai and the console
 
 **No manual update needed.** Both surfaces resolve the latest release dynamically:
 
-- **`ciyo.ai/download`** (`ciyo-web/app/download/DownloadClient.tsx`): calls
-  `https://api.github.com/repos/ciyo-ai/pretzel-desktop/releases/latest` at page load.
+- **`mykka.ai/download`** (`mykka-web/app/download/DownloadClient.tsx`): calls
+  `https://api.github.com/repos/mykka-ai/pretzel-desktop/releases/latest` at page load.
   Returns real file sizes and direct download URLs for whatever the latest tag is.
   Pushing a new tag = new release = page auto-updates within seconds.
 
-- **`pretzel-console` Settings → Desktop Agent section**: links point to `ciyo.ai/download`
+- **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`
   which in turn resolves the latest release dynamically. No console redeploy needed.
 
 - **In-app auto-updater** (`electron-updater`): checks GitHub Releases on startup and
@@ -66,7 +66,7 @@ Changes on `staging` deploy to staging services. Changes on `master` deploy to p
 | Secret | Used for |
 |---|---|
 | `GITHUB_TOKEN` | Uploading release assets (automatic, no setup needed) |
-| `CIYO_API_URL_PROD` | Backend URL baked into the app binary |
+| `PRETZEL_DESKTOP_API_URL` | Backend URL baked into the app binary |
 | `VITE_CLERK_PUBLISHABLE_KEY_PROD` | Clerk auth key baked into the app binary |
 | `DISCORD_WEBHOOK_URL` | Release notification |
 
