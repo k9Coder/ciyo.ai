@@ -1,12 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" fill="none">
   <rect width="56" height="56" rx="14"
-        fill="var(--bg-surface, #0d1525)"/>
-  <path d="M20 14 L14 14 L14 42 L20 42"
-        stroke="var(--brand-primary, #00d4ff)" stroke-width="3"
-        stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="34" cy="28" r="5"
-          fill="var(--brand-primary, #00d4ff)"/>
-  <path d="M30 18 L38 18 L38 24"
-        stroke="var(--brand-primary, #00d4ff)" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+        fill="var(--bg-surface, #10141f)"/>
+  <circle cx="28" cy="28" r="13"
+          fill="none" stroke="var(--brand-primary, #5b8cff)" stroke-width="7"/>
+  <circle cx="37.19" cy="18.81" r="4.5"
+          fill="var(--brand-primary, #5b8cff)"/>
 </svg>
