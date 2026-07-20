@@ -13,7 +13,7 @@ const required = [
   'docs/operations/release-process.md', 'docs/archive/README.md',
   'backend/README.md', 'backend/AGENTS.md', 'pretzel/README.md', 'pretzel/AGENTS.md',
   'pretzel-console/README.md', 'pretzel-console/AGENTS.md',
-  'ciyo-web/README.md', 'ciyo-web/AGENTS.md', 'e2e/README.md', 'scripts/README.md',
+  'mykka-web/README.md', 'mykka-web/AGENTS.md', 'e2e/README.md', 'scripts/README.md',
 ]
 const entrypoints = new Set(['README.md', 'AGENTS.md', 'CLAUDE.md'])
 const forbidden = [
