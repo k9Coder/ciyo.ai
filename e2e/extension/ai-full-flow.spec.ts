@@ -95,7 +95,7 @@ test('AI-created rule is enforced by the extension after policy publish', async 
   await page.locator('#prompt-textarea').fill('Please review E2E_AI_FLOW data')
   await page.locator('#send-button').click()
 
-  const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+  const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
   await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
   // block action — no "Looks fine, send it"
