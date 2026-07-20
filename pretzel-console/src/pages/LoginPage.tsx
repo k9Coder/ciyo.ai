@@ -19,7 +19,7 @@ export function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-[#7c6aff] rounded-xl flex items-center justify-center text-white font-bold">🥨</div>
+          <div className="w-10 h-10 bg-[var(--brand-primary)] rounded-xl flex items-center justify-center text-white font-bold">🥨</div>
           <div>
             <h1 className="text-xl font-semibold text-gray-900">Pretzel Console</h1>
             <p className="text-sm text-gray-500">Sign in with your organization account</p>

@@ -38,7 +38,7 @@ export default function SolutionsPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-4xl text-center">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Solutions</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Solutions</p>
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">AI DLP by Industry</h1>
         <p className="mx-auto mb-6 max-w-lg text-[16px] text-[#94a3b8]">
           Every industry has different data to protect. Pretzel ships with policy starter kits for each — activate in one click and adjust to your organization.
@@ -49,7 +49,7 @@ export default function SolutionsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {INDUSTRIES.map(({ slug, name, icon, desc }) => (
             <Link key={slug} href={`/solutions/${slug}`}
-              className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-7 text-left transition hover:border-[#7c6aff]/30 hover:-translate-y-1">
+              className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-7 text-left transition hover:border-[#5b8cff]/30 hover:-translate-y-1">
               <span className="mb-3 block text-3xl">{icon}</span>
               <h2 className="mb-2 text-[18px] font-bold text-white">{name}</h2>
               <p className="text-[13px] text-[#94a3b8]">{desc}</p>

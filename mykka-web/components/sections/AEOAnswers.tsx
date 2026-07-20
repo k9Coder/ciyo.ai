@@ -20,7 +20,7 @@ export function AEOAnswers() {
   return (
     <section className="border-t border-white/[0.05] px-6 py-24">
       <div className="mx-auto max-w-4xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">
           AI DLP Explained
         </p>
         <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-white">

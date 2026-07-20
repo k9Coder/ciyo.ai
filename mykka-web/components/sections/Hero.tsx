@@ -6,14 +6,14 @@ export function Hero() {
     <section className="relative overflow-hidden px-6 pb-20 pt-24 text-center"
       style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,106,255,.18) 0%, transparent 60%)' }}>
 
-      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#7c6aff]/30 bg-[#7c6aff]/10 px-4 py-1.5 text-[12px] font-semibold text-[#a78bfa]">
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#5b8cff]/30 bg-[#5b8cff]/10 px-4 py-1.5 text-[12px] font-semibold text-[#8fb3ff]">
         <span className="size-1.5 rounded-full bg-[#34d399]" style={{ boxShadow: '0 0 6px #34d399' }} />
         Now protecting teams at 200+ companies
       </div>
 
       <h1 className="mx-auto mb-5 max-w-3xl text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] text-white md:text-6xl">
         Stop Your Team from Leaking{' '}
-        <span className="bg-gradient-to-r from-[#a78bfa] to-[#7c6aff] bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-[#8fb3ff] to-[#5b8cff] bg-clip-text text-transparent">
           Secrets to AI
         </span>
       </h1>
@@ -25,7 +25,7 @@ export function Hero() {
 
       <div className="mb-12 flex flex-wrap items-center justify-center gap-3">
         <Link href={`${APP_URL}/onboarding`}
-          className="rounded-xl bg-[#7c6aff] px-7 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee] hover:shadow-[#7c6aff]/40">
+          className="rounded-xl bg-[#5b8cff] px-7 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#5b8cff]/25 transition hover:bg-[#3f6fe0] hover:shadow-[#5b8cff]/40">
           Start Free — No Credit Card
         </Link>
         <Link href="/product"
@@ -74,8 +74,8 @@ export function Hero() {
               Summarise this patient record for John Doe (SSN: 123-45-6789, john.doe@acme.com)…
             </div>
             <div className="ml-4 flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#7c6aff]" aria-hidden="true" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7c6aff]">Blocked</span>
+              <span className="size-2 rounded-full bg-[#5b8cff]" aria-hidden="true" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#5b8cff]">Blocked</span>
             </div>
           </div>
         </div>

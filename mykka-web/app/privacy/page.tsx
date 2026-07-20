@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <div className="px-6 py-24">
       <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Legal</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Legal</p>
         <h1 className="mb-2 text-5xl font-extrabold tracking-tight text-white">Privacy Policy</h1>
         <p className="mb-12 text-[13px] text-[#64748b]">Last updated: {LAST_UPDATED}</p>
 
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             <p>
               mykka.ai operates the Pretzel AI data loss prevention platform (&quot;Pretzel&quot;, the &quot;Service&quot;).
               References to &quot;mykka.ai&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot; in this policy refer to mykka.ai and its Pretzel product.
-              You can reach us at <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
+              You can reach us at <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
             </div>
             <p className="mt-4">
               Enterprise customers may request a full sub-processor addendum as part of their DPA. Contact{' '}
-              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
@@ -154,7 +154,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-4">
               To exercise any of these rights, email{' '}
-              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
               We will respond within 30 days.
             </p>
           </section>
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">8. Security</h2>
             <p>
               All data in transit is protected by TLS 1.3. Data at rest is encrypted with AES-256. Organisation tokens are hashed with bcrypt. We are working toward SOC 2 Type II certification (targeted Q3 2026). For our full security posture, see our{' '}
-              <a href="/security" className="text-[#a78bfa] hover:underline">Security &amp; Trust page</a>.
+              <a href="/security" className="text-[#8fb3ff] hover:underline">Security &amp; Trust page</a>.
             </p>
           </section>
 
@@ -193,7 +193,7 @@ export default function PrivacyPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">11. Contact Us</h2>
             <p>
               For privacy questions, data subject requests, or to request our Data Processing Agreement (DPA), contact:{' '}
-              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>
+              <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>
             </p>
           </section>
 

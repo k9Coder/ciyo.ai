@@ -36,7 +36,7 @@ function renderInline(text: string): ReactNode {
       const external = match[3].startsWith('http')
       parts.push(
         <Link key={match.index} href={match[3]}
-          className="text-[#a78bfa] underline underline-offset-2 hover:text-white"
+          className="text-[#8fb3ff] underline underline-offset-2 hover:text-white"
           {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
           {match[2]}
         </Link>
@@ -73,7 +73,7 @@ function renderBlock(block: string, i: number): ReactNode {
 
   if (lines.every(l => l.startsWith('> ')))
     return (
-      <blockquote key={i} className="my-6 border-l-2 border-[#7c6aff]/50 pl-5 italic text-[14px] text-[#94a3b8]">
+      <blockquote key={i} className="my-6 border-l-2 border-[#5b8cff]/50 pl-5 italic text-[14px] text-[#94a3b8]">
         {lines.map((l, j) => <p key={j} className="mb-1 last:mb-0">{renderInline(l.slice(2))}</p>)}
       </blockquote>
     )
@@ -162,7 +162,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </Link>
 
         {post.tag && (
-          <span className="mb-4 inline-block rounded-full bg-[#7c6aff]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#a78bfa]">
+          <span className="mb-4 inline-block rounded-full bg-[#5b8cff]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8fb3ff]">
             {post.tag}
           </span>
         )}
@@ -179,10 +179,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {post.content.split('\n\n').map((block, i) => renderBlock(block, i))}
         </div>
 
-        <div className="mt-12 rounded-2xl border border-[#7c6aff]/20 bg-[#7c6aff]/[0.06] p-6">
+        <div className="mt-12 rounded-2xl border border-[#5b8cff]/20 bg-[#5b8cff]/[0.06] p-6">
           <p className="mb-3 text-[15px] font-semibold text-white">Try Pretzel free — protect your team today</p>
           <Link href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-[#7c6aff] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-[#6b59ee]">
+            className="inline-block rounded-xl bg-[#5b8cff] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-[#3f6fe0]">
             Start Free — No Credit Card
           </Link>
         </div>

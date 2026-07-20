@@ -43,7 +43,7 @@ function MykkaLogo() {
 }
 
 function OverlaySpinnerRings() {
-  const primary = "var(--brand-primary, #00d4ff)";
+  const primary = "var(--brand-primary, #5b8cff)";
 
   return (
     <div className="mykka-ring-wrap">

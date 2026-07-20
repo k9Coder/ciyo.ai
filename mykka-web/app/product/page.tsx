@@ -82,7 +82,7 @@ export default function ProductPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-5xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Product</p>
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Product</p>
         <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-white">
           How Pretzel Protects Your Team
         </h1>
@@ -93,7 +93,7 @@ export default function ProductPage() {
         {SECTIONS.map(({ tag, headline, body }, i) => (
           <div key={tag} className={`mb-24 flex flex-col gap-12 md:flex-row ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
             <div className="flex-1">
-              <span className="mb-4 inline-block rounded-full border border-[#7c6aff]/30 bg-[#7c6aff]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#a78bfa]">{tag}</span>
+              <span className="mb-4 inline-block rounded-full border border-[#5b8cff]/30 bg-[#5b8cff]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#8fb3ff]">{tag}</span>
               <h2 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-white">{headline}</h2>
               {body.split('\n\n').map((para, j) => (
                 <p key={j} className="mb-4 text-[15px] leading-relaxed text-[#94a3b8]">{para}</p>
@@ -107,7 +107,7 @@ export default function ProductPage() {
         ))}
 
         <section className="mb-20 border-t border-white/[0.05] pt-20">
-          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">How It Works</p>
+          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">How It Works</p>
           <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-white">
             Common Questions
           </h2>
@@ -123,7 +123,7 @@ export default function ProductPage() {
 
         <div className="text-center">
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-xl bg-[#7c6aff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee]">
+            className="rounded-xl bg-[#5b8cff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#5b8cff]/25 transition hover:bg-[#3f6fe0]">
             Start Free — No Credit Card
           </Link>
         </div>

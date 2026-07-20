@@ -2,7 +2,7 @@ import { Shield, Brain, BarChart2, Zap, Users, Lock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const FEATURES: { icon: LucideIcon; title: string; desc: string; color: string }[] = [
-  { icon: Shield,    title: 'Real-Time Prompt Scanning', desc: 'Every AI prompt is scanned against your policy the moment it\'s typed — before the send button is pressed.', color: '#a78bfa' },
+  { icon: Shield,    title: 'Real-Time Prompt Scanning', desc: 'Every AI prompt is scanned against your policy the moment it\'s typed — before the send button is pressed.', color: '#8fb3ff' },
   { icon: Brain,     title: 'AI Policy Assistant',       desc: 'Manage your security rules in plain English. "Block SSNs for the Finance team" — done in seconds.', color: '#34d399' },
   { icon: BarChart2, title: 'Analytics Dashboard',       desc: 'See exactly what your team is sending to AI tools. Audit logs, trend analysis, and compliance reports.', color: '#60a5fa' },
   { icon: Zap,       title: 'Works on All AI Sites',     desc: 'ChatGPT, Claude, Gemini, Perplexity, and any internal AI tool — configured with a single CSS selector.', color: '#fbbf24' },
@@ -14,7 +14,7 @@ export function FeatureGrid() {
   return (
     <section className="border-t border-white/[0.05] px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Features</p>
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Features</p>
         <h2 className="mb-16 text-center text-4xl font-extrabold tracking-tight text-white">
           Everything your security team needs
         </h2>

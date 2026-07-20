@@ -44,19 +44,15 @@ export function App() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
             <rect width="56" height="56" rx="14" fill="var(--bg-surface)"/>
-            <path d="M20 14 L14 14 L14 42 L20 42"
-                  stroke="var(--brand-primary)" strokeWidth="3"
-                  strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="34" cy="28" r="5" fill="var(--brand-primary)"/>
-            <path d="M30 18 L38 18 L38 24"
-                  stroke="var(--brand-primary)" strokeWidth="2.5"
-                  strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+            <circle cx="28" cy="28" r="13"
+                    fill="none" stroke="var(--brand-primary)" strokeWidth="7"/>
+            <circle cx="37.19" cy="18.81" r="4.5" fill="var(--brand-primary)"/>
           </svg>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.5px" }}>
-              <span style={{ color: "var(--text-primary)" }}>c</span>
-              <span style={{ color: "var(--brand-primary)" }}>i</span>
-              <span style={{ color: "var(--text-primary)" }}>yo</span>
+              <span style={{ color: "var(--text-primary)" }}>m</span>
+              <span style={{ color: "var(--brand-primary)" }}>y</span>
+              <span style={{ color: "var(--text-primary)" }}>kka</span>
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)",
                           letterSpacing: "2.5px", textTransform: "uppercase", marginTop: 2 }}>

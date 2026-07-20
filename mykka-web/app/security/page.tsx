@@ -83,7 +83,7 @@ export default function SecurityPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#7c6aff]">Security &amp; Trust</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Security &amp; Trust</p>
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">How We Handle Your Data</h1>
         <p className="mb-16 text-[16px] text-[#94a3b8]">CISOs ask hard questions. Here are honest answers.</p>
         <div className="space-y-4">
