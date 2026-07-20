@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'הצהרת נגישות | Accessibility Statement',
-  description: 'הצהרת נגישות לנכים באתר ciyo.ai',
+  description: 'הצהרת נגישות לנכים באתר mykka.ai',
 }
 
 export default function AccessibilityPage() {
@@ -14,7 +14,7 @@ export default function AccessibilityPage() {
         <p className="mb-8 text-sm text-[#64748b]">עודכן לאחרונה: יוני 2026</p>
 
         <p className="mb-6 leading-relaxed">
-          <strong className="text-white">ciyo.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
+          <strong className="text-white">mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
           אנו פועלים לשיפור מתמיד של חוויית המשתמש עבור כלל האוכלוסייה,
           ומיישמים את תקני הנגישות הרלוונטיים.
         </p>
@@ -40,7 +40,7 @@ export default function AccessibilityPage() {
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">מגבלות ידועות</h2>
         <ul className="mb-4 list-inside list-disc space-y-2 leading-relaxed">
           <li>תכנים שמוטמעים מצד שלישי (סרטוני YouTube, וידג&apos;טים חיצוניים) עשויים שלא לעמוד במלוא הדרישות</li>
-          <li>אנו עובדים על שיפור נגישות פורטל הניהול (console.ciyo.ai) באופן שוטף</li>
+          <li>אנו עובדים על שיפור נגישות פורטל הניהול (console.mykka.ai) באופן שוטף</li>
         </ul>
 
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">יצירת קשר בנושא נגישות</h2>
@@ -50,8 +50,8 @@ export default function AccessibilityPage() {
         <ul className="mb-4 list-inside list-disc space-y-2 leading-relaxed">
           <li>
             <strong className="text-white">אימייל: </strong>
-            <a href="mailto:accessibility@ciyo.ai" className="underline hover:text-white">
-              accessibility@ciyo.ai
+            <a href="mailto:accessibility@mykka.ai" className="underline hover:text-white">
+              accessibility@mykka.ai
             </a>
           </li>
         </ul>
@@ -66,7 +66,7 @@ export default function AccessibilityPage() {
         <p className="mb-8 text-sm text-[#64748b]">Last updated: June 2026</p>
 
         <p className="mb-6 leading-relaxed">
-          <strong className="text-white">ciyo.ai</strong> is committed to digital accessibility for people with disabilities.
+          <strong className="text-white">mykka.ai</strong> is committed to digital accessibility for people with disabilities.
           We continually improve the user experience for everyone and apply relevant accessibility standards.
         </p>
 
@@ -83,8 +83,8 @@ export default function AccessibilityPage() {
         <h3 className="mb-3 mt-6 text-base font-semibold text-white">Contact</h3>
         <p className="leading-relaxed">
           Report accessibility issues to{' '}
-          <a href="mailto:accessibility@ciyo.ai" className="underline hover:text-white">
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" className="underline hover:text-white">
+            accessibility@mykka.ai
           </a>
           . We respond within 5 business days.
         </p>

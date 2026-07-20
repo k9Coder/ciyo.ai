@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'AI DLP Solutions by Industry — Healthcare, Legal, Fintech, Engineering | Pretzel',
   description: 'Pre-built AI data loss prevention policy templates for regulated industries. Pretzel ships with starter kits for HIPAA, attorney-client privilege, PCI-DSS, and developer credential protection.',
-  alternates: { canonical: 'https://ciyo.ai/solutions' },
+  alternates: { canonical: 'https://mykka.ai/solutions' },
   openGraph: {
     title: 'AI DLP Solutions by Industry — Pretzel',
     description: 'Pre-built AI DLP starter kits for healthcare, legal, fintech, and engineering teams.',
@@ -21,13 +21,13 @@ const INDUSTRIES = [
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  url: 'https://ciyo.ai/solutions',
+  url: 'https://mykka.ai/solutions',
   name: 'AI DLP Solutions by Industry',
   description: 'Pre-built AI data loss prevention policy templates for healthcare, legal, fintech, and engineering teams.',
-  publisher: { '@id': 'https://ciyo.ai/#org' },
+  publisher: { '@id': 'https://mykka.ai/#org' },
   hasPart: INDUSTRIES.map(({ slug, name, desc }) => ({
     '@type': 'WebPage',
-    url: `https://ciyo.ai/solutions/${slug}`,
+    url: `https://mykka.ai/solutions/${slug}`,
     name: `AI DLP for ${name}`,
     description: desc,
   })),

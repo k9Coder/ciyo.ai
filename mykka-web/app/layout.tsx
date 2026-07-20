@@ -8,17 +8,17 @@ import { LogRocketInit } from '@/components/LogRocketInit'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: { default: 'Pretzel by ciyo.ai — AI Prompt Data Loss Prevention', template: '%s | Pretzel' },
+  title: { default: 'Pretzel by mykka.ai — AI Prompt Data Loss Prevention', template: '%s | Pretzel' },
   description: 'Stop your team from leaking sensitive data to ChatGPT, Claude, and Gemini. Pretzel intercepts AI prompts in real time — blocking PII, secrets, and IP before they leave the browser.',
-  metadataBase: new URL('https://ciyo.ai'),
+  metadataBase: new URL('https://mykka.ai'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://ciyo.ai',
-    siteName: 'ciyo.ai',
+    url: 'https://mykka.ai',
+    siteName: 'mykka.ai',
     images: [{ url: '/images/og-default.png', width: 1200, height: 630 }],
   },
-  twitter: { card: 'summary_large_image', creator: '@ciyo_ai' },
+  twitter: { card: 'summary_large_image', creator: '@mykka_ai' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

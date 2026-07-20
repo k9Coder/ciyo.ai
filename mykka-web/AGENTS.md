@@ -1,6 +1,6 @@
 ---
 status: current
-owner: ciyo.ai marketing engineering
+owner: mykka.ai marketing engineering
 verified_at: 2026-06-13
 sources:
   - README.md
@@ -11,7 +11,7 @@ sources:
   - vercel.json
 ---
 
-# ciyo-web Agent Guide
+# mykka-web Agent Guide
 
 This package is the public Next.js 16 App Router marketing site.
 

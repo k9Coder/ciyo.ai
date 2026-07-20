@@ -4,7 +4,7 @@ import PricingClient from './PricingClient'
 export const metadata: Metadata = {
   title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
   description: 'Transparent pricing for AI prompt data loss prevention. Free tier for individuals, $49/mo flat for small teams, $15/user/mo for the full enterprise feature set.',
-  alternates: { canonical: 'https://ciyo.ai/pricing' },
+  alternates: { canonical: 'https://mykka.ai/pricing' },
   openGraph: {
     title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
     description: 'Start free. Scale when you need it. No surprise invoices. SOC 2 in progress, GDPR-aligned.',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  url: 'https://ciyo.ai/pricing',
+  url: 'https://mykka.ai/pricing',
   mainEntity: [
     {
       '@type': 'Question',

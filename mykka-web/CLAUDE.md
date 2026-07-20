@@ -1,6 +1,6 @@
 ---
 status: active
-owner: ciyo.ai marketing engineering
+owner: mykka.ai marketing engineering
 verified_at: 2026-06-13
 sources:
   - AGENTS.md

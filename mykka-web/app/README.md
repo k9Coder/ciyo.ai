@@ -1,6 +1,6 @@
 ---
 status: active
-owner: ciyo.ai marketing engineering
+owner: mykka.ai marketing engineering
 verified_at: 2026-06-13
 sources:
   - layout.tsx
@@ -43,7 +43,7 @@ There is no `/changelog` route even though the footer links to it.
 
 `layout.tsx` applies the Inter font, global metadata defaults, `Header`, and `Footer`. The header exposes Product, Pricing, Solutions, Security, Blog, sign-in, and onboarding links. The footer adds company, legal, documentation, and solution links.
 
-`lib/config.ts` is the canonical source for the app/console origin. It reads `NEXT_PUBLIC_APP_URL` and defaults to `https://app.ciyo.ai`.
+`lib/config.ts` is the canonical source for the app/console origin. It reads `NEXT_PUBLIC_APP_URL` and defaults to `https://app.mykka.ai`.
 
 ## Dynamic content
 
@@ -58,6 +58,6 @@ Blog content is defined in `lib/posts.ts`. Adding a post automatically adds its 
 
 ## Metadata and discovery
 
-The root metadata base is `https://ciyo.ai`. Pages define their own title and description where needed. `sitemap.ts` contains manually maintained last-modified dates for static pages and uses each post date for blog pages.
+The root metadata base is `https://mykka.ai`. Pages define their own title and description where needed. `sitemap.ts` contains manually maintained last-modified dates for static pages and uses each post date for blog pages.
 
 When changing page content materially, update the corresponding sitemap date. When changing a claim, update [../CONTENT_CLAIMS.md](../CONTENT_CLAIMS.md) before publication.

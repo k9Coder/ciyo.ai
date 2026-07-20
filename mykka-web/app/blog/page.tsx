@@ -4,11 +4,11 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI DLP Blog — Security Research & Guides | ciyo.ai',
+  title: 'AI DLP Blog — Security Research & Guides | mykka.ai',
   description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams managing generative AI risk.',
-  alternates: { canonical: 'https://ciyo.ai/blog' },
+  alternates: { canonical: 'https://mykka.ai/blog' },
   openGraph: {
-    title: 'AI DLP Blog — Security Research & Guides | ciyo.ai',
+    title: 'AI DLP Blog — Security Research & Guides | mykka.ai',
     description: 'Practical guides, policy templates, and research on AI data loss prevention for enterprise security teams.',
   },
 }
@@ -16,10 +16,10 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  url: 'https://ciyo.ai/blog',
+  url: 'https://mykka.ai/blog',
   name: 'AI DLP Blog — Security Research & Guides',
   description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams.',
-  publisher: { '@id': 'https://ciyo.ai/#org' },
+  publisher: { '@id': 'https://mykka.ai/#org' },
 }
 
 export default function BlogPage() {

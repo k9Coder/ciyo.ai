@@ -3,9 +3,9 @@ import type { Metadata } from 'next'
 import { APP_URL } from '@/lib/config'
 
 export const metadata: Metadata = {
-  title: 'How Pretzel Works — Browser-Native AI DLP | ciyo.ai',
+  title: 'How Pretzel Works — Browser-Native AI DLP | mykka.ai',
   description: 'Pretzel intercepts AI prompts before submission, blocking PII, credentials, and sensitive data from reaching ChatGPT, Claude, and Gemini. No network changes. Centrally managed policies.',
-  alternates: { canonical: 'https://ciyo.ai/product' },
+  alternates: { canonical: 'https://mykka.ai/product' },
   openGraph: {
     title: 'How Pretzel Works — Browser-Native AI DLP',
     description: 'Pretzel sits in the browser and scans every AI prompt before it is sent. Sensitive data is blocked at the point of input — before it reaches the AI provider.',
@@ -41,11 +41,11 @@ It can also audit your existing policy, flag gaps for HIPAA or SOC2, and generat
 const AEO_QA = [
   {
     question: 'How does Pretzel detect sensitive data in AI prompts?',
-    answer: 'Pretzel uses four detection methods running locally in the browser. Pattern matching catches known formats: Social Security numbers, credit card numbers, IBAN codes, email addresses, and phone numbers. Entropy detection identifies API keys, tokens, and passwords by their statistical randomness — catching credentials even if they are not in your keyword list. Keyword and dictionary rules block custom terms your organization defines: client names, internal project codenames, and regulated terms. Score-based rules combine multiple signals to flag prompts that are borderline individually but sensitive in combination. All detection runs before the prompt is submitted — no prompt text is sent to ciyo.ai servers.',
+    answer: 'Pretzel uses four detection methods running locally in the browser. Pattern matching catches known formats: Social Security numbers, credit card numbers, IBAN codes, email addresses, and phone numbers. Entropy detection identifies API keys, tokens, and passwords by their statistical randomness — catching credentials even if they are not in your keyword list. Keyword and dictionary rules block custom terms your organization defines: client names, internal project codenames, and regulated terms. Score-based rules combine multiple signals to flag prompts that are borderline individually but sensitive in combination. All detection runs before the prompt is submitted — no prompt text is sent to mykka.ai servers.',
   },
   {
-    question: 'Does Pretzel send prompt content to ciyo.ai servers?',
-    answer: 'No. Detection runs entirely within the browser extension. When an employee types or pastes content into ChatGPT, Claude, or Gemini, Pretzel evaluates the prompt locally against the organization\'s policy before the send button is activated. The full prompt text never reaches ciyo.ai infrastructure. What is transmitted to the backend: policy update checks (every two minutes, pulling the compiled policy snapshot), and anonymized scan event metadata for audit and analytics — specifically which rule triggered and what action was taken. The content of blocked or allowed prompts is not transmitted.',
+    question: 'Does Pretzel send prompt content to mykka.ai servers?',
+    answer: 'No. Detection runs entirely within the browser extension. When an employee types or pastes content into ChatGPT, Claude, or Gemini, Pretzel evaluates the prompt locally against the organization\'s policy before the send button is activated. The full prompt text never reaches mykka.ai infrastructure. What is transmitted to the backend: policy update checks (every two minutes, pulling the compiled policy snapshot), and anonymized scan event metadata for audit and analytics — specifically which rule triggered and what action was taken. The content of blocked or allowed prompts is not transmitted.',
   },
   {
     question: 'What AI tools does Pretzel work with?',
@@ -58,13 +58,13 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'SoftwareApplication',
-      '@id': 'https://ciyo.ai/#pretzel',
+      '@id': 'https://mykka.ai/#pretzel',
       name: 'Pretzel',
       applicationCategory: 'SecurityApplication',
       applicationSubCategory: 'Data Loss Prevention',
       operatingSystem: 'Chrome',
       description: 'Browser extension that prevents employees from sending sensitive data to AI tools. Intercepts prompts before submission using pattern, entropy, keyword, and score-based detection.',
-      url: 'https://ciyo.ai/product',
+      url: 'https://mykka.ai/product',
     },
     {
       '@type': 'FAQPage',

@@ -30,4 +30,4 @@ Disallow: /
 User-agent: cohere-ai
 Disallow: /
 
-Sitemap: https://ciyo.ai/sitemap.xml
+Sitemap: https://mykka.ai/sitemap.xml

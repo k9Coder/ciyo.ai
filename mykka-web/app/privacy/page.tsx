@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How ciyo.ai collects, uses, and protects data in the Pretzel AI DLP platform.',
+  description: 'How mykka.ai collects, uses, and protects data in the Pretzel AI DLP platform.',
 }
 
 const LAST_UPDATED = 'June 2026'
@@ -20,9 +20,9 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">1. Who We Are</h2>
             <p>
-              ciyo.ai operates the Pretzel AI data loss prevention platform (&quot;Pretzel&quot;, the &quot;Service&quot;).
-              References to &quot;ciyo.ai&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot; in this policy refer to ciyo.ai and its Pretzel product.
-              You can reach us at <a href="mailto:privacy@ciyo.ai" className="text-[#a78bfa] hover:underline">privacy@ciyo.ai</a>.
+              mykka.ai operates the Pretzel AI data loss prevention platform (&quot;Pretzel&quot;, the &quot;Service&quot;).
+              References to &quot;mykka.ai&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot; in this policy refer to mykka.ai and its Pretzel product.
+              You can reach us at <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
-                <span><strong className="text-white">Billing data.</strong> Payment is processed by Stripe. We store only Stripe customer and subscription reference IDs — no raw card numbers, CVVs, or expiry dates are stored by ciyo.ai.</span>
+                <span><strong className="text-white">Billing data.</strong> Payment is processed by Stripe. We store only Stripe customer and subscription reference IDs — no raw card numbers, CVVs, or expiry dates are stored by mykka.ai.</span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
             </div>
             <p className="mt-4">
               Enterprise customers may request a full sub-processor addendum as part of their DPA. Contact{' '}
-              <a href="mailto:privacy@ciyo.ai" className="text-[#a78bfa] hover:underline">privacy@ciyo.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
@@ -154,7 +154,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-4">
               To exercise any of these rights, email{' '}
-              <a href="mailto:privacy@ciyo.ai" className="text-[#a78bfa] hover:underline">privacy@ciyo.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
               We will respond within 30 days.
             </p>
           </section>
@@ -162,7 +162,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">7. Data Transfers</h2>
             <p>
-              ciyo.ai infrastructure is hosted via third-party sub-processors including Fly.io (backend compute), Neon (database), and Vercel (frontend delivery), which operate primarily in the United States. Some additional sub-processors (Clerk, Anthropic, OpenAI, Groq) also process data in the United States. Where international transfers occur, we rely on Standard Contractual Clauses (SCCs) or other approved transfer mechanisms under GDPR Chapter V.
+              mykka.ai infrastructure is hosted via third-party sub-processors including Fly.io (backend compute), Neon (database), and Vercel (frontend delivery), which operate primarily in the United States. Some additional sub-processors (Clerk, Anthropic, OpenAI, Groq) also process data in the United States. Where international transfers occur, we rely on Standard Contractual Clauses (SCCs) or other approved transfer mechanisms under GDPR Chapter V.
             </p>
           </section>
 
@@ -177,7 +177,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">9. Cookies</h2>
             <p>
-              The Pretzel marketing website (ciyo.ai) uses functional cookies required for authentication and session management. We do not use third-party advertising or tracking cookies on the marketing website.
+              The Pretzel marketing website (mykka.ai) uses functional cookies required for authentication and session management. We do not use third-party advertising or tracking cookies on the marketing website.
               The Pretzel Chrome extension does not set cookies.
             </p>
           </section>
@@ -193,7 +193,7 @@ export default function PrivacyPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">11. Contact Us</h2>
             <p>
               For privacy questions, data subject requests, or to request our Data Processing Agreement (DPA), contact:{' '}
-              <a href="mailto:privacy@ciyo.ai" className="text-[#a78bfa] hover:underline">privacy@ciyo.ai</a>
+              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>
             </p>
           </section>
 

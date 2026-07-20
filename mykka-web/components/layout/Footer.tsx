@@ -4,7 +4,7 @@ const LINKS = {
   Product:   [['Product', '/product'], ['Pricing', '/pricing'], ['Changelog', '/changelog']] as const,
   Solutions: [['Healthcare', '/solutions/healthcare'], ['Legal', '/solutions/legal'], ['Fintech', '/solutions/fintech'], ['Engineering', '/solutions/engineering']] as const,
   Company:   [['About', '/about'], ['Blog', '/blog'], ['Security', '/security']] as const,
-  Docs:      [['Getting Started', 'https://docs.ciyo.ai'], ['API Reference', 'https://docs.ciyo.ai/api'], ['Chrome Enterprise', 'https://docs.ciyo.ai/enterprise']] as const,
+  Docs:      [['Getting Started', 'https://docs.mykka.ai'], ['API Reference', 'https://docs.mykka.ai/api'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise']] as const,
 }
 
 export function Footer() {
@@ -25,7 +25,7 @@ export function Footer() {
           ))}
         </div>
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 text-[12px] text-[#64748b] md:flex-row">
-          <span>🥨 <strong className="text-[#94a3b8]">Pretzel</strong> by <strong className="text-[#94a3b8]">ciyo.ai</strong> — © {new Date().getFullYear()}</span>
+          <span>🥨 <strong className="text-[#94a3b8]">Pretzel</strong> by <strong className="text-[#94a3b8]">mykka.ai</strong> — © {new Date().getFullYear()}</span>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-[#94a3b8]">Privacy</Link>
             <Link href="/terms" className="hover:text-[#94a3b8]">Terms</Link>

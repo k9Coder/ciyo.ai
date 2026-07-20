@@ -4,7 +4,7 @@ export const dynamic = 'force-static'
 
 export function GET() {
   const posts = getAllPosts()
-  const baseUrl = 'https://ciyo.ai'
+  const baseUrl = 'https://mykka.ai'
 
   const items = posts
     .map(post => `
@@ -14,7 +14,7 @@ export function GET() {
       <guid isPermaLink="true">${baseUrl}/blog/${post.slug}</guid>
       <description><![CDATA[${post.description}]]></description>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <author>megan@ciyo.ai (${post.author ?? 'Megan O\'Brien'})</author>
+      <author>megan@mykka.ai (${post.author ?? 'Megan O\'Brien'})</author>
       ${post.tag ? `<category>${post.tag}</category>` : ''}
     </item>`)
     .join('')
@@ -22,7 +22,7 @@ export function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ciyo.ai — AI DLP Research &amp; Security Guides</title>
+    <title>mykka.ai — AI DLP Research &amp; Security Guides</title>
     <link>${baseUrl}/blog</link>
     <description>Practical guides, policy templates, and research on AI data loss prevention for enterprise security teams.</description>
     <language>en-us</language>
@@ -30,7 +30,7 @@ export function GET() {
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
     <image>
       <url>${baseUrl}/images/logo.png</url>
-      <title>ciyo.ai</title>
+      <title>mykka.ai</title>
       <link>${baseUrl}</link>
     </image>
     ${items}

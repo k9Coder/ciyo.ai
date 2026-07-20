@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI DLP Security Architecture — How Pretzel Handles Your Data | ciyo.ai',
-  description: 'Pretzel runs detection locally in the browser — full prompt text never reaches ciyo.ai servers. TLS 1.3, AES-256, EU data residency, SOC 2 Type II in progress. Honest answers to CISO questions.',
-  alternates: { canonical: 'https://ciyo.ai/security' },
+  title: 'AI DLP Security Architecture — How Pretzel Handles Your Data | mykka.ai',
+  description: 'Pretzel runs detection locally in the browser — full prompt text never reaches mykka.ai servers. TLS 1.3, AES-256, EU data residency, SOC 2 Type II in progress. Honest answers to CISO questions.',
+  alternates: { canonical: 'https://mykka.ai/security' },
   openGraph: {
     title: 'Security & Trust — How Pretzel Handles Your Data',
-    description: 'Detection runs locally. Prompt text never transmitted to ciyo.ai. TLS 1.3, AES-256, SOC 2 Type II in progress.',
+    description: 'Detection runs locally. Prompt text never transmitted to mykka.ai. TLS 1.3, AES-256, SOC 2 Type II in progress.',
   },
 }
 
@@ -24,31 +24,31 @@ const POINTS = [
   {
     icon: '📋',
     title: 'SOC 2 Type II — in progress',
-    body: 'We are actively working toward SOC 2 Type II certification, targeted for Q3 2026. Our security practices are designed to meet those controls now, before the audit. Interim controls documentation is available on request — contact security@ciyo.ai.',
+    body: 'We are actively working toward SOC 2 Type II certification, targeted for Q3 2026. Our security practices are designed to meet those controls now, before the audit. Interim controls documentation is available on request — contact security@mykka.ai.',
   },
   {
     icon: '🇪🇺',
     title: 'GDPR & CCPA aligned by design',
-    body: 'Data is stored in the EU by default (AWS eu-west-1, Frankfurt region). We are designed for GDPR and CCPA compliance. We are happy to sign a Data Processing Agreement (DPA) for enterprise customers — request one at privacy@ciyo.ai.',
+    body: 'Data is stored in the EU by default (AWS eu-west-1, Frankfurt region). We are designed for GDPR and CCPA compliance. We are happy to sign a Data Processing Agreement (DPA) for enterprise customers — request one at privacy@mykka.ai.',
   },
   {
     icon: '🐛',
     title: 'Responsible disclosure',
-    body: 'Found a vulnerability? Email security@ciyo.ai. We aim to respond within 24 hours and fix within 7 days for critical issues. A formal bug bounty program is on our roadmap.',
+    body: 'Found a vulnerability? Email security@mykka.ai. We aim to respond within 24 hours and fix within 7 days for critical issues. A formal bug bounty program is on our roadmap.',
   },
 ]
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  url: 'https://ciyo.ai/security',
+  url: 'https://mykka.ai/security',
   mainEntity: [
     {
       '@type': 'Question',
       name: 'Does Pretzel store or transmit the content of AI prompts?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Detection runs locally in the browser extension. The full text of any prompt is never transmitted to or stored on ciyo.ai servers. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a brief excerpt may be retained for audit purposes on a rolling 90-day window.',
+        text: 'No. Detection runs locally in the browser extension. The full text of any prompt is never transmitted to or stored on mykka.ai servers. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a brief excerpt may be retained for audit purposes on a rolling 90-day window.',
       },
     },
     {
@@ -56,7 +56,7 @@ const jsonLd = {
       name: 'What encryption does Pretzel use?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'All API traffic between the extension and ciyo.ai backend uses TLS 1.3. Data at rest is encrypted with AES-256. Organization tokens are hashed with bcrypt.',
+        text: 'All API traffic between the extension and mykka.ai backend uses TLS 1.3. Data at rest is encrypted with AES-256. Organization tokens are hashed with bcrypt.',
       },
     },
     {
@@ -64,7 +64,7 @@ const jsonLd = {
       name: 'Is Pretzel SOC 2 certified?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'SOC 2 Type II certification is in progress, targeted for Q3 2026. Security practices are designed to meet SOC 2 controls before the audit. Interim controls documentation is available on request at security@ciyo.ai.',
+        text: 'SOC 2 Type II certification is in progress, targeted for Q3 2026. Security practices are designed to meet SOC 2 controls before the audit. Interim controls documentation is available on request at security@mykka.ai.',
       },
     },
     {
@@ -72,7 +72,7 @@ const jsonLd = {
       name: 'Where is Pretzel data stored?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Data is stored in the EU by default on AWS eu-west-1 (Ireland). ciyo.ai is designed for GDPR and CCPA compliance. Data Processing Agreements (DPAs) are available for enterprise customers.',
+        text: 'Data is stored in the EU by default on AWS eu-west-1 (Ireland). mykka.ai is designed for GDPR and CCPA compliance. Data Processing Agreements (DPAs) are available for enterprise customers.',
       },
     },
   ],

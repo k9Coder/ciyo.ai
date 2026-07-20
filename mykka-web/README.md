@@ -1,6 +1,6 @@
 ---
 status: current
-owner: ciyo.ai marketing engineering
+owner: mykka.ai marketing engineering
 verified_at: 2026-06-13
 sources:
   - package.json
@@ -9,12 +9,12 @@ sources:
   - Dockerfile
   - lib/config.ts
   - app/sitemap.ts
-  - ../.github/workflows/ciyo-web-deploy.yml
+  - ../.github/workflows/mykka-web-deploy.yml
 ---
 
-# ciyo.ai Marketing Site
+# mykka.ai Marketing Site
 
-`ciyo-web` is the public ciyo.ai and Pretzel marketing site. It is a Next.js 16 App Router application with React 19 and Tailwind CSS 4.
+`mykka-web` is the public mykka.ai and Pretzel marketing site. It is a Next.js 16 App Router application with React 19 and Tailwind CSS 4.
 
 ## Run locally
 
@@ -27,13 +27,13 @@ pnpm dev
 
 The development command explicitly serves `http://localhost:4000`.
 
-To use the committed staging endpoints, run `pnpm set-env:staging` from the monorepo root before starting the site. That script copies `ciyo-web/.env.staging` to the gitignored `.env.local`.
+To use the committed staging endpoints, run `pnpm set-env:staging` from the monorepo root before starting the site. That script copies `mykka-web/.env.staging` to the gitignored `.env.local`.
 
 ## Configuration
 
 | Variable | Required | Behavior |
 |---|---:|---|
-| `NEXT_PUBLIC_APP_URL` | No | Console/app origin used by sign-in and onboarding links. Defaults to `https://app.ciyo.ai`. |
+| `NEXT_PUBLIC_APP_URL` | No | Console/app origin used by sign-in and onboarding links. Defaults to `https://app.mykka.ai`. |
 | `NEXT_PUBLIC_ENV` | No | Shows a `STAGING` badge when set to `staging`. |
 | `NEXT_PUBLIC_API_BASE` | No current runtime consumer | Passed by the Docker build and CI build, but site source does not currently read it. |
 

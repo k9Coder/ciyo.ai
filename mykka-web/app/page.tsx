@@ -7,11 +7,11 @@ import { PricingPreview } from '@/components/sections/PricingPreview'
 import { CTABanner } from '@/components/sections/CTABanner'
 
 export const metadata: Metadata = {
-  title: 'Pretzel by ciyo.ai — AI Data Loss Prevention for Enterprise',
+  title: 'Pretzel by mykka.ai — AI Data Loss Prevention for Enterprise',
   description: 'Pretzel is a Chrome extension that prevents employees from sending sensitive data — PII, credentials, source code — to AI tools like ChatGPT, Claude, and Gemini. Browser-native AI DLP that intercepts prompts before submission. Free for teams up to 3 users.',
-  alternates: { canonical: 'https://ciyo.ai/' },
+  alternates: { canonical: 'https://mykka.ai/' },
   openGraph: {
-    title: 'Pretzel — Browser-Native AI DLP by ciyo.ai',
+    title: 'Pretzel — Browser-Native AI DLP by mykka.ai',
     description: 'Stop your team from leaking secrets to AI. Pretzel intercepts every prompt before it\'s sent — blocking PII, credentials, and source code automatically. No network changes required.',
   },
 }
@@ -21,27 +21,27 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Organization',
-      '@id': 'https://ciyo.ai/#org',
-      name: 'ciyo.ai',
-      url: 'https://ciyo.ai',
-      description: 'ciyo.ai builds Pretzel, a browser-native AI data loss prevention platform that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
+      '@id': 'https://mykka.ai/#org',
+      name: 'mykka.ai',
+      url: 'https://mykka.ai',
+      description: 'mykka.ai builds Pretzel, a browser-native AI data loss prevention platform that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
       foundingDate: '2024',
       sameAs: [
-        'https://www.linkedin.com/company/ciyo-ai',
+        'https://www.linkedin.com/company/mykka-ai',
       ],
     },
     {
       '@type': 'SoftwareApplication',
-      '@id': 'https://ciyo.ai/#pretzel',
+      '@id': 'https://mykka.ai/#pretzel',
       name: 'Pretzel',
-      alternateName: 'Pretzel by ciyo.ai',
+      alternateName: 'Pretzel by mykka.ai',
       applicationCategory: 'SecurityApplication',
       applicationSubCategory: 'Data Loss Prevention',
       operatingSystem: 'Chrome',
       browserRequirements: 'Requires Google Chrome',
       description: 'Pretzel is a Chrome browser extension that prevents employees from sending sensitive organizational data — PII, credentials, source code, API keys — to AI tools like ChatGPT, Claude, and Gemini. Detection runs locally in the browser before any prompt is submitted. Security administrators configure and publish policies through Pretzel Console.',
-      url: 'https://ciyo.ai/product',
-      downloadUrl: 'https://ciyo.ai/download',
+      url: 'https://mykka.ai/product',
+      downloadUrl: 'https://mykka.ai/download',
       offers: [
         {
           '@type': 'Offer',
@@ -58,11 +58,11 @@ const jsonLd = {
           description: 'Per user per month, unlimited users',
         },
       ],
-      publisher: { '@id': 'https://ciyo.ai/#org' },
+      publisher: { '@id': 'https://mykka.ai/#org' },
     },
     {
       '@type': 'FAQPage',
-      '@id': 'https://ciyo.ai/#faq',
+      '@id': 'https://mykka.ai/#faq',
       mainEntity: [
         {
           '@type': 'Question',

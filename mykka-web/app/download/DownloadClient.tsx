@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-const GITHUB_RELEASES = 'https://github.com/yarin-mag/ciyo.ai/releases'
-const RELEASE_API = 'https://api.github.com/repos/yarin-mag/ciyo.ai/releases'
+const GITHUB_RELEASES = 'https://github.com/yarin-mag/mykka.ai/releases'
+const RELEASE_API = 'https://api.github.com/repos/yarin-mag/mykka.ai/releases'
 
 interface ReleaseAsset {
   name: string
@@ -98,7 +98,7 @@ export function DownloadClient() {
       sublabel: 'Windows 10 / 11 (x64)',
       icon: '🪟',
       asset: winAsset,
-      installCmd: 'winget install ciyo.PretzelDesktop',
+      installCmd: 'winget install mykka.PretzelDesktop',
       installCmdLabel: 'or via winget',
     },
     {
@@ -235,7 +235,7 @@ export function DownloadClient() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
             ['1', 'Launch Pretzel Desktop', 'It installs a local CA cert and sets up your system proxy. You\'ll be prompted for admin password once.'],
-            ['2', 'Sign in with ciyo.ai', 'Click the tray icon → "Sign in" to load your organisation\'s policy. Opens in your browser.'],
+            ['2', 'Sign in with mykka.ai', 'Click the tray icon → "Sign in" to load your organisation\'s policy. Opens in your browser.'],
             ['3', 'Done', 'The tray icon turns green. Every HTTPS request from every app is now checked against your policy.'],
           ].map(([num, title, desc]) => (
             <div key={num} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>

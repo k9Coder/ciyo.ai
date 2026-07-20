@@ -40,7 +40,7 @@ const INDUSTRIES = {
     problem: 'Developers paste production configs, API keys, connection strings, and proprietary algorithms into AI coding assistants every day. This is the single most common Pretzel use case.',
     solution: "Pretzel's entropy detection catches API keys and tokens even if they're not in your keyword list. Keyword rules catch specific internal project names, client names, and database schemas.",
     rules: ['High-entropy string detection (API keys, tokens)', 'AWS/GCP/Azure key pattern matching', 'Database connection string patterns', 'Internal project name blocklist'],
-    stat: { num: '1 in 3', label: 'developer AI prompts contain at least one credential or secret', source: 'ciyo.ai platform data, 2026 — based on aggregate analysis of anonymised scan events across Pretzel business customers' },
+    stat: { num: '1 in 3', label: 'developer AI prompts contain at least one credential or secret', source: 'mykka.ai platform data, 2026 — based on aggregate analysis of anonymised scan events across Pretzel business customers' },
     cta: 'Read the Engineering AI Security Guide',
     ctaHref: '/blog/engineering-ai-security-starter',
   },
@@ -81,7 +81,7 @@ export function generateMetadata({ params }: { params: Promise<{ industry: strin
     return {
       title,
       description,
-      alternates: { canonical: `https://ciyo.ai/solutions/${industry}` },
+      alternates: { canonical: `https://mykka.ai/solutions/${industry}` },
       openGraph: { title, description },
     }
   })

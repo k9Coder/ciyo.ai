@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const schema = z.object({
   NEXT_PUBLIC_API_BASE: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().default('https://app.ciyo.ai'),
+  NEXT_PUBLIC_APP_URL: z.string().default('https://app.mykka.ai'),
   NEXT_PUBLIC_ENV: z.string().optional(),
   NEXT_PUBLIC_PILOT_MODE: z.string().optional(),
   NEXT_PUBLIC_LOGROCKET_ID: z.string().optional(),

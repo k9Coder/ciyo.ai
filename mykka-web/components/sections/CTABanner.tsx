@@ -18,7 +18,7 @@ export function CTABanner() {
             className="rounded-xl bg-[#7c6aff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#7c6aff]/25 transition hover:bg-[#6b59ee]">
             Start Free — No Credit Card
           </Link>
-          <Link href="mailto:hello@ciyo.ai?subject=Enterprise enquiry"
+          <Link href="mailto:hello@mykka.ai?subject=Enterprise enquiry"
             className="rounded-xl border border-white/10 bg-white/5 px-8 py-3 text-[15px] font-semibold text-white transition hover:bg-white/10">
             Talk to Sales
           </Link>

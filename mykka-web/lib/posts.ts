@@ -918,7 +918,7 @@ Pattern rule matching common payer formats. Action: Block for external AI sites,
 
 Pretzel ships with a pre-configured Healthcare policy starter kit covering all five rule categories above. Activate it from the Console in one click, then adjust the scope to your clinical team division.
 
-Start free at ciyo.ai — the Healthcare template is included on all plans.`,
+Start free at mykka.ai — the Healthcare template is included on all plans.`,
   },
   {
     slug: 'legal-ai-usage-policy',

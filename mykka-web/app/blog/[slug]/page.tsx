@@ -15,9 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getPost(slug)
   if (!post) return {}
   return {
-    title: `${post.title} | ciyo.ai Blog`,
+    title: `${post.title} | mykka.ai Blog`,
     description: post.description,
-    alternates: { canonical: `https://ciyo.ai/blog/${post.slug}` },
+    alternates: { canonical: `https://mykka.ai/blog/${post.slug}` },
     openGraph: { title: post.title, description: post.description },
   }
 }
@@ -128,7 +128,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) notFound()
 
   const author = post.author ?? 'Megan O\'Brien'
-  const postUrl = `https://ciyo.ai/blog/${post.slug}`
+  const postUrl = `https://mykka.ai/blog/${post.slug}`
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -142,13 +142,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       '@type': 'Person',
       name: author,
       jobTitle: 'Content & SEO Writer',
-      worksFor: { '@id': 'https://ciyo.ai/#org' },
+      worksFor: { '@id': 'https://mykka.ai/#org' },
     },
     publisher: {
-      '@id': 'https://ciyo.ai/#org',
+      '@id': 'https://mykka.ai/#org',
       '@type': 'Organization',
-      name: 'ciyo.ai',
-      logo: { '@type': 'ImageObject', url: 'https://ciyo.ai/images/logo.png' },
+      name: 'mykka.ai',
+      logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png' },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
   }

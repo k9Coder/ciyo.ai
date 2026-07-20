@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms of Service for the ciyo.ai Pretzel AI DLP platform.',
+  description: 'Terms of Service for the mykka.ai Pretzel AI DLP platform.',
 }
 
 const LAST_UPDATED = 'June 2026'
@@ -20,7 +20,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using the Pretzel AI data loss prevention platform, the ciyo.ai website, or the Pretzel Chrome extension (collectively, the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you are using the Service on behalf of an organisation, you represent that you have authority to bind that organisation to these Terms.
+              By accessing or using the Pretzel AI data loss prevention platform, the mykka.ai website, or the Pretzel Chrome extension (collectively, the &quot;Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you are using the Service on behalf of an organisation, you represent that you have authority to bind that organisation to these Terms.
             </p>
             <p className="mt-3">
               If you do not agree to these Terms, do not use the Service.
@@ -30,7 +30,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">2. Description of Service</h2>
             <p>
-              ciyo.ai provides an AI prompt data loss prevention platform comprising: (a) the Pretzel Chrome browser extension that intercepts and evaluates AI prompts against administrator-configured policy rules; (b) the Pretzel Console, a web application for configuring DLP policies, managing members, and reviewing audit logs; and (c) the AI Policy Assistant, an AI-powered interface for managing policies through natural language.
+              mykka.ai provides an AI prompt data loss prevention platform comprising: (a) the Pretzel Chrome browser extension that intercepts and evaluates AI prompts against administrator-configured policy rules; (b) the Pretzel Console, a web application for configuring DLP policies, managing members, and reviewing audit logs; and (c) the AI Policy Assistant, an AI-powered interface for managing policies through natural language.
             </p>
           </section>
 
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">3. Accounts and Eligibility</h2>
             <ul className="space-y-2">
               <li>— You must be at least 18 years of age to create an account.</li>
-              <li>— You are responsible for maintaining the security of your account credentials. You must notify us immediately of any unauthorised access at <a href="mailto:security@ciyo.ai" className="text-[#a78bfa] hover:underline">security@ciyo.ai</a>.</li>
+              <li>— You are responsible for maintaining the security of your account credentials. You must notify us immediately of any unauthorised access at <a href="mailto:security@mykka.ai" className="text-[#a78bfa] hover:underline">security@mykka.ai</a>.</li>
               <li>— One organisation account may have multiple administrator users. Each administrator is responsible for compliance with these Terms.</li>
               <li>— You are responsible for all activity that occurs under your account.</li>
             </ul>
@@ -59,7 +59,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">5. Subscription, Billing, and Cancellation</h2>
             <ul className="space-y-2">
-              <li>— The Service is offered on a subscription basis. Current pricing is available at <a href="/pricing" className="text-[#a78bfa] hover:underline">ciyo.ai/pricing</a>.</li>
+              <li>— The Service is offered on a subscription basis. Current pricing is available at <a href="/pricing" className="text-[#a78bfa] hover:underline">mykka.ai/pricing</a>.</li>
               <li>— Subscriptions renew automatically at the end of each billing period unless cancelled. You may cancel at any time from the Console Settings page. Cancellation takes effect at the end of the current billing period.</li>
               <li>— Payments are processed by Stripe. By providing payment information, you authorise us to charge your payment method for the applicable subscription fees.</li>
               <li>— All fees are non-refundable except as required by applicable law or as expressly stated in these Terms.</li>
@@ -73,17 +73,17 @@ export default function TermsPage() {
               Our collection and use of data is governed by our{' '}
               <a href="/privacy" className="text-[#a78bfa] hover:underline">Privacy Policy</a>,
               which is incorporated into these Terms by reference. For enterprise customers, a Data Processing Agreement (DPA) is available on request at{' '}
-              <a href="mailto:privacy@ciyo.ai" className="text-[#a78bfa] hover:underline">privacy@ciyo.ai</a>.
+              <a href="mailto:privacy@mykka.ai" className="text-[#a78bfa] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">7. Intellectual Property</h2>
             <p>
-              The Service, including all software, algorithms, user interface designs, and documentation, is and remains the exclusive property of ciyo.ai. These Terms do not grant you any rights in our intellectual property except the limited right to use the Service as described herein.
+              The Service, including all software, algorithms, user interface designs, and documentation, is and remains the exclusive property of mykka.ai. These Terms do not grant you any rights in our intellectual property except the limited right to use the Service as described herein.
             </p>
             <p className="mt-3">
-              You retain all rights to your organisation&apos;s data, DLP policy configurations, and any content you upload to the Service. You grant ciyo.ai a limited licence to use that data solely to provide and improve the Service.
+              You retain all rights to your organisation&apos;s data, DLP policy configurations, and any content you upload to the Service. You grant mykka.ai a limited licence to use that data solely to provide and improve the Service.
             </p>
           </section>
 
@@ -97,7 +97,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">9. Disclaimer of Warranties</h2>
             <p>
-              THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. CIYO.AI DOES NOT WARRANT THAT THE SERVICE WILL DETECT ALL SENSITIVE DATA IN ALL CIRCUMSTANCES OR THAT IT WILL BE ERROR-FREE.
+              THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. MYKKA.AI DOES NOT WARRANT THAT THE SERVICE WILL DETECT ALL SENSITIVE DATA IN ALL CIRCUMSTANCES OR THAT IT WILL BE ERROR-FREE.
             </p>
             <p className="mt-3 text-[13px]">
               Pretzel is a best-effort DLP tool, not a guarantee of compliance. You remain responsible for your organisation&apos;s regulatory obligations.
@@ -107,7 +107,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">10. Limitation of Liability</h2>
             <p>
-              TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, CIYO.AI SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUE, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES. OUR TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE SERVICE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+              TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, MYKKA.AI SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUE, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES. OUR TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE SERVICE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
             </p>
           </section>
 
@@ -121,7 +121,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">12. Governing Law and Disputes</h2>
             <p>
-              These Terms shall be governed by the laws of the State of Delaware, USA (or the relevant jurisdiction of ciyo.ai&apos;s incorporation), without regard to conflict-of-law principles. Any disputes shall first be addressed through good-faith negotiation. Enterprise customers may negotiate alternative dispute resolution mechanisms in their contracts.
+              These Terms shall be governed by the laws of the State of Delaware, USA (or the relevant jurisdiction of mykka.ai&apos;s incorporation), without regard to conflict-of-law principles. Any disputes shall first be addressed through good-faith negotiation. Enterprise customers may negotiate alternative dispute resolution mechanisms in their contracts.
             </p>
           </section>
 
@@ -136,9 +136,9 @@ export default function TermsPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">14. Contact</h2>
             <p>
               Questions about these Terms? Contact us at{' '}
-              <a href="mailto:hello@ciyo.ai" className="text-[#a78bfa] hover:underline">hello@ciyo.ai</a>
+              <a href="mailto:hello@mykka.ai" className="text-[#a78bfa] hover:underline">hello@mykka.ai</a>
               {' '}or{' '}
-              <a href="mailto:sales@ciyo.ai" className="text-[#a78bfa] hover:underline">sales@ciyo.ai</a>
+              <a href="mailto:sales@mykka.ai" className="text-[#a78bfa] hover:underline">sales@mykka.ai</a>
               {' '}for enterprise contract inquiries.
             </p>
           </section>

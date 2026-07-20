@@ -28,7 +28,7 @@ const TIERS = [
   {
     name: 'Enterprise', monthly: null, annual: null, per: '/year',
     desc: 'Custom contract for 500+ seat deployments.',
-    cta: 'Talk to Sales', href: 'mailto:sales@ciyo.ai', featured: false,
+    cta: 'Talk to Sales', href: 'mailto:sales@mykka.ai', featured: false,
     features: ['Everything in Business', 'SSO / SAML', 'Chrome Enterprise push', 'SIEM integration', 'On-premise policy option', 'Custom data retention + SLAs', 'Dedicated success manager'],
     missing: [],
   },

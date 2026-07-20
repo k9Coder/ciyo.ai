@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About ciyo.ai — The Team Behind Pretzel AI DLP',
-  description: 'ciyo.ai was founded to solve a problem its team lived firsthand: employees pasting source code and credentials into public AI tools with no guardrails in place. We build Pretzel — browser-native AI DLP for enterprise.',
-  alternates: { canonical: 'https://ciyo.ai/about' },
+  title: 'About mykka.ai — The Team Behind Pretzel AI DLP',
+  description: 'mykka.ai was founded to solve a problem its team lived firsthand: employees pasting source code and credentials into public AI tools with no guardrails in place. We build Pretzel — browser-native AI DLP for enterprise.',
+  alternates: { canonical: 'https://mykka.ai/about' },
   openGraph: {
-    title: 'About ciyo.ai — The Team Behind Pretzel',
+    title: 'About mykka.ai — The Team Behind Pretzel',
     description: 'A small, customer-funded team obsessed with making enterprise DLP tools people actually use.',
   },
 }
@@ -13,18 +13,18 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'AboutPage',
-  url: 'https://ciyo.ai/about',
-  name: 'About ciyo.ai',
-  description: 'ciyo.ai builds Pretzel, a browser-native AI data loss prevention platform for enterprise security teams.',
+  url: 'https://mykka.ai/about',
+  name: 'About mykka.ai',
+  description: 'mykka.ai builds Pretzel, a browser-native AI data loss prevention platform for enterprise security teams.',
   mainEntity: {
-    '@id': 'https://ciyo.ai/#org',
+    '@id': 'https://mykka.ai/#org',
     '@type': 'Organization',
-    name: 'ciyo.ai',
-    url: 'https://ciyo.ai',
+    name: 'mykka.ai',
+    url: 'https://mykka.ai',
     foundingDate: '2024',
-    description: 'ciyo.ai builds Pretzel — a Chrome browser extension that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
-    sameAs: ['https://www.linkedin.com/company/ciyo-ai'],
-    contactPoint: { '@type': 'ContactPoint', email: 'hello@ciyo.ai', contactType: 'customer support' },
+    description: 'mykka.ai builds Pretzel — a Chrome browser extension that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
+    sameAs: ['https://www.linkedin.com/company/mykka-ai'],
+    contactPoint: { '@type': 'ContactPoint', email: 'hello@mykka.ai', contactType: 'customer support' },
   },
 }
 
@@ -38,11 +38,11 @@ export default function AboutPage() {
         <div className="space-y-4 text-[15px] leading-relaxed text-[#94a3b8]">
           <p>We watched teams at fast-growing companies adopt ChatGPT overnight — and watched their security teams scramble to catch up. Existing DLP tools weren&apos;t built for a world where every employee has a direct line to a public AI model.</p>
           <p>Pretzel started as a simple Chrome extension to block PII from leaving the browser. It&apos;s grown into a full policy platform that lets security teams configure, enforce, and audit AI usage across their entire organization.</p>
-          <p>We&apos;re ciyo.ai — a small team obsessed with making enterprise security tools that people actually install, use, and recommend to peers. We&apos;re funded by customers, not VCs.</p>
+          <p>We&apos;re mykka.ai — a small team obsessed with making enterprise security tools that people actually install, use, and recommend to peers. We&apos;re funded by customers, not VCs.</p>
         </div>
         <div className="mt-12 rounded-2xl border border-[#7c6aff]/20 bg-[#7c6aff]/[0.06] p-6">
           <p className="text-[14px] font-semibold text-white">Want to talk?</p>
-          <p className="mt-1 text-[13px] text-[#94a3b8]">hello@ciyo.ai — we read every email and reply to most of them.</p>
+          <p className="mt-1 text-[13px] text-[#94a3b8]">hello@mykka.ai — we read every email and reply to most of them.</p>
         </div>
       </div>
     </div>

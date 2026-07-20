@@ -1,6 +1,6 @@
 ---
 status: active
-owner: ciyo.ai marketing and legal
+owner: mykka.ai marketing and legal
 verified_at: 2026-06-13
 sources:
   - app/page.tsx

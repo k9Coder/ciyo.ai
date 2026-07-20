@@ -21,7 +21,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0f0f13]/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
-          <svg width="26" height="26" viewBox="0 0 56 56" fill="none" aria-label="ciyo.ai logo">
+          <svg width="26" height="26" viewBox="0 0 56 56" fill="none" aria-label="mykka.ai logo">
             <rect width="56" height="56" rx="14" fill="rgba(167,139,250,0.08)"/>
             <path d="M20 14 L14 14 L14 42 L20 42"
                   stroke="#a78bfa" strokeWidth="3"
