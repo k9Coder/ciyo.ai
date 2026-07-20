@@ -12,7 +12,7 @@ export function AccessibilityPage() {
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by ciyo.ai</strong> is committed to digital
+          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> is committed to digital
           accessibility for people with disabilities. We continually improve the user experience for everyone.
         </p>
 
@@ -35,8 +35,8 @@ export function AccessibilityPage() {
         </h2>
         <p style={{ lineHeight: 1.7 }}>
           Report accessibility issues to{' '}
-          <a href="mailto:accessibility@ciyo.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+            accessibility@mykka.ai
           </a>
           . We respond within 5 business days.
         </p>
@@ -55,7 +55,7 @@ export function AccessibilityPage() {
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by ciyo.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
+          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
           אנו פועלים לשיפור מתמיד של חוויית המשתמש עבור כלל האוכלוסייה,
           ומיישמים את תקני הנגישות הרלוונטיים.
         </p>
@@ -96,8 +96,8 @@ export function AccessibilityPage() {
         </p>
         <p>
           <strong style={{ color: 'var(--text-primary, #fff)' }}>אימייל: </strong>
-          <a href="mailto:accessibility@ciyo.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
-            accessibility@ciyo.ai
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+            accessibility@mykka.ai
           </a>
         </p>
       </div>

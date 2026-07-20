@@ -292,7 +292,7 @@ export function SettingsPage() {
           )}
           {!billing.paymentProvider && billing.plan === 'free' && (
             <a
-              href="https://ciyo.ai/pricing"
+              href="https://mykka.ai/pricing"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -350,7 +350,7 @@ export function SettingsPage() {
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Apple Silicon + Intel · macOS 12+</div>
             </div>
             <a
-              href="https://ciyo.ai/download"
+              href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -370,7 +370,7 @@ export function SettingsPage() {
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Windows 10 / 11 (64-bit)</div>
             </div>
             <a
-              href="https://ciyo.ai/download"
+              href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -390,7 +390,7 @@ export function SettingsPage() {
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>AppImage (x64)</div>
             </div>
             <a
-              href="https://ciyo.ai/download"
+              href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -424,14 +424,14 @@ export function SettingsPage() {
                 borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'var(--brand-secondary)',
                 userSelect: 'all', cursor: 'text',
               }}>
-                winget install ciyo.PretzelDesktop
+                winget install mykka.PretzelDesktop
               </code>
             </div>
           </div>
         </div>
 
         <a
-          href="https://ciyo.ai/download"
+          href="https://mykka.ai/download"
           target="_blank"
           rel="noreferrer"
           style={{ fontSize: 13, color: 'var(--brand-primary)', textDecoration: 'none', alignSelf: 'flex-start' }}
