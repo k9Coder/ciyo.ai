@@ -1,6 +1,6 @@
 ---
 status: active
-owner: ciyo.ai engineering
+owner: mykka.ai engineering
 verified_at: 2026-06-13
 sources:
   - ../playwright.config.ts
