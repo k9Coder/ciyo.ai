@@ -65,16 +65,32 @@ async function main() {
   // Larger master render of the icon, used as source for ICO/ICNS packing below.
   const icon512 = await renderSvgToPng(page, iconSvg, 512, 512);
 
-  // --- Full lockups (icon + "mykka" wordmark), transparent, for <img> usage -----------
-  // Rendered at 4x the 180x48 viewBox for crisp display up to ~180px wide / retina.
-  const LOCKUP_W = 720;
-  const LOCKUP_H = 192;
-  const lockupDark = await renderSvgToPng(page, lockupDarkSvg, LOCKUP_W, LOCKUP_H);
-  const lockupLight = await renderSvgToPng(page, lockupLightSvg, LOCKUP_W, LOCKUP_H);
+  // --- logo-dark.png / logo-light.png: icon-only, transparent, for <img> usage --------
+  // Every in-app consumer (PretzelLogo in the console sidebar, WarningModal's 20x20 badge,
+  // Popup's LogoIcon) renders this image next to its OWN separately-coded "Pretzel" /
+  // wordmark text/component — the image itself must be a square icon, not a wide lockup,
+  // or it overflows/squishes next to that adjacent text. Crop just the icon-badge region
+  // (viewBox units 0,0 to 48,48) out of the full lockup SVGs — via an overflow:hidden
+  // wrapper sized to the crop, so each theme keeps its correct hardcoded badge colors —
+  // rendered at 4x (192px) for retina sharpness.
+  async function renderIconCrop(svg) {
+    const scale = 4;
+    const cropPx = 48 * scale;
+    await page.setViewportSize({ width: cropPx, height: cropPx });
+    await page.setContent(
+      `<html><body style="margin:0;padding:0">` +
+        `<div style="width:${cropPx}px;height:${cropPx}px;overflow:hidden">` +
+        `<div id="target" style="width:${180 * scale}px;height:${48 * scale}px">${svg}</div>` +
+        `</div></body></html>`
+    );
+    return page.screenshot({ omitBackground: true });
+  }
+  const iconDark = await renderIconCrop(lockupDarkSvg);
+  const iconLight = await renderIconCrop(lockupLightSvg);
 
   for (const pkg of ["pretzel", "pretzel-console"]) {
-    writePng(path(`${pkg}/public/logo-dark.png`), lockupDark);
-    writePng(path(`${pkg}/public/logo-light.png`), lockupLight);
+    writePng(path(`${pkg}/public/logo-dark.png`), iconDark);
+    writePng(path(`${pkg}/public/logo-light.png`), iconLight);
   }
 
   await browser.close();
