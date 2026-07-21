@@ -74,7 +74,7 @@ async function main() {
   // wrapper sized to the crop, so each theme keeps its correct hardcoded badge colors —
   // rendered at 4x (192px) for retina sharpness.
   async function renderIconCrop(svg) {
-    const scale = 4;
+    const scale = 8;
     const cropPx = 48 * scale;
     await page.setViewportSize({ width: cropPx, height: cropPx });
     await page.setContent(

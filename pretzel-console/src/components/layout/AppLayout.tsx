@@ -140,9 +140,9 @@ export function AppLayout() {
       }}>
         {/* Logo */}
         <Link to="/dashboard" style={{
-          padding: '18px 16px', borderBottom: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', gap: 10,
-          textDecoration: 'none', cursor: 'pointer'
+          height: 84, padding: '0 16px', borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+          textDecoration: 'none', cursor: 'pointer', boxSizing: 'border-box'
         }}>
           <PretzelLogo size={48} />
           <div style={{ lineHeight: 1 }}>
@@ -251,9 +251,10 @@ export function AppLayout() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
-          padding: '21px 24px', borderBottom: '1px solid var(--border)',
+          height: 84, padding: '0 24px', borderBottom: '1px solid var(--border)',
           background: 'var(--bg-surface)', display: 'flex',
           justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
+          boxSizing: 'border-box',
         }}>
           <OrgSwitcher />
           <ThemeToggle />
