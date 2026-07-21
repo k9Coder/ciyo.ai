@@ -1,8 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" fill="none">
+  <defs>
+    <radialGradient id="mykka-orb-light" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#8fabff"/>
+      <stop offset="45%" stop-color="#3059d6"/>
+      <stop offset="100%" stop-color="#152e85"/>
+    </radialGradient>
+  </defs>
   <rect x="4" y="4" width="40" height="40" rx="10" fill="#f3f5fa"/>
-  <circle cx="24" cy="24" r="9.5"
-          fill="none" stroke="#3059d6" stroke-width="5"/>
-  <circle cx="30.72" cy="17.28" r="3.2" fill="#3059d6"/>
+  <path d="M10.5 24 Q24 12.5 37.5 24 Q24 35.5 10.5 24 Z" fill="url(#mykka-orb-light)"/>
+  <g stroke="#f3f5fa" stroke-width="1" stroke-linecap="round" opacity="0.85">
+    <line x1="24" y1="19" x2="24" y2="21.6"/>
+    <line x1="24" y1="26.4" x2="24" y2="29"/>
+    <line x1="19" y1="24" x2="21.6" y2="24"/>
+    <line x1="26.4" y1="24" x2="29" y2="24"/>
+  </g>
   <text x="56" y="31"
         font-family="'Segoe UI',system-ui,sans-serif"
         font-size="20" font-weight="700" letter-spacing="-0.5"
