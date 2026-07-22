@@ -1,7 +1,7 @@
 /** Structured logger that is silenced in production builds. */
 import { IS_DEV } from "../env";
 
-const prefix = "[ciyo]";
+const prefix = "[mykka]";
 
 export const logger = {
   debug: (...args: unknown[]) => {

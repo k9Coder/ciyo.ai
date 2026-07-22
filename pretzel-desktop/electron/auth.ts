@@ -146,7 +146,7 @@ function startCallbackServer(): Promise<{ port: number; codePromise: Promise<str
 
 // ─── Main sign-in flow ─────────────────────────────────────────────────────
 
-const CIYO_API_BASE = env.CIYO_API_URL
+const PRETZEL_API_BASE = env.PRETZEL_API_URL
 const CLERK_PUBLISHABLE_KEY = env.CLERK_PUBLISHABLE_KEY
 
 export async function signIn(): Promise<{ token: string; tenantId: string }> {
@@ -156,7 +156,7 @@ export async function signIn(): Promise<{ token: string; tenantId: string }> {
   const redirectUri = `http://127.0.0.1:${port}/callback`
   const state = crypto.randomBytes(16).toString('hex')
 
-  const signInUrl = new URL(`${CIYO_API_BASE}/auth/desktop/authorize`)
+  const signInUrl = new URL(`${PRETZEL_API_BASE}/auth/desktop/authorize`)
   signInUrl.searchParams.set('response_type', 'code')
   signInUrl.searchParams.set('redirect_uri', redirectUri)
   signInUrl.searchParams.set('code_challenge', challenge)
@@ -169,7 +169,7 @@ export async function signIn(): Promise<{ token: string; tenantId: string }> {
   const code = await codePromise
 
   // Exchange code for token
-  const tokenRes = await fetch(`${CIYO_API_BASE}/auth/desktop/token`, {
+  const tokenRes = await fetch(`${PRETZEL_API_BASE}/auth/desktop/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: redirectUri }),

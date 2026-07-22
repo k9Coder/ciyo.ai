@@ -6,7 +6,7 @@
 
 **Architecture:** Secrets are renamed only at the GitHub layer; workflows map them to unchanged runtime var names and declare `environment:` per job. Each package gets a single env module that parses its env source (process.env or import.meta.env) with zod at import time. Server-side modules (backend, e2e) are strict fail-fast; client-bundle modules (Vite/Next/desktop) use defaults because their parse runs at browser/app runtime, not build.
 
-**Tech Stack:** GitHub Actions Environments, zod (v3 backend/pretzel/desktop, v4 console; add to ciyo-web + e2e), electron-vite `define` + `loadEnv`, dotenv (e2e).
+**Tech Stack:** GitHub Actions Environments, zod (v3 backend/pretzel/desktop, v4 console; add to mykka-web + e2e), electron-vite `define` + `loadEnv`, dotenv (e2e).
 
 **Spec:** `docs/superpowers/specs/2026-07-11-env-and-secrets-standardization-design.md`
 
@@ -15,7 +15,7 @@
 - Prefix exists ONLY at the GitHub secrets layer. Runtime env var names, `.env` file keys, and Render/Vercel dashboard vars are unchanged.
 - One job = one `environment:`. No job reads secrets from both environments.
 - Test-axis files untouched: `backend/.env.test`, `e2e/.env.e2e` wiring, CI postgres service containers, hardcoded dummy creds (`test-secret`, `test-secret-e2e-32chars-minimum-xxxx`, `postgres://e2e:e2e@...`) all stay exactly as-is.
-- New dependencies: zod added to `ciyo-web` and `e2e` only. No other new deps.
+- New dependencies: zod added to `mykka-web` and `e2e` only. No other new deps.
 - Backend allowlist for raw `process.env` reads (standalone scripts run with partial env — DATABASE_URL only in CI): `src/db/client.ts`, `src/db/migrate.ts`, `src/db/seeds/**`, `src/scripts/**`. Everything else in `backend/src` imports from `src/env.ts`.
 - Backend uses ESM with `.js` import suffixes (`import { env } from './env.js'`).
 - Work happens on branch `chore/env-secrets-standardization` (already exists, spec committed).
@@ -217,28 +217,28 @@ git commit -m "refactor(backend): route all env access through validated env mod
 
 ---
 
-### Task 3: ciyo-web env module + `.env.example`
+### Task 3: mykka-web env module + `.env.example`
 
 **Files:**
-- Create: `ciyo-web/lib/env.ts`, `ciyo-web/.env.example`
-- Modify: `ciyo-web/package.json` (zod dep), `ciyo-web/lib/config.ts`, `ciyo-web/components/layout/Header.tsx:39`, `ciyo-web/components/LogRocketInit.tsx:7`
+- Create: `mykka-web/lib/env.ts`, `mykka-web/.env.example`
+- Modify: `mykka-web/package.json` (zod dep), `mykka-web/lib/config.ts`, `mykka-web/components/layout/Header.tsx:39`, `mykka-web/components/LogRocketInit.tsx:7`
 
 **Interfaces:**
-- Produces: `env` with `NEXT_PUBLIC_API_BASE?`, `NEXT_PUBLIC_APP_URL` (default `https://app.ciyo.ai`), `NEXT_PUBLIC_ENV?`, `NEXT_PUBLIC_PILOT_MODE?`, `NEXT_PUBLIC_LOGROCKET_ID?` — all strings.
+- Produces: `env` with `NEXT_PUBLIC_API_BASE?`, `NEXT_PUBLIC_APP_URL` (default `https://app.mykka.ai`), `NEXT_PUBLIC_ENV?`, `NEXT_PUBLIC_PILOT_MODE?`, `NEXT_PUBLIC_LOGROCKET_ID?` — all strings.
 
 - [ ] **Step 1: Add zod**
 
-Run: `pnpm add zod` (cwd `ciyo-web`). Expected: zod in dependencies.
+Run: `pnpm add zod` (cwd `mykka-web`). Expected: zod in dependencies.
 
 - [ ] **Step 2: Create env module**
 
 ```ts
-// ciyo-web/lib/env.ts
+// mykka-web/lib/env.ts
 import { z } from 'zod'
 
 const schema = z.object({
   NEXT_PUBLIC_API_BASE: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().default('https://app.ciyo.ai'),
+  NEXT_PUBLIC_APP_URL: z.string().default('https://app.mykka.ai'),
   NEXT_PUBLIC_ENV: z.string().optional(),
   NEXT_PUBLIC_PILOT_MODE: z.string().optional(),
   NEXT_PUBLIC_LOGROCKET_ID: z.string().optional(),
@@ -279,7 +279,7 @@ const id = env.NEXT_PUBLIC_LOGROCKET_ID
 - [ ] **Step 4: Create `.env.example`**
 
 ```bash
-# ciyo-web/.env.example
+# mykka-web/.env.example
 # Copied to .env.local by: pnpm set-env:staging | pnpm set-env:prod (from monorepo root)
 NEXT_PUBLIC_API_BASE=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:5173
@@ -290,14 +290,14 @@ NEXT_PUBLIC_LOGROCKET_ID=
 
 - [ ] **Step 5: Verify build + grep**
 
-Run: `pnpm build` (cwd `ciyo-web`) — expected: success.
-Run: `grep -rnE "process\.env" ciyo-web/app ciyo-web/lib ciyo-web/components --include="*.ts" --include="*.tsx" | grep -v "lib/env.ts"` — expected: empty.
+Run: `pnpm build` (cwd `mykka-web`) — expected: success.
+Run: `grep -rnE "process\.env" mykka-web/app mykka-web/lib mykka-web/components --include="*.ts" --include="*.tsx" | grep -v "lib/env.ts"` — expected: empty.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add ciyo-web
-git commit -m "feat(ciyo-web): validated env module + .env.example"
+git add mykka-web
+git commit -m "feat(mykka-web): validated env module + .env.example"
 ```
 
 ---
@@ -309,7 +309,7 @@ git commit -m "feat(ciyo-web): validated env module + .env.example"
 - Modify: `pretzel/src/shared/constants.ts`, `pretzel/src/lib/sentry.ts`, `pretzel/src/shared/logger.ts`
 
 **Interfaces:**
-- Produces: `env.VITE_API_BASE` (default `https://api.ciyo.ai`), `env.VITE_CLERK_PUBLISHABLE_KEY` (default `''`), `env.VITE_SENTRY_DSN_EXTENSION?`, plus `IS_DEV: boolean`, `MODE: string`. `constants.ts` keeps exporting `API_BASE` / `CLERK_PUBLISHABLE_KEY` so downstream imports don't churn.
+- Produces: `env.VITE_API_BASE` (default `https://api.mykka.ai`), `env.VITE_CLERK_PUBLISHABLE_KEY` (default `''`), `env.VITE_SENTRY_DSN_EXTENSION?`, plus `IS_DEV: boolean`, `MODE: string`. `constants.ts` keeps exporting `API_BASE` / `CLERK_PUBLISHABLE_KEY` so downstream imports don't churn.
 
 - [ ] **Step 1: Create env module**
 
@@ -318,7 +318,7 @@ git commit -m "feat(ciyo-web): validated env module + .env.example"
 import { z } from 'zod'
 
 const schema = z.object({
-  VITE_API_BASE: z.string().default('https://api.ciyo.ai'),
+  VITE_API_BASE: z.string().default('https://api.mykka.ai'),
   // Default '' (not required): this parse runs in the browser at bundle eval,
   // so a hard throw would brick the extension instead of failing the build.
   // Clerk init surfaces the missing key loudly at runtime.
@@ -466,9 +466,9 @@ git commit -m "feat(console): centralize import.meta.env access in env module"
 - Create: `pretzel-desktop/electron/env.ts`, `pretzel-desktop/.env.example`, `pretzel-desktop/.env.staging`
 
 **Interfaces:**
-- Produces: `env.CIYO_API_URL` (default `https://api.ciyo.ai`), `env.CLERK_PUBLISHABLE_KEY` (default `''`). `NODE_ENV` reads in `main.ts`/`decision-window.ts` stay raw (electron-vite dev-mode signal — allowlisted).
+- Produces: `env.MYKKA_API_URL` (default `https://api.mykka.ai`), `env.CLERK_PUBLISHABLE_KEY` (default `''`). `NODE_ENV` reads in `main.ts`/`decision-window.ts` stay raw (electron-vite dev-mode signal — allowlisted).
 
-Background (latent bug this fixes): main-process code reads `process.env.CIYO_API_URL` at runtime, but a packaged app has no such env var — the CI build secret currently has no effect and the `https://api.ciyo.ai` fallback is doing all the work; `CLERK_PUBLISHABLE_KEY` silently falls back to `''`. `define` bakes build-time values into the bundle so the CI secrets actually land.
+Background (latent bug this fixes): main-process code reads `process.env.MYKKA_API_URL` at runtime, but a packaged app has no such env var — the CI build secret currently has no effect and the `https://api.mykka.ai` fallback is doing all the work; `CLERK_PUBLISHABLE_KEY` silently falls back to `''`. `define` bakes build-time values into the bundle so the CI secrets actually land.
 
 - [ ] **Step 1: Rewrite `electron.vite.config.ts` with define + loadEnv**
 
@@ -489,7 +489,7 @@ export default defineConfig(({ mode }) => {
     main: {
       plugins: [externalizeDepsPlugin()],
       define: {
-        'process.env.CIYO_API_URL': baked('CIYO_API_URL'),
+        'process.env.MYKKA_API_URL': baked('MYKKA_API_URL'),
         'process.env.CLERK_PUBLISHABLE_KEY': baked('CLERK_PUBLISHABLE_KEY'),
       },
       build: {
@@ -534,7 +534,7 @@ If `loadEnv` is not re-exported by the installed electron-vite version, import i
 import { z } from 'zod'
 
 const schema = z.object({
-  CIYO_API_URL: z.string().default('https://api.ciyo.ai'),
+  MYKKA_API_URL: z.string().default('https://api.mykka.ai'),
   CLERK_PUBLISHABLE_KEY: z.string().default(''),
 })
 
@@ -542,7 +542,7 @@ const schema = z.object({
 // `define` block in electron.vite.config.ts — a packaged app never sees real
 // env vars for them. Reference literally; never via dynamic key.
 export const env = schema.parse({
-  CIYO_API_URL: process.env.CIYO_API_URL,
+  MYKKA_API_URL: process.env.MYKKA_API_URL,
   CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
 })
 ```
@@ -552,14 +552,14 @@ export const env = schema.parse({
 ```ts
 // electron/auth.ts:148-149 — becomes
 import { env } from './env'
-const CIYO_API_BASE = env.CIYO_API_URL
+const MYKKA_API_BASE = env.MYKKA_API_URL
 const CLERK_PUBLISHABLE_KEY = env.CLERK_PUBLISHABLE_KEY
 ```
 
 ```ts
 // electron/policy-sync.ts:12 — becomes
 import { env } from './env'
-const CIYO_API_BASE = env.CIYO_API_URL
+const MYKKA_API_BASE = env.MYKKA_API_URL
 ```
 
 - [ ] **Step 4: Create `.env.example` and `.env.staging`**
@@ -568,14 +568,14 @@ const CIYO_API_BASE = env.CIYO_API_URL
 # pretzel-desktop/.env.example
 # Local dev: copy to .env (or run: pnpm set-env:staging from monorepo root).
 # Baked into the main-process bundle at build time via electron.vite.config.ts define.
-CIYO_API_URL=http://localhost:3000
+MYKKA_API_URL=http://localhost:3000
 CLERK_PUBLISHABLE_KEY=pk_test_...
 ```
 
 ```bash
 # pretzel-desktop/.env.staging
 # Staging/dev Clerk instance — test keys only, safe to commit.
-CIYO_API_URL=http://localhost:3000
+MYKKA_API_URL=http://localhost:3000
 CLERK_PUBLISHABLE_KEY=pk_test_cGxlYXNlZC1jbGFtLTI1LmNsZXJrLmFjY291bnRzLmRldiQ
 ```
 
@@ -598,14 +598,14 @@ console.log(`  pretzel-desktop: .env copied — rebuild with pnpm build (values 
 - [ ] **Step 6: Verify**
 
 Run: `pnpm --filter pretzel-desktop test` — expected: green.
-Run: `pnpm --filter pretzel-desktop build`, then `grep -o "https://api.ciyo.ai" pretzel-desktop/dist-electron/main.js | head -1` — expected: the default URL appears (define left fallback intact when no env set).
+Run: `pnpm --filter pretzel-desktop build`, then `grep -o "https://api.mykka.ai" pretzel-desktop/dist-electron/main.js | head -1` — expected: the default URL appears (define left fallback intact when no env set).
 Run: `node scripts/set-env.mjs staging` from repo root — expected output includes `pretzel-desktop/.env  ←  .env.staging`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add pretzel-desktop scripts/set-env.mjs
-git commit -m "feat(desktop): bake CIYO_API_URL/CLERK_PUBLISHABLE_KEY at build; add .env files"
+git commit -m "feat(desktop): bake MYKKA_API_URL/CLERK_PUBLISHABLE_KEY at build; add .env files"
 ```
 
 ---
@@ -682,7 +682,7 @@ git commit -m "feat(e2e): zod-validated env module; fix stale Railway reference"
 ### Task 8: Deploy workflows → environments + renamed secrets
 
 **Files:**
-- Modify: `.github/workflows/backend-deploy.yml`, `.github/workflows/pretzel-console-deploy.yml`, `.github/workflows/ciyo-web-deploy.yml`
+- Modify: `.github/workflows/backend-deploy.yml`, `.github/workflows/pretzel-console-deploy.yml`, `.github/workflows/mykka-web-deploy.yml`
 
 - [ ] **Step 1: backend-deploy.yml**
 
@@ -728,17 +728,17 @@ Deploy job: add the same `environment:` ternary line under `runs-on:`. Replace t
 
 Discord webhook → `SHARED_DISCORD_WEBHOOK_URL`. Test job: untouched.
 
-- [ ] **Step 3: ciyo-web-deploy.yml**
+- [ ] **Step 3: mykka-web-deploy.yml**
 
 Only change: `DISCORD_WEBHOOK_URL` → `SHARED_DISCORD_WEBHOOK_URL`. (Deploys via Vercel; no other GitHub secrets.)
 
 - [ ] **Step 4: Validate + commit**
 
-Run: `pnpm exec yaml-lint .github/workflows/*.yml 2>/dev/null || node -e "const y=require('js-yaml'),f=require('fs');['backend-deploy','pretzel-console-deploy','ciyo-web-deploy'].forEach(n=>y.load(f.readFileSync('.github/workflows/'+n+'.yml','utf8')))"`
+Run: `pnpm exec yaml-lint .github/workflows/*.yml 2>/dev/null || node -e "const y=require('js-yaml'),f=require('fs');['backend-deploy','pretzel-console-deploy','mykka-web-deploy'].forEach(n=>y.load(f.readFileSync('.github/workflows/'+n+'.yml','utf8')))"`
 Expected: no parse errors (fallback: any YAML parser available in the workspace; worst case rely on GitHub's parse on push).
 
 ```bash
-git add .github/workflows/backend-deploy.yml .github/workflows/pretzel-console-deploy.yml .github/workflows/ciyo-web-deploy.yml
+git add .github/workflows/backend-deploy.yml .github/workflows/pretzel-console-deploy.yml .github/workflows/mykka-web-deploy.yml
 git commit -m "ci: scope deploy workflows to GitHub environments with prefixed secrets"
 ```
 
@@ -763,10 +763,10 @@ Discord → `SHARED_DISCORD_WEBHOOK_URL`.
 
 - [ ] **Step 2: pretzel-desktop-release.yml**
 
-Add `environment: production` to every job that references `CIYO_API_URL_PROD` / `VITE_CLERK_PUBLISHABLE_KEY_PROD` (the three build/package jobs). In each of those jobs' build steps replace:
+Add `environment: production` to every job that references `MYKKA_API_URL_PROD` / `VITE_CLERK_PUBLISHABLE_KEY_PROD` (the three build/package jobs). In each of those jobs' build steps replace:
 
 ```yaml
-          CIYO_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
+          MYKKA_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
 ```
 
@@ -844,10 +844,10 @@ git commit -m "docs: environment & secrets convention, rename map, migration che
 
 ```bash
 grep -rnE "process\.env(\.[A-Z_0-9]+|\[)" backend/src --include="*.ts" | grep -vE "src/env\.(ts|test\.ts)|db/client\.ts|db/migrate\.ts|db/seeds/|scripts/"
-grep -rn "process\.env\.NEXT_PUBLIC" ciyo-web/app ciyo-web/lib ciyo-web/components | grep -v "lib/env.ts"
+grep -rn "process\.env\.NEXT_PUBLIC" mykka-web/app mykka-web/lib mykka-web/components | grep -v "lib/env.ts"
 grep -rn "import\.meta\.env" pretzel/src pretzel-console/src | grep -v "/env.ts"
-grep -rn "process\.env\.\(CIYO_API_URL\|CLERK_PUBLISHABLE_KEY\)" pretzel-desktop/electron | grep -v "electron/env.ts"
-grep -rn "secrets\.\(PROD_DATABASE_URL\|STAGING_DATABASE_URL\|RENDER_BACKEND\|RENDER_CONSOLE\|VITE_CLERK_PUBLISHABLE_KEY\|VITE_API_BASE_PROD\|CIYO_API_URL_PROD\|DISCORD_WEBHOOK_URL\|RENDER_API_KEY\b\|CLERK_SECRET_KEY\|CLERK_WEBHOOK_SECRET\)" .github/workflows
+grep -rn "process\.env\.\(MYKKA_API_URL\|CLERK_PUBLISHABLE_KEY\)" pretzel-desktop/electron | grep -v "electron/env.ts"
+grep -rn "secrets\.\(PROD_DATABASE_URL\|STAGING_DATABASE_URL\|RENDER_BACKEND\|RENDER_CONSOLE\|VITE_CLERK_PUBLISHABLE_KEY\|VITE_API_BASE_PROD\|MYKKA_API_URL_PROD\|DISCORD_WEBHOOK_URL\|RENDER_API_KEY\b\|CLERK_SECRET_KEY\|CLERK_WEBHOOK_SECRET\)" .github/workflows
 ```
 
 - [ ] **Step 2: Full test + build pass**
@@ -857,11 +857,11 @@ pnpm --filter pretzel-api test
 pnpm --filter pretzel-extension test
 pnpm --filter pretzel-console test && pnpm --filter pretzel-console typecheck
 pnpm --filter pretzel-desktop test
-pnpm --filter ciyo-web build   # wraps type-check
+pnpm --filter mykka-web build   # wraps type-check
 node scripts/set-env.mjs staging
 ```
 
-Expected: everything green; set-env lists backend, ciyo-web, pretzel-desktop copies.
+Expected: everything green; set-env lists backend, mykka-web, pretzel-desktop copies.
 
 - [ ] **Step 3: Push branch + open PR**
 

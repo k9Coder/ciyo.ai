@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
     main: {
       plugins: [externalizeDepsPlugin()],
       define: {
-        'process.env.CIYO_API_URL': baked('CIYO_API_URL'),
+        'process.env.PRETZEL_API_URL': baked('PRETZEL_API_URL'),
         'process.env.CLERK_PUBLISHABLE_KEY': baked('CLERK_PUBLISHABLE_KEY'),
       },
       build: {

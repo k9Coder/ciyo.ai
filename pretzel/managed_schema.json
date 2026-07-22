@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "promptshield_policy": {
-      "title": "ciyo Policy",
+      "title": "mykka Policy",
       "description": "Detection policy document. See docs/policy-format.md for schema details.",
       "type": "object"
     }

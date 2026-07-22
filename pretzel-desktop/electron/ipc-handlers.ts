@@ -4,7 +4,7 @@
  */
 import { ipcMain, BrowserWindow } from 'electron'
 import { z } from 'zod'
-import type { Policy } from '@ciyo/detect'
+import type { Policy } from '@mykka/detect'
 
 const DecisionResponseSchema = z.object({
   requestId: z.string(),

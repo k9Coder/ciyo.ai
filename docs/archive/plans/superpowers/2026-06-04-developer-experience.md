@@ -27,7 +27,7 @@ packages:
   - 'backend'
   - 'pretzel'
   - 'pretzel-console'
-  - 'ciyo-web'
+  - 'mykka-web'
   - 'e2e'
 ```
 
@@ -245,7 +245,7 @@ if (!clerkSecretKey) {
 
 const clerk = createClerkClient({ secretKey: clerkSecretKey })
 
-const TEST_EMAIL    = `e2e-test-${Date.now()}@ciyo-test.example`
+const TEST_EMAIL    = `e2e-test-${Date.now()}@mykka-test.example`
 const TEST_PASSWORD = `E2eTest!${Math.random().toString(36).slice(2, 10)}`
 
 console.log('Creating Clerk test user...')
@@ -289,7 +289,7 @@ CLERK_SECRET_KEY=sk_test_... node scripts/provision-e2e-clerk-user.mjs
 # User created successfully. Add these to e2e/.env.e2e:
 #
 # E2E_CLERK_USER_ID=user_2xxxxxxxxxxxxxxxxxxxxxxxx
-# E2E_CLERK_USER_EMAIL=e2e-test-1234567890@ciyo-test.example
+# E2E_CLERK_USER_EMAIL=e2e-test-1234567890@mykka-test.example
 # E2E_CLERK_USER_PASSWORD=E2eTest!abc123
 ```
 

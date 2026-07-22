@@ -1,6 +1,6 @@
 **"It's just a helper function" — 400 lines of proprietary matching engine**
 
-I talked to an engineering manager at a fintech last month who thought his team pasted "small snippets" into ChatGPT. First week running ciyo in log-only mode: someone pasted 400 lines of their core payment-matching engine to get help refactoring it. Not a snippet. The crown jewels.
+I talked to an engineering manager at a fintech last month who thought his team pasted "small snippets" into ChatGPT. First week running mykka in log-only mode: someone pasted 400 lines of their core payment-matching engine to get help refactoring it. Not a snippet. The crown jewels.
 
 The policy that caught it is simple:
 

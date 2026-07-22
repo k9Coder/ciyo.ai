@@ -5,9 +5,14 @@
     "dev:backend": "pnpm --filter pretzel-api dev",
     "dev:extension": "pnpm --filter pretzel-extension dev",
     "dev:console": "pnpm --filter pretzel-console dev",
-    "dev:web": "pnpm --filter ciyo-web dev",
+    "dev:web": "pnpm --filter mykka-web dev",
     "docs:check": "node scripts/docs-check.mjs",
     "set-env:staging": "node scripts/set-env.mjs staging",
-    "set-env:prod": "node scripts/set-env.mjs prod"
+    "set-env:prod": "node scripts/set-env.mjs prod",
+    "render-brand-assets": "node scripts/render-brand-assets.mjs"
+  },
+  "devDependencies": {
+    "png2icons": "^2.0.1",
+    "@playwright/test": "^1.47.0"
   }
 }

@@ -33,7 +33,7 @@ Development and test builds also permit `http://localhost:9876/*` for E2E fixtur
 
 Adapters listen in capture phase for send-button clicks and unmodified Enter presses inside the composer. Shift+Enter is not intercepted. They immediately suppress the original event, await the content-script decision, then re-click the send button when approved.
 
-Before re-clicking, the adapter adds `data-ciyo-approved` to the button. Capture listeners allow the sentinel click through, and remove the attribute on the next animation frame. A per-adapter `processing` flag suppresses duplicate sends during detection.
+Before re-clicking, the adapter adds `data-mykka-approved` to the button. Capture listeners allow the sentinel click through, and remove the attribute on the next animation frame. A per-adapter `processing` flag suppresses duplicate sends during detection.
 
 ## Named adapters
 

@@ -16,7 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client"],
-    // ciyo-web (React 19) shares the pnpm workspace, so its @types/react leaks
+    // mykka-web (React 19) shares the pnpm workspace, so its @types/react leaks
     // into pnpm's hoisted fallback dir and breaks JSX types for our React 18
     // deps (react-router-dom, Sentry). Pin type resolution to our own copy.
     "baseUrl": ".",

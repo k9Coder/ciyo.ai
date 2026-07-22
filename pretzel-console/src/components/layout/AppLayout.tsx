@@ -140,9 +140,9 @@ export function AppLayout() {
       }}>
         {/* Logo */}
         <Link to="/dashboard" style={{
-          padding: '18px 16px', borderBottom: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', gap: 10,
-          textDecoration: 'none', cursor: 'pointer'
+          height: 84, padding: '0 16px', borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+          textDecoration: 'none', cursor: 'pointer', boxSizing: 'border-box'
         }}>
           <PretzelLogo size={48} />
           <div style={{ lineHeight: 1 }}>
@@ -150,7 +150,7 @@ export function AppLayout() {
               Pretzel
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-              by ciyo.ai
+              by mykka.ai
             </div>
             {env.VITE_APP_ENV === 'staging' && (
               <div style={{
@@ -251,9 +251,10 @@ export function AppLayout() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
-          padding: '21px 24px', borderBottom: '1px solid var(--border)',
+          height: 84, padding: '0 24px', borderBottom: '1px solid var(--border)',
           background: 'var(--bg-surface)', display: 'flex',
           justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
+          boxSizing: 'border-box',
         }}>
           <OrgSwitcher />
           <ThemeToggle />
@@ -280,9 +281,9 @@ export function AppLayout() {
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
               Accessibility
             </Link>
-            <a href="https://ciyo.ai" target="_blank" rel="noreferrer"
+            <a href="https://mykka.ai" target="_blank" rel="noreferrer"
               style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-              ciyo.ai
+              mykka.ai
             </a>
           </div>
         </div>

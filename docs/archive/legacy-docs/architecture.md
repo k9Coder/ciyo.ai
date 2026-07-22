@@ -1,4 +1,4 @@
-# ciyo.ai — System Architecture
+# mykka.ai — System Architecture
 
 ## 0. Real-Time & Polling Update Flow (Detailed)
 
@@ -406,7 +406,7 @@ graph TD
         S4[subscriptionExpired]
         S5[orgToken]
         S6[clerkSessionToken]
-        S7[ciyo-disabled-sites]
+        S7[mykka-disabled-sites]
     end
 
     subgraph MANAGED["chrome.storage.managed (MDM)"]

@@ -29,7 +29,7 @@ export default defineManifest(async ({ mode }) => {
     manifest_version: 3,
     name: "Pretzel",
     version,
-    description: "Pretzel by ciyo.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
+    description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
     permissions: ["storage", "scripting", "activeTab", "alarms"],
     host_permissions: LLM_HOSTS,
     background: {

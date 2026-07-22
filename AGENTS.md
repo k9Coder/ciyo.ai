@@ -31,7 +31,7 @@ sources:
 
 ## Repository Shape
 
-The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `ciyo-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
+The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
 
 The unified Playwright configuration is `e2e/playwright.config.ts`. Run it from
 `e2e/`. These script forms forward project arguments to Playwright:
@@ -53,6 +53,13 @@ pnpm test:e2e -- --project=admin
 - Extension detection/adapters: run extension unit/E2E and document fail-open implications.
 - Console route/API changes: run console tests and admin E2E.
 - Documentation changes: run `pnpm docs:check` from the repository root.
+
+## Branch & Deploy Workflow
+
+- `staging` is the default integration branch. Every fix, feature, or code change — unless the user explicitly says otherwise — starts on a new branch cut from `staging` and is merged via a PR whose base is `staging`.
+- `master` is production. Do not target `master` with feature PRs. Periodically, `staging` is aligned into `master` via a promotion PR (`staging` → `master`); only the user decides when.
+- Pushes to `staging` deploy backend and console to the Render staging environment; pushes to `master` deploy production. Tagged releases build the extension and desktop app from `master`.
+- CI secrets are environment-scoped (GitHub Environments `production`/`staging`); see [docs/ENVIRONMENT_AND_SECRETS.md](docs/ENVIRONMENT_AND_SECRETS.md).
 
 ## Editing Rules
 

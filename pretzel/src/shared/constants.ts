@@ -1,7 +1,7 @@
 import packageJson from "../../package.json";
 import { env } from "../env";
 
-export const EXTENSION_NAME = "ciyo";
+export const EXTENSION_NAME = "mykka";
 /** Single source of truth: version is read from package.json (also used by manifest.config.ts). */
 export const EXTENSION_VERSION = packageJson.version;
 
@@ -22,7 +22,7 @@ export const AUDIT_DB_VERSION = 1;
 export const AUDIT_STORE_NAME = "events";
 
 /** Sentinel attribute set on programmatically re-fired events to avoid recursion */
-export const SEND_SENTINEL_ATTR = "data-ciyo-approved";
+export const SEND_SENTINEL_ATTR = "data-mykka-approved";
 
 /** Snippet context window (chars either side of a match) */
 export const SNIPPET_CONTEXT_CHARS = 20;

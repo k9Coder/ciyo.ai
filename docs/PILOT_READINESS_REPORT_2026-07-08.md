@@ -73,7 +73,7 @@ Fix suggestion: drop the Clerk-org requirement from `RequireAuth` (keep sign-in 
 | 5.3 (D3) compose port | ❌ | `docker-compose.yml:41` maps `5173:80`; nginx listens **8080** — local console container broken |
 | 5.4 (D4) unenforced policy fields | ❌ still shown | |
 | 5.5 (D5) managed-storage schema | ❌ | `pretzel/managed_schema.json` still only declares `promptshield_policy` — no `orgToken`; enterprise MDM auth story void |
-| 6.1–6.3 (E1–E3) marketing claims | ❌ | "200+ companies"/SOC 2/SAML/Frankfurt etc. still in 11 ciyo-web files |
+| 6.1–6.3 (E1–E3) marketing claims | ❌ | "200+ companies"/SOC 2/SAML/Frankfurt etc. still in 11 mykka-web files |
 | Phase 7 docs | ❌ | root `AGENTS.md` still claims "no pnpm-workspace.yaml", omits pretzel-desktop + packages/detect; pretzel-desktop has **zero** README/AGENTS; KNOWN_ISSUES stale |
 | Phase 4 / manual | ❌ | all Yarin-side: Render deploy hooks + env (`PILOT_MODE`, `ADMIN_BASE_URL` — invite links broken in prod without it), Neon, Clerk prod, Apple, CWS — tracked in `docs/operations/pilot-release/tasks_for_yarin.md` |
 

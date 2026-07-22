@@ -2,7 +2,7 @@
  * HTTPS MITM proxy daemon.
  *
  * Listens on 127.0.0.1:PROXY_PORT. For CONNECT tunnels to MONITORED hosts it
- * terminates TLS with an on-the-fly signed cert, runs @ciyo/detect on the
+ * terminates TLS with an on-the-fly signed cert, runs @mykka/detect on the
  * request body, and forwards or blocks based on the result. Every other host
  * is blind-tunnelled (raw TCP pipe, no interception) so we never MITM banking,
  * email, SSO, or cert-pinned traffic.
@@ -19,8 +19,8 @@ import https from 'https'
 import net from 'net'
 import tls from 'tls'
 import { EventEmitter } from 'events'
-import { detectPrompt } from '@ciyo/detect'
-import type { Policy, DetectionResult } from '@ciyo/detect'
+import { detectPrompt } from '@mykka/detect'
+import type { Policy, DetectionResult } from '@mykka/detect'
 import { signHostCertCached, type CACert } from './ca'
 
 export const PROXY_PORT = 18888

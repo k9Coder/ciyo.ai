@@ -16,8 +16,8 @@
 |---|---|---|
 | Backend API | Render **Standard** (free tier sleeps — unusable) | **$25/month** |
 | Database | Neon free tier (Render has no free Postgres) | **$0** |
-| ciyo.ai marketing | Vercel Hobby (keep as-is) | **$0** |
-| console.ciyo.ai | Render static (keep as-is) | **$0** |
+| mykka.ai marketing | Vercel Hobby (keep as-is) | **$0** |
+| console.mykka.ai | Render static (keep as-is) | **$0** |
 | DNS | Cloudflare free — GoDaddy nameservers → Cloudflare | **$0** |
 | Chrome Web Store | One-time, already paid | **$5 done** |
 | **Total at launch** | | **$25/month** |
@@ -31,7 +31,7 @@
 1. Cloudflare DNS (GoDaddy nameservers → Cloudflare; route all subdomains)
 2. Stripe live account → create Starter + Business products → get `price_...` IDs
 3. Mailgun account → get SMTP credentials
-4. Clerk live keys → brand email templates → set webhook to `https://api.ciyo.ai/webhooks/clerk`
+4. Clerk live keys → brand email templates → set webhook to `https://api.mykka.ai/webhooks/clerk`
 5. Anthropic API key
 6. Sentry 2 projects → get DSNs
 7. All env vars in Render (backend) + Vercel (marketing) — see `production-deployment-guide.md`

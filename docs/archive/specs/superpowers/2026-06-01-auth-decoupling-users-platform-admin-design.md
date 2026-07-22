@@ -156,7 +156,7 @@ Null out `users.clerkId` (so the unique constraint allows multiple deleted users
 
 ### Role flag
 
-`users.isPlatformAdmin: boolean` — set to `true` manually via a script for Ciyo internal staff. No self-service. Checked at the DB level on every platform-admin request.
+`users.isPlatformAdmin: boolean` — set to `true` manually via a script for Mykka internal staff. No self-service. Checked at the DB level on every platform-admin request.
 
 ### New middleware: `requirePlatformAdmin`
 

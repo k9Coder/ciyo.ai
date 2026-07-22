@@ -5,7 +5,7 @@
 
 ## Overview
 
-A conversational AI assistant embedded in the ciyo admin web app (`admin/`) that lets super admins manage rules and subjects using natural language. The admin describes what they want in plain English; the LLM interprets it and produces a set of proposed changes (create/update/delete rules or subjects) for human review before anything is applied.
+A conversational AI assistant embedded in the mykka admin web app (`admin/`) that lets super admins manage rules and subjects using natural language. The admin describes what they want in plain English; the LLM interprets it and produces a set of proposed changes (create/update/delete rules or subjects) for human review before anything is applied.
 
 ## Decisions Made
 
@@ -141,7 +141,7 @@ backend/src/assistant/
 `buildSystemPrompt(snapshot)` assembles five sections in order:
 
 **① Role + product knowledge (static)**
-Explains ciyo, what the assistant does, and the key constraint: always return JSON, never apply changes directly, ask for clarification when scope is ambiguous.
+Explains mykka, what the assistant does, and the key constraint: always return JSON, never apply changes directly, ask for clarification when scope is ambiguous.
 
 **② Data model reference (static)**
 Documents Subject, Rule, Division, Team, and all enum values (rule kinds, actions, report levels).

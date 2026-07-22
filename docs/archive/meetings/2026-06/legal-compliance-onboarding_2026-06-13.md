@@ -1,4 +1,4 @@
-# ciyo.ai — Legal, Financial & Security Compliance Kickoff
+# mykka.ai — Legal, Financial & Security Compliance Kickoff
 **Date:** June 13, 2026
 **Chair:** Ethan Cole (CEO)
 **Attendees:** Yael Mizrahi (Israeli & International Tech Lawyer), Avi Shapiro (Israeli CPA), Noa Katz (CISO), Tal Ben-David (Cybersecurity Specialist)
@@ -10,9 +10,9 @@
 
 **ETHAN:** Welcome to everyone — Yael, Avi, Noa, Tal. You're all new here, so let me give you the state of play in two minutes before I ask each of you to tell me what I need to hear.
 
-### What ciyo.ai is
+### What mykka.ai is
 
-We build a Chrome extension called Pretzel. It intercepts employee prompts before they're sent to AI tools — ChatGPT, Claude.ai, Gemini — and blocks or warns based on data loss prevention policies configured by IT admins. The admin console is called Pretzel Console. We have a backend API, a marketing website at ciyo.ai, and a billing system on Stripe. All of it is B2B SaaS — we sell to companies, not individuals.
+We build a Chrome extension called Pretzel. It intercepts employee prompts before they're sent to AI tools — ChatGPT, Claude.ai, Gemini — and blocks or warns based on data loss prevention policies configured by IT admins. The admin console is called Pretzel Console. We have a backend API, a marketing website at mykka.ai, and a billing system on Stripe. All of it is B2B SaaS — we sell to companies, not individuals.
 
 ### What happened at the last production readiness meeting (June 11)
 
@@ -20,7 +20,7 @@ We reviewed whether we can deploy to production. The verdict:
 
 - **Code:** Ready. The full E2E test suite passes. Backend, console, extension — all launchable from a code standpoint.
 - **Infrastructure:** Decided and costed. Render Standard backend ($25/month, always-on), Neon free-tier Postgres, Vercel free for the marketing site, Render free static for the console. Total fixed cost: **$25/month at launch**.
-- **DNS:** GoDaddy nameservers → Cloudflare → routes all subdomains (api.ciyo.ai, console.ciyo.ai, ciyo.ai). Ryan Kowalski (DevOps) owns setup.
+- **DNS:** GoDaddy nameservers → Cloudflare → routes all subdomains (api.mykka.ai, console.mykka.ai, mykka.ai). Ryan Kowalski (DevOps) owns setup.
 - **Payments:** Stripe goes live on launch day. PayPal verification takes 24–48h; we launch Stripe-only and add PayPal after.
 - **Extension:** We can submit to the Chrome Web Store tomorrow. Google review takes 1–5 business days. Launch sequence: web stack live first, extension submitted same day, marketing push when Chrome approves.
 - **Service credentials needed before launch:** Stripe live keys + product IDs, Clerk live keys (branding), Mailgun SMTP, Anthropic API key, Sentry DSNs. One day of configuration work.
@@ -33,24 +33,24 @@ We reviewed whether we can deploy to production. The verdict:
 - Pretzel Chrome Extension (live on Web Store)
 - Pretzel Console (admin dashboard — policies, members, violations, billing)
 - Backend API (policy engine, tenant isolation, Stripe, Clerk auth)
-- ciyo.ai marketing site
+- mykka.ai marketing site
 - Analytics pipeline feeding a live violation dashboard
 - HIPAA / SOC 2 / PCI compliance detection rules (in parallel, not a launch blocker)
 
-**Phase 2 — Planned (Sep 2026–Jan 2027): ciyo-guard — Beyond the Browser**
-- ciyo-guard: local HTTPS proxy intercepting all AI API traffic (Cursor, Claude Code, scripts, any non-browser tool)
-- @ciyo/detect: open-source npm detection library extracted from the extension
+**Phase 2 — Planned (Sep 2026–Jan 2027): mykka-guard — Beyond the Browser**
+- mykka-guard: local HTTPS proxy intercepting all AI API traffic (Cursor, Claude Code, scripts, any non-browser tool)
+- @mykka/detect: open-source npm detection library extracted from the extension
 - Coverage Map in Console: per-member view of which clients are installed
 - API Key Management: non-browser clients authenticate with long-lived keys
 - This phase targets developers and technical teams who bypass the browser
 
 **Phase 3 — Future (2027+): Platform Expansion**
-- ciyo git hook (pre-commit scan)
-- ciyo GitHub Action (PR pipeline scan)
-- ciyo Jupyter Extension (data science enforcement)
-- ciyo LSP (Language Server for any IDE)
-- ciyo Slack/Teams App (audit Slack AI and Microsoft Copilot)
-- ciyo Solo ($10/month PLG product for individual developers)
+- mykka git hook (pre-commit scan)
+- mykka GitHub Action (PR pipeline scan)
+- mykka Jupyter Extension (data science enforcement)
+- mykka LSP (Language Server for any IDE)
+- mykka Slack/Teams App (audit Slack AI and Microsoft Copilot)
+- mykka Solo ($10/month PLG product for individual developers)
 
 ### The thing nobody solved
 
@@ -73,7 +73,7 @@ The technical product is ready. The legal infrastructure to operate it as a busi
 Neither option is equivalent, and this is the most consequential decision you'll make today.
 
 **עוסק מורשה (Licensed Dealer / Sole Proprietor):**
-You can open it this afternoon via the Israel Tax Authority website. No registration fee, no waiting period. But: it is you personally. There is no corporate veil. If a customer sues ciyo.ai, they are suing you personally. You cannot have co-founders with separate ownership stakes in any structured way. You cannot issue employee stock options (Section 102 requires a company). You cannot raise investment — no SAFE, no equity round, because there is no equity to issue. Enterprise customers, particularly those with legal departments, will frequently refuse to contract with a sole proprietor. And crucially, the Israeli Innovation Authority does not grant R&D funding to a sole proprietor.
+You can open it this afternoon via the Israel Tax Authority website. No registration fee, no waiting period. But: it is you personally. There is no corporate veil. If a customer sues mykka.ai, they are suing you personally. You cannot have co-founders with separate ownership stakes in any structured way. You cannot issue employee stock options (Section 102 requires a company). You cannot raise investment — no SAFE, no equity round, because there is no equity to issue. Enterprise customers, particularly those with legal departments, will frequently refuse to contract with a sole proprietor. And crucially, the Israeli Innovation Authority does not grant R&D funding to a sole proprietor.
 
 **חברה בע"מ (Private Limited Company):**
 Separate legal entity. Limited liability. Can have multiple shareholders. Can raise investment. Can issue Section 102 employee options. Eligible for IIA R&D grants. Eligible for Preferred Technology Enterprise tax status (7.5% or 0% effective tax on IP income). Enterprise customers can contract with it without hesitation.
@@ -100,11 +100,11 @@ The registration determines the security level (Standard, Medium, or High) and t
 
 ### Employment / Contractor agreements
 
-Any developers or staff working for ciyo.ai in Israel need either an Israeli employment contract or a contractor agreement that complies with Israeli labor law. If someone works more than 4 months continuously, Israeli courts will often reclassify them as an employee regardless of the contract. That means severance obligations, social security, and overtime exposure. Get proper contracts in place before the first paycheck.
+Any developers or staff working for mykka.ai in Israel need either an Israeli employment contract or a contractor agreement that complies with Israeli labor law. If someone works more than 4 months continuously, Israeli courts will often reclassify them as an employee regardless of the contract. That means severance obligations, social security, and overtime exposure. Get proper contracts in place before the first paycheck.
 
 ### Cross-border data transfers
 
-Your data lives on US servers (Render US East). If you have EU users — and you will — you need Standard Contractual Clauses in your privacy policy and Data Processing Agreements with your processors (Render, Clerk, Stripe). Israel has EU adequacy status for data transfers, meaning Israel → EU is permissible. But ciyo.ai → US servers → EU users needs SCCs documented. I'll draft the DPA template.
+Your data lives on US servers (Render US East). If you have EU users — and you will — you need Standard Contractual Clauses in your privacy policy and Data Processing Agreements with your processors (Render, Clerk, Stripe). Israel has EU adequacy status for data transfers, meaning Israel → EU is permissible. But mykka.ai → US servers → EU users needs SCCs documented. I'll draft the DPA template.
 
 ### My pre-production checklist
 
@@ -131,7 +131,7 @@ Your data lives on US servers (Render US East). If you have EU users — and you
 
 As an עוסק מורשה in Israel, your business income is taxed as personal income. Progressive rates: 10% on the first ₪77K, up to **50% on income above ₪698K**. With no corporate structure, there is also no way to apply for Preferred Technology Enterprise status, which can drop your effective tax rate on IP income to **7.5% or even 0%** in development towns.
 
-As a חברה בע"מ, the standard corporate tax rate is **23%**. Once you qualify for Preferred Technology Enterprise (a tech company selling to non-Israeli customers with significant R&D spend), that drops to **7.5%**. For a company like ciyo.ai that earns substantially from international SaaS revenue derived from IP, this is not a marginal difference — it is the difference between retaining 77% of profit and retaining 50%.
+As a חברה בע"מ, the standard corporate tax rate is **23%**. Once you qualify for Preferred Technology Enterprise (a tech company selling to non-Israeli customers with significant R&D spend), that drops to **7.5%**. For a company like mykka.ai that earns substantially from international SaaS revenue derived from IP, this is not a marginal difference — it is the difference between retaining 77% of profit and retaining 50%.
 
 Do not run a SaaS business that will earn real money through an עוסק מורשה. It does not make financial sense.
 
@@ -151,7 +151,7 @@ If you have a US entity, you can register Stripe under that, collect revenue the
 
 ### IIA R&D grants — significant opportunity
 
-The Israel Innovation Authority offers grants covering **20–30% of approved R&D expenditure** for qualifying Israeli tech companies. For a company spending, say, ₪500K/year on engineering salaries in Israel, that is a ₪100–₪150K non-dilutive grant. The application is competitive but ciyo.ai's profile is strong — proprietary detection technology, IP developed in Israel, B2B software. However: **you must be a registered Israeli company (חברה בע"מ) to apply**. Every month you delay registration is a month of potentially grantable R&D spend that passes unrecovered.
+The Israel Innovation Authority offers grants covering **20–30% of approved R&D expenditure** for qualifying Israeli tech companies. For a company spending, say, ₪500K/year on engineering salaries in Israel, that is a ₪100–₪150K non-dilutive grant. The application is competitive but mykka.ai's profile is strong — proprietary detection technology, IP developed in Israel, B2B software. However: **you must be a registered Israeli company (חברה בע"מ) to apply**. Every month you delay registration is a month of potentially grantable R&D spend that passes unrecovered.
 
 The IP transfer restriction is also worth understanding now: if IIA funds the development of your detection IP, you cannot transfer that IP outside Israel without IIA approval and royalty repayment obligations. This matters if you ever consider an acquisition or restructuring. We set the structure correctly from the start to avoid future constraints.
 
@@ -209,11 +209,11 @@ Enterprise customers — especially in fintech, healthcare, and legal — will a
 Israeli enterprise customers and European customers will expect ISO 27001 more than SOC 2. We assess whether to pursue it in parallel or sequentially. My view: SOC 2 first (broader US market relevance), ISO 27001 in Phase 2.
 
 **Israeli Privacy Protection Regulations — data security level classification.**
-Once the PPA database registration is filed, we need to formally classify ciyo.ai's databases. My initial read: the user database (names, emails, org data) is **Standard level**. The violations database (flagged prompt content, which may include health information, financial data, credentials) is likely **Medium level** given the sensitivity of what the detection engine flags. Medium level triggers specific technical control requirements I will document. Tal implements them.
+Once the PPA database registration is filed, we need to formally classify mykka.ai's databases. My initial read: the user database (names, emails, org data) is **Standard level**. The violations database (flagged prompt content, which may include health information, financial data, credentials) is likely **Medium level** given the sensitivity of what the detection engine flags. Medium level triggers specific technical control requirements I will document. Tal implements them.
 
 ### INCD obligations — current assessment
 
-At this stage, ciyo.ai does not operate in a sector that triggers mandatory INCD directives (critical infrastructure — energy, water, financial market infrastructure, etc.). We are a B2B SaaS vendor, not a regulated operator. However: if we sell to regulated Israeli customers (banks, health insurance companies), *they* are INCD-regulated, and they will ask us detailed security questions. Our security posture needs to satisfy their compliance teams, even if we have no direct INCD obligation.
+At this stage, mykka.ai does not operate in a sector that triggers mandatory INCD directives (critical infrastructure — energy, water, financial market infrastructure, etc.). We are a B2B SaaS vendor, not a regulated operator. However: if we sell to regulated Israeli customers (banks, health insurance companies), *they* are INCD-regulated, and they will ask us detailed security questions. Our security posture needs to satisfy their compliance teams, even if we have no direct INCD obligation.
 
 ### My pre-production checklist
 
@@ -246,7 +246,7 @@ No secrets hardcoded in the codebase. This sounds obvious but codebases acquire 
 Run `npm audit` across all four packages. Flag anything critical or high severity. If there are unfixed high-severity vulnerabilities in production dependencies at launch, that is an exposure.
 
 **4. CORS configuration**
-Marcus explicitly flagged this in the production readiness meeting: `CORS_ORIGIN` must be set to `https://console.ciyo.ai` on the backend. I'll verify this is enforced correctly and that there is no wildcard CORS that would allow any origin to call the API.
+Marcus explicitly flagged this in the production readiness meeting: `CORS_ORIGIN` must be set to `https://console.mykka.ai` on the backend. I'll verify this is enforced correctly and that there is no wildcard CORS that would allow any origin to call the API.
 
 **5. Rate limiting**
 Is there rate limiting on the `/scan` endpoint (the one the extension calls for every prompt submission)? Without rate limiting, a malicious actor who reverse-engineers the extension API calls can hammer the backend and generate Anthropic API costs or degrade service for all tenants. This needs to be in place before launch.
@@ -269,9 +269,9 @@ For the database registration and security level classification (Noa's responsib
 - **User/org database (names, emails, roles):** Standard level. Technical controls required: access controls, audit logging, defined retention. Ryan already has most of these.
 - **Violations database (flagged prompt content):** Likely Medium level given the potential for health, financial, and credential data in the flagged content. Additional controls required at Medium: security officer designation, access logs, background check for those with access, and notification to data subjects in some cases. We need to design around this.
 
-### Cookie consent / tracking on ciyo.ai
+### Cookie consent / tracking on mykka.ai
 
-Quick check on the marketing site: if it uses Google Analytics or any other tracker, a cookie consent banner is required before launch for GDPR compliance. I'll check the ciyo-web codebase for any tracking scripts and report back within the day.
+Quick check on the marketing site: if it uses Google Analytics or any other tracker, a cookie consent banner is required before launch for GDPR compliance. I'll check the mykka-web codebase for any tracking scripts and report back within the day.
 
 ### My pre-launch security checklist
 
@@ -285,7 +285,7 @@ Quick check on the marketing site: if it uses Google Analytics or any other trac
 | Violations table data schema review | Confirm what PII is stored, how secured | 2 days |
 | Neon free tier security posture review | Confirm acceptable for production | 1 day |
 | Extension manifest permissions review | Confirm minimum necessary permissions | 1 day |
-| ciyo-web tracking script audit | Check for trackers requiring cookie consent | 1 day |
+| mykka-web tracking script audit | Check for trackers requiring cookie consent | 1 day |
 
 **Total: 1 week of focused work. I start Monday. Results to Noa and Marcus by end of next week.**
 
@@ -342,7 +342,7 @@ Noa and Tal — the pre-launch security review. One week?
 
 **ETHAN:** Agreed. We don't ship a known critical vulnerability. Anything else before I close this?
 
-**YAEL:** One more thing: the name on the company. "ciyo.ai" as a trading name is fine, but the registered company name in Israel must be in Hebrew or include a Hebrew transliteration. Something like: "סייו טכנולוגיות בע"מ" (Ciyo Technologies Ltd.) or similar. We decide this tomorrow when I start the paperwork.
+**YAEL:** One more thing: the name on the company. "mykka.ai" as a trading name is fine, but the registered company name in Israel must be in Hebrew or include a Hebrew transliteration. Something like: "סייו טכנולוגיות בע"מ" (Mykka Technologies Ltd.) or similar. We decide this tomorrow when I start the paperwork.
 
 **AVI:** Also: the shareholders agreement — who owns what. If there are co-founders, this is the moment to document it. Handshake agreements about equity are legally meaningless once there is a real company. Yael will prepare a basic shareholder agreement simultaneously with the Articles of Association.
 
@@ -359,7 +359,7 @@ Noa and Tal — the pre-launch security review. One week?
 | 3 | Confirm US entity existence → Stripe registration plan | Ethan + Avi | June 14 |
 | 4 | Open business bank account applications (Hapoalim, Leumi, Mizrahi) | Ethan | June 16 |
 | 5 | VAT (מע"מ) registration after entity | Avi | June 17 |
-| 6 | Cookie consent / tracker check on ciyo-web | Tal | June 14 |
+| 6 | Cookie consent / tracker check on mykka-web | Tal | June 14 |
 | 7 | Incident response + breach notification procedure | Noa | June 16 |
 | 8 | Pre-launch security assessment (8-point checklist) | Tal | June 20 |
 | 9 | Privacy Policy + Terms of Service draft | Yael | June 20 |
@@ -370,7 +370,7 @@ Noa and Tal — the pre-launch security review. One week?
 | 14 | PPA database registration filing | Yael | June 21 |
 | 15 | Privacy protection security level classification | Noa + Tal | June 21 |
 | 16 | Stripe/PayPal moved to company entity | Ethan + Avi | After entity + bank account |
-| 17 | Privacy Policy + ToS live on ciyo.ai website | Ethan | June 21 |
+| 17 | Privacy Policy + ToS live on mykka.ai website | Ethan | June 21 |
 | 18 | Production web stack deploy (pending legal docs) | Ryan | June 21–22 |
 | 19 | Chrome extension submitted to Web Store | Marcus + Ryan | June 21–22 |
 | 20 | Section 102 option plan setup | Avi + Yael | 4 weeks post-entity |

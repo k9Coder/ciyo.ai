@@ -6,7 +6,7 @@
 
 **Architecture:** A single explicit `APP_ENV=staging` var drives all three indicators. Frontend apps read their framework-prefixed variant (`VITE_APP_ENV` / `NEXT_PUBLIC_APP_ENV`) and render an amber badge near the logo. The backend reads `APP_ENV` and appends it to the existing startup log line. Production stays untouched — absent variable means no badge.
 
-**Tech Stack:** Node.js (backend), React + Vite + Vitest (pretzel-console), Next.js (ciyo-web)
+**Tech Stack:** Node.js (backend), React + Vite + Vitest (pretzel-console), Next.js (mykka-web)
 
 ---
 
@@ -21,8 +21,8 @@
 | Modify | `pretzel-console/.env.example` |
 | Modify | `pretzel-console/src/components/layout/AppLayout.tsx` |
 | Create | `pretzel-console/tests/AppLayout.staging.test.tsx` |
-| Modify | `ciyo-web/.env.staging` |
-| Modify | `ciyo-web/components/layout/Header.tsx` |
+| Modify | `mykka-web/.env.staging` |
+| Modify | `mykka-web/components/layout/Header.tsx` |
 
 ---
 
@@ -33,7 +33,7 @@
 - Modify: `backend/.env.example`
 - Modify: `pretzel-console/.env.staging`
 - Modify: `pretzel-console/.env.example`
-- Modify: `ciyo-web/.env.staging`
+- Modify: `mykka-web/.env.staging`
 
 - [ ] **Step 1: Add `APP_ENV=staging` to backend staging env**
 
@@ -67,9 +67,9 @@ Open `pretzel-console/.env.example`. Append:
 VITE_APP_ENV=
 ```
 
-- [ ] **Step 5: Add `NEXT_PUBLIC_APP_ENV=staging` to ciyo-web staging env**
+- [ ] **Step 5: Add `NEXT_PUBLIC_APP_ENV=staging` to mykka-web staging env**
 
-Open `ciyo-web/.env.staging`. Append:
+Open `mykka-web/.env.staging`. Append:
 
 ```
 NEXT_PUBLIC_APP_ENV=staging
@@ -80,7 +80,7 @@ NEXT_PUBLIC_APP_ENV=staging
 ```bash
 git add backend/.env.staging backend/.env.example \
         pretzel-console/.env.staging pretzel-console/.env.example \
-        ciyo-web/.env.staging
+        mykka-web/.env.staging
 git commit -m "chore: add APP_ENV=staging to all staging env files"
 ```
 
@@ -96,14 +96,14 @@ git commit -m "chore: add APP_ENV=staging to all staging env files"
 In `backend/src/index.ts`, replace this line:
 
 ```ts
-logger.info(`ciyo-api starting on :${port}`)
+logger.info(`mykka-api starting on :${port}`)
 ```
 
 With:
 
 ```ts
 const appEnv = process.env['APP_ENV']
-logger.info(`ciyo-api starting on :${port}${appEnv ? `  [ENV: ${appEnv}]` : ''}`)
+logger.info(`mykka-api starting on :${port}${appEnv ? `  [ENV: ${appEnv}]` : ''}`)
 ```
 
 - [ ] **Step 2: Verify manually**
@@ -114,9 +114,9 @@ Start the backend with `APP_ENV=staging` set and confirm the log output includes
 cd backend && APP_ENV=staging pnpm dev
 ```
 
-Expected first log line: `ciyo-api starting on :3000  [ENV: staging]`
+Expected first log line: `mykka-api starting on :3000  [ENV: staging]`
 
-Without the var set, it should just log: `ciyo-api starting on :3000`
+Without the var set, it should just log: `mykka-api starting on :3000`
 
 - [ ] **Step 3: Commit**
 
@@ -194,7 +194,7 @@ In `pretzel-console/src/components/layout/AppLayout.tsx`, find the logo block (a
       Pretzel
     </div>
     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-      by ciyo.ai
+      by mykka.ai
     </div>
   </div>
 </Link>
@@ -212,7 +212,7 @@ Replace with:
       Pretzel
     </div>
     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-      by ciyo.ai
+      by mykka.ai
     </div>
     {import.meta.env['VITE_APP_ENV'] === 'staging' && (
       <div style={{
@@ -254,22 +254,22 @@ git commit -m "feat(pretzel-console): show STAGING badge in sidebar when VITE_AP
 
 ---
 
-### Task 4: ciyo-web — staging badge in header
+### Task 4: mykka-web — staging badge in header
 
 **Files:**
-- Modify: `ciyo-web/components/layout/Header.tsx:21-25`
+- Modify: `mykka-web/components/layout/Header.tsx:21-25`
 
-ciyo-web has no unit test infrastructure set up, so we skip a unit test here and verify visually.
+mykka-web has no unit test infrastructure set up, so we skip a unit test here and verify visually.
 
 - [ ] **Step 1: Add the staging badge to the Header logo**
 
-In `ciyo-web/components/layout/Header.tsx`, find the logo `<Link>` (line 21–25):
+In `mykka-web/components/layout/Header.tsx`, find the logo `<Link>` (line 21–25):
 
 ```tsx
 <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
   <span className="text-[#a78bfa]">🥨</span>
   <span className="text-[15px] tracking-tight">Pretzel</span>
-  <span className="text-[11px] font-normal text-[#94a3b8]">by ciyo.ai</span>
+  <span className="text-[11px] font-normal text-[#94a3b8]">by mykka.ai</span>
 </Link>
 ```
 
@@ -284,23 +284,23 @@ Replace with:
       STAGING
     </span>
   )}
-  <span className="text-[11px] font-normal text-[#94a3b8]">by ciyo.ai</span>
+  <span className="text-[11px] font-normal text-[#94a3b8]">by mykka.ai</span>
 </Link>
 ```
 
 - [ ] **Step 2: Verify visually**
 
-Ensure staging env is active (run `pnpm set-env:staging` from the monorepo root if not already done), then start ciyo-web:
+Ensure staging env is active (run `pnpm set-env:staging` from the monorepo root if not already done), then start mykka-web:
 
 ```bash
-cd ciyo-web && pnpm dev
+cd mykka-web && pnpm dev
 ```
 
-Open `http://localhost:3000` and confirm the amber "STAGING" pill appears next to "Pretzel" in the header. To verify it hides in production, temporarily remove `NEXT_PUBLIC_APP_ENV` from `ciyo-web/.env` and restart.
+Open `http://localhost:3000` and confirm the amber "STAGING" pill appears next to "Pretzel" in the header. To verify it hides in production, temporarily remove `NEXT_PUBLIC_APP_ENV` from `mykka-web/.env` and restart.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add ciyo-web/components/layout/Header.tsx
-git commit -m "feat(ciyo-web): show STAGING badge in header when NEXT_PUBLIC_APP_ENV=staging"
+git add mykka-web/components/layout/Header.tsx
+git commit -m "feat(mykka-web): show STAGING badge in header when NEXT_PUBLIC_APP_ENV=staging"
 ```

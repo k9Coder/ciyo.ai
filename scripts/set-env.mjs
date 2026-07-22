@@ -7,10 +7,10 @@ if (!env || !["staging", "prod"].includes(env)) {
   process.exit(1);
 }
 
-// backend, ciyo-web and pretzel-desktop need a file copy; Vite packages use --mode at build time
+// backend, mykka-web and pretzel-desktop need a file copy; Vite packages use --mode at build time
 const copies = [
   { pkg: "backend", src: `.env.${env}`, dest: ".env" },
-  { pkg: "ciyo-web", src: `.env.${env}`, dest: ".env.local" },
+  { pkg: "mykka-web", src: `.env.${env}`, dest: ".env.local" },
   { pkg: "pretzel-desktop", src: `.env.${env}`, dest: ".env" },
 ];
 

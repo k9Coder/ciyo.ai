@@ -40,7 +40,7 @@ export function PlanGate({ feature, children }: PlanGateProps) {
         </button>
       ) : (
         <a
-          href="https://ciyo.ai/pricing"
+          href="https://mykka.ai/pricing"
           target="_blank"
           rel="noreferrer"
           style={{

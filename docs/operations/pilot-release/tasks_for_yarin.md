@@ -19,14 +19,14 @@ Check items off as they land. Ordering inside each section = do top-down.
   - `PILOT_MODE=true` — **without this, every signup lands on the `free` plan silently: no AI assistant, keyword-only rules**
   - `LLM_PROVIDER=groq`
   - `GROQ_API_KEY=<key>`
-  - `ADMIN_BASE_URL=https://console.ciyo.ai` — **invite links are generated from this; default is `http://localhost:5173`, i.e. every prod invite link is broken until set**
-  - `CORS_ORIGIN=https://console.ciyo.ai`
+  - `ADMIN_BASE_URL=https://console.mykka.ai` — **invite links are generated from this; default is `http://localhost:5173`, i.e. every prod invite link is broken until set**
+  - `CORS_ORIGIN=https://console.mykka.ai`
   - `CLERK_SECRET_KEY` + `CLERK_WEBHOOK_SECRET` (production Clerk instance — see §3)
   - `DATABASE_URL` (Neon — see §2)
   - Optional: `ASSISTANT_SEND_PII` stays UNSET (emails are redacted from LLM prompts by default; do not set to true for pilot)
 - [ ] Console static site → set `VITE_API_BASE=<prod api url>` and production `VITE_CLERK_PUBLISHABLE_KEY`.
-- [ ] Verify SPA rewrite: deep links like `https://console.ciyo.ai/invite/<token>` must serve index.html, not 404. Invite flow depends on it.
-- [ ] ciyo-web (Vercel): set `NEXT_PUBLIC_PILOT_MODE=true` on production only (NOT preview/staging) → pricing page shows pilot banner.
+- [ ] Verify SPA rewrite: deep links like `https://console.mykka.ai/invite/<token>` must serve index.html, not 404. Invite flow depends on it.
+- [ ] mykka-web (Vercel): set `NEXT_PUBLIC_PILOT_MODE=true` on production only (NOT preview/staging) → pricing page shows pilot banner.
 
 ## 2. Neon Postgres (plan 4.1)
 
@@ -43,14 +43,14 @@ Check items off as they land. Ordering inside each section = do top-down.
 - [ ] Create/configure the production Clerk instance.
 - [ ] Webhook endpoint → `https://<prod-api-domain>/webhooks/clerk`, subscribe `user.created`, `user.updated`, `user.deleted`; copy the signing secret into Render `CLERK_WEBHOOK_SECRET`.
 - [ ] Production publishable key goes to THREE places: console build env, extension prod build (`VITE_CLERK_PUBLISHABLE_KEY`), and desktop release secret `VITE_CLERK_PUBLISHABLE_KEY_PROD`.
-- [ ] Also confirm repo secret `CIYO_API_URL_PROD` is set (desktop release workflow reads it).
+- [ ] Also confirm repo secret `PRETZEL_DESKTOP_API_URL` is set (desktop release workflow reads it).
 
 ## 4. Apple Developer + Chrome Web Store (plan 2.5 + 6.5) — LONGEST LEAD TIME, START FIRST
 
 - [ ] Enroll in Apple Developer Program ($99/yr, verification can take days). Full-desktop pilot decision makes macOS signing effectively mandatory — unsigned DMGs hit the Gatekeeper "damaged app" wall.
 - [ ] After enrollment: create Developer ID Application cert, add signing + notarization to `pretzel-desktop-release.yml` (code side can be prepared on request; the cert/account is yours).
 - [ ] Register Chrome Web Store developer account ($5 one-time).
-- [ ] Submit extension to CWS once privacy policy is live at `https://ciyo.ai/privacy` (review 3–7 days).
+- [ ] Submit extension to CWS once privacy policy is live at `https://mykka.ai/privacy` (review 3–7 days).
 - [ ] Windows: unsigned NSIS shows SmartScreen warning — accept for pilot with a note in the onboarding doc, or buy an OV cert (optional).
 
 ## 5. Desktop real-machine validation (plan 2.6 / A8) — gate for shipping desktop to any customer
@@ -70,8 +70,8 @@ Warning from local testing: **Windows Defender deletes the freshly built `dist-e
 ## 6. People / legal / go-live (plan Phase 6 + 8)
 
 - [ ] David Horowitz: legal review of privacy policy (2–3 business days, critical path for CWS).
-- [ ] Deploy privacy page to production after approval; verify `https://ciyo.ai/privacy` renders.
-- [ ] Create `privacy@ciyo.ai` alias; Marcus sends a test mail to verify.
+- [ ] Deploy privacy page to production after approval; verify `https://mykka.ai/privacy` renders.
+- [ ] Create `privacy@mykka.ai` alias; Marcus sends a test mail to verify.
 - [ ] Uptime monitor (Better Stack free tier) on `https://<prod-api>/health`, alerts to Marcus + Ryan.
 - [ ] Name on-call person for pilot week 1.
 - [ ] Ben: pilot onboarding doc (1 page), feedback channel, participant list agreed with Ethan, success criteria defined.

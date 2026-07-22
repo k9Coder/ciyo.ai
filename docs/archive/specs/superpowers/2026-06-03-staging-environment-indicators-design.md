@@ -17,7 +17,7 @@ Add an explicit `APP_ENV` environment variable to all `.env.staging` files. When
 |---|---|---|
 | `backend/.env.staging` | `APP_ENV=staging` | `staging` |
 | `pretzel-console/.env.staging` | `VITE_APP_ENV=staging` | `staging` |
-| `ciyo-web/.env.staging` | `NEXT_PUBLIC_APP_ENV=staging` | `staging` |
+| `mykka-web/.env.staging` | `NEXT_PUBLIC_APP_ENV=staging` | `staging` |
 
 Also add to each `.env.example` as a documented but empty entry. Production `.env.prod` files: variable absent (no badge rendered).
 
@@ -28,7 +28,7 @@ File: `backend/src/index.ts`
 Append `[ENV: staging]` to the existing startup log line when `process.env.APP_ENV` is set:
 
 ```
-ciyo-api starting on :3000  [ENV: staging]
+mykka-api starting on :3000  [ENV: staging]
 ```
 
 No new log statements — augments the existing `logger.info` call.
@@ -37,22 +37,22 @@ No new log statements — augments the existing `logger.info` call.
 
 File: `pretzel-console/src/components/layout/AppLayout.tsx`
 
-Add an amber pill badge in the sidebar logo block, below "by ciyo.ai", when `import.meta.env.VITE_APP_ENV === 'staging'`. Inline style, no new component needed.
+Add an amber pill badge in the sidebar logo block, below "by mykka.ai", when `import.meta.env.VITE_APP_ENV === 'staging'`. Inline style, no new component needed.
 
 ```
 🥨 Pretzel
-   by ciyo.ai
+   by mykka.ai
    [STAGING]       ← amber pill, only when VITE_APP_ENV=staging
 ```
 
-## ciyo-web
+## mykka-web
 
-File: `ciyo-web/components/layout/Header.tsx`
+File: `mykka-web/components/layout/Header.tsx`
 
 Add an amber pill badge inline next to "Pretzel" text in the header logo when `process.env.NEXT_PUBLIC_APP_ENV === 'staging'`.
 
 ```
-🥨 Pretzel [STAGING] by ciyo.ai
+🥨 Pretzel [STAGING] by mykka.ai
 ```
 
 ## Badge Style

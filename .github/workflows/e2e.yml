@@ -95,7 +95,7 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
           CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
           # The console is served at :5173; without this the backend falls back
-          # to the prod allowlist (console.ciyo.ai) and the browser blocks every
+          # to the prod allowlist (console.mykka.ai) and the browser blocks every
           # cross-origin API call after preflight, so all data-driven admin
           # tests time out. See backend/src/app.ts CORS origin resolution.
           CORS_ORIGIN: http://localhost:5173

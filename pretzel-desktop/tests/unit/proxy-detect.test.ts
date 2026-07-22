@@ -1,11 +1,11 @@
 /**
- * Tests that @ciyo/detect integrates correctly into the proxy decision flow.
+ * Tests that @mykka/detect integrates correctly into the proxy decision flow.
  * Exercises detectPrompt with the DEFAULT_POLICY — verifies the detection
  * outcomes the proxy would act on.
  */
 import { describe, it, expect } from 'vitest'
-import { detectPrompt, DEFAULT_POLICY } from '@ciyo/detect'
-import type { Policy } from '@ciyo/detect'
+import { detectPrompt, DEFAULT_POLICY } from '@mykka/detect'
+import type { Policy } from '@mykka/detect'
 
 const HOST = 'api.openai.com'
 const openPolicy: Policy = { ...DEFAULT_POLICY, failMode: 'open' }

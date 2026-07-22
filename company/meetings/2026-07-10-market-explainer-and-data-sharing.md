@@ -19,7 +19,7 @@
 | James Okafor | Head of Customer Success | How customers actually misunderstand us |
 
 **Agenda:**
-1. How do we explain ciyo.ai / Pretzel to people who've never heard of us — why the engine helps with DLP, what a "policy" is, why AI is only in policy creation and NOT in the interception engine.
+1. How do we explain mykka.ai / Pretzel to people who've never heard of us — why the engine helps with DLP, what a "policy" is, why AI is only in policy creation and NOT in the interception engine.
 2. Should orgs get a "share data with Pretzel" opt-in? First: what data actually leaves the device today?
 
 ---
@@ -30,7 +30,7 @@
 
 **Priya:** The problem is that we're an AI-security company whose core product deliberately does *not* use AI, and that sounds like a contradiction until you explain it — and right now nobody explains it. When a prospect hears "AI DLP for ChatGPT," they assume we're an AI reading their prompts. That assumption is wrong in the way that *hurts* us: it makes us sound like the data-leak risk we're supposed to prevent. The truth is our best marketing asset and we're not using it.
 
-**Marcus:** Let me state the truth precisely so marketing doesn't drift from it. The interception engine — extension and desktop proxy — runs `@ciyo/detect` locally on the device. It's deterministic: pattern layers, regexes, entropy checks, PII classifiers. No model call, no network call in the detection path. A prompt is scanned in milliseconds on the user's machine before it leaves for ChatGPT, Claude, or Gemini. The *only* place an LLM exists in our stack is the backend policy assistant — an admin types "we're a fintech, protect customer PII and our repo names" and the assistant drafts policy rules. The admin reviews and publishes. The model proposes; it never enforces.
+**Marcus:** Let me state the truth precisely so marketing doesn't drift from it. The interception engine — extension and desktop proxy — runs `@mykka/detect` locally on the device. It's deterministic: pattern layers, regexes, entropy checks, PII classifiers. No model call, no network call in the detection path. A prompt is scanned in milliseconds on the user's machine before it leaves for ChatGPT, Claude, or Gemini. The *only* place an LLM exists in our stack is the backend policy assistant — an admin types "we're a fintech, protect customer PII and our repo names" and the assistant drafts policy rules. The admin reviews and publishes. The model proposes; it never enforces.
 
 **Noa:** And that separation is exactly what a CISO wants to hear, for three reasons. One: determinism. When the engine blocks something, I can tell an auditor *which rule* fired and *why* — same input, same result, every time. An LLM-based blocker can't promise that; it's probabilistic, and "the model felt like it" doesn't survive a compliance review. Two: latency and availability — local regex runs in milliseconds and works offline; a model call adds a round trip and a failure mode on every keystroke of the company's workflow. Three: the irony test — a DLP tool that ships your prompts to a third-party AI to check if they're safe has just leaked the data it was guarding. We pass that test *by architecture*, not by promise.
 
@@ -52,7 +52,7 @@ Then for the skeptical reader, one level deeper — the guard-dog framing: the e
 
 **Noa:** One caution: don't let copy say "your data never leaves your device," full stop. That's overclaiming — warn/block *events* do leave (we'll get to Item 2). The precise claim is: **"Your prompts are scanned on your device and are never sent to Pretzel's servers."** That sentence is true, defensible, and strong. Marketing must not round it up.
 
-**Priya:** Agreed — and Alexei's team validates every capability claim per our operating rules before anything publishes. Deliverables I propose: a "How Pretzel Works" explainer page on ciyo-web with a simple diagram — prompt → local check → allow/warn/block, with a side-note showing the AI assistant sitting next to the *admin*, not in the flow; an FAQ block ("Does AI read my prompts? No — here's why that's the point"); and a one-pager PDF of the same for Sofia's deck and Dimitri's questionnaires.
+**Priya:** Agreed — and Alexei's team validates every capability claim per our operating rules before anything publishes. Deliverables I propose: a "How Pretzel Works" explainer page on mykka-web with a simple diagram — prompt → local check → allow/warn/block, with a side-note showing the AI assistant sitting next to the *admin*, not in the flow; an FAQ block ("Does AI read my prompts? No — here's why that's the point"); and a one-pager PDF of the same for Sofia's deck and Dimitri's questionnaires.
 
 **Ethan:** Decision: that's the canonical story — "AI helps you write the rules; a deterministic local engine enforces them; prompts never leave the device for our servers." Priya owns the page and one-pager, Megan writes, Marcus reviews every technical sentence, Noa reviews the claims. Two weeks. Next item.
 
@@ -114,6 +114,6 @@ So the "does this tenant share data with Pretzel" knob **already exists** — it
 
 ## Verified technical facts (source of truth for this meeting)
 
-- Detection is local and deterministic: `pretzel/src` (extension service worker) and `pretzel-desktop/electron/proxy.ts` both run `@ciyo/detect` on-device; no LLM, no network call in the detection path.
+- Detection is local and deterministic: `pretzel/src` (extension service worker) and `pretzel-desktop/electron/proxy.ts` both run `@mykka/detect` on-device; no LLM, no network call in the detection path.
 - LLM usage exists only in `backend/src/assistant/` — the admin policy-drafting assistant (Anthropic/OpenAI/Groq providers). Output is proposed config; publishing requires admin action.
 - Data leaving the device (per `pretzel/docs/runtime-and-data-flow.md` and `pretzel/src/events/dispatch.ts`, `pretzel/src/telemetry/dispatch.ts`): scan count (no body); warn/block events (rule ID, action, hostname); matched term only at per-rule `reportLevel: rich`; degraded telemetry (hostname + reason). Full prompts are never transmitted; local audit log stores hash + length only.

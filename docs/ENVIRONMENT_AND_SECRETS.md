@@ -39,7 +39,7 @@ CI test databases (`postgres://e2e:e2e@localhost`, `promptshield_test`) and dumm
 | `CONSOLE_RENDER_DEPLOY_HOOK` | pretzel-console-deploy | `DEPLOY_HOOK` |
 | `PRETZEL_CLERK_PUBLISHABLE_KEY` | pretzel-release, pretzel-desktop-release (production); e2e builds (staging) | `VITE_CLERK_PUBLISHABLE_KEY` / `CLERK_PUBLISHABLE_KEY` |
 | `PRETZEL_API_BASE` | pretzel-release | `VITE_API_BASE` |
-| `PRETZEL_DESKTOP_API_URL` | pretzel-desktop-release | `CIYO_API_URL` |
+| `PRETZEL_DESKTOP_API_URL` | pretzel-desktop-release | `PRETZEL_API_URL` |
 
 **`staging` environment only** (Clerk dev instance for e2e):
 
@@ -58,7 +58,7 @@ There is deliberately no `E2E_CLERK_PUBLISHABLE_KEY` — e2e builds read `PRETZE
 | `SHARED_DISCORD_WEBHOOK_URL` | all workflows' notify steps |
 | `SHARED_RENDER_API_KEY` | backend-deploy Render API |
 
-`GITHUB_TOKEN` is built-in. ciyo-web deploys via Vercel: its runtime env lives in the Vercel dashboard; the workflow consumes only the Discord webhook.
+`GITHUB_TOKEN` is built-in. mykka-web deploys via Vercel: its runtime env lives in the Vercel dashboard; the workflow consumes only the Discord webhook.
 
 ### Old → new rename map
 
@@ -69,7 +69,7 @@ There is deliberately no `E2E_CLERK_PUBLISHABLE_KEY` — e2e builds read `PRETZE
 | `RENDER_CONSOLE_PROD_DEPLOY_HOOK` / `RENDER_CONSOLE_STAGING_DEPLOY_HOOK` | `CONSOLE_RENDER_DEPLOY_HOOK` | production / staging env |
 | `VITE_CLERK_PUBLISHABLE_KEY_PROD` / `VITE_CLERK_PUBLISHABLE_KEY` | `PRETZEL_CLERK_PUBLISHABLE_KEY` | production / staging env |
 | `VITE_API_BASE_PROD` | `PRETZEL_API_BASE` | production env (+ staging value) |
-| `CIYO_API_URL_PROD` | `PRETZEL_DESKTOP_API_URL` | production env (+ staging value) |
+| `MYKKA_API_URL_PROD` | `PRETZEL_DESKTOP_API_URL` | production env (+ staging value) |
 | `CLERK_SECRET_KEY` | `E2E_CLERK_SECRET_KEY` | staging env |
 | `CLERK_WEBHOOK_SECRET` | `E2E_CLERK_WEBHOOK_SECRET` | staging env |
 | `E2E_CLERK_USER_ID` / `_ORG_ID` / `_USER_EMAIL` / `_USER_PASSWORD` | unchanged names | move to staging env |
@@ -83,13 +83,13 @@ Standard trio per package: `.env.example` (committed, placeholders) / `.env.stag
 | Package | Active file | Loader | Env access in code |
 |---|---|---|---|
 | backend | `.env` | `node --env-file=.env` | `src/env.ts` (zod, fail-fast at boot, live getters) |
-| ciyo-web | `.env.local` | Next.js | `lib/env.ts` (literal `NEXT_PUBLIC_*` refs — Next inlines at build) |
+| mykka-web | `.env.local` | Next.js | `lib/env.ts` (literal `NEXT_PUBLIC_*` refs — Next inlines at build) |
 | pretzel | `.env` or `--mode staging\|prod` | Vite | `src/env.ts` (literal `import.meta.env` refs) |
 | pretzel-console | `.env` or `--mode` | Vite | `src/env.ts` (live getters — tests stub env) |
 | pretzel-desktop | `.env` | electron-vite `define` + `loadEnv` — values are **baked into the main-process bundle at build time**; rebuild after changing `.env` | `electron/env.ts` |
 | e2e | `.env.e2e` (test axis) | dotenv inside `env.ts` | `env.ts` (fail-fast with per-var messages) |
 
-`pnpm set-env:staging | set-env:prod` (root) copies the right file into place for backend, ciyo-web, and pretzel-desktop.
+`pnpm set-env:staging | set-env:prod` (root) copies the right file into place for backend, mykka-web, and pretzel-desktop.
 
 Rules: no raw `process.env.X` / `import.meta.env.X` reads outside the env modules. Allowlisted exceptions: backend `src/db/client.ts`, `src/db/migrate.ts`, `src/db/seeds/**`, `src/scripts/**` (standalone scripts that run with partial env — CI provides only `DATABASE_URL`), `NODE_ENV` checks in desktop main/build files, `process.env.CI` in test tooling, and test files.
 
@@ -98,7 +98,7 @@ Rules: no raw `process.env.X` / `import.meta.env.X` reads outside the env module
 A deploy-env value lives in up to three places — rotate all that apply:
 
 1. GitHub environment secret (`production` and/or `staging`).
-2. Runtime host: Render dashboard (backend, console) / Vercel dashboard (ciyo-web).
+2. Runtime host: Render dashboard (backend, console) / Vercel dashboard (mykka-web).
 3. Local `.env.prod` files on Yarin's machine (kept deliberately).
 
 Baked-at-build values (`PRETZEL_*`) additionally require a new release/tag to take effect.
@@ -111,7 +111,7 @@ Do 1-2 **before** merging the standardization PR; deploy jobs fail loudly on mis
 2. Add every secret from the inventory above to its environment(s), values copied from the old repo-level secrets. Notes:
    - `CONSOLE_RENDER_DEPLOY_HOOK`: the deploy hooks still need to be created in the Render dashboard first (known open item).
    - `PRETZEL_API_BASE` / `PRETZEL_DESKTOP_API_URL` staging values: the staging API URL.
-   - Create `pretzel-desktop/.env.prod` locally (prod `CIYO_API_URL` + prod Clerk publishable key).
+   - Create `pretzel-desktop/.env.prod` locally (prod `PRETZEL_API_URL` + prod Clerk publishable key).
 3. Merge the PR.
 4. Verify green: e2e on the PR; backend + console deploys on the next merge; one tagged pretzel + desktop release when convenient.
 5. Delete the old repo-level secrets (left column of the rename map).

@@ -7,7 +7,7 @@ sources:
   - backend/package.json
   - pretzel/package.json
   - pretzel-console/package.json
-  - ciyo-web/package.json
+  - mykka-web/package.json
   - e2e/package.json
 ---
 
@@ -29,8 +29,8 @@ all proven healthy: known runtime and CI failures are recorded in
 | Extension tests/typecheck | `cd pretzel; pnpm test; pnpm typecheck` |
 | Console staging dev | `cd pretzel-console; pnpm dev:staging` |
 | Console tests/typecheck | `cd pretzel-console; pnpm test; pnpm typecheck` |
-| Website dev | `cd ciyo-web; pnpm dev` |
-| Website lint/build | `cd ciyo-web; pnpm lint; pnpm build` |
+| Website dev | `cd mykka-web; pnpm dev` |
+| Website lint/build | `cd mykka-web; pnpm lint; pnpm build` |
 | Unified E2E | `cd e2e; pnpm test:e2e` |
 | E2E project | `cd e2e; pnpm test:e2e -- --project=api` |
 | Docs validation | `pnpm docs:check` |

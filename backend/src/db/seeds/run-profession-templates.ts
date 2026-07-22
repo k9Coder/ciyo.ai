@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { policyTemplates, professionTemplateMap } from '../schema.js'
 import { professionTemplates } from './profession_templates.js'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 const sql = postgres(process.env['DATABASE_URL']!, { max: 1 })
 const db = drizzle(sql)
@@ -18,18 +18,13 @@ async function seed() {
       .select({ id: professionTemplateMap.templateId })
       .from(professionTemplateMap)
       .where(
-        eq(professionTemplateMap.profession, entry.profession)
+        and(
+          eq(professionTemplateMap.profession, entry.profession),
+          eq(professionTemplateMap.followUpAnswer, entry.followUpAnswer)
+        )
       )
 
-    const existingEntry = existing.find(async (_) => {
-      const maps = await db
-        .select()
-        .from(professionTemplateMap)
-        .where(eq(professionTemplateMap.profession, entry.profession))
-      return maps.find(m => m.followUpAnswer === entry.followUpAnswer)
-    })
-
-    if (existingEntry) {
+    if (existing.length > 0) {
       console.log(`  SKIP ${entry.profession}/${entry.followUpAnswer} (already exists)`)
       continue
     }

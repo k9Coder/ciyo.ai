@@ -11,21 +11,21 @@ describe('S1: INTERNAL_SECRET boot guard', () => {
 
   it('throws in production when INTERNAL_SECRET is unset', () => {
     process.env.NODE_ENV = 'production'
-    process.env.CORS_ORIGIN = 'https://console.ciyo.ai'
+    process.env.CORS_ORIGIN = 'https://console.mykka.ai'
     delete process.env.INTERNAL_SECRET
     expect(() => buildApp()).toThrow(/INTERNAL_SECRET/)
   })
 
   it('throws in production when INTERNAL_SECRET is shorter than 32 chars', () => {
     process.env.NODE_ENV = 'production'
-    process.env.CORS_ORIGIN = 'https://console.ciyo.ai'
+    process.env.CORS_ORIGIN = 'https://console.mykka.ai'
     process.env.INTERNAL_SECRET = 'too-short'
     expect(() => buildApp()).toThrow(/INTERNAL_SECRET/)
   })
 
   it('does not throw in production when INTERNAL_SECRET is >=32 chars', () => {
     process.env.NODE_ENV = 'production'
-    process.env.CORS_ORIGIN = 'https://console.ciyo.ai'
+    process.env.CORS_ORIGIN = 'https://console.mykka.ai'
     process.env.INTERNAL_SECRET = 'a'.repeat(32)
     expect(() => buildApp()).not.toThrow()
   })

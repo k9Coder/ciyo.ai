@@ -35,12 +35,16 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Release process](operations/release-process.md)
 - [Environments & secrets](ENVIRONMENT_AND_SECRETS.md)
 
+## Brand
+
+- [Brand guidelines](brand/mykka-brand-guidelines.md)
+
 ## Packages
 
 - [Backend](../backend/README.md)
 - [Pretzel extension](../pretzel/README.md)
 - [Pretzel Console](../pretzel-console/README.md)
-- [ciyo-web](../ciyo-web/README.md)
+- [mykka-web](../mykka-web/README.md)
 - [Cross-package E2E](../e2e/README.md)
 - [Repository scripts](../scripts/README.md)
 

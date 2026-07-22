@@ -2,7 +2,7 @@
   "name": "pretzel-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Pretzel Desktop — system-wide AI prompt DLP for ciyo.ai",
+  "description": "Pretzel Desktop — system-wide AI prompt DLP for mykka.ai",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -16,7 +16,7 @@
     "package": "electron-builder --config build/electron-builder.yml"
   },
   "dependencies": {
-    "@ciyo/detect": "workspace:*",
+    "@mykka/detect": "workspace:*",
     "electron-updater": "^6.3.9",
     "keytar": "^7.9.0",
     "node-forge": "^1.3.1",

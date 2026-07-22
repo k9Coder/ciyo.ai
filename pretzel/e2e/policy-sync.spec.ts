@@ -59,14 +59,14 @@ test('extension enforces ACME_SECRET block rule and dispatches an audit event', 
 
   const page = await context.newPage()
   await page.goto(`${FIXTURES}/chatgpt-mock.html`)
-  await page.locator('html[data-ciyo-ready]').waitFor({ timeout: 5_000 })
+  await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
   // Type the blocked keyword
   await page.locator('#prompt-textarea').fill('This is ACME_SECRET data')
   await page.locator('#send-button').click()
 
   // Modal must appear — proves the injected policy is being enforced
-  const modal = page.locator('#ciyo-overlay-host').locator('#ps-react-root')
+  const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
   await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
   // Wait for the fire-and-forget event dispatch to reach the route handler.

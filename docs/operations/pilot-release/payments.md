@@ -2,7 +2,7 @@
 
 **Written:** 2026-06-29  
 **Author:** Marcus Webb (CTO)  
-**Scope:** First-ever production release — all four packages (backend, pretzel, pretzel-console, ciyo-web). Pilot duration: 1–3 months. 3 seats per pilot company.
+**Scope:** First-ever production release — all four packages (backend, pretzel, pretzel-console, mykka-web). Pilot duration: 1–3 months. 3 seats per pilot company.
 
 ---
 
@@ -53,13 +53,13 @@ Evaluated: Neon, Supabase, CockroachDB Serverless, ElephantSQL, Render free DB, 
 
 | Service | Purpose | Free tier | Pay? | Cost | Risk if skipped / free tier |
 |---|---|---|---|---|---|
-| **Domain (ciyo.ai)** | Identity | Owned | Already paying | ~$15/yr | N/A |
+| **Domain (mykka.ai)** | Identity | Owned | Already paying | ~$15/yr | N/A |
 | **Chrome Web Store** | Extension publish | None | **YES — one-time** | **$5 one-time** | 🔴 BLOCKER — extension can't be installed by anyone |
-| **Privacy policy page** | CWS requirement + legal | ciyo.ai/privacy (your own site) | No (just work) | $0 | 🔴 BLOCKER — CWS rejects submission without it |
+| **Privacy policy page** | CWS requirement + legal | mykka.ai/privacy (your own site) | No (just work) | $0 | 🔴 BLOCKER — CWS rejects submission without it |
 | **LLM (Groq)** | AI assistant | 6K req/day free | **No** | **$0** | 🟡 Quality risk vs. Claude — monitor week 1 |
 | **Backend (Fly.io)** | API server | 3 VMs always-on, no expiry | **No** | **$0** | ✅ No cold starts, free tier is production-grade at pilot scale |
 | **Database (Neon)** | All persistent data | 0.5GB, no expiry, no pause | **No** | **$0** | 🟡 ~200ms cold start on first query after long idle |
-| **Console + ciyo-web (Vercel)** | Frontend hosting | Hobby: 100GB BW/mo | **No** | **$0** | ✅ Pilot volume nowhere near limits |
+| **Console + mykka-web (Vercel)** | Frontend hosting | Hobby: 100GB BW/mo | **No** | **$0** | ✅ Pilot volume nowhere near limits |
 | **Auth (Clerk)** | Sign-in, webhooks, org management | 10,000 MAU free | **No** | **$0** | ✅ Pilot < 100 MAU |
 | **Email (Resend)** | Welcome / org token emails | 3,000 emails/mo free | **No** | **$0** | ✅ Pilot sends < 50 emails |
 | **Uptime monitor (Better Stack)** | Know when backend goes down | 1 monitor free | **No** | **$0** | 🟡 Low risk — you find out from users, not alerts |

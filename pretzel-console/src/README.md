@@ -1,6 +1,6 @@
 ---
 status: active
-owner: ciyo.ai engineering
+owner: mykka.ai engineering
 verified_at: 2026-06-13
 sources:
   - App.tsx
@@ -71,7 +71,7 @@ The public API groups are subjects, rules, divisions, teams, members, destinatio
 - No active organization: redirect to `/onboarding`.
 - Role other than `org:admin`: redirect to `/unauthorized`.
 
-`PlanGate` owns feature entitlements. It currently supports `assistantEnabled` and `advancedAnalytics`, but only `/assistant` uses it. When the feature is unavailable, Stripe-backed tenants get a billing-portal action; other tenants get a link to `https://ciyo.ai/pricing`.
+`PlanGate` owns feature entitlements. It currently supports `assistantEnabled` and `advancedAnalytics`, but only `/assistant` uses it. When the feature is unavailable, Stripe-backed tenants get a billing-portal action; other tenants get a link to `https://mykka.ai/pricing`.
 
 ## Realtime and observability
 
@@ -79,4 +79,4 @@ The public API groups are subjects, rules, divisions, teams, members, destinatio
 
 Known security debt: bearer material is placed in the SSE URL. Keep the source TODO visible until a short-lived ticket replaces it.
 
-Sentry is enabled only when `VITE_SENTRY_DSN` exists. It records tracing and error replays, propagates traces to localhost and `https://api.ciyo.ai`, and drops localhost events. LogRocket currently initializes for every runtime environment.
+Sentry is enabled only when `VITE_SENTRY_DSN` exists. It records tracing and error replays, propagates traces to localhost and `https://api.mykka.ai`, and drops localhost events. LogRocket currently initializes for every runtime environment.

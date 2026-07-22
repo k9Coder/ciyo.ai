@@ -177,16 +177,16 @@ git commit -m "feat(pretzel-console): add multi-stage Dockerfile with nginx"
 
 ---
 
-## Task 3: ciyo-web Dockerfile + .dockerignore + next.config.ts
+## Task 3: mykka-web Dockerfile + .dockerignore + next.config.ts
 
 **Files:**
-- Modify: `ciyo-web/next.config.ts`
-- Create: `ciyo-web/Dockerfile`
-- Create: `ciyo-web/.dockerignore`
+- Modify: `mykka-web/next.config.ts`
+- Create: `mykka-web/Dockerfile`
+- Create: `mykka-web/.dockerignore`
 
 **Context:** Next.js 16 app. Currently deployed on Vercel — Dockerfile is for local `docker-compose` only. Next.js `output: 'standalone'` mode copies only what's needed to run the app (no `node_modules` bloat). `NEXT_PUBLIC_*` vars are baked at build time so must be passed as build args. The standalone output entrypoint is `.next/standalone/server.js`.
 
-- [ ] **Step 1: Update `ciyo-web/next.config.ts` to enable standalone output**
+- [ ] **Step 1: Update `mykka-web/next.config.ts` to enable standalone output**
 
 ```typescript
 import type { NextConfig } from "next";
@@ -198,7 +198,7 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ```
 
-- [ ] **Step 2: Create `ciyo-web/Dockerfile`**
+- [ ] **Step 2: Create `mykka-web/Dockerfile`**
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -224,7 +224,7 @@ EXPOSE 3001
 CMD ["node", "server.js"]
 ```
 
-- [ ] **Step 3: Create `ciyo-web/.dockerignore`**
+- [ ] **Step 3: Create `mykka-web/.dockerignore`**
 
 ```
 node_modules
@@ -243,23 +243,23 @@ Run from repo root:
 docker build \
   --build-arg NEXT_PUBLIC_API_BASE=http://localhost:3000 \
   --build-arg NEXT_PUBLIC_ENV=development \
-  -t ciyo-web-test \
-  ./ciyo-web
+  -t mykka-web-test \
+  ./mykka-web
 ```
 Expected: build completes, standalone output generated.
 
 - [ ] **Step 5: Verify Next.js starts**
 
 ```bash
-docker run --rm -p 3001:3001 ciyo-web-test
+docker run --rm -p 3001:3001 mykka-web-test
 ```
 Open http://localhost:3001. Expected: marketing site loads. `Ctrl+C` to stop.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add ciyo-web/next.config.ts ciyo-web/Dockerfile ciyo-web/.dockerignore
-git commit -m "feat(ciyo-web): add standalone Dockerfile, enable next standalone output"
+git add mykka-web/next.config.ts mykka-web/Dockerfile mykka-web/.dockerignore
+git commit -m "feat(mykka-web): add standalone Dockerfile, enable next standalone output"
 ```
 
 ---
@@ -270,7 +270,7 @@ git commit -m "feat(ciyo-web): add standalone Dockerfile, enable next standalone
 - Create: `docker-compose.yml` (repo root)
 - Create: `.dockerignore` (repo root)
 
-**Context:** Spins up the full stack locally: postgres + backend + pretzel-console + ciyo-web. The backend `env_file` loads `./backend/.env` so developers must have that file — if not, run `cp backend/.env.example backend/.env` first. The `DATABASE_URL` in `environment:` overrides whatever is in `.env`, pointing at the compose postgres service. pretzel-console and ciyo-web build args use `localhost` URLs because these are accessed from the host browser, not container-to-container.
+**Context:** Spins up the full stack locally: postgres + backend + pretzel-console + mykka-web. The backend `env_file` loads `./backend/.env` so developers must have that file — if not, run `cp backend/.env.example backend/.env` first. The `DATABASE_URL` in `environment:` overrides whatever is in `.env`, pointing at the compose postgres service. pretzel-console and mykka-web build args use `localhost` URLs because these are accessed from the host browser, not container-to-container.
 
 - [ ] **Step 1: Create `docker-compose.yml` at the repo root**
 
@@ -321,9 +321,9 @@ services:
     depends_on:
       - backend
 
-  ciyo-web:
+  mykka-web:
     build:
-      context: ./ciyo-web
+      context: ./mykka-web
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_BASE: http://localhost:3000
@@ -365,12 +365,12 @@ Expected output (in order):
 1. `postgres` — "database system is ready to accept connections"
 2. `backend` — "Server listening at http://0.0.0.0:3000"
 3. `pretzel-console` — nginx starts
-4. `ciyo-web` — Next.js starts
+4. `mykka-web` — Next.js starts
 
 Verify manually:
 - http://localhost:3000/health → `{ "status": "ok" }` (or 200)
 - http://localhost:5173 → pretzel-console loads
-- http://localhost:3001 → ciyo-web loads
+- http://localhost:3001 → mykka-web loads
 
 - [ ] **Step 5: Commit**
 
@@ -446,7 +446,7 @@ STAGING_DATABASE_URL               ← staging postgres connection string
 PROD_DATABASE_URL                  ← production postgres connection string
 DISCORD_WEBHOOK_URL                ← from Step 7
 VITE_CLERK_PUBLISHABLE_KEY_PROD    ← pk_live_... (for extension release build)
-VITE_API_BASE_PROD                 ← https://api.ciyo.ai (or wherever prod backend lives)
+VITE_API_BASE_PROD                 ← https://api.mykka.ai (or wherever prod backend lives)
 ```
 
 ---
@@ -657,24 +657,24 @@ git commit -m "feat(ci): add pretzel-console deploy workflow"
 
 ---
 
-## Task 8: ciyo-web-deploy.yml
+## Task 8: mykka-web-deploy.yml
 
 **Files:**
-- Create: `.github/workflows/ciyo-web-deploy.yml`
+- Create: `.github/workflows/mykka-web-deploy.yml`
 
 **Context:** Vercel already auto-deploys when you push. This workflow is a test gate (runs lint + build to catch type errors before Vercel deploys) and a Discord notification layer. The `pnpm build` command in Next.js also runs the TypeScript compiler, so it catches type errors.
 
-- [ ] **Step 1: Create `.github/workflows/ciyo-web-deploy.yml`**
+- [ ] **Step 1: Create `.github/workflows/mykka-web-deploy.yml`**
 
 ```yaml
-name: Deploy ciyo-web
+name: Deploy mykka-web
 
 on:
   push:
     branches: [master, staging]
     paths:
-      - 'ciyo-web/**'
-      - '.github/workflows/ciyo-web-deploy.yml'
+      - 'mykka-web/**'
+      - '.github/workflows/mykka-web-deploy.yml'
 
 jobs:
   check:
@@ -690,19 +690,19 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
-          cache-dependency-path: ciyo-web/pnpm-lock.yaml
+          cache-dependency-path: mykka-web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: ciyo-web
+        working-directory: mykka-web
 
       - name: Lint
         run: pnpm lint
-        working-directory: ciyo-web
+        working-directory: mykka-web
 
       - name: Build (type-check)
         run: pnpm build
-        working-directory: ciyo-web
+        working-directory: mykka-web
         env:
           NEXT_PUBLIC_API_BASE: http://localhost:3000
           NEXT_PUBLIC_ENV: staging
@@ -713,15 +713,15 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
-          title: "ciyo-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
+          title: "mykka-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
           description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"
 ```
 
 - [ ] **Step 2: Commit**
 
 ```bash
-git add .github/workflows/ciyo-web-deploy.yml
-git commit -m "feat(ci): add ciyo-web check + discord notification workflow"
+git add .github/workflows/mykka-web-deploy.yml
+git commit -m "feat(ci): add mykka-web check + discord notification workflow"
 ```
 
 ---
@@ -887,7 +887,7 @@ git commit -m "fix(ci): update e2e workflow to use pretzel-console instead of ad
 - Modify: `backend/README.md`
 - Modify: `pretzel-console/README.md`
 - Modify: `pretzel/README.md`
-- Modify: `ciyo-web/README.md`
+- Modify: `mykka-web/README.md`
 
 **Context:** Add a "Deployment & Releases" section to each README. The root README already has a good structure — append a Docker section. The package READMEs may not exist yet — create them if missing.
 
@@ -900,7 +900,7 @@ Add this section after the existing "Tests" section:
 
 ## Running the full stack with Docker
 
-One command starts everything — postgres, backend, pretzel-console, and ciyo-web:
+One command starts everything — postgres, backend, pretzel-console, and mykka-web:
 
 ```bash
 # First time only
@@ -914,7 +914,7 @@ docker-compose up --build
 |---|---|
 | Backend API | http://localhost:3000 |
 | pretzel-console | http://localhost:5173 |
-| ciyo-web | http://localhost:3001 |
+| mykka-web | http://localhost:3001 |
 | Postgres | localhost:5432 |
 
 > For daily development, run `pnpm dev` per package instead — Docker is for full-stack demos and integration testing.
@@ -1014,21 +1014,21 @@ Environment variables (`VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_BASE`) are set in
 | Secret | Value |
 |---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY_PROD` | `pk_live_...` (production Clerk publishable key) |
-| `VITE_API_BASE_PROD` | `https://api.ciyo.ai` (or wherever the prod backend is) |
+| `VITE_API_BASE_PROD` | `https://api.mykka.ai` (or wherever the prod backend is) |
 | `DISCORD_WEBHOOK_URL` | Discord channel webhook URL |
 ```
 
-- [ ] **Step 5: Add deployment section to `ciyo-web/README.md`** (create if missing)
+- [ ] **Step 5: Add deployment section to `mykka-web/README.md`** (create if missing)
 
 ```markdown
 ## Deployment
 
-ciyo-web deploys automatically via **Vercel** when you push to `master` or `staging`.
+mykka-web deploys automatically via **Vercel** when you push to `master` or `staging`.
 
 - `staging` branch → Vercel preview URL
-- `master` branch → production (`ciyo.ai` or your configured domain)
+- `master` branch → production (`mykka.ai` or your configured domain)
 
-`.github/workflows/ciyo-web-deploy.yml` runs lint + build as a test gate before Vercel deploys. If the build fails in CI, Vercel still deploys — fix the failure and push again.
+`.github/workflows/mykka-web-deploy.yml` runs lint + build as a test gate before Vercel deploys. If the build fails in CI, Vercel still deploys — fix the failure and push again.
 
 Vercel environment variables (`NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_ENV`) are configured in the Vercel dashboard.
 ```
@@ -1036,6 +1036,6 @@ Vercel environment variables (`NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_ENV`) are con
 - [ ] **Step 6: Commit all README updates**
 
 ```bash
-git add README.md backend/README.md pretzel-console/README.md pretzel/README.md ciyo-web/README.md
+git add README.md backend/README.md pretzel-console/README.md pretzel/README.md mykka-web/README.md
 git commit -m "docs: add deployment and release instructions to all READMEs"
 ```

@@ -1,7 +1,7 @@
 {
   "name": "pretzel-extension",
   "version": "2.0.0",
-  "description": "Pretzel by ciyo.ai — browser-based AI prompt DLP",
+  "description": "Pretzel by mykka.ai — browser-based AI prompt DLP",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
     "test:e2e": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
-    "@ciyo/detect": "workspace:*",
+    "@mykka/detect": "workspace:*",
     "@clerk/chrome-extension": "^3.1.26",
     "@sentry/browser": "^10.56.0",
     "idb": "^8.0.0",

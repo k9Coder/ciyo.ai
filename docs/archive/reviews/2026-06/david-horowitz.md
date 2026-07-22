@@ -1,5 +1,5 @@
 # Legal & Compliance Review — David Horowitz, General Counsel (Fractional)
-**ciyo.ai / Pretzel — Backend, Extension & Marketing**
+**mykka.ai / Pretzel — Backend, Extension & Marketing**
 Date: 2026-06-08
 
 ---
@@ -49,11 +49,11 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 #### `backend/src/billing/email.ts` — Welcome email with org and admin tokens in plaintext
 - [x] Reviewed
   **Verdict:** ISSUE
-  **Findings:** The welcome email transmits the full `orgToken` and `adminToken` in plaintext email body. These tokens are the credentials that authorize pushing DLP policy to every browser in the customer's fleet. Email is not a secure channel — it is stored in mail servers, potentially scanned by spam filters, logged by SMTP relays, and forwarded by users. Transmitting high-value credentials via email is a standard security anti-pattern. From a legal standpoint: if an attacker obtains these tokens via email interception and uses them to push a malicious policy, ciyo.ai's liability posture is weak because the transmission method is the proximate cause of the credential exposure.
+  **Findings:** The welcome email transmits the full `orgToken` and `adminToken` in plaintext email body. These tokens are the credentials that authorize pushing DLP policy to every browser in the customer's fleet. Email is not a secure channel — it is stored in mail servers, potentially scanned by spam filters, logged by SMTP relays, and forwarded by users. Transmitting high-value credentials via email is a standard security anti-pattern. From a legal standpoint: if an attacker obtains these tokens via email interception and uses them to push a malicious policy, mykka.ai's liability posture is weak because the transmission method is the proximate cause of the credential exposure.
 
   Additionally: there is no `tls: { rejectUnauthorized: true }` or equivalent option on the `nodemailer.createTransport` call. The transport will happily connect to an SMTP server over an unverified TLS connection. This undermines the claim of "TLS 1.3 in transit" for the token delivery flow specifically.
   **Proposed changes:**
-  1. Replace plaintext token delivery with a secure link pattern: store the tokens server-side, email a time-limited one-time link (`https://console.ciyo.ai/onboard?token=<signed-JWT>`), and show the tokens only on the authenticated console page after the link is clicked. The tokens are already returned in the `ActivateResult` from `activateTenant` — render them in the console UI instead of emailing them verbatim.
+  1. Replace plaintext token delivery with a secure link pattern: store the tokens server-side, email a time-limited one-time link (`https://console.mykka.ai/onboard?token=<signed-JWT>`), and show the tokens only on the authenticated console page after the link is clicked. The tokens are already returned in the `ActivateResult` from `activateTenant` — render them in the console UI instead of emailing them verbatim.
   2. Add `tls: { rejectUnauthorized: true }` to the nodemailer transport options to enforce verified TLS for outbound email.
 
 ---
@@ -61,7 +61,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 #### `backend/src/analytics/service.ts` — Analytics aggregation (summary, daily, incidents, top sites, by subject)
 - [x] Reviewed
   **Verdict:** ISSUE
-  **Findings:** `getAnalyticsIncidents` (lines 82–110) returns `memberEmail` and `siteUrl` with no pagination limit enforcement and no time-based filter — it fetches the 20 most recent incidents globally for the tenant, but crucially returns `memberEmail` in every row. This function makes individual employee behavior visible to tenant admins in a browsable list, linking a specific named employee to a specific site URL at a specific timestamp. Under GDPR (which applies to EU employees, and ciyo.ai's Security page claims EU data storage by default), employee monitoring data of this nature requires a lawful basis (typically legitimate interests) and a proportionality assessment. The `siteUrl` field compounds this: if an employee was using ChatGPT at `chat.openai.com` with a query that triggered a DLP rule, the incident record records both who they are and where they were. That is surveillance data.
+  **Findings:** `getAnalyticsIncidents` (lines 82–110) returns `memberEmail` and `siteUrl` with no pagination limit enforcement and no time-based filter — it fetches the 20 most recent incidents globally for the tenant, but crucially returns `memberEmail` in every row. This function makes individual employee behavior visible to tenant admins in a browsable list, linking a specific named employee to a specific site URL at a specific timestamp. Under GDPR (which applies to EU employees, and mykka.ai's Security page claims EU data storage by default), employee monitoring data of this nature requires a lawful basis (typically legitimate interests) and a proportionality assessment. The `siteUrl` field compounds this: if an employee was using ChatGPT at `chat.openai.com` with a query that triggered a DLP rule, the incident record records both who they are and where they were. That is surveillance data.
 
   Separately: `getAnalyticsTopSites` collects aggregated domain-level data about which AI tools employees use. This is behavioral analytics on employee activity. The privacy policy (not reviewed here but implied by the Security page) would need to explicitly disclose this use.
   **Proposed changes:**
@@ -111,7 +111,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
   **Findings:** The system prompt sent to Anthropic (constructed in `assistant/prompt.ts`) includes the full tenant snapshot: all member emails, member IDs, member roles, all rule keywords and patterns, all division and team names, and subject descriptions. This is customer PII (member emails) and confidential business configuration (DLP rule sets) transmitted to Anthropic's API with every assistant chat message. This constitutes a third-party data transmission of customer PII to Anthropic that must be:
   1. Disclosed in the Privacy Policy (third-party processors section).
   2. Covered by a Data Processing Agreement (DPA) with Anthropic (Anthropic offers one for API customers — it must actually be signed).
-  3. Disclosed to enterprise customers in ciyo.ai's DPA so they can include Anthropic as a sub-processor.
+  3. Disclosed to enterprise customers in mykka.ai's DPA so they can include Anthropic as a sub-processor.
 
   There is no indication in the codebase that this sub-processor relationship is documented or disclosed. Additionally, the chat session messages (user turns and assistant replies) are stored verbatim in the `chatMessages` table (see schema `chatMessages.content`), which means admin natural-language inputs — which may contain sensitive information ("add a rule to block SSNs for the Healthcare division") — are persisted server-side and also transmitted to Anthropic.
 
@@ -126,7 +126,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 #### `backend/src/assistant/llm/openai.ts` — OpenAI GPT-4o API integration
 - [x] Reviewed
   **Verdict:** ISSUE
-  **Findings:** Same issue class as `anthropic.ts`. The same system prompt (including member emails and full rule/keyword sets) is transmitted to OpenAI's API. OpenAI must also be listed as a sub-processor in the Privacy Policy and customer DPA. The `response_format: { type: 'json_object' }` constraint is good for output safety, but has no bearing on the privacy exposure. One additional concern: `gpt-4o` is a specific model version — OpenAI's data usage terms differ between API tiers (zero-data-retention is only available on certain enterprise contracts). If ciyo.ai is on a standard API plan, OpenAI may retain API inputs for up to 30 days for abuse monitoring, meaning member emails and rule keywords may be retained by OpenAI.
+  **Findings:** Same issue class as `anthropic.ts`. The same system prompt (including member emails and full rule/keyword sets) is transmitted to OpenAI's API. OpenAI must also be listed as a sub-processor in the Privacy Policy and customer DPA. The `response_format: { type: 'json_object' }` constraint is good for output safety, but has no bearing on the privacy exposure. One additional concern: `gpt-4o` is a specific model version — OpenAI's data usage terms differ between API tiers (zero-data-retention is only available on certain enterprise contracts). If mykka.ai is on a standard API plan, OpenAI may retain API inputs for up to 30 days for abuse monitoring, meaning member emails and rule keywords may be retained by OpenAI.
   **Proposed changes:** Same as `anthropic.ts`. Additionally: confirm OpenAI API contract tier and ensure zero-data-retention (ZDR) is configured, or disclose to customers that OpenAI may retain inputs for up to 30 days under standard terms. Document this in the sub-processor addendum.
 
 ---
@@ -134,7 +134,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 #### `backend/src/assistant/llm/groq.ts` — Groq (LLaMA 3.3) API integration
 - [x] Reviewed
   **Verdict:** ISSUE
-  **Findings:** Same issue class as `anthropic.ts` and `openai.ts` — the same system prompt with member PII is transmitted to Groq's API. Groq is the least well-known of the three sub-processors here and its data retention / DPA terms are the least mature. Groq must be listed as a third sub-processor. The fact that the OpenAI SDK `baseURL` override is used to route to Groq is an implementation detail, but legally Groq is a distinct data sub-processor from OpenAI and must be disclosed separately. If any customer has an enterprise DPA with ciyo.ai that lists approved sub-processors, Groq's absence from that list creates a contractual breach.
+  **Findings:** Same issue class as `anthropic.ts` and `openai.ts` — the same system prompt with member PII is transmitted to Groq's API. Groq is the least well-known of the three sub-processors here and its data retention / DPA terms are the least mature. Groq must be listed as a third sub-processor. The fact that the OpenAI SDK `baseURL` override is used to route to Groq is an implementation detail, but legally Groq is a distinct data sub-processor from OpenAI and must be disclosed separately. If any customer has an enterprise DPA with mykka.ai that lists approved sub-processors, Groq's absence from that list creates a contractual breach.
   **Proposed changes:** Same as `anthropic.ts`. Additionally: the LLM provider should be a configurable, per-tenant setting disclosed at onboarding, so enterprise customers know which provider is processing their data for any given assistant session.
 
 ---
@@ -166,7 +166,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
   **Verdict:** WARN
   **Findings:** Sentry is initialized with `replaysOnErrorSampleRate: 1.0` — meaning 100% of error sessions are replayed and transmitted to Sentry. The comment `// Clarity handles session replay` explains why `replaysSessionSampleRate: 0`, but the error replay rate remains at 100%. The Pretzel Console is an admin application where users interact with DLP policy management, member lists (including member emails displayed in the UI), and incident analytics (which includes member emails and site URLs). A Sentry session replay of an error in the incidents view could capture member emails, site URLs, and matched terms as rendered in the DOM — transmitting that PII to Sentry's servers.
 
-  Sentry is not mentioned anywhere in the reviewed Security page as a data processor/sub-processor. `tracePropagationTargets` includes `api.ciyo.ai`, which means Sentry's distributed tracing will attach trace headers to API calls — potentially tagging API responses that contain PII with Sentry trace IDs.
+  Sentry is not mentioned anywhere in the reviewed Security page as a data processor/sub-processor. `tracePropagationTargets` includes `api.mykka.ai`, which means Sentry's distributed tracing will attach trace headers to API calls — potentially tagging API responses that contain PII with Sentry trace IDs.
   **Proposed changes:**
   1. Configure Sentry's `beforeSendReplay` hook to scrub PII from session replays: mask input fields, member email text nodes, and the incidents table before the replay is transmitted. Sentry's privacy masking options (`maskAllText: true` or targeted selectors) should be applied, particularly for the members, incidents, and analytics pages.
   2. Add Sentry to the sub-processor list in the Privacy Policy.
@@ -185,7 +185,7 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 
 ---
 
-#### `ciyo-web/app/security/page.tsx` — Public security and trust page
+#### `mykka-web/app/security/page.tsx` — Public security and trust page
 - [x] Reviewed
   **Verdict:** ISSUE
   **Findings:** This page makes four specific claims that the code does not fully support:
@@ -205,18 +205,18 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 
 ---
 
-#### `ciyo-web/app/accessibility/page.tsx` — Accessibility statement (Hebrew + English, Israeli Standard 5568)
+#### `mykka-web/app/accessibility/page.tsx` — Accessibility statement (Hebrew + English, Israeli Standard 5568)
 - [x] Reviewed
   **Verdict:** PASS
-  **Findings:** This page is a legal disclosure document, not a data-handling component. It correctly references WCAG 2.1 AA, Israeli Standard 5568, and the Israeli Accessibility Regulations (2013). The contact email `accessibility@ciyo.ai` and 5 business-day response commitment are appropriate. The known limitations section is honest about third-party embedded content. No compliance concerns from a data privacy or legal standpoint.
+  **Findings:** This page is a legal disclosure document, not a data-handling component. It correctly references WCAG 2.1 AA, Israeli Standard 5568, and the Israeli Accessibility Regulations (2013). The contact email `accessibility@mykka.ai` and 5 business-day response commitment are appropriate. The known limitations section is honest about third-party embedded content. No compliance concerns from a data privacy or legal standpoint.
   **Proposed changes:** N/A
 
 ---
 
-#### `ciyo-web/app/robots.ts` — robots.txt configuration
+#### `mykka-web/app/robots.ts` — robots.txt configuration
 - [x] Reviewed
   **Verdict:** PASS
-  **Findings:** Allows all user agents to crawl all paths. No compliance implications — this is a public marketing site with no authenticated or PII-containing pages served by the `ciyo-web` package. No issue.
+  **Findings:** Allows all user agents to crawl all paths. No compliance implications — this is a public marketing site with no authenticated or PII-containing pages served by the `mykka-web` package. No issue.
   **Proposed changes:** N/A
 
 ---
@@ -239,9 +239,9 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 | `assistant/prompt.ts` | **ISSUE** |
 | `pretzel-console/src/lib/sentry.ts` | WARN |
 | `pretzel/src/audit/db.ts` | WARN |
-| `ciyo-web/app/security/page.tsx` | **ISSUE** |
-| `ciyo-web/app/accessibility/page.tsx` | PASS |
-| `ciyo-web/app/robots.ts` | PASS |
+| `mykka-web/app/security/page.tsx` | **ISSUE** |
+| `mykka-web/app/accessibility/page.tsx` | PASS |
+| `mykka-web/app/robots.ts` | PASS |
 
 **PASS: 2 | WARN: 7 | ISSUE: 8**
 
@@ -250,10 +250,10 @@ This review covers data handling, privacy, consent, third-party data sharing, re
 ## Top 5 Most Critical Compliance Issues
 
 ### 1. "Prompt content is never stored" — The claim is false (`security/page.tsx` + `audit-log/service.ts`)
-The `events.matchedTerm` column permanently stores verbatim text excerpts from employee AI prompts. This directly contradicts the most prominent claim on the public Security page. In an enterprise sales cycle, a CISO will verify this claim against the code or the DPA. If they discover the discrepancy post-contract, ciyo.ai faces breach of contract liability, potential GDPR Art. 5 violation (purpose limitation and data minimization), and reputational damage. **Fix the claim or fix the code — both need to change in tandem.**
+The `events.matchedTerm` column permanently stores verbatim text excerpts from employee AI prompts. This directly contradicts the most prominent claim on the public Security page. In an enterprise sales cycle, a CISO will verify this claim against the code or the DPA. If they discover the discrepancy post-contract, mykka.ai faces breach of contract liability, potential GDPR Art. 5 violation (purpose limitation and data minimization), and reputational damage. **Fix the claim or fix the code — both need to change in tandem.**
 
 ### 2. No GDPR erasure mechanism exists anywhere in the codebase (`audit-log/service.ts`, `members/service.ts`, `users/service.ts`)
-The Security page promises deletion requests honored within 30 days. No `DELETE` or anonymization function exists for `events`, `scans`, or `users` rows. Deleting a member leaves their email in `events.memberEmail` (via the FK join) and their scan records intact. This is a live violation of GDPR Art. 17. A single erasure request from an EU data subject that cannot be fulfilled exposes ciyo.ai to regulatory complaint and supervisory authority inquiry. **Implement anonymization cascades before any EU enterprise customer signs on.**
+The Security page promises deletion requests honored within 30 days. No `DELETE` or anonymization function exists for `events`, `scans`, or `users` rows. Deleting a member leaves their email in `events.memberEmail` (via the FK join) and their scan records intact. This is a live violation of GDPR Art. 17. A single erasure request from an EU data subject that cannot be fulfilled exposes mykka.ai to regulatory complaint and supervisory authority inquiry. **Implement anonymization cascades before any EU enterprise customer signs on.**
 
 ### 3. Member PII transmitted to three undisclosed LLM sub-processors (`assistant/prompt.ts`, `llm/*.ts`)
 Every use of the AI assistant sends all member emails, DLP rule keywords, and regex patterns to Anthropic, OpenAI, and Groq. None of these are disclosed as sub-processors in the reviewed Security page. Under GDPR Art. 28, sub-processors must be listed and customers must be notified of changes. Under standard enterprise DPA templates (e.g., SCCs), this is a contractual breach. The irony — a DLP product leaking customer PII to AI providers — is a material business risk, not just a legal one. **Remove emails from the LLM prompt immediately; sign DPAs with all three providers; update sub-processor list.**
@@ -266,5 +266,5 @@ Both tables grow unboundedly. There is no TTL, no purge job, and no configurable
 
 ---
 
-*Review prepared by David Horowitz, General Counsel (Fractional) — ciyo.ai*
+*Review prepared by David Horowitz, General Counsel (Fractional) — mykka.ai*
 *This document is attorney work product and is privileged and confidential.*

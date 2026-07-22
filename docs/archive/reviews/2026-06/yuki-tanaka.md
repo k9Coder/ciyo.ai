@@ -391,10 +391,10 @@
 #### `pretzel/src/options/pages/AboutPage.tsx` — About/version page
 - [x] Reviewed
   **Verdict:** WARN
-  **Findings:** `"https://github.com/your-org/ciyo"` is a placeholder URL that was never replaced. This will 404 for all users. The privacy claim "no data is ever sent to a backend" contradicts the actual implementation (events, scans, and policy fetches all hit the backend API). This is marketing copy that should be removed or corrected before the extension goes to users — incorrect privacy statements in extension pages are a Chrome Web Store policy violation.
+  **Findings:** `"https://github.com/your-org/mykka"` is a placeholder URL that was never replaced. This will 404 for all users. The privacy claim "no data is ever sent to a backend" contradicts the actual implementation (events, scans, and policy fetches all hit the backend API). This is marketing copy that should be removed or corrected before the extension goes to users — incorrect privacy statements in extension pages are a Chrome Web Store policy violation.
   **Proposed changes:**
-  - Replace `your-org/ciyo` with the real repository URL or remove the link.
-  - Rewrite the privacy paragraph to accurately reflect what data is and is not sent (e.g., "Detection runs locally. Aggregate scan counts and rule-trigger events are reported to your organization's ciyo dashboard.").
+  - Replace `your-org/mykka` with the real repository URL or remove the link.
+  - Rewrite the privacy paragraph to accurately reflect what data is and is not sent (e.g., "Detection runs locally. Aggregate scan counts and rule-trigger events are reported to your organization's mykka dashboard.").
 
 ---
 
@@ -541,7 +541,7 @@ Setting `composer.innerText = text` followed by synthetic `input`/`change` event
 Two concurrent `await getAuditDB()` calls before the first resolves will call `openDB()` twice and race on the `_db` assignment. Replace the `_db` variable with a `_dbPromise` pattern to guarantee a single underlying connection.
 
 ### 4. Shadow root is `mode: "open"` — host page can tamper with the DLP modal (`overlay-root.tsx`)
-The shadow root is created with `{ mode: "open" }`, meaning the host page's scripts can access the extension's modal DOM via `document.getElementById("ciyo-overlay-host").shadowRoot`. A malicious page could programmatically click "Looks fine, send it" or read finding text from the modal. For a DLP extension, the shadow root should be `{ mode: "closed" }` with the ShadowRoot reference held in the module closure.
+The shadow root is created with `{ mode: "open" }`, meaning the host page's scripts can access the extension's modal DOM via `document.getElementById("mykka-overlay-host").shadowRoot`. A malicious page could programmatically click "Looks fine, send it" or read finding text from the modal. For a DLP extension, the shadow root should be `{ mode: "closed" }` with the ShadowRoot reference held in the module closure.
 
 ### 5. `GET_ROLE` dead message type + `AboutPage.tsx` inaccurate privacy statement
 `GET_ROLE` is declared in the `Message` union but has no handler in the service worker — silent null return to any caller. This is an extension contract integrity bug: any code path that sends `GET_ROLE` will get `null` typed as the expected return and potentially crash downstream.

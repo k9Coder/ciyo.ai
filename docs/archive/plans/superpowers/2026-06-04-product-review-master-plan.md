@@ -89,7 +89,7 @@ Severity key:
 | SF-1 | DevEx | No Clerk test user provisioning script. New dev must manually create test user in Clerk dashboard. | [developer-experience](2026-06-04-developer-experience.md) | Optional |
 | SF-2 | DevEx | 6-step manual chain to run cross-service E2E. No `pnpm e2e:local` orchestration. | [developer-experience](2026-06-04-developer-experience.md) | Optional |
 | SF-4 | DevEx | No `pnpm-workspace.yaml` — non-standard, no shared dep hoisting. | [developer-experience](2026-06-04-developer-experience.md) | Optional |
-| DX-2 | DevEx | Create `packages/shared` (`@ciyo/types`) with `PolicyDoc`, rule/subject Zod schemas. Eliminates type drift. | [developer-experience](2026-06-04-developer-experience.md) | Optional |
+| DX-2 | DevEx | Create `packages/shared` (`@mykka/types`) with `PolicyDoc`, rule/subject Zod schemas. Eliminates type drift. | [developer-experience](2026-06-04-developer-experience.md) | Optional |
 | S-1 | Product | Chrome-only is a sales ceiling. Edge extension = same codebase, 2-3 weeks. | None yet | Optional |
 | S-4 | Product | Starter→Business pricing gap is 7.6x jump. | None yet | Optional |
 | S-6 | Product | SIEM webhook (POST events to configurable URL) — most-asked enterprise requirement. | [enterprise-features](2026-06-04-enterprise-features.md) | Optional |

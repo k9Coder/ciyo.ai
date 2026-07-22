@@ -67,7 +67,7 @@ Effort: ~half day.
 
 ### 1.2 Console: org selection + header injection ☐
 Steps:
-1. On login (`RequireAuth` / bootstrap): call `/v1/me/memberships`. One membership → auto-select. Multiple → org-picker screen (simple list, styled like `InvitePage` card). Persist choice in `localStorage` (`ciyo.selectedTenantId`), validate it against the list each boot.
+1. On login (`RequireAuth` / bootstrap): call `/v1/me/memberships`. One membership → auto-select. Multiple → org-picker screen (simple list, styled like `InvitePage` card). Persist choice in `localStorage` (`mykka.selectedTenantId`), validate it against the list each boot.
 2. `src/api.ts` client: inject `X-Tenant-Id: <selected>` on every request when set. Single choke point — confirm all fetches go through it (grep for stray `fetch(` in src).
 3. Org switcher entry in the user menu (can be minimal: dropdown listing memberships, re-select → reload).
 4. After `acceptInvite` succeeds on `InvitePage`: set selected tenant to the invite's tenant before redirect to `/dashboard`.
@@ -124,7 +124,7 @@ Verify: unit test with two simultaneous `awaitDecision`. Effort: ~1 day.
 Effort: 1–2 days.
 
 ### 2.5 Release pipeline hardening ☐
-- After 0.3: full tag-driven release builds all 3 platforms. Confirm `CIYO_API_URL_PROD` + `VITE_CLERK_PUBLISHABLE_KEY_PROD` secrets exist (they're referenced; verify set).
+- After 0.3: full tag-driven release builds all 3 platforms. Confirm `PRETZEL_DESKTOP_API_URL` + `VITE_CLERK_PUBLISHABLE_KEY_PROD` secrets exist (they're referenced; verify set).
 - macOS: unsigned DMG = Gatekeeper "damaged/unidentified developer" friction for pilot customers. Enroll Apple Developer Program NOW ($99/yr, takes days) — signing + notarization per the workflow TODO. Windows unsigned NSIS shows SmartScreen warning — acceptable for pilot with onboarding-doc note, or buy an OV cert. **Full-desktop pilot decision makes macOS signing effectively mandatory; treat enrollment as critical-path lead time alongside CWS review.**
 Effort: config ~1 day + external lead times.
 
@@ -171,7 +171,7 @@ Verify: unit test purge boundaries. Effort: ~1 day.
 3. Point Render backend service `DATABASE_URL` at Neon (connection-pooled URL; postgres.js works with Neon's pooler — verify `max` settings).
 
 ### 4.2 Render env vars — backend ☐
-Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — without it signups land on `free`: no assistant, keyword-only), `LLM_PROVIDER=groq`, `GROQ_API_KEY`, `CLERK_SECRET_KEY` (prod instance), `CLERK_WEBHOOK_SECRET` (prod), `DATABASE_URL` (Neon), `CORS_ORIGIN=https://console.ciyo.ai`, **`ADMIN_BASE_URL=https://console.ciyo.ai`** (audit found invite links default to `http://localhost:5173` — every invite email/link is broken in prod without this), internal-service secret vars.
+Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — without it signups land on `free`: no assistant, keyword-only), `LLM_PROVIDER=groq`, `GROQ_API_KEY`, `CLERK_SECRET_KEY` (prod instance), `CLERK_WEBHOOK_SECRET` (prod), `DATABASE_URL` (Neon), `CORS_ORIGIN=https://console.mykka.ai`, **`ADMIN_BASE_URL=https://console.mykka.ai`** (audit found invite links default to `http://localhost:5173` — every invite email/link is broken in prod without this), internal-service secret vars.
 
 ### 4.3 Clerk production instance ☐
 - Webhook endpoint → Render backend `https://<api-domain>/webhooks/clerk`; prod publishable key into console build env + extension prod build + desktop release secrets (`VITE_CLERK_PUBLISHABLE_KEY_PROD` — same key referenced by desktop workflow).
@@ -180,7 +180,7 @@ Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — wi
 - Static site with `VITE_API_BASE=<prod api>`, prod Clerk key; deploy hooks per 0.5. Confirm `nginx.conf`/static config serves SPA routes (deep links like `/invite/<token>` must not 404 — verify rewrite rule; this is now a critical path because invite links land there).
 
 ### 4.5 Monitoring + ops ☐
-- Better Stack (or similar) uptime monitor on `/health`; alerts to Marcus + Ryan. `privacy@ciyo.ai` alias. Named on-call for week 1.
+- Better Stack (or similar) uptime monitor on `/health`; alerts to Marcus + Ryan. `privacy@mykka.ai` alias. Named on-call for week 1.
 
 ### 4.6 Post-deploy smoke ☐
 - Signup → tenant on `pilot` plan (proves PILOT_MODE) → org token → onboarding template → extension install → scan event → console shows it → invite → second user accepts (proves Phase 1 in prod) → assistant 6th prompt of day 429s.
@@ -205,7 +205,7 @@ Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — wi
 
 ## Phase 7 — Docs fix (do last-but-one; content must reflect post-fix reality)
 
-- 7.1 Root `AGENTS.md`: repo shape → seven pnpm-workspace projects (`backend`, `pretzel`, `pretzel-console`, `pretzel-desktop`, `ciyo-web`, `e2e`, `packages/detect`); remove "no pnpm-workspace.yaml" claim; add desktop regression rule (proxy/CA changes → desktop unit+e2e). ☐
+- 7.1 Root `AGENTS.md`: repo shape → seven pnpm-workspace projects (`backend`, `pretzel`, `pretzel-console`, `pretzel-desktop`, `mykka-web`, `e2e`, `packages/detect`); remove "no pnpm-workspace.yaml" claim; add desktop regression rule (proxy/CA changes → desktop unit+e2e). ☐
 - 7.2 `docs/CURRENT_STATE.md`: desktop implemented (proxy allowlist, decision window, fail-mode) not roadmap; telemetry/enforcement signals; pilot plan + PILOT_MODE; Render+Neon deployment model. ☐
 - 7.3 `docs/KNOWN_ISSUES.md`: remove verified-fixed rows (workspace, e2e.yml installs, deploy-before-migrate); add current defects still open at that time (from audit + this plan's unfinished items). Bump `verified_at`. ☐
 - 7.4 `docs/index.md`: add pretzel-desktop + packages/detect to Packages. ☐

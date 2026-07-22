@@ -19,7 +19,7 @@ function createTransport() {
 export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> {
   const transport = createTransport()
   await transport.sendMail({
-    from: env.SMTP_FROM ?? 'noreply@ciyo.ai',
+    from: env.SMTP_FROM ?? 'noreply@mykka.ai',
     to: input.to,
     subject: `Welcome to Pretzel — ${input.tenantName}`,
     text: [
@@ -35,9 +35,9 @@ export async function sendWelcomeEmail(input: WelcomeEmailInput): Promise<void> 
       '',
       'Deploy via Chrome managed storage keys "orgToken" and "adminToken".',
       '',
-      'Questions? Reply to this email or visit docs.ciyo.ai/getting-started',
+      'Questions? Reply to this email or visit docs.mykka.ai/getting-started',
       '',
-      '— The Pretzel team at ciyo.ai',
+      '— The Pretzel team at mykka.ai',
     ].join('\n'),
   })
 }

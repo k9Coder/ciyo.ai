@@ -87,7 +87,7 @@ Add an `invite-accept` API-project spec (backend/e2e) minimum; a full two-user b
 ## P2 — cleanup / hygiene
 
 - **Docs staleness (systemic).** Root `AGENTS.md`: claims "no pnpm-workspace.yaml" (false), repo shape omits `pretzel-desktop` and `packages/detect`. `docs/CURRENT_STATE.md`: says desktop protection is "roadmap work" (false — it's implemented and pilot-scoped). `docs/KNOWN_ISSUES.md` (verified 2026-06-13): lists at least three fixed items (workspace, e2e.yml installs, deploy-before-migrate) and none of the desktop/telemetry-era defects. `docs/index.md` package list omits pretzel-desktop and packages/detect.
-- **pretzel-desktop has zero docs.** No README.md, no AGENTS.md — the only package without either. `packages/detect` likewise. Every other package's docs are reasonable (backend/pretzel/pretzel-console/ciyo-web have AGENTS.md + README.md).
+- **pretzel-desktop has zero docs.** No README.md, no AGENTS.md — the only package without either. `packages/detect` likewise. Every other package's docs are reasonable (backend/pretzel/pretzel-console/mykka-web have AGENTS.md + README.md).
 - `tasks.txt` at repo root: empty, untracked. Delete or move into `docs/operations/pilot-release/`.
 - Console sidebar missing destinations/sites/publish routes (D2); Docker compose port/CSP mismatch (D3); Stripe portal dead path (D1).
 - CI E2E `retries: 2` masks the Clerk-JWT flakiness the git history shows was fought all week — fine for now, but the flake root cause (JWT warm-up) is still there.

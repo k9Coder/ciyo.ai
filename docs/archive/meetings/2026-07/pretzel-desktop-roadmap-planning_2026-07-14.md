@@ -2,7 +2,7 @@
 **Date:** July 14, 2026
 **Chair:** Ethan Cole (CEO)
 **Attendees:** Marcus Webb (CTO), Ben Cho (PM), Alexei Petrov (Head of Security Research), Noa Katz (CISO)
-**Purpose:** Define MVP scope and build timeline for pretzel-desktop — the local HTTPS proxy daemon that intercepts AI API traffic outside the browser. Successor to the formerly named "ciyo-guard."
+**Purpose:** Define MVP scope and build timeline for pretzel-desktop — the local HTTPS proxy daemon that intercepts AI API traffic outside the browser. Successor to the formerly named "mykka-guard."
 **Full transcript:** [pretzel-desktop-roadmap-planning_2026-07-14_full_transcript.md](pretzel-desktop-roadmap-planning_2026-07-14_full_transcript.md)
 
 ---
@@ -13,13 +13,13 @@
 
 The Pretzel Chrome extension, even after the fetch/XHR upgrade, is fundamentally limited to browser tabs on permitted domains. It cannot intercept AI API calls made from IDE extensions (Cursor, Copilot, Continue), terminal scripts, notebooks, or desktop applications. pretzel-desktop is the compiled local proxy daemon that fills this gap — it operates at the OS network layer and intercepts all outbound AI API traffic regardless of the client application.
 
-Previously referred to as "ciyo-guard" in the roadmap and the June 12 architecture session. Renamed to **pretzel-desktop** to align with the Pretzel product family branding.
+Previously referred to as "mykka-guard" in the roadmap and the June 12 architecture session. Renamed to **pretzel-desktop** to align with the Pretzel product family branding.
 
 ---
 
 ## Key Decisions
 
-**1. Product renamed from ciyo-guard to pretzel-desktop.** All internal documentation, roadmap entries, and code references updated accordingly.
+**1. Product renamed from mykka-guard to pretzel-desktop.** All internal documentation, roadmap entries, and code references updated accordingly.
 
 **2. MVP scope is proxy/daemon mode only.** Claude Code hook mode (from the June 12 session) is deferred to v2. The proxy daemon is the higher-value MVP — it covers all non-browser AI clients in one install, whereas hook mode only covers Claude Code. Hook mode ships in v2 once proxy mode is stable.
 
@@ -39,7 +39,7 @@ Previously referred to as "ciyo-guard" in the roadmap and the June 12 architectu
 - OS proxy configuration set automatically on install (macOS System Settings, Windows Proxy Settings)
 - Local CA cert generation + user-trust prompt on first run
 - Intercept and inspect outbound requests to all hosts in the compiled policy
-- Run the `@ciyo/detect` detection engine against request bodies (shared with extension — extraction of `@ciyo/detect` is a prerequisite)
+- Run the `@mykka/detect` detection engine against request bodies (shared with extension — extraction of `@mykka/detect` is a prerequisite)
 - Enforce rule actions: log, warn (OS notification), block (return 403)
 - failMode enforcement: `"open"` (pass through + log) or `"closed"` (block all monitored-host traffic) when policy unavailable
 - Policy sync from backend: on start + two-minute poll, same mechanism as extension
@@ -62,8 +62,8 @@ Previously referred to as "ciyo-guard" in the roadmap and the June 12 architectu
 
 | # | Action | Owner | By |
 |---|---|---|---|
-| 1 | Update roadmap doc: rename ciyo-guard → pretzel-desktop, update MVP scope | Ben | July 16 |
-| 2 | Extract `@ciyo/detect` from extension into shared package (prerequisite for pretzel-desktop) | Marcus (assigns Yuki + Omar) | Q3 sprint start |
+| 1 | Update roadmap doc: rename mykka-guard → pretzel-desktop, update MVP scope | Ben | July 16 |
+| 2 | Extract `@mykka/detect` from extension into shared package (prerequisite for pretzel-desktop) | Marcus (assigns Yuki + Omar) | Q3 sprint start |
 | 3 | Architecture design doc: proxy daemon, CA cert, OS proxy config, policy sync | Marcus | July 28 |
 | 4 | Threat model for local proxy + CA cert: attack surface, cert theft, bypass vectors | Noa + Tal Ben-David | July 28 |
 | 5 | Enterprise CISO requirements checklist (what buyers will audit) | Noa | July 21 |

@@ -4,7 +4,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make each inner package (`backend`, `ciyo-web`, `pretzel`, `pretzel-console`, `e2e`) a fully self-contained pnpm project, then delete all root-level package management artifacts.
+**Goal:** Make each inner package (`backend`, `mykka-web`, `pretzel`, `pretzel-console`, `e2e`) a fully self-contained pnpm project, then delete all root-level package management artifacts.
 
 **Architecture:** Each package gets its own `pnpm-lock.yaml` and `node_modules`. No root workspace. The `e2e` package gains its own `playwright.config.ts` extracted from the root mega-config (cross-service project only). Root retains only `.gitignore`, `README.md`, `docs/`, `tsconfig.json` (compiler options only), `.github/`, `.superpowers/`.
 
@@ -349,7 +349,7 @@ Add `@types/node` to devDependencies and update the `test:e2e` script to use the
 
 ```json
 {
-  "name": "ciyo-e2e",
+  "name": "mykka-e2e",
   "version": "0.1.0",
   "description": "Cross-service system contract tests",
   "private": true,
@@ -469,10 +469,10 @@ pnpm --dir pretzel-console test
 
 Expected: vitest exits 0, all tests pass.
 
-- [ ] **Step 4: Verify ciyo-web installs cleanly**
+- [ ] **Step 4: Verify mykka-web installs cleanly**
 
 ```powershell
-pnpm --dir ciyo-web install
+pnpm --dir mykka-web install
 ```
 
 Expected: exits 0 (already had pnpm-lock.yaml, no changes).

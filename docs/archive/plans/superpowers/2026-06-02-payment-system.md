@@ -687,8 +687,8 @@ Stripe environment variables required:
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_BUSINESS_PRICE_ID` — price ID for $15/seat/month recurring
 - `STRIPE_STARTER_PRICE_ID` — price ID for $49/month flat recurring
-- `STRIPE_SUCCESS_URL` — e.g. `https://console.ciyo.ai/onboarding?session_id={CHECKOUT_SESSION_ID}`
-- `STRIPE_CANCEL_URL` — e.g. `https://ciyo.ai/pricing`
+- `STRIPE_SUCCESS_URL` — e.g. `https://console.mykka.ai/onboarding?session_id={CHECKOUT_SESSION_ID}`
+- `STRIPE_CANCEL_URL` — e.g. `https://mykka.ai/pricing`
 
 - [ ] **Step 1: Rewrite stripe.ts**
 
@@ -747,8 +747,8 @@ export async function createCheckoutSession(opts: {
       plan:       opts.plan,
       seatCount:  String(opts.seatCount),
     },
-    success_url: process.env['STRIPE_SUCCESS_URL'] ?? 'https://ciyo.ai/welcome',
-    cancel_url:  process.env['STRIPE_CANCEL_URL']  ?? 'https://ciyo.ai/pricing',
+    success_url: process.env['STRIPE_SUCCESS_URL'] ?? 'https://mykka.ai/welcome',
+    cancel_url:  process.env['STRIPE_CANCEL_URL']  ?? 'https://mykka.ai/pricing',
   })
 
   return { url: session.url! }
@@ -867,8 +867,8 @@ PayPal environment variables required:
 - `PAYPAL_CLIENT_SECRET`
 - `PAYPAL_BUSINESS_PLAN_ID` — PayPal Plan ID that has 14-day trial + $15/unit/month
 - `PAYPAL_STARTER_PLAN_ID` — PayPal Plan ID for $49/month flat
-- `PAYPAL_RETURN_URL` — e.g. `https://ciyo.ai/welcome`
-- `PAYPAL_CANCEL_URL` — e.g. `https://ciyo.ai/pricing`
+- `PAYPAL_RETURN_URL` — e.g. `https://mykka.ai/welcome`
+- `PAYPAL_CANCEL_URL` — e.g. `https://mykka.ai/pricing`
 
 **Note:** PayPal Plans (with trial periods baked in) must be created once in the PayPal dashboard or via the PayPal API setup script. The trial is defined at the Plan level as a `TRIAL` billing cycle of 14 days at $0.
 
@@ -921,8 +921,8 @@ export async function createPayPalSubscriptionUrl(opts: {
       custom_id: customId,
       subscriber: { email_address: opts.email },
       application_context: {
-        return_url: process.env['PAYPAL_RETURN_URL'] ?? 'https://ciyo.ai/welcome',
-        cancel_url: process.env['PAYPAL_CANCEL_URL'] ?? 'https://ciyo.ai/pricing',
+        return_url: process.env['PAYPAL_RETURN_URL'] ?? 'https://mykka.ai/welcome',
+        cancel_url: process.env['PAYPAL_CANCEL_URL'] ?? 'https://mykka.ai/pricing',
         user_action: 'SUBSCRIBE_NOW',
       },
     }),
@@ -1083,7 +1083,7 @@ export async function billingRouter(fastify: FastifyInstance): Promise<void> {
       return reply.status(400).send({ error: 'No Stripe customer associated with this account' })
     }
     const returnUrl = (req.body as { returnUrl?: string }).returnUrl
-      ?? `${process.env['CONSOLE_URL'] ?? 'https://console.ciyo.ai'}/settings`
+      ?? `${process.env['CONSOLE_URL'] ?? 'https://console.mykka.ai'}/settings`
     try {
       const result = await createPortalSession({ stripeCustomerId: customerId, returnUrl })
       return reply.status(200).send(result)
@@ -1288,8 +1288,8 @@ interface Props {
 
 function upgradeUrl(billing: BillingStatus): string {
   return billing.paymentProvider === 'paypal'
-    ? 'https://ciyo.ai/pricing?provider=paypal'
-    : 'https://ciyo.ai/pricing'
+    ? 'https://mykka.ai/pricing?provider=paypal'
+    : 'https://mykka.ai/pricing'
 }
 
 function scanPercent(billing: BillingStatus): number {
@@ -1380,7 +1380,7 @@ export function PlanGate({ feature, children, fallback }: Props) {
           : 'historical analytics, incident trends, and per-user breakdowns'}.
       </p>
       <a
-        href="https://ciyo.ai/pricing"
+        href="https://mykka.ai/pricing"
         target="_blank"
         rel="noreferrer"
         style={{
@@ -1638,7 +1638,7 @@ function BillingCard({ billing, isLoading }: {
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             {billing.plan === 'free' || billing.plan === 'starter' ? (
               <a
-                href="https://ciyo.ai/pricing"
+                href="https://mykka.ai/pricing"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -1892,7 +1892,7 @@ function showScanLimitOverlay(): void {
   actions.style.cssText = "display:flex;gap:8px;";
 
   const upgrade = document.createElement("a");
-  upgrade.href = "https://ciyo.ai/pricing";
+  upgrade.href = "https://mykka.ai/pricing";
   upgrade.target = "_blank";
   upgrade.textContent = "Upgrade plan";
   upgrade.style.cssText = "background:#7c6aff;color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;text-decoration:none;";
@@ -1991,7 +1991,7 @@ cd admin && npm run dev
 
 Open `http://localhost:5173/settings` — verify:
 - Billing section appears with plan badge, scan usage bar, seat count
-- "Upgrade plan" button links to ciyo.ai/pricing for free-tier tenants
+- "Upgrade plan" button links to mykka.ai/pricing for free-tier tenants
 - No console errors
 
 - [ ] **Step 4: Verify AI Assistant is gated**
@@ -2523,11 +2523,11 @@ CONSOLE_URL=http://localhost:5173
 Before the PayPal checkout flow works, you must create two PayPal billing Plans (once) in the PayPal dashboard or via API:
 
 **Starter Plan** (`PAYPAL_STARTER_PLAN_ID`):
-- Product: "Pretzel by ciyo.ai"
+- Product: "Pretzel by mykka.ai"
 - Billing cycle: REGULAR, MONTHLY, $49.00, unlimited cycles
 
 **Business Plan** (`PAYPAL_BUSINESS_PLAN_ID`):
-- Product: "Pretzel by ciyo.ai"
+- Product: "Pretzel by mykka.ai"
 - Billing cycle 1: TRIAL, 1 cycle, 14 days, $0.00
 - Billing cycle 2: REGULAR, MONTHLY, $15.00 × quantity (seats), unlimited cycles
 - quantity: set `quantity_supported: true` in the plan

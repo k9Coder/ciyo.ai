@@ -549,7 +549,7 @@ test.describe('Extension options page', () => {
     await page.getByRole('button', { name: 'About' }).click()
 
     // AboutPage renders EXTENSION_NAME and EXTENSION_VERSION
-    await expect(page.getByText(/ciyo/i)).toBeVisible()
+    await expect(page.getByText(/mykka/i)).toBeVisible()
     await expect(page.getByText(/version/i)).toBeVisible()
 
     await context.close()

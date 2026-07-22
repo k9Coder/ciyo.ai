@@ -160,7 +160,7 @@ Expected: all remote branches updated. Verify by checking GitHub that the files 
 - [ ] Step 1: Rotate `GROQ_API_KEY`.
   1. Go to https://console.groq.com/keys
   2. Delete key `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`
-  3. Create new key, name it `ciyo-staging`
+  3. Create new key, name it `mykka-staging`
   4. Update `backend/.env.staging`: `GROQ_API_KEY=<new_key>`
 
 - [ ] Step 2: Rotate `CLERK_SECRET_KEY`.

@@ -20,10 +20,10 @@ export function Spinner({ size = "md", className = "" }: SpinnerProps) {
   const circumference = 2 * Math.PI * r;
   const arc = circumference * 0.72;
   const gap = circumference - arc;
-  const primary = "var(--brand-primary, #00d4ff)";
+  const primary = "var(--brand-primary, #5b8cff)";
 
   return (
-    <span className={`ciyo-spinner ${className}`} role="status" aria-label="Loading">
+    <span className={`mykka-spinner ${className}`} role="status" aria-label="Loading">
       <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} fill="none">
         <circle cx={cx} cy={cx} r={r} stroke={primary} strokeOpacity="0.15" strokeWidth={track} />
         <circle
@@ -49,12 +49,12 @@ export function InlineLoader({ size = "md" }: { size?: SpinnerSize }) {
   );
 }
 
-/** Full-page loading state — spinner only, optional context label in ciyo style */
+/** Full-page loading state — spinner only, optional context label in mykka style */
 export function PageLoader({ label }: { label?: string }) {
   return (
-    <div className="ciyo-page-loading">
+    <div className="mykka-page-loading">
       <Spinner size="lg" />
-      {label && <span className="ciyo-label">{label}</span>}
+      {label && <span className="mykka-label">{label}</span>}
     </div>
   );
 }

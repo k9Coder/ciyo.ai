@@ -72,7 +72,7 @@ export function buildApp() {
 
   const corsOrigin = env.CORS_ORIGIN
     ? env.CORS_ORIGIN.split(',')
-    : (env.NODE_ENV === 'test' ? true : ['https://console.ciyo.ai'])
+    : (env.NODE_ENV === 'test' ? true : ['https://console.mykka.ai'])
   const app = Fastify({ logger: env.NODE_ENV !== 'test', trustProxy: true })
   void app.register(cors, {
     origin:      corsOrigin,

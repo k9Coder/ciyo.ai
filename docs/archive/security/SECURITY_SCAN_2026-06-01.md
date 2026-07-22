@@ -1,4 +1,4 @@
-# Security Scan — ciyo / prompt-saviour
+# Security Scan — mykka / prompt-saviour
 
 **Date:** 2026-06-01  
 **Scope:** Full codebase (backend, extension, admin UI, billing, webhooks)  
@@ -58,9 +58,9 @@ export async function handlePayPalEvent(body: Record<string, unknown>): Promise<
 The environment file has `PAYPAL_SKIP_SIG_VERIFY=true` — there is no verification path even in the codebase; the variable is referenced in `.env.example` but the code **never reads it** and **never verifies anything**.
 
 **How to exploit:**
-Anyone on the internet can POST to `https://api.ciyo.ai/webhooks/paypal`:
+Anyone on the internet can POST to `https://api.mykka.ai/webhooks/paypal`:
 ```bash
-curl -X POST https://api.ciyo.ai/webhooks/paypal \
+curl -X POST https://api.mykka.ai/webhooks/paypal \
   -H "Content-Type: application/json" \
   -d '{
     "event_type": "BILLING.SUBSCRIPTION.ACTIVATED",
