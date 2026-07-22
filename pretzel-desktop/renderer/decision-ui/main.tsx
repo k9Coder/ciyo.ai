@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-interface DecisionPayload {
-  requestId: string
-  hostname: string
-  findings: Array<{ ruleId: string; severity: string; snippet?: string }>
-}
-
-declare global {
-  interface Window {
-    pretzel: {
-      onDecisionRequired: (cb: (p: DecisionPayload) => void) => void
-      respondDecision: (requestId: string, allow: boolean) => void
-    }
-  }
-}
-
 function DecisionUI() {
   const [pending, setPending] = useState<DecisionPayload | null>(null)
 

@@ -183,9 +183,8 @@ app.whenReady().then(async () => {
   }
 })
 
-app.on('window-all-closed', (e: Event) => {
-  // Keep running in tray — don't quit on window close
-  e.preventDefault()
+app.on('window-all-closed', () => {
+  // Keep running in tray — don't quit on window close (no app.quit() call)
 })
 
 app.on('before-quit', async () => {

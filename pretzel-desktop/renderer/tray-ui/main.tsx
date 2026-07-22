@@ -1,28 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-interface Status {
-  proxyRunning: boolean
-  policyAvailable: boolean
-  systemProxyActive?: boolean
-}
-
-declare global {
-  interface Window {
-    pretzel: {
-      onStatusUpdate: (cb: (s: Status) => void) => void
-      onAuthNag: (cb: () => void) => void
-      onAuthSuccess: (cb: () => void) => void
-      onAuthError: (cb: (msg: string) => void) => void
-      getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
-      updateFailMode: (failMode: 'open' | 'closed') => void
-      signIn: () => void
-    }
-  }
-}
-
 function TrayUI() {
-  const [status, setStatus] = useState<Status>({ proxyRunning: false, policyAvailable: false })
+  const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [failMode, setFailMode] = useState<'open' | 'closed'>('open')
   const [showSignIn, setShowSignIn] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
