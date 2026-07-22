@@ -88,6 +88,7 @@ async function handleSignIn(): Promise<void> {
 }
 
 function createTrayWindow(): BrowserWindow {
+  console.log('[e2e-debug] createTrayWindow: before new BrowserWindow')
   const win = new BrowserWindow({
     width: 320,
     height: 480,
@@ -100,13 +101,17 @@ function createTrayWindow(): BrowserWindow {
       preload: path.join(__dirname, 'preload.js'),
     },
   })
+  console.log('[e2e-debug] createTrayWindow: BrowserWindow constructed, id=', win.id)
 
   const isDev = process.env.NODE_ENV === 'development'
   if (isDev) {
     win.loadURL('http://localhost:5174/tray-ui/')
   } else {
     win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
+      .then(() => console.log('[e2e-debug] createTrayWindow: loadFile resolved'))
+      .catch((err) => console.log('[e2e-debug] createTrayWindow: loadFile FAILED', err))
   }
+  console.log('[e2e-debug] createTrayWindow: returning win')
   return win
 }
 
@@ -116,12 +121,15 @@ function setupTray(authenticated: boolean): void {
   // waiting for it. Skip the OS integration under test, keep the window.
   // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
   // used here instead — it's still readable at runtime in the built bundle.)
+  console.log('[e2e-debug] setupTray: start')
   if (process.env.PRETZEL_E2E !== '1') {
     const iconPath = path.join(__dirname, '../build/icon.png')
     const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
     tray = new Tray(icon)
   }
+  console.log('[e2e-debug] setupTray: before createTrayWindow')
   trayWin = createTrayWindow()
+  console.log('[e2e-debug] setupTray: after createTrayWindow')
 
   rebuildTrayMenu(authenticated)
 
@@ -150,10 +158,14 @@ async function startProxy(): Promise<void> {
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
 }
 
+console.log('[e2e-debug] top-level: main.ts module loaded, waiting for whenReady')
+
 app.whenReady().then(async () => {
+  console.log('[e2e-debug] whenReady: fired')
   app.setLoginItemSettings({ openAtLogin: true })
 
   const authenticated = isAuthenticated()
+  console.log('[e2e-debug] whenReady: isAuthenticated done, authenticated=', authenticated)
 
   registerIpcHandlers({
     onDecision: (requestId, allow) => {
@@ -165,8 +177,10 @@ app.whenReady().then(async () => {
     },
     onSignIn: () => { handleSignIn() },
   })
+  console.log('[e2e-debug] whenReady: registerIpcHandlers done, calling setupTray')
 
   setupTray(authenticated)
+  console.log('[e2e-debug] whenReady: setupTray returned')
 
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {
