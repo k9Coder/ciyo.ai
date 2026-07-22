@@ -101,7 +101,9 @@ function setupTray(authenticated: boolean): void {
   // Real OS tray icon needs a tray host (StatusNotifierWatcher/D-Bus on Linux);
   // a bare Xvfb CI display has none, and `new Tray()` blocks indefinitely
   // waiting for it. Skip the OS integration under test, keep the window.
-  if (process.env.NODE_ENV !== 'test') {
+  // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
+  // used here instead — it's still readable at runtime in the built bundle.)
+  if (process.env.PRETZEL_E2E !== '1') {
     const iconPath = path.join(__dirname, '../build/icon.png')
     const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
     tray = new Tray(icon)

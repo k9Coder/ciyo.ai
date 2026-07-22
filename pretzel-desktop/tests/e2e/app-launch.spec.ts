@@ -14,7 +14,7 @@ test.describe('pretzel-desktop app', () => {
   test('app launches without crashing', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
+      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     // App should not exit immediately
@@ -27,7 +27,7 @@ test.describe('pretzel-desktop app', () => {
   test('tray window is created on launch', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
+      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     // Wait for the tray window to actually open before inspecting windows()
@@ -40,7 +40,7 @@ test.describe('pretzel-desktop app', () => {
   test('decision window renders policy decision UI', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
+      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     // Evaluate in main process — simulate a decision event
@@ -54,7 +54,7 @@ test.describe('pretzel-desktop app', () => {
   test('IPC policy:get returns null when no policy loaded', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
+      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     const policy = await app.evaluate(async ({ ipcMain }) => {
