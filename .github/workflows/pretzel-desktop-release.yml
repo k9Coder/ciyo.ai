@@ -55,7 +55,20 @@ jobs:
 
       - name: E2E tests
         working-directory: pretzel-desktop
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" pnpm test:e2e
+        # xvfb-run wraps the command in its own process/script layer that can
+        # interfere with the stderr parsing Playwright uses to establish its
+        # CDP/inspector connection to Electron — confirmed via a minimal
+        # smoke test that opens a real window but still times out waiting on
+        # firstWindow() under xvfb-run. Managing Xvfb directly avoids that.
+        run: |
+          Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp &
+          XVFB_PID=$!
+          export DISPLAY=:99
+          sleep 2
+          pnpm test:e2e
+          EXIT_CODE=$?
+          kill $XVFB_PID
+          exit $EXIT_CODE
 
   # ─── macOS (arm64 + x64 DMG — unsigned beta) ────────────────────────────
   build-mac:
