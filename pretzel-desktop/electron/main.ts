@@ -18,6 +18,24 @@ import { isAuthenticated, signIn } from './auth'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
+import fs from 'fs'
+
+// TEMP DEBUG: console.log goes through Node's buffered stdout stream, which
+// only flushes on event-loop turns — if a sync native call blocks right
+// after startup, buffered output never reaches the pipe and is lost when
+// Playwright force-kills the process at its timeout. Synchronous file writes
+// bypass that entirely.
+const DEBUG_LOG_PATH = path.join(__dirname, '../e2e-debug.log')
+function debugLog(msg: string): void {
+  if (process.env.PRETZEL_E2E === '1') {
+    try {
+      fs.appendFileSync(DEBUG_LOG_PATH, `${new Date().toISOString()} ${msg}\n`)
+    } catch {
+      // best-effort debug logging only
+    }
+  }
+}
+debugLog('module: imports resolved')
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
 // without these — Chromium's sandbox/GPU init never completes there.
@@ -88,7 +106,7 @@ async function handleSignIn(): Promise<void> {
 }
 
 function createTrayWindow(): BrowserWindow {
-  console.log('[e2e-debug] createTrayWindow: before new BrowserWindow')
+  debugLog('createTrayWindow: before new BrowserWindow')
   const win = new BrowserWindow({
     width: 320,
     height: 480,
@@ -101,17 +119,17 @@ function createTrayWindow(): BrowserWindow {
       preload: path.join(__dirname, 'preload.js'),
     },
   })
-  console.log('[e2e-debug] createTrayWindow: BrowserWindow constructed, id=', win.id)
+  debugLog(`createTrayWindow: BrowserWindow constructed, id=${win.id}`)
 
   const isDev = process.env.NODE_ENV === 'development'
   if (isDev) {
     win.loadURL('http://localhost:5174/tray-ui/')
   } else {
     win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
-      .then(() => console.log('[e2e-debug] createTrayWindow: loadFile resolved'))
-      .catch((err) => console.log('[e2e-debug] createTrayWindow: loadFile FAILED', err))
+      .then(() => debugLog('createTrayWindow: loadFile resolved'))
+      .catch((err) => debugLog(`createTrayWindow: loadFile FAILED ${err}`))
   }
-  console.log('[e2e-debug] createTrayWindow: returning win')
+  debugLog('createTrayWindow: returning win')
   return win
 }
 
@@ -121,15 +139,15 @@ function setupTray(authenticated: boolean): void {
   // waiting for it. Skip the OS integration under test, keep the window.
   // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
   // used here instead — it's still readable at runtime in the built bundle.)
-  console.log('[e2e-debug] setupTray: start')
+  debugLog('setupTray: start')
   if (process.env.PRETZEL_E2E !== '1') {
     const iconPath = path.join(__dirname, '../build/icon.png')
     const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
     tray = new Tray(icon)
   }
-  console.log('[e2e-debug] setupTray: before createTrayWindow')
+  debugLog('setupTray: before createTrayWindow')
   trayWin = createTrayWindow()
-  console.log('[e2e-debug] setupTray: after createTrayWindow')
+  debugLog('setupTray: after createTrayWindow')
 
   rebuildTrayMenu(authenticated)
 
@@ -158,14 +176,12 @@ async function startProxy(): Promise<void> {
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
 }
 
-console.log('[e2e-debug] top-level: main.ts module loaded, waiting for whenReady')
-
 app.whenReady().then(async () => {
-  console.log('[e2e-debug] whenReady: fired')
+  debugLog('whenReady: fired')
   app.setLoginItemSettings({ openAtLogin: true })
 
   const authenticated = isAuthenticated()
-  console.log('[e2e-debug] whenReady: isAuthenticated done, authenticated=', authenticated)
+  debugLog(`whenReady: isAuthenticated done, authenticated=${authenticated}`)
 
   registerIpcHandlers({
     onDecision: (requestId, allow) => {
@@ -177,10 +193,10 @@ app.whenReady().then(async () => {
     },
     onSignIn: () => { handleSignIn() },
   })
-  console.log('[e2e-debug] whenReady: registerIpcHandlers done, calling setupTray')
+  debugLog('whenReady: registerIpcHandlers done, calling setupTray')
 
   setupTray(authenticated)
-  console.log('[e2e-debug] whenReady: setupTray returned')
+  debugLog('whenReady: setupTray returned')
 
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {

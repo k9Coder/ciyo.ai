@@ -7,8 +7,10 @@
  */
 import { test, expect, _electron as electron } from '@playwright/test'
 import path from 'path'
+import fs from 'fs'
 
 const ROOT = path.resolve(__dirname, '../../')
+const DEBUG_LOG_PATH = path.join(ROOT, 'e2e-debug.log')
 
 test.describe('pretzel-desktop app', () => {
   test('app launches without crashing', async () => {
@@ -25,6 +27,9 @@ test.describe('pretzel-desktop app', () => {
   })
 
   test('tray window is created on launch', async () => {
+    // TEMP DEBUG: fresh debug log per run
+    try { fs.rmSync(DEBUG_LOG_PATH) } catch { /* no prior file */ }
+
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
       env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
@@ -33,11 +38,20 @@ test.describe('pretzel-desktop app', () => {
     app.process().stdout?.on('data', (d) => console.log('[main stdout]', d.toString()))
     app.process().stderr?.on('data', (d) => console.log('[main stderr]', d.toString()))
 
-    // Wait for the tray window to actually open before inspecting windows()
-    await app.firstWindow()
-    expect(app.windows().length).toBeGreaterThan(0)
-
-    await app.close()
+    try {
+      // Wait for the tray window to actually open before inspecting windows()
+      await app.firstWindow()
+      expect(app.windows().length).toBeGreaterThan(0)
+    } finally {
+      // TEMP DEBUG: dump the main process's synchronous breadcrumb log,
+      // whether the test passed, failed, or timed out
+      try {
+        console.log('[e2e-debug-file]\n' + fs.readFileSync(DEBUG_LOG_PATH, 'utf-8'))
+      } catch (err) {
+        console.log('[e2e-debug-file] could not read debug log:', err)
+      }
+      await app.close()
+    }
   })
 
   test('decision window renders policy decision UI', async () => {
