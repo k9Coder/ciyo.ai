@@ -50,9 +50,12 @@ jobs:
         working-directory: pretzel-desktop
         run: npx playwright install --with-deps chromium
 
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: E2E tests
         working-directory: pretzel-desktop
-        run: pnpm test:e2e
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" pnpm test:e2e
 
   # ─── macOS (arm64 + x64 DMG — unsigned beta) ────────────────────────────
   build-mac:
