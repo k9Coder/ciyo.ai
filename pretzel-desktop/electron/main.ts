@@ -98,14 +98,19 @@ function createTrayWindow(): BrowserWindow {
 }
 
 function setupTray(authenticated: boolean): void {
-  const iconPath = path.join(__dirname, '../build/icon.png')
-  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-  tray = new Tray(icon)
+  // Real OS tray icon needs a tray host (StatusNotifierWatcher/D-Bus on Linux);
+  // a bare Xvfb CI display has none, and `new Tray()` blocks indefinitely
+  // waiting for it. Skip the OS integration under test, keep the window.
+  if (process.env.NODE_ENV !== 'test') {
+    const iconPath = path.join(__dirname, '../build/icon.png')
+    const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+    tray = new Tray(icon)
+  }
   trayWin = createTrayWindow()
 
   rebuildTrayMenu(authenticated)
 
-  tray.on('click', () => {
+  tray?.on('click', () => {
     if (trayWin?.isVisible()) {
       trayWin.hide()
     } else {
