@@ -19,6 +19,14 @@ import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
 
+// Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
+// without these — Chromium's sandbox/GPU init never completes there.
+if (process.env.PRETZEL_E2E === '1') {
+  app.commandLine.appendSwitch('no-sandbox')
+  app.commandLine.appendSwitch('disable-gpu')
+  app.disableHardwareAcceleration()
+}
+
 let tray: Tray | null = null
 let trayWin: BrowserWindow | null = null
 let ca: CACert | null = null
