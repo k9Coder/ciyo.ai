@@ -29,6 +29,9 @@ test.describe('pretzel-desktop app', () => {
       args: [path.join(ROOT, 'dist-electron/main.js')],
       env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
+    // TEMP DEBUG: surface main-process output in CI to diagnose the hang
+    app.process().stdout?.on('data', (d) => console.log('[main stdout]', d.toString()))
+    app.process().stderr?.on('data', (d) => console.log('[main stderr]', d.toString()))
 
     // Wait for the tray window to actually open before inspecting windows()
     await app.firstWindow()
