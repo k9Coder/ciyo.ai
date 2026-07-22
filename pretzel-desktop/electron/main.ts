@@ -24,6 +24,11 @@ import forge from 'node-forge'
 if (process.env.PRETZEL_E2E === '1') {
   app.commandLine.appendSwitch('no-sandbox')
   app.commandLine.appendSwitch('disable-gpu')
+  app.commandLine.appendSwitch('disable-software-rasterizer')
+  // The default /dev/shm in CI containers/runners is too small for
+  // Chromium's shared memory needs — this is what actually crashes the
+  // GPU/renderer process on launch, not the GPU flags above alone.
+  app.commandLine.appendSwitch('disable-dev-shm-usage')
   app.disableHardwareAcceleration()
 }
 
