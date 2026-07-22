@@ -30,9 +30,9 @@ test.describe('pretzel-desktop app', () => {
       env: { ...process.env, NODE_ENV: 'test' },
     })
 
-    // Wait for windows to be created
-    const windows = app.windows()
-    expect(windows.length).toBeGreaterThan(0)
+    // Wait for the tray window to actually open before inspecting windows()
+    await app.firstWindow()
+    expect(app.windows().length).toBeGreaterThan(0)
 
     await app.close()
   })
