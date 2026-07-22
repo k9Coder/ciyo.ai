@@ -8,6 +8,8 @@ import forge from 'node-forge'
 import { execSync } from 'child_process'
 import path from 'path'
 import fs from 'fs'
+import { debugLog } from './debug-log'
+debugLog('module loaded: ca.ts')
 
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT = 'local-ca-key'

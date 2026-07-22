@@ -12,6 +12,8 @@
  *   Linux   — gsettings (GNOME) + env-var file for non-GNOME DEs
  */
 import { execSync, execFileSync } from 'child_process'
+import { debugLog } from './debug-log'
+debugLog('module loaded: system-proxy.ts')
 
 export interface ProxyState {
   enabled: boolean

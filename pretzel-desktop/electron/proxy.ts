@@ -22,6 +22,8 @@ import { EventEmitter } from 'events'
 import { detectPrompt } from '@mykka/detect'
 import type { Policy, DetectionResult } from '@mykka/detect'
 import { signHostCertCached, type CACert } from './ca'
+import { debugLog } from './debug-log'
+debugLog('module loaded: proxy.ts')
 
 export const PROXY_PORT = 18888
 

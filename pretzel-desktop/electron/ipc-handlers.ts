@@ -5,6 +5,8 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { z } from 'zod'
 import type { Policy } from '@mykka/detect'
+import { debugLog } from './debug-log'
+debugLog('module loaded: ipc-handlers.ts')
 
 const DecisionResponseSchema = z.object({
   requestId: z.string(),

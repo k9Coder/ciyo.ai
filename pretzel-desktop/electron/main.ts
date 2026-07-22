@@ -18,24 +18,8 @@ import { isAuthenticated, signIn } from './auth'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
-import fs from 'fs'
-
-// TEMP DEBUG: console.log goes through Node's buffered stdout stream, which
-// only flushes on event-loop turns — if a sync native call blocks right
-// after startup, buffered output never reaches the pipe and is lost when
-// Playwright force-kills the process at its timeout. Synchronous file writes
-// bypass that entirely.
-const DEBUG_LOG_PATH = path.join(__dirname, '../e2e-debug.log')
-function debugLog(msg: string): void {
-  if (process.env.PRETZEL_E2E === '1') {
-    try {
-      fs.appendFileSync(DEBUG_LOG_PATH, `${new Date().toISOString()} ${msg}\n`)
-    } catch {
-      // best-effort debug logging only
-    }
-  }
-}
-debugLog('module: imports resolved')
+import { debugLog } from './debug-log'
+debugLog('module loaded: main.ts (all imports resolved)')
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
 // without these — Chromium's sandbox/GPU init never completes there.

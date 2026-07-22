@@ -17,6 +17,8 @@ import { app, shell } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { env } from './env'
+import { debugLog } from './debug-log'
+debugLog('module loaded: auth.ts')
 
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT_TOKEN = 'session-token'
