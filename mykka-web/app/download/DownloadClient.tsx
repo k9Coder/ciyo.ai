@@ -1,21 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-const GITHUB_RELEASES = 'https://github.com/yarin-mag/mykka.ai/releases'
-const RELEASE_API = 'https://api.github.com/repos/yarin-mag/mykka.ai/releases'
-
-interface ReleaseAsset {
-  name: string
-  browser_download_url: string
-  size: number
-}
-
-interface Release {
-  tag_name: string
-  assets: ReleaseAsset[]
-  prerelease: boolean
-}
+import { useState } from 'react'
+import type { DownloadAsset, Downloads } from './getDownloads'
 
 type Platform = 'mac-arm' | 'mac-intel' | 'windows' | 'linux' | 'unknown'
 
@@ -34,45 +20,21 @@ function detectPlatform(): Platform {
   return 'unknown'
 }
 
-function findAsset(assets: ReleaseAsset[], pattern: RegExp): ReleaseAsset | undefined {
-  return assets.find(a => pattern.test(a.name))
-}
-
 function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-export function DownloadClient() {
+export function DownloadClient({ downloads: releaseDownloads }: { downloads: Downloads }) {
   const [platform] = useState<Platform>(detectPlatform)
-  const [release, setRelease] = useState<Release | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
-      .then(r => r.ok ? r.json() : null)
-      .then((data: Release[] | null) => {
-        const desktop = Array.isArray(data)
-          ? data.find(r => r.tag_name.startsWith('pretzel-desktop-v')) ?? null
-          : null
-        setRelease(desktop)
-      })
-      .catch(() => null)
-      .finally(() => setLoading(false))
-  }, [])
-
-  const macArmAsset   = release ? findAsset(release.assets, /arm64.*\.dmg$/i) : undefined
-  const macIntelAsset = release ? findAsset(release.assets, /x64.*\.dmg$/i)   : undefined
-  const winAsset      = release ? findAsset(release.assets, /\.exe$/i)         : undefined
-  const linuxAsset    = release ? findAsset(release.assets, /\.AppImage$/i)    : undefined
-
-  const version = release?.tag_name ?? ''
+  const version = releaseDownloads.version ? `v${releaseDownloads.version}` : ''
 
   const downloads: Array<{
     id: Platform
     label: string
     sublabel: string
     icon: string
-    asset: ReleaseAsset | undefined
+    asset: DownloadAsset | null
     installCmd?: string
     installCmdLabel?: string
   }> = [
@@ -81,7 +43,7 @@ export function DownloadClient() {
       label: 'macOS',
       sublabel: 'Apple Silicon (M1/M2/M3/M4)',
       icon: '🍎',
-      asset: macArmAsset,
+      asset: releaseDownloads.macArm,
       installCmd: 'brew install --cask pretzel-desktop',
       installCmdLabel: 'or via Homebrew',
     },
@@ -90,14 +52,14 @@ export function DownloadClient() {
       label: 'macOS',
       sublabel: 'Intel (2020 and earlier)',
       icon: '🍎',
-      asset: macIntelAsset,
+      asset: releaseDownloads.macIntel,
     },
     {
       id: 'windows',
       label: 'Windows',
       sublabel: 'Windows 10 / 11 (x64)',
       icon: '🪟',
-      asset: winAsset,
+      asset: releaseDownloads.windows,
       installCmd: 'winget install mykka.PretzelDesktop',
       installCmdLabel: 'or via winget',
     },
@@ -106,7 +68,7 @@ export function DownloadClient() {
       label: 'Linux',
       sublabel: 'AppImage (x64)',
       icon: '🐧',
-      asset: linuxAsset,
+      asset: releaseDownloads.linux,
     },
   ]
 
@@ -116,7 +78,7 @@ export function DownloadClient() {
       <div style={{ textAlign: 'center', marginBottom: 56 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, padding: '4px 14px', fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
-          {loading ? 'Checking latest version…' : version ? `Latest: ${version}` : 'Latest release'}
+          {version ? `Latest: ${version}` : 'Latest release'}
         </div>
 
         <h1 style={{ fontSize: 48, fontWeight: 800, letterSpacing: -1, marginBottom: 16 }}>
@@ -131,7 +93,7 @@ export function DownloadClient() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 40 }}>
         {downloads.map(d => {
           const isDetected = d.id === platform || (platform === 'mac-arm' && d.id === 'mac-arm')
-          const url = d.asset?.browser_download_url ?? GITHUB_RELEASES
+          const url = d.asset?.url ?? '#'
           const size = d.asset ? formatBytes(d.asset.size) : ''
 
           return (
@@ -174,7 +136,7 @@ export function DownloadClient() {
                   cursor: 'pointer',
                 }}
               >
-                {loading ? 'Loading…' : d.asset ? `Download ${size ? `(${size})` : ''}` : 'View releases →'}
+                {d.asset ? `Download ${size ? `(${size})` : ''}` : 'Unavailable'}
               </a>
 
               {d.installCmd && (
@@ -251,9 +213,6 @@ export function DownloadClient() {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 40, fontSize: 13, color: 'var(--dim)' }}>
-        <a href={GITHUB_RELEASES} style={{ color: 'var(--accent)' }}>View all releases on GitHub →</a>
-      </div>
     </div>
   )
 }

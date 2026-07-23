@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { DownloadClient } from './DownloadClient'
+import { getDownloads } from './getDownloads'
 
 export const metadata: Metadata = {
   title: 'Download Pretzel Desktop — System-wide AI Prompt DLP',
@@ -10,6 +11,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function DownloadPage() {
-  return <DownloadClient />
+export default async function DownloadPage() {
+  return <DownloadClient downloads={await getDownloads()} />
 }
