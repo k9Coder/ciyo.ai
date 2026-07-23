@@ -1,9 +1,9 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
-import { parseToken, compareToken } from './tokens.js'
+import { parseToken, compareToken, parseDeviceToken } from './tokens.js'
 import { db } from '../db/client.js'
-import { members, users, tenants } from '../db/schema.js'
+import { members, users, tenants, deviceTokens } from '../db/schema.js'
 import type { Tenant } from '../db/schema.js'
 import { env } from '../env.js'
 
@@ -48,6 +48,51 @@ async function resolveOrgToken(
   }
   request.tenant = tenant
   request.tokenPrefix = parsed.prefix as 'ps_live' | 'ps_adm'
+}
+
+async function resolveDeviceToken(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  token: string
+): Promise<void> {
+  const parsed = parseDeviceToken(token)
+  if (!parsed) {
+    return reply.status(401).send({ error: 'Invalid token format' })
+  }
+
+  const [row] = await db.select().from(deviceTokens).where(eq(deviceTokens.id, parsed.deviceTokenId))
+  if (!row) {
+    return reply.status(401).send({ error: 'Invalid token' })
+  }
+  if (row.revokedAt) {
+    return reply.status(401).send({ error: 'Device token revoked — sign in again' })
+  }
+  if (row.expiresAt < new Date()) {
+    return reply.status(401).send({ error: 'Device token expired — sign in again' })
+  }
+  if (!(await compareToken(parsed.secret, row.tokenHash))) {
+    return reply.status(401).send({ error: 'Invalid token' })
+  }
+
+  const [member] = await db.select().from(members).where(eq(members.id, row.memberId))
+  if (!member) {
+    return reply.status(401).send({ error: 'Member not found' })
+  }
+  const tenant = await getTenantCached(row.tenantId)
+  if (!tenant) {
+    return reply.status(401).send({ error: 'Tenant not found' })
+  }
+  // member.userId is guaranteed set here: device tokens are only ever minted
+  // after a successful resolveClerkJwt call (see desktop-auth service), which
+  // requires a linked user.
+  const [user] = await db.select().from(users).where(eq(users.id, member.userId!))
+
+  request.tenant = tenant
+  request.member = member
+  request.user = user
+  request.tokenPrefix = 'pd'
+
+  void db.update(deviceTokens).set({ lastUsedAt: new Date() }).where(eq(deviceTokens.id, row.id))
 }
 
 export async function resolveClerkJwt(
@@ -118,6 +163,9 @@ export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: Fas
   const token = auth.slice(7)
   if (token.startsWith('ps_')) {
     return resolveOrgToken(req, reply, false)
+  }
+  if (token.startsWith('pd_')) {
+    return resolveDeviceToken(req, reply, token)
   }
   return resolveClerkJwt(req, reply, token)
 }
