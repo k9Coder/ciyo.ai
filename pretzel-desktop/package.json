@@ -1,6 +1,6 @@
 {
   "name": "pretzel-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Pretzel Desktop — system-wide AI prompt DLP for mykka.ai",
   "homepage": "https://mykka.ai",
@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --config playwright.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json",
-    "package": "electron-builder --config build/electron-builder.yml"
+    "package": "electron-builder --config build/electron-builder.yml",
+    "bump-version": "node scripts/bump-version.mjs",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "@mykka/detect": "workspace:*",
