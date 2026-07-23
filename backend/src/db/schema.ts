@@ -301,6 +301,39 @@ export const invites = pgTable('invites', {
   tenantIdx: index().on(t.tenantId),
 }))
 
+// ── Desktop Auth Codes ────────────────────────────────────────────────────
+// Transient, single-use PKCE authorization codes minted by
+// POST /auth/desktop/authorize/complete and redeemed by POST /auth/desktop/token.
+// 5-minute TTL — matches the desktop app's own callback-server timeout.
+export const desktopAuthCodes = pgTable('desktop_auth_codes', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  code:          text('code').notNull(),
+  memberId:      uuid('member_id').notNull().references(() => members.id),
+  tenantId:      uuid('tenant_id').notNull().references(() => tenants.id),
+  codeChallenge: text('code_challenge').notNull(),
+  redirectUri:   text('redirect_uri').notNull(),
+  expiresAt:     timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:        timestamp('used_at', { withTimezone: true }),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  codeUniq: unique().on(t.code),
+}))
+
+// ── Device Tokens ────────────────────────────────────────────────────────
+// Long-lived, revocable per-member credential for pretzel-desktop, minted at
+// the end of the PKCE exchange. 90-day expiry; revokedAt exists for a future
+// manual-revoke feature (not built yet — no endpoint sets it today).
+export const deviceTokens = pgTable('device_tokens', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  memberId:   uuid('member_id').notNull().references(() => members.id),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  tokenHash:  text('token_hash').notNull(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt:  timestamp('expires_at', { withTimezone: true }).notNull(),
+  lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+  revokedAt:  timestamp('revoked_at', { withTimezone: true }),
+})
+
 // ── Policy Templates (onboarding wizard) ─────────────────────────────────────
 // policy_json stores TemplateContent: { subjects: [{ name, description, rules: [...] }] }
 // When applied, subjects+rules are created in the live tables and policy is compiled+published.
@@ -367,6 +400,12 @@ export type NewChatMessage = typeof chatMessages.$inferInsert
 
 export type Invite    = typeof invites.$inferSelect
 export type NewInvite = typeof invites.$inferInsert
+
+export type DesktopAuthCode    = typeof desktopAuthCodes.$inferSelect
+export type NewDesktopAuthCode = typeof desktopAuthCodes.$inferInsert
+
+export type DeviceToken    = typeof deviceTokens.$inferSelect
+export type NewDeviceToken = typeof deviceTokens.$inferInsert
 
 export type SubjectVersion    = typeof subjectVersions.$inferSelect
 export type NewSubjectVersion = typeof subjectVersions.$inferInsert
