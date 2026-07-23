@@ -9,6 +9,22 @@ export interface ParsedToken {
 
 const UUID_RE = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const TOKEN_RE = new RegExp(`^(ps_live|ps_adm)_(${UUID_RE})_([A-Za-z0-9_-]{32})$`)
+const DEVICE_TOKEN_RE = new RegExp(`^pd_(${UUID_RE})_([A-Za-z0-9_-]{32})$`)
+
+export interface ParsedDeviceToken {
+  deviceTokenId: string
+  secret:        string
+}
+
+export function parseDeviceToken(token: string): ParsedDeviceToken | null {
+  const m = token.match(DEVICE_TOKEN_RE)
+  if (!m) return null
+  return { deviceTokenId: m[1]!, secret: m[2]! }
+}
+
+export function formatDeviceToken(deviceTokenId: string, secret: string): string {
+  return `pd_${deviceTokenId}_${secret}`
+}
 
 export function parseToken(token: string): ParsedToken | null {
   const m = token.match(TOKEN_RE)
