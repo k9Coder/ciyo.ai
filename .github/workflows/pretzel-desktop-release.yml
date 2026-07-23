@@ -145,8 +145,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
-          # Skip Authenticode signing for beta
-          WIN_CSC_LINK: ''
         working-directory: pretzel-desktop
         run: |
           pnpm build
