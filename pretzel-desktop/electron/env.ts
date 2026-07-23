@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const shape = {
-  PRETZEL_API_URL: z.string().default('https://api.mykka.ai'),
+  PRETZEL_API_URL: z.string().default('https://backend.mykka.ai'),
   CLERK_PUBLISHABLE_KEY: z.string().default(''),
 }
 
