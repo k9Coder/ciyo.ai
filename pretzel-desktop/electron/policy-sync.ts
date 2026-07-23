@@ -8,8 +8,6 @@ import { PolicyDocSchema, bridgePolicy } from '@mykka/detect'
 import type { Policy, PolicyDoc } from '@mykka/detect'
 import { loadToken } from './auth'
 import { env } from './env'
-import { debugLog } from './debug-log'
-debugLog('module loaded: policy-sync.ts')
 
 const SYNC_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes — same as extension
 const PRETZEL_API_BASE = env.PRETZEL_API_URL

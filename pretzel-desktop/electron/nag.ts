@@ -10,8 +10,6 @@
  */
 import { Notification, BrowserWindow } from 'electron'
 import { isAuthenticated } from './auth'
-import { debugLog } from './debug-log'
-debugLog('module loaded: nag.ts')
 
 const NAG_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
 

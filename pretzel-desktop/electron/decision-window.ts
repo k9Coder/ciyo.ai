@@ -7,8 +7,6 @@ import { BrowserWindow, screen } from 'electron'
 import path from 'path'
 import { pushDecisionRequired } from './ipc-handlers'
 import type { ProxyDecisionEvent } from './proxy'
-import { debugLog } from './debug-log'
-debugLog('module loaded: decision-window.ts')
 
 let decisionWin: BrowserWindow | null = null
 

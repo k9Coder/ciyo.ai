@@ -18,8 +18,6 @@ import { isAuthenticated, signIn } from './auth'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
-import { debugLog } from './debug-log'
-debugLog('module loaded: main.ts (all imports resolved)')
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
 // without these — Chromium's sandbox/GPU init never completes there.
@@ -90,7 +88,6 @@ async function handleSignIn(): Promise<void> {
 }
 
 async function createTrayWindow(): Promise<BrowserWindow> {
-  debugLog('createTrayWindow: before new BrowserWindow')
   const win = new BrowserWindow({
     width: 320,
     height: 480,
@@ -107,7 +104,6 @@ async function createTrayWindow(): Promise<BrowserWindow> {
       preload: path.join(__dirname, 'preload.js'),
     },
   })
-  debugLog(`createTrayWindow: BrowserWindow constructed, id=${win.id}`)
 
   const isDev = process.env.NODE_ENV === 'development'
   try {
@@ -116,11 +112,9 @@ async function createTrayWindow(): Promise<BrowserWindow> {
     } else {
       await win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
     }
-    debugLog('createTrayWindow: load resolved')
   } catch (err) {
-    debugLog(`createTrayWindow: load FAILED ${err}`)
+    console.error('[pretzel-desktop] Tray window failed to load:', err)
   }
-  debugLog('createTrayWindow: returning win')
   return win
 }
 
@@ -130,15 +124,12 @@ async function setupTray(authenticated: boolean): Promise<void> {
   // waiting for it. Skip the OS integration under test, keep the window.
   // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
   // used here instead — it's still readable at runtime in the built bundle.)
-  debugLog('setupTray: start')
   if (process.env.PRETZEL_E2E !== '1') {
     const iconPath = path.join(__dirname, '../build/icon.png')
     const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
     tray = new Tray(icon)
   }
-  debugLog('setupTray: before createTrayWindow')
   trayWin = await createTrayWindow()
-  debugLog('setupTray: after createTrayWindow')
 
   rebuildTrayMenu(authenticated)
 
@@ -168,11 +159,9 @@ async function startProxy(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
-  debugLog('whenReady: fired')
   app.setLoginItemSettings({ openAtLogin: true })
 
   const authenticated = isAuthenticated()
-  debugLog(`whenReady: isAuthenticated done, authenticated=${authenticated}`)
 
   registerIpcHandlers({
     onDecision: (requestId, allow) => {
@@ -184,10 +173,8 @@ app.whenReady().then(async () => {
     },
     onSignIn: () => { handleSignIn() },
   })
-  debugLog('whenReady: registerIpcHandlers done, calling setupTray')
 
   await setupTray(authenticated)
-  debugLog('whenReady: setupTray returned')
 
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {

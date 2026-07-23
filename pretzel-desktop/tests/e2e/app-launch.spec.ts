@@ -7,17 +7,12 @@
  */
 import { test, expect, _electron as electron } from '@playwright/test'
 import path from 'path'
-import fs from 'fs'
 
 const ROOT = path.resolve(__dirname, '../../')
-const DEBUG_LOG_PATH = path.join(ROOT, 'e2e-debug.log')
 
-// TEMP DEBUG: every electron.launch() call below used to pass an explicit
-// `env: { ...process.env, ... }` override. Every one of those hung at
-// launch() itself (not even reaching our own finally-block debug dump),
-// while the one smoke test that launched with NO custom env worked fine.
-// Setting on the parent process instead and relying on Playwright's default
-// env inheritance to test whether the explicit override was the problem.
+// PRETZEL_E2E gates: skipping the real OS tray icon (no D-Bus tray host on
+// CI displays) and showing the tray window (Playwright's firstWindow() never
+// resolves for a window that's never shown or never loads content).
 process.env.NODE_ENV = 'test'
 process.env.PRETZEL_E2E = '1'
 
@@ -35,30 +30,15 @@ test.describe('pretzel-desktop app', () => {
   })
 
   test('tray window is created on launch', async () => {
-    // TEMP DEBUG: fresh debug log per run
-    try { fs.rmSync(DEBUG_LOG_PATH) } catch { /* no prior file */ }
-
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
     })
-    // TEMP DEBUG: surface main-process output in CI to diagnose the hang
-    app.process().stdout?.on('data', (d) => console.log('[main stdout]', d.toString()))
-    app.process().stderr?.on('data', (d) => console.log('[main stderr]', d.toString()))
 
-    try {
-      // Wait for the tray window to actually open before inspecting windows()
-      await app.firstWindow()
-      expect(app.windows().length).toBeGreaterThan(0)
-    } finally {
-      // TEMP DEBUG: dump the main process's synchronous breadcrumb log,
-      // whether the test passed, failed, or timed out
-      try {
-        console.log('[e2e-debug-file]\n' + fs.readFileSync(DEBUG_LOG_PATH, 'utf-8'))
-      } catch (err) {
-        console.log('[e2e-debug-file] could not read debug log:', err)
-      }
-      await app.close()
-    }
+    // Wait for the tray window to actually open before inspecting windows()
+    await app.firstWindow()
+    expect(app.windows().length).toBeGreaterThan(0)
+
+    await app.close()
   })
 
   test('decision window renders policy decision UI', async () => {
