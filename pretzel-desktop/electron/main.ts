@@ -89,12 +89,16 @@ async function handleSignIn(): Promise<void> {
   }
 }
 
-function createTrayWindow(): BrowserWindow {
+async function createTrayWindow(): Promise<BrowserWindow> {
   debugLog('createTrayWindow: before new BrowserWindow')
   const win = new BrowserWindow({
     width: 320,
     height: 480,
-    show: false,
+    // Playwright's firstWindow() waits on paint/DOM-ready signals that
+    // never fire for a window that's never shown — confirmed via multiple
+    // closed microsoft/playwright issues (e.g. #13575, #21117). Show it
+    // under E2E only; production keeps the real hidden-until-click UX.
+    show: process.env.PRETZEL_E2E === '1',
     frame: false,
     resizable: false,
     webPreferences: {
@@ -106,18 +110,21 @@ function createTrayWindow(): BrowserWindow {
   debugLog(`createTrayWindow: BrowserWindow constructed, id=${win.id}`)
 
   const isDev = process.env.NODE_ENV === 'development'
-  if (isDev) {
-    win.loadURL('http://localhost:5174/tray-ui/')
-  } else {
-    win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
-      .then(() => debugLog('createTrayWindow: loadFile resolved'))
-      .catch((err) => debugLog(`createTrayWindow: loadFile FAILED ${err}`))
+  try {
+    if (isDev) {
+      await win.loadURL('http://localhost:5174/tray-ui/')
+    } else {
+      await win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
+    }
+    debugLog('createTrayWindow: load resolved')
+  } catch (err) {
+    debugLog(`createTrayWindow: load FAILED ${err}`)
   }
   debugLog('createTrayWindow: returning win')
   return win
 }
 
-function setupTray(authenticated: boolean): void {
+async function setupTray(authenticated: boolean): Promise<void> {
   // Real OS tray icon needs a tray host (StatusNotifierWatcher/D-Bus on Linux);
   // a bare Xvfb CI display has none, and `new Tray()` blocks indefinitely
   // waiting for it. Skip the OS integration under test, keep the window.
@@ -130,7 +137,7 @@ function setupTray(authenticated: boolean): void {
     tray = new Tray(icon)
   }
   debugLog('setupTray: before createTrayWindow')
-  trayWin = createTrayWindow()
+  trayWin = await createTrayWindow()
   debugLog('setupTray: after createTrayWindow')
 
   rebuildTrayMenu(authenticated)
@@ -179,7 +186,7 @@ app.whenReady().then(async () => {
   })
   debugLog('whenReady: registerIpcHandlers done, calling setupTray')
 
-  setupTray(authenticated)
+  await setupTray(authenticated)
   debugLog('whenReady: setupTray returned')
 
   // Start background policy sync — feeds into proxy + IPC state

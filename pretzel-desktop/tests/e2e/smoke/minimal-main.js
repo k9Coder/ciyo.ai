@@ -19,8 +19,13 @@ app.disableHardwareAcceleration()
 
 log('switches applied, waiting for whenReady')
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   log('whenReady fired')
-  const win = new BrowserWindow({ width: 200, height: 200, show: false })
+  // show: true + awaited loadURL matches the Playwright maintainers' own
+  // confirmed-working repro (microsoft/playwright#21117) — hidden windows
+  // that never load content are the suspected reason firstWindow() hangs.
+  const win = new BrowserWindow({ width: 200, height: 200, show: true })
   log(`BrowserWindow constructed, id=${win.id}`)
+  await win.loadURL('data:text/html,<h1>smoke</h1>')
+  log('loadURL resolved')
 })
