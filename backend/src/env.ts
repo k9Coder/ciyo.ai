@@ -12,6 +12,7 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   APP_ENV: z.string().optional(),
   CORS_ORIGIN: z.string().optional(),
+  PRETZEL_CONSOLE_URL: z.string().default('https://pretzel-console.mykka.ai'),
   DB_POOL_MAX: z.coerce.number().int().positive().optional(),
   INTERNAL_API_URL: z.string().optional(),
   ADMIN_BASE_URL: z.string().optional(),
