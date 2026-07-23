@@ -12,11 +12,19 @@ import fs from 'fs'
 const ROOT = path.resolve(__dirname, '../../')
 const DEBUG_LOG_PATH = path.join(ROOT, 'e2e-debug.log')
 
+// TEMP DEBUG: every electron.launch() call below used to pass an explicit
+// `env: { ...process.env, ... }` override. Every one of those hung at
+// launch() itself (not even reaching our own finally-block debug dump),
+// while the one smoke test that launched with NO custom env worked fine.
+// Setting on the parent process instead and relying on Playwright's default
+// env inheritance to test whether the explicit override was the problem.
+process.env.NODE_ENV = 'test'
+process.env.PRETZEL_E2E = '1'
+
 test.describe('pretzel-desktop app', () => {
   test('app launches without crashing', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     // App should not exit immediately
@@ -32,7 +40,6 @@ test.describe('pretzel-desktop app', () => {
 
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
     // TEMP DEBUG: surface main-process output in CI to diagnose the hang
     app.process().stdout?.on('data', (d) => console.log('[main stdout]', d.toString()))
@@ -57,7 +64,6 @@ test.describe('pretzel-desktop app', () => {
   test('decision window renders policy decision UI', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     // Evaluate in main process — simulate a decision event
@@ -71,7 +77,6 @@ test.describe('pretzel-desktop app', () => {
   test('IPC policy:get returns null when no policy loaded', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test', PRETZEL_E2E: '1' },
     })
 
     const policy = await app.evaluate(async ({ ipcMain }) => {
