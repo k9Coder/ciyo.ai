@@ -29,37 +29,47 @@ Changes on `staging` deploy to staging services. Changes on `master` deploy to p
 
 ### How to release a new version
 
-1. Bump version in `pretzel-desktop/package.json` (e.g. `"version": "1.1.0"`).
-2. Commit the bump: `git commit -m "chore: bump pretzel-desktop to v1.1.0"`.
-3. Tag and push:
+1. From `pretzel-desktop/`, bump the version and push the release tag:
    ```bash
-   git tag pretzel-desktop-v1.1.0
-   git push origin pretzel-desktop-v1.1.0
+   pnpm bump-version        # patch bump by default; or: pnpm bump-version minor|major
+   pnpm release             # tags pretzel-desktop-v<version> and pushes it
    ```
-4. GitHub Actions (`.github/workflows/pretzel-desktop-release.yml`) runs automatically:
+   (`pretzel-desktop/scripts/bump-version.mjs` / `release.mjs` — bumps `package.json`,
+   commits, tags, and pushes for you.)
+2. GitHub Actions (`.github/workflows/pretzel-desktop-release.yml`) runs automatically:
    - **macOS job** (`macos-latest`): builds arm64 + x64 `.dmg`, uploads to GitHub Release.
    - **Windows job** (`windows-latest`): builds x64 `.exe` NSIS installer, uploads to GitHub Release.
    - **Linux job** (`ubuntu-latest`): builds `.AppImage` + `.deb`, uploads to GitHub Release.
    - **Notify job**: posts result to Discord with download link.
-5. CI takes ~10–15 min. Check Actions tab for progress.
-6. GitHub Release is created automatically at:
-   `https://github.com/mykka-ai/pretzel-desktop/releases/tag/pretzel-desktop-v1.1.0`
+3. CI takes ~10–15 min. Check Actions tab for progress.
+4. electron-builder creates its own GitHub Release under tag `v<version>` (NOT the
+   `pretzel-desktop-v<version>` git tag that triggered the build) — as a **draft**:
+   `https://github.com/yarin-mag/mykka.ai/releases/tag/v1.1.0`
+5. **Required manual step:** from `mykka-web/`, publish the new installers to Vercel Blob
+   (this is what `mykka.ai/download` actually serves — see below):
+   ```bash
+   pnpm publish-blob:staging   # test first
+   pnpm publish-blob:prod
+   ```
+   (`mykka-web/scripts/publish-desktop-blob.mjs` — downloads the four installers from the
+   `v<version>` GitHub Release, uploads them to Vercel Blob under `pretzel-desktop/`, and
+   deletes the previous version's blobs so the store doesn't grow unbounded.)
 
 ### How download links stay current on mykka.ai and the console
 
-**No manual update needed.** Both surfaces resolve the latest release dynamically:
+**Downloads are served from Vercel Blob, not GitHub directly** (`mykka-web/app/download/getDownloads.ts`
+calls `list({ prefix: 'pretzel-desktop/' })`) — this changed from the original GitHub-API-direct
+design because GitHub blocks/warns on release assets this large over its API.  Nothing pushes
+new GitHub Release assets into Blob automatically — **you must run `pnpm publish-blob:prod`
+(step 5 above) after every release**, or `mykka.ai/download` keeps serving the old version.
 
-- **`mykka.ai/download`** (`mykka-web/app/download/DownloadClient.tsx`): calls
-  `https://api.github.com/repos/mykka-ai/pretzel-desktop/releases/latest` at page load.
-  Returns real file sizes and direct download URLs for whatever the latest tag is.
-  Pushing a new tag = new release = page auto-updates within seconds.
-
-- **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`
-  which in turn resolves the latest release dynamically. No console redeploy needed.
-
-- **In-app auto-updater** (`electron-updater`): checks GitHub Releases on startup and
-  every 2h. Users already running pretzel-desktop get a silent background update prompt
-  automatically when you push a new tag.
+- **`mykka.ai/download`**: reads directly from the Vercel Blob store — updates the moment
+  `publish-blob:prod` finishes, no redeploy needed.
+- **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`,
+  so it inherits the same Blob-backed data with no separate action needed.
+- **In-app auto-updater** (`electron-updater`): checks GitHub Releases (not Blob) on startup
+  and every 2h, so already-installed apps still auto-update straight from the GitHub Release
+  regardless of the Blob publish step.
 
 ### Required GitHub secrets
 
