@@ -28,8 +28,8 @@ async function fetchPolicyDoc(token: string): Promise<PolicyDoc | null | 'unauth
   })
   if (res.status === 401) return 'unauthorized'
   if (!res.ok) return null
-  const json = await res.json()
-  const parsed = PolicyDocSchema.safeParse(json)
+  const json = await res.json() as { policy?: unknown }
+  const parsed = PolicyDocSchema.safeParse(json.policy)
   return parsed.success ? parsed.data : null
 }
 
