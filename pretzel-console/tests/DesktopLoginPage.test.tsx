@@ -33,7 +33,7 @@ beforeEach(() => {
 
 afterEach(() => {
   global.fetch = originalFetch
-  window.location = originalLocation
+  ;(window as any).location = originalLocation
 })
 
 describe('DesktopLoginPage', () => {

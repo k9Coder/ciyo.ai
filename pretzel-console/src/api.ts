@@ -97,7 +97,7 @@ export const api = {
     list: () => request<Member[]>('GET', '/v1/members'),
     create: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
       request<Member>('POST', '/v1/members', data),
-    update: (id: string, data: Partial<{ displayName: string; role: Member['role'] }>) =>
+    update: (id: string, data: Partial<{ displayName: string; role: Member['role']; failMode: Member['failMode'] }>) =>
       request<Member>('PATCH', `/v1/members/${id}`, data),
     remove: (id: string) => request<void>('DELETE', `/v1/members/${id}`),
     assignTeam: (memberId: string, teamId: string) =>
