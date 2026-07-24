@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
+import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { db } from '../src/db/client.js'
 import { divisions, teams, members, memberTeams, destinationGroups } from '../src/db/schema.js'
@@ -173,5 +174,23 @@ describe('resolveMemberPolicy', () => {
     })
 
     expect((resolved.subjects[0]!.rules[0]! as Record<string, unknown>)['destinationGroupIds']).toBeUndefined()
+  })
+
+  it('falls back to the tenant/snapshot failMode when the member has no override', async () => {
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+    expect(resolved.failMode).toBe('open') // buildTestTenant defaults to 'open'
+  })
+
+  it('uses the member-level failMode override when set', async () => {
+    await db.update(members).set({ failMode: 'closed' }).where(eq(members.id, memberId))
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+    expect(resolved.failMode).toBe('closed')
   })
 })

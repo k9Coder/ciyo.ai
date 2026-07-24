@@ -97,6 +97,10 @@ export const members = pgTable('members', {
   displayName:     text('display_name'),
   role:            memberRoleEnum('role').notNull().default('member'),
   adminDivisionId: uuid('admin_division_id').references(() => divisions.id),
+  // Per-member override of the tenant's failMode. Null = inherit the tenant
+  // default (see resolveMemberPolicy). Admin-set only, via pretzel-console —
+  // never exposed as user-editable in pretzel-desktop or the extension.
+  failMode:        failModeEnum('fail_mode'),
   createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   tenantEmailUniq: unique().on(t.tenantId, t.email),

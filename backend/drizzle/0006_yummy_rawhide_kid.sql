@@ -1,0 +1,1 @@
+ALTER TABLE "members" ADD COLUMN "fail_mode" "fail_mode";

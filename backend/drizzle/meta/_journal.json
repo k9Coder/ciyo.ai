@@ -43,6 +43,13 @@
       "when": 1784842393111,
       "tag": "0005_marvelous_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784908672464,
+      "tag": "0006_yummy_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }
