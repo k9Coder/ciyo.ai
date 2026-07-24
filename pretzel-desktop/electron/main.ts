@@ -110,7 +110,7 @@ async function createTrayWindow(): Promise<BrowserWindow> {
     if (isDev) {
       await win.loadURL('http://localhost:5174/tray-ui/')
     } else {
-      await win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
+      await win.loadFile(path.join(__dirname, '../dist/renderer/tray-ui/index.html'))
     }
   } catch (err) {
     console.error('[pretzel-desktop] Tray window failed to load:', err)
