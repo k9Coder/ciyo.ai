@@ -58,7 +58,8 @@ pnpm test:e2e -- --project=admin
 
 - `staging` is the default integration branch. Every fix, feature, or code change — unless the user explicitly says otherwise — starts on a new branch cut from `staging` and is merged via a PR whose base is `staging`.
 - `master` is production. Do not target `master` with feature PRs. Periodically, `staging` is aligned into `master` via a promotion PR (`staging` → `master`); only the user decides when.
-- Pushes to `staging` deploy backend and console to the Render staging environment; pushes to `master` deploy production. Tagged releases build the extension and desktop app from `master`.
+- Pushes to `staging` deploy backend and console to the Render staging environment; pushes to `master` deploy production. Tagged releases build the extension and desktop app (tag-triggered, works from whichever branch the tag's commit is reachable from — not restricted to `master`).
+- Releasing pretzel-desktop (bump version → build → publish to Vercel Blob so `mykka.ai/download` updates): see [docs/operations/release-process.md](docs/operations/release-process.md). Two GitHub Actions workflows (`pretzel-desktop-full-release.yml`, `publish-desktop-blob-production.yml`) automate this — trigger manually from the Actions tab.
 - CI secrets are environment-scoped (GitHub Environments `production`/`staging`); see [docs/ENVIRONMENT_AND_SECRETS.md](docs/ENVIRONMENT_AND_SECRETS.md).
 
 ## Editing Rules

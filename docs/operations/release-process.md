@@ -27,7 +27,30 @@ Changes on `staging` deploy to staging services. Changes on `master` deploy to p
 
 ## Desktop App (pretzel-desktop)
 
-### How to release a new version
+### How to release a new version — automated (recommended)
+
+Two GitHub Actions workflows, both manually triggered from the **Actions tab**
+(`Run workflow` button — pick the branch to release from, normally `staging`):
+
+1. **"Cut Pretzel Desktop Release"** (`.github/workflows/pretzel-desktop-full-release.yml`)
+   — pick a bump type (`patch`/`minor`/`major`). This chains, in one run:
+   bump `package.json` + commit + push → tag `pretzel-desktop-v<version>` + push →
+   wait for `pretzel-desktop-release.yml` to build all 3 platforms → publish the
+   result to the **staging** Vercel Blob store. Check `mykka.ai` (staging deployment)
+   serves the new version before continuing.
+2. **"Publish Pretzel Desktop to Production Blob"** (`.github/workflows/publish-desktop-blob-production.yml`)
+   — deliberately separate manual trigger, no inputs needed. This is the production
+   safety gate: nothing reaches `mykka.ai/download` until you explicitly run this one.
+   (Would normally be a required-reviewer approval step, but that GitHub Environment
+   protection rule needs a paid plan on private repos — this repo doesn't have one, so
+   the gate is "it's a second manual click" instead.)
+
+**Note:** `workflow_dispatch` workflows only show up in the Actions UI once their YAML
+file exists on the repo's default branch (`master`). Until these two are promoted
+staging → master, trigger them manually via `gh workflow run <file> --repo yarin-mag/mykka.ai --ref staging`,
+or just use the manual steps below.
+
+### How to release a new version — manual (what the automation does under the hood)
 
 1. From `pretzel-desktop/`, bump the version and push the release tag:
    ```bash
@@ -73,12 +96,14 @@ new GitHub Release assets into Blob automatically — **you must run `pnpm publi
 
 ### Required GitHub secrets
 
-| Secret | Used for |
-|---|---|
-| `GITHUB_TOKEN` | Uploading release assets (automatic, no setup needed) |
-| `PRETZEL_DESKTOP_API_URL` | Backend URL baked into the app binary |
-| `VITE_CLERK_PUBLISHABLE_KEY_PROD` | Clerk auth key baked into the app binary |
-| `DISCORD_WEBHOOK_URL` | Release notification |
+| Secret | Environment | Used for |
+|---|---|---|
+| `GITHUB_TOKEN` | (automatic) | Uploading release assets, no setup needed |
+| `PRETZEL_DESKTOP_API_URL` | `production` | Backend URL baked into the app binary |
+| `PRETZEL_CLERK_PUBLISHABLE_KEY` | `production` | Clerk auth key baked into the app binary |
+| `SHARED_DISCORD_WEBHOOK_URL` | (repo secret) | Release notification |
+| `BLOB_READ_WRITE_TOKEN` | `staging` | Vercel Blob write access for the staging store |
+| `BLOB_READ_WRITE_TOKEN` | `desktop-blob-production` | Vercel Blob write access for the production store — separate GitHub Environment from `production` on purpose, so it can later get its own protection rule without affecting the build jobs |
 
 ### Current signing status
 
