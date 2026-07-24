@@ -11,37 +11,23 @@ const DecisionResponseSchema = z.object({
   allow: z.boolean(),
 })
 
-const PolicyUpdateSchema = z.object({
-  failMode: z.enum(['open', 'closed']),
-})
-
 type DecisionCallback = (requestId: string, allow: boolean) => void
-type PolicyUpdateCallback = (update: { failMode: 'open' | 'closed' }) => void
 type SignInCallback = () => void
 
 let onDecision: DecisionCallback | null = null
-let onPolicyUpdate: PolicyUpdateCallback | null = null
 let onSignIn: SignInCallback | null = null
 
 export function registerIpcHandlers(options: {
   onDecision: DecisionCallback
-  onPolicyUpdate: PolicyUpdateCallback
   onSignIn?: SignInCallback
 }): void {
   onDecision = options.onDecision
-  onPolicyUpdate = options.onPolicyUpdate
   onSignIn = options.onSignIn ?? null
 
   ipcMain.on('decision:respond', (_event, raw: unknown) => {
     const parsed = DecisionResponseSchema.safeParse(raw)
     if (!parsed.success) return
     onDecision?.(parsed.data.requestId, parsed.data.allow)
-  })
-
-  ipcMain.on('policy:update', (_event, raw: unknown) => {
-    const parsed = PolicyUpdateSchema.safeParse(raw)
-    if (!parsed.success) return
-    onPolicyUpdate?.(parsed.data)
   })
 
   ipcMain.on('auth:sign-in', () => {
@@ -58,7 +44,6 @@ export function registerIpcHandlers(options: {
 
 export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('decision:respond')
-  ipcMain.removeAllListeners('policy:update')
   ipcMain.removeAllListeners('auth:sign-in')
   ipcMain.removeHandler('policy:get')
   ipcMain.removeHandler('proxy:status')

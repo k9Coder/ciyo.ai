@@ -35,7 +35,4 @@ contextBridge.exposeInMainWorld('pretzel', {
   // Policy
   getPolicy: () => ipcRenderer.invoke('policy:get'),
   getProxyStatus: () => ipcRenderer.invoke('proxy:status'),
-  updateFailMode: (failMode: 'open' | 'closed') => {
-    ipcRenderer.send('policy:update', { failMode })
-  },
 })

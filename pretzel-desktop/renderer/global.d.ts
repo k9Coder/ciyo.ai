@@ -22,7 +22,6 @@ declare global {
       signIn: () => void
       getPolicy: () => Promise<unknown>
       getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
-      updateFailMode: (failMode: 'open' | 'closed') => void
     }
   }
 }

@@ -168,9 +168,6 @@ app.whenReady().then(async () => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
     },
-    onPolicyUpdate: (update) => {
-      console.log('[pretzel-desktop] Policy update from renderer:', update)
-    },
     onSignIn: () => { handleSignIn() },
   })
 
