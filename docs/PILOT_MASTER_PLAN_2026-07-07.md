@@ -171,7 +171,7 @@ Verify: unit test purge boundaries. Effort: ~1 day.
 3. Point Render backend service `DATABASE_URL` at Neon (connection-pooled URL; postgres.js works with Neon's pooler — verify `max` settings).
 
 ### 4.2 Render env vars — backend ☐
-Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — without it signups land on `free`: no assistant, keyword-only), `LLM_PROVIDER=groq`, `GROQ_API_KEY`, `CLERK_SECRET_KEY` (prod instance), `CLERK_WEBHOOK_SECRET` (prod), `DATABASE_URL` (Neon), `CORS_ORIGIN=https://console.mykka.ai`, **`ADMIN_BASE_URL=https://console.mykka.ai`** (audit found invite links default to `http://localhost:5173` — every invite email/link is broken in prod without this), internal-service secret vars.
+Set and verify on the Render backend service: `PILOT_MODE=true` (CRITICAL — without it signups land on `free`: no assistant, keyword-only), `LLM_PROVIDER=groq`, `GROQ_API_KEY`, `CLERK_SECRET_KEY` (prod instance), `CLERK_WEBHOOK_SECRET` (prod), `DATABASE_URL` (Neon), `CORS_ORIGIN=https://pretzel-console.mykka.ai`, **`ADMIN_BASE_URL=https://pretzel-console.mykka.ai`** (audit found invite links default to `http://localhost:5173` — every invite email/link is broken in prod without this), internal-service secret vars.
 
 ### 4.3 Clerk production instance ☐
 - Webhook endpoint → Render backend `https://<api-domain>/webhooks/clerk`; prod publishable key into console build env + extension prod build + desktop release secrets (`VITE_CLERK_PUBLISHABLE_KEY_PROD` — same key referenced by desktop workflow).

@@ -45,10 +45,10 @@ Two GitHub Actions workflows, both manually triggered from the **Actions tab**
    protection rule needs a paid plan on private repos — this repo doesn't have one, so
    the gate is "it's a second manual click" instead.)
 
-**Note:** `workflow_dispatch` workflows only show up in the Actions UI once their YAML
-file exists on the repo's default branch (`master`). Until these two are promoted
-staging → master, trigger them manually via `gh workflow run <file> --repo yarin-mag/mykka.ai --ref staging`,
-or just use the manual steps below.
+**Note:** `workflow_dispatch` workflows are only dispatchable (UI or `gh workflow run`)
+once their YAML file exists on the repo's default branch (`master`) — confirmed:
+`gh workflow run` against a staging-only workflow 404s. Until these two are promoted
+staging → master, use the manual steps below instead.
 
 ### How to release a new version — manual (what the automation does under the hood)
 

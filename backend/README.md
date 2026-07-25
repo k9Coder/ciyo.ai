@@ -27,7 +27,7 @@ pnpm dev
 
 `pnpm dev` loads `backend/.env`, checks the database connection, and listens on `0.0.0.0:${PORT}`; `PORT` defaults to `3000`. Verify the process with `GET http://localhost:3000/health`.
 
-`DATABASE_URL` is required. In production, `CORS_ORIGIN` is also required and PostgreSQL connections require TLS. Outside production, CORS defaults to `https://console.mykka.ai`; tests allow the requesting origin.
+`DATABASE_URL` is required. In production, `CORS_ORIGIN` is also required and PostgreSQL connections require TLS. Outside production, CORS defaults to `https://pretzel-console.mykka.ai`; tests allow the requesting origin.
 
 ## Commands
 

@@ -40,7 +40,7 @@ export default function AccessibilityPage() {
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">מגבלות ידועות</h2>
         <ul className="mb-4 list-inside list-disc space-y-2 leading-relaxed">
           <li>תכנים שמוטמעים מצד שלישי (סרטוני YouTube, וידג&apos;טים חיצוניים) עשויים שלא לעמוד במלוא הדרישות</li>
-          <li>אנו עובדים על שיפור נגישות פורטל הניהול (console.mykka.ai) באופן שוטף</li>
+          <li>אנו עובדים על שיפור נגישות פורטל הניהול (pretzel-console.mykka.ai) באופן שוטף</li>
         </ul>
 
         <h2 className="mb-3 mt-8 text-lg font-semibold text-white">יצירת קשר בנושא נגישות</h2>
