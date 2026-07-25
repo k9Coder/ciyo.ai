@@ -27,48 +27,83 @@ Changes on `staging` deploy to staging services. Changes on `master` deploy to p
 
 ## Desktop App (pretzel-desktop)
 
-### How to release a new version
+### How to release a new version — automated (recommended)
 
-1. Bump version in `pretzel-desktop/package.json` (e.g. `"version": "1.1.0"`).
-2. Commit the bump: `git commit -m "chore: bump pretzel-desktop to v1.1.0"`.
-3. Tag and push:
+Two GitHub Actions workflows, both manually triggered from the **Actions tab**
+(`Run workflow` button — pick the branch to release from, normally `staging`):
+
+1. **"Cut Pretzel Desktop Release"** (`.github/workflows/pretzel-desktop-full-release.yml`)
+   — pick a bump type (`patch`/`minor`/`major`). This chains, in one run:
+   bump `package.json` + commit + push → tag `pretzel-desktop-v<version>` + push →
+   wait for `pretzel-desktop-release.yml` to build all 3 platforms → publish the
+   result to the **staging** Vercel Blob store. Check `mykka.ai` (staging deployment)
+   serves the new version before continuing.
+2. **"Publish Pretzel Desktop to Production Blob"** (`.github/workflows/publish-desktop-blob-production.yml`)
+   — deliberately separate manual trigger, no inputs needed. This is the production
+   safety gate: nothing reaches `mykka.ai/download` until you explicitly run this one.
+   (Would normally be a required-reviewer approval step, but that GitHub Environment
+   protection rule needs a paid plan on private repos — this repo doesn't have one, so
+   the gate is "it's a second manual click" instead.)
+
+**Note:** `workflow_dispatch` workflows are only dispatchable (UI or `gh workflow run`)
+once their YAML file exists on the repo's default branch (`master`) — confirmed:
+`gh workflow run` against a staging-only workflow 404s. Until these two are promoted
+staging → master, use the manual steps below instead.
+
+### How to release a new version — manual (what the automation does under the hood)
+
+1. From `pretzel-desktop/`, bump the version and push the release tag:
    ```bash
-   git tag pretzel-desktop-v1.1.0
-   git push origin pretzel-desktop-v1.1.0
+   pnpm bump-version        # patch bump by default; or: pnpm bump-version minor|major
+   pnpm release             # tags pretzel-desktop-v<version> and pushes it
    ```
-4. GitHub Actions (`.github/workflows/pretzel-desktop-release.yml`) runs automatically:
+   (`pretzel-desktop/scripts/bump-version.mjs` / `release.mjs` — bumps `package.json`,
+   commits, tags, and pushes for you.)
+2. GitHub Actions (`.github/workflows/pretzel-desktop-release.yml`) runs automatically:
    - **macOS job** (`macos-latest`): builds arm64 + x64 `.dmg`, uploads to GitHub Release.
    - **Windows job** (`windows-latest`): builds x64 `.exe` NSIS installer, uploads to GitHub Release.
    - **Linux job** (`ubuntu-latest`): builds `.AppImage` + `.deb`, uploads to GitHub Release.
    - **Notify job**: posts result to Discord with download link.
-5. CI takes ~10–15 min. Check Actions tab for progress.
-6. GitHub Release is created automatically at:
-   `https://github.com/mykka-ai/pretzel-desktop/releases/tag/pretzel-desktop-v1.1.0`
+3. CI takes ~10–15 min. Check Actions tab for progress.
+4. electron-builder creates its own GitHub Release under tag `v<version>` (NOT the
+   `pretzel-desktop-v<version>` git tag that triggered the build) — as a **draft**:
+   `https://github.com/yarin-mag/mykka.ai/releases/tag/v1.1.0`
+5. **Required manual step:** from `mykka-web/`, publish the new installers to Vercel Blob
+   (this is what `mykka.ai/download` actually serves — see below):
+   ```bash
+   pnpm publish-blob:staging   # test first
+   pnpm publish-blob:prod
+   ```
+   (`mykka-web/scripts/publish-desktop-blob.mjs` — downloads the four installers from the
+   `v<version>` GitHub Release, uploads them to Vercel Blob under `pretzel-desktop/`, and
+   deletes the previous version's blobs so the store doesn't grow unbounded.)
 
 ### How download links stay current on mykka.ai and the console
 
-**No manual update needed.** Both surfaces resolve the latest release dynamically:
+**Downloads are served from Vercel Blob, not GitHub directly** (`mykka-web/app/download/getDownloads.ts`
+calls `list({ prefix: 'pretzel-desktop/' })`) — this changed from the original GitHub-API-direct
+design because GitHub blocks/warns on release assets this large over its API.  Nothing pushes
+new GitHub Release assets into Blob automatically — **you must run `pnpm publish-blob:prod`
+(step 5 above) after every release**, or `mykka.ai/download` keeps serving the old version.
 
-- **`mykka.ai/download`** (`mykka-web/app/download/DownloadClient.tsx`): calls
-  `https://api.github.com/repos/mykka-ai/pretzel-desktop/releases/latest` at page load.
-  Returns real file sizes and direct download URLs for whatever the latest tag is.
-  Pushing a new tag = new release = page auto-updates within seconds.
-
-- **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`
-  which in turn resolves the latest release dynamically. No console redeploy needed.
-
-- **In-app auto-updater** (`electron-updater`): checks GitHub Releases on startup and
-  every 2h. Users already running pretzel-desktop get a silent background update prompt
-  automatically when you push a new tag.
+- **`mykka.ai/download`**: reads directly from the Vercel Blob store — updates the moment
+  `publish-blob:prod` finishes, no redeploy needed.
+- **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`,
+  so it inherits the same Blob-backed data with no separate action needed.
+- **In-app auto-updater** (`electron-updater`): checks GitHub Releases (not Blob) on startup
+  and every 2h, so already-installed apps still auto-update straight from the GitHub Release
+  regardless of the Blob publish step.
 
 ### Required GitHub secrets
 
-| Secret | Used for |
-|---|---|
-| `GITHUB_TOKEN` | Uploading release assets (automatic, no setup needed) |
-| `PRETZEL_DESKTOP_API_URL` | Backend URL baked into the app binary |
-| `VITE_CLERK_PUBLISHABLE_KEY_PROD` | Clerk auth key baked into the app binary |
-| `DISCORD_WEBHOOK_URL` | Release notification |
+| Secret | Environment | Used for |
+|---|---|---|
+| `GITHUB_TOKEN` | (automatic) | Uploading release assets, no setup needed |
+| `PRETZEL_DESKTOP_API_URL` | `production` | Backend URL baked into the app binary |
+| `PRETZEL_CLERK_PUBLISHABLE_KEY` | `production` | Clerk auth key baked into the app binary |
+| `SHARED_DISCORD_WEBHOOK_URL` | (repo secret) | Release notification |
+| `BLOB_READ_WRITE_TOKEN` | `staging` | Vercel Blob write access for the staging store |
+| `BLOB_READ_WRITE_TOKEN` | `desktop-blob-production` | Vercel Blob write access for the production store — separate GitHub Environment from `production` on purpose, so it can later get its own protection rule without affecting the build jobs |
 
 ### Current signing status
 

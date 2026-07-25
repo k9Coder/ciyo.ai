@@ -72,7 +72,7 @@ export async function createMember(
 export async function updateMember(
   tenantId: string,
   id: string,
-  data: Partial<Pick<NewMember, 'displayName' | 'role' | 'adminDivisionId'>>
+  data: Partial<Pick<NewMember, 'displayName' | 'role' | 'adminDivisionId' | 'failMode'>>
 ): Promise<Member | null> {
   const [row] = await db
     .update(members)

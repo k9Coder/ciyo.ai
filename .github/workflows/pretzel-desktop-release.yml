@@ -42,13 +42,33 @@ jobs:
         working-directory: pretzel-desktop
         run: pnpm test
 
+  # ─── Electron E2E (Windows, real desktop session) ───────────────────────
+  # Ran on ubuntu-latest + Xvfb originally. Confirmed via a minimal
+  # zero-app-code smoke test that BrowserWindow construction genuinely
+  # succeeds there, but Playwright's firstWindow() still times out waiting
+  # on a CDP Page target for it — neither GPU flags nor managing Xvfb
+  # directly (vs. xvfb-run) changed that. A real desktop session sidesteps
+  # the whole headless-Linux-renderer question instead of chasing it further.
+  e2e:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Build (required for E2E)
         working-directory: pretzel-desktop
         run: pnpm build
-
-      - name: Install Playwright Electron deps
-        working-directory: pretzel-desktop
-        run: npx playwright install --with-deps chromium
 
       - name: E2E tests
         working-directory: pretzel-desktop
@@ -56,7 +76,7 @@ jobs:
 
   # ─── macOS (arm64 + x64 DMG — unsigned beta) ────────────────────────────
   build-mac:
-    needs: test
+    needs: [test, e2e]
     runs-on: macos-latest
     environment: production
     steps:
@@ -102,7 +122,7 @@ jobs:
 
   # ─── Windows (x64 NSIS installer — unsigned beta) ───────────────────────
   build-windows:
-    needs: test
+    needs: [test, e2e]
     runs-on: windows-latest
     environment: production
     steps:
@@ -125,8 +145,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
-          # Skip Authenticode signing for beta
-          WIN_CSC_LINK: ''
         working-directory: pretzel-desktop
         run: |
           pnpm build
@@ -141,7 +159,7 @@ jobs:
 
   # ─── Linux (AppImage + deb) ───────────────────────────────────────────────
   build-linux:
-    needs: test
+    needs: [test, e2e]
     runs-on: ubuntu-latest
     environment: production
     steps:

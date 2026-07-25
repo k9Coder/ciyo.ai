@@ -19,6 +19,29 @@ const ROLE_COLOR: Record<Member['role'], string> = {
   member:         'var(--text-muted)',
 }
 
+const FAIL_MODE_INFO =
+  'What happens when a check can\'t complete (app error, timeout, unreachable). ' +
+  'Fail open = let it through. Fail closed = block it. ' +
+  'Leave on "Org default" to inherit the organisation-wide setting.'
+
+const infoIconStyle: React.CSSProperties = {
+  display: 'inline-block',
+  marginLeft: 5,
+  width: 14,
+  height: 14,
+  lineHeight: '14px',
+  borderRadius: '50%',
+  border: '1px solid var(--text-muted)',
+  color: 'var(--text-muted)',
+  fontSize: 10,
+  textAlign: 'center',
+  cursor: 'default',
+}
+
+function InfoIcon({ title }: { title: string }) {
+  return <span style={infoIconStyle} title={title}>i</span>
+}
+
 export function MembersPage() {
   const { data: members = [], isLoading } = useMembers()
   const { update, remove } = useMemberActions()
@@ -187,13 +210,14 @@ export function MembersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Email', 'Display Name', 'Role', 'Joined', ''].map(h => (
+                {['Email', 'Display Name', 'Role', 'Fail Mode', 'Joined', ''].map(h => (
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
                     color: 'var(--text-muted)', fontSize: 11, fontWeight: 600,
                     textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>
                     {h}
+                    {h === 'Fail Mode' && <InfoIcon title={FAIL_MODE_INFO} />}
                   </th>
                 ))}
               </tr>
@@ -242,6 +266,24 @@ export function MembersPage() {
                         {ROLE_LABEL[m.role]}
                       </span>
                     )}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <select
+                      value={m.failMode ?? ''}
+                      disabled={update.isPending}
+                      onChange={e => {
+                        const value = e.target.value
+                        update.mutate({ id: m.id, data: { failMode: value === '' ? null : (value as 'open' | 'closed') } })
+                      }}
+                      style={{
+                        border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px',
+                        fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                      }}
+                    >
+                      <option value="">Org default</option>
+                      <option value="open">Fail open</option>
+                      <option value="closed">Fail closed</option>
+                    </select>
                   </td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
                     {new Date(m.createdAt).toLocaleDateString()}

@@ -1,4 +1,4 @@
-import { eq, inArray, and } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { memberTeams, members } from '../db/schema.js'
 import { teamsClient, destinationGroupsClient } from '../http/internal-client.js'
@@ -25,6 +25,7 @@ export interface ResolvedPolicy {
   version: number
   tenantId: string
   subjects: ResolvedSubjectPolicy[]
+  failMode: 'open' | 'closed'
 }
 
 type Scope = 'global' | 'division' | 'team'
@@ -50,7 +51,15 @@ export async function resolveMemberPolicy(
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
 
-  // memberTeams is owned by the members domain — direct DB access is legitimate
+  // memberTeams and members are owned by the members domain — direct DB access
+  // is legitimate. A member's failMode overrides the tenant default when set;
+  // null falls back to whatever the published snapshot carries.
+  const [memberRow] = await db
+    .select({ failMode: members.failMode })
+    .from(members)
+    .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
+  const failMode = memberRow?.failMode ?? snapshot.failMode
+
   const teamRows = await db
     .select({ teamId: memberTeams.teamId })
     .from(memberTeams)
@@ -130,5 +139,6 @@ export async function resolveMemberPolicy(
     version: snapshot.version,
     tenantId,
     subjects: [...subjectMap.values()],
+    failMode,
   }
 }

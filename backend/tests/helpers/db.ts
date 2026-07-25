@@ -2,7 +2,7 @@ import { db } from '../../src/db/client.js'
 import {
   tenants, policies, divisions, teams, users, members, memberTeams,
   subjects, rules, subjectVersions, destinationGroups, siteConfigs, events, scans,
-  enforcementSignals, chatMessages, chatSessions, invites,
+  enforcementSignals, chatMessages, chatSessions, invites, desktopAuthCodes, deviceTokens,
 } from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
 import type { User } from '../../src/db/schema.js'
@@ -14,6 +14,8 @@ export async function truncateAll(): Promise<void> {
   await db.delete(chatMessages)
   await db.delete(chatSessions)
   await db.delete(invites)
+  await db.delete(deviceTokens)
+  await db.delete(desktopAuthCodes)
   await db.delete(memberTeams)
   await db.delete(subjectVersions)
   await db.delete(rules)

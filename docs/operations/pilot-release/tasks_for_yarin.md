@@ -19,13 +19,13 @@ Check items off as they land. Ordering inside each section = do top-down.
   - `PILOT_MODE=true` — **without this, every signup lands on the `free` plan silently: no AI assistant, keyword-only rules**
   - `LLM_PROVIDER=groq`
   - `GROQ_API_KEY=<key>`
-  - `ADMIN_BASE_URL=https://console.mykka.ai` — **invite links are generated from this; default is `http://localhost:5173`, i.e. every prod invite link is broken until set**
-  - `CORS_ORIGIN=https://console.mykka.ai`
+  - `ADMIN_BASE_URL=https://pretzel-console.mykka.ai` — **invite links are generated from this; default is `http://localhost:5173`, i.e. every prod invite link is broken until set**
+  - `CORS_ORIGIN=https://pretzel-console.mykka.ai`
   - `CLERK_SECRET_KEY` + `CLERK_WEBHOOK_SECRET` (production Clerk instance — see §3)
   - `DATABASE_URL` (Neon — see §2)
   - Optional: `ASSISTANT_SEND_PII` stays UNSET (emails are redacted from LLM prompts by default; do not set to true for pilot)
 - [ ] Console static site → set `VITE_API_BASE=<prod api url>` and production `VITE_CLERK_PUBLISHABLE_KEY`.
-- [ ] Verify SPA rewrite: deep links like `https://console.mykka.ai/invite/<token>` must serve index.html, not 404. Invite flow depends on it.
+- [ ] Verify SPA rewrite: deep links like `https://pretzel-console.mykka.ai/invite/<token>` must serve index.html, not 404. Invite flow depends on it.
 - [ ] mykka-web (Vercel): set `NEXT_PUBLIC_PILOT_MODE=true` on production only (NOT preview/staging) → pricing page shows pilot banner.
 
 ## 2. Neon Postgres (plan 4.1)

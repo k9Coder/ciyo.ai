@@ -6,7 +6,7 @@
  */
 import { PolicyDocSchema, bridgePolicy } from '@mykka/detect'
 import type { Policy, PolicyDoc } from '@mykka/detect'
-import { loadToken } from './auth'
+import { loadToken, clearCredentials } from './auth'
 import { env } from './env'
 
 const SYNC_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes — same as extension
@@ -22,13 +22,14 @@ export function getLastKnownPolicy(): Policy | null {
   return lastKnownPolicy
 }
 
-async function fetchPolicyDoc(token: string): Promise<PolicyDoc | null> {
+async function fetchPolicyDoc(token: string): Promise<PolicyDoc | null | 'unauthorized'> {
   const res = await fetch(`${PRETZEL_API_BASE}/v1/policy`, {
     headers: { Authorization: `Bearer ${token}` },
   })
+  if (res.status === 401) return 'unauthorized'
   if (!res.ok) return null
-  const json = await res.json()
-  const parsed = PolicyDocSchema.safeParse(json)
+  const json = await res.json() as { policy?: unknown }
+  const parsed = PolicyDocSchema.safeParse(json.policy)
   return parsed.success ? parsed.data : null
 }
 
@@ -37,6 +38,12 @@ async function doSync(): Promise<void> {
   if (!token) return // not authenticated yet
 
   const doc = await fetchPolicyDoc(token)
+  if (doc === 'unauthorized') {
+    // Device token expired or was revoked — clear it so isAuthenticated() goes
+    // false and the app re-prompts sign-in, instead of silently going stale.
+    await clearCredentials()
+    return
+  }
   if (!doc) return
 
   const policy = bridgePolicy(doc, [])

@@ -28,7 +28,10 @@ export async function membersRouter(fastify: FastifyInstance): Promise<void> {
 
   fastify.patch('/members/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id } = req.params as { id: string }
-    const body = req.body as Partial<{ displayName: string; role: string; adminDivisionId: string }>
+    const body = req.body as Partial<{ displayName: string; role: string; adminDivisionId: string; failMode: 'open' | 'closed' | null }>
+    if (body.failMode !== undefined && body.failMode !== null && body.failMode !== 'open' && body.failMode !== 'closed') {
+      return reply.status(400).send({ error: 'failMode must be "open", "closed", or null' })
+    }
     const updated = await updateMember(req.tenant.id, id, body as any)
     if (!updated) return reply.status(404).send({ error: 'Member not found' })
     return updated

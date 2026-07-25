@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-interface Status {
-  proxyRunning: boolean
-  policyAvailable: boolean
-  systemProxyActive?: boolean
+const infoIconStyle: React.CSSProperties = {
+  display: 'inline-block',
+  marginLeft: '0.35rem',
+  width: '14px',
+  height: '14px',
+  lineHeight: '14px',
+  borderRadius: '50%',
+  border: '1px solid #666',
+  color: '#888',
+  fontSize: '0.65rem',
+  textAlign: 'center',
+  cursor: 'default',
 }
 
-declare global {
-  interface Window {
-    pretzel: {
-      onStatusUpdate: (cb: (s: Status) => void) => void
-      onAuthNag: (cb: () => void) => void
-      onAuthSuccess: (cb: () => void) => void
-      onAuthError: (cb: (msg: string) => void) => void
-      getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
-      updateFailMode: (failMode: 'open' | 'closed') => void
-      signIn: () => void
-    }
-  }
+function InfoIcon({ title }: { title: string }) {
+  return <span style={infoIconStyle} title={title}>i</span>
 }
 
 function TrayUI() {
-  const [status, setStatus] = useState<Status>({ proxyRunning: false, policyAvailable: false })
-  const [failMode, setFailMode] = useState<'open' | 'closed'>('open')
+  const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [showSignIn, setShowSignIn] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
@@ -51,16 +48,17 @@ function TrayUI() {
     window.pretzel.signIn()
   }
 
-  function handleFailModeChange(mode: 'open' | 'closed') {
-    setFailMode(mode)
-    window.pretzel.updateFailMode(mode)
-  }
-
   const dot = status.proxyRunning ? '🟢' : '🔴'
   const policyLabel = status.policyAvailable ? 'Policy active' : 'No policy cached'
+  const policyInfo = status.policyAvailable
+    ? "Pretzel has your organisation's rules loaded and is checking traffic against them."
+    : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
   const sysProxyLabel = status.systemProxyActive
     ? 'System proxy: active (Chrome + all apps)'
     : 'System proxy: inactive'
+  const sysProxyInfo = status.systemProxyActive
+    ? 'Pretzel is actively watching traffic on this device.'
+    : "Pretzel isn't watching traffic yet — sign in to turn it on."
   const sysProxyColor = status.systemProxyActive ? '#2d6a4f' : '#555'
 
   return (
@@ -70,8 +68,14 @@ function TrayUI() {
         <span style={{ fontWeight: 600 }}>Pretzel Desktop</span>
       </div>
 
-      <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '0.4rem' }}>{policyLabel}</p>
-      <p style={{ color: sysProxyColor, fontSize: '0.8rem', marginBottom: '1rem' }}>{sysProxyLabel}</p>
+      <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+        {policyLabel}
+        <InfoIcon title={policyInfo} />
+      </p>
+      <p style={{ color: sysProxyColor, fontSize: '0.8rem', marginBottom: '1rem' }}>
+        {sysProxyLabel}
+        <InfoIcon title={sysProxyInfo} />
+      </p>
 
       {showSignIn && (
         <div style={{ background: '#16213e', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem', borderLeft: '3px solid #ffd93d' }}>
@@ -98,24 +102,6 @@ function TrayUI() {
           </button>
         </div>
       )}
-
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ fontSize: '0.8rem', color: '#aaa', display: 'block', marginBottom: '0.4rem' }}>
-          Fail mode
-        </label>
-        <select
-          value={failMode}
-          onChange={(e) => handleFailModeChange(e.target.value as 'open' | 'closed')}
-          style={{ width: '100%', padding: '0.4rem', background: '#16213e', color: '#e0e0e0', border: '1px solid #333', borderRadius: 4 }}
-        >
-          <option value="open">Fail open (allow on error)</option>
-          <option value="closed">Fail closed (block on error)</option>
-        </select>
-      </div>
-
-      <p style={{ color: '#555', fontSize: '0.75rem' }}>
-        Proxy: 127.0.0.1:18888
-      </p>
     </div>
   )
 }

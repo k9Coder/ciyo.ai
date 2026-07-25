@@ -1,0 +1,13 @@
+{
+  "name": "ciyo-budget-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud Function: pauses public traffic to Cloud Run services when the GCP billing budget threshold fires.",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@google-cloud/run": "^1.4.0"
+  }
+}

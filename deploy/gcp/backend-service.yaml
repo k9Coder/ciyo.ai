@@ -1,0 +1,63 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ciyo-backend
+  labels:
+    app: ciyo
+    component: backend
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        # 0 = pay nothing while idle. Cold start ~1-2s on Node/alpine, acceptable for API traffic.
+        autoscaling.knative.dev/minScale: "0"
+        # Hard cap — bounds worst-case spend even under a traffic spike, before the budget-guard fires.
+        autoscaling.knative.dev/maxScale: "2"
+        # CPU only allocated while handling a request (cheapest billing mode).
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/ciyo/backend:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: APP_ENV
+              value: production
+            - name: PRETZEL_CONSOLE_URL
+              value: https://pretzel-console.mykka.ai
+            - name: CORS_ORIGIN
+              value: https://pretzel-console.mykka.ai
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-database-url
+                  key: latest
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-clerk-secret-key
+                  key: latest
+            - name: CLERK_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-clerk-webhook-secret
+                  key: latest
+            - name: INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-internal-secret
+                  key: latest
+  traffic:
+    - percent: 100
+      latestRevision: true

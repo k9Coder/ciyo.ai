@@ -19,6 +19,19 @@ import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
 
+// Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
+// without these — Chromium's sandbox/GPU init never completes there.
+if (process.env.PRETZEL_E2E === '1') {
+  app.commandLine.appendSwitch('no-sandbox')
+  app.commandLine.appendSwitch('disable-gpu')
+  app.commandLine.appendSwitch('disable-software-rasterizer')
+  // The default /dev/shm in CI containers/runners is too small for
+  // Chromium's shared memory needs — this is what actually crashes the
+  // GPU/renderer process on launch, not the GPU flags above alone.
+  app.commandLine.appendSwitch('disable-dev-shm-usage')
+  app.disableHardwareAcceleration()
+}
+
 let tray: Tray | null = null
 let trayWin: BrowserWindow | null = null
 let ca: CACert | null = null
@@ -74,11 +87,15 @@ async function handleSignIn(): Promise<void> {
   }
 }
 
-function createTrayWindow(): BrowserWindow {
+async function createTrayWindow(): Promise<BrowserWindow> {
   const win = new BrowserWindow({
     width: 320,
     height: 480,
-    show: false,
+    // Playwright's firstWindow() waits on paint/DOM-ready signals that
+    // never fire for a window that's never shown — confirmed via multiple
+    // closed microsoft/playwright issues (e.g. #13575, #21117). Show it
+    // under E2E only; production keeps the real hidden-until-click UX.
+    show: process.env.PRETZEL_E2E === '1',
     frame: false,
     resizable: false,
     webPreferences: {
@@ -89,23 +106,34 @@ function createTrayWindow(): BrowserWindow {
   })
 
   const isDev = process.env.NODE_ENV === 'development'
-  if (isDev) {
-    win.loadURL('http://localhost:5174/tray-ui/')
-  } else {
-    win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
+  try {
+    if (isDev) {
+      await win.loadURL('http://localhost:5174/tray-ui/')
+    } else {
+      await win.loadFile(path.join(__dirname, '../dist/renderer/tray-ui/index.html'))
+    }
+  } catch (err) {
+    console.error('[pretzel-desktop] Tray window failed to load:', err)
   }
   return win
 }
 
-function setupTray(authenticated: boolean): void {
-  const iconPath = path.join(__dirname, '../build/icon.png')
-  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-  tray = new Tray(icon)
-  trayWin = createTrayWindow()
+async function setupTray(authenticated: boolean): Promise<void> {
+  // Real OS tray icon needs a tray host (StatusNotifierWatcher/D-Bus on Linux);
+  // a bare Xvfb CI display has none, and `new Tray()` blocks indefinitely
+  // waiting for it. Skip the OS integration under test, keep the window.
+  // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
+  // used here instead — it's still readable at runtime in the built bundle.)
+  if (process.env.PRETZEL_E2E !== '1') {
+    const iconPath = path.join(__dirname, '../build/icon.png')
+    const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+    tray = new Tray(icon)
+  }
+  trayWin = await createTrayWindow()
 
   rebuildTrayMenu(authenticated)
 
-  tray.on('click', () => {
+  tray?.on('click', () => {
     if (trayWin?.isVisible()) {
       trayWin.hide()
     } else {
@@ -140,13 +168,10 @@ app.whenReady().then(async () => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
     },
-    onPolicyUpdate: (update) => {
-      console.log('[pretzel-desktop] Policy update from renderer:', update)
-    },
     onSignIn: () => { handleSignIn() },
   })
 
-  setupTray(authenticated)
+  await setupTray(authenticated)
 
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {
@@ -183,9 +208,8 @@ app.whenReady().then(async () => {
   }
 })
 
-app.on('window-all-closed', (e: Event) => {
-  // Keep running in tray — don't quit on window close
-  e.preventDefault()
+app.on('window-all-closed', () => {
+  // Keep running in tray — don't quit on window close (no app.quit() call)
 })
 
 app.on('before-quit', async () => {

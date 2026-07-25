@@ -67,6 +67,42 @@ describe('PATCH /v1/members/:id', () => {
     expect(res.status).toBe(200)
     expect(res.body.displayName).toBe('Alice Smith')
   })
+
+  it('sets a member-level failMode override', async () => {
+    const { body: created } = await supertest(app.server)
+      .post('/v1/members').set('Authorization', `Bearer ${adminToken}`).send({ email: 'bob@example.com' })
+    const res = await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ failMode: 'closed' })
+    expect(res.status).toBe(200)
+    expect(res.body.failMode).toBe('closed')
+  })
+
+  it('clears a member-level failMode override back to null', async () => {
+    const { body: created } = await supertest(app.server)
+      .post('/v1/members').set('Authorization', `Bearer ${adminToken}`).send({ email: 'carol@example.com' })
+    await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ failMode: 'closed' })
+    const res = await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ failMode: null })
+    expect(res.status).toBe(200)
+    expect(res.body.failMode).toBeNull()
+  })
+
+  it('rejects an invalid failMode value', async () => {
+    const { body: created } = await supertest(app.server)
+      .post('/v1/members').set('Authorization', `Bearer ${adminToken}`).send({ email: 'dave@example.com' })
+    const res = await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ failMode: 'bogus' })
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('DELETE /v1/members/:id', () => {

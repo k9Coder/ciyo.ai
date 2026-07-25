@@ -6,10 +6,13 @@
     "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "publish-blob:staging": "node --env-file=.env.staging scripts/publish-desktop-blob.mjs",
+    "publish-blob:prod": "node --env-file=.env.prod scripts/publish-desktop-blob.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^2.6.1",
     "date-fns": "^4.4.0",
     "logrocket": "^12.1.1",
     "lucide-react": "^1.17.0",

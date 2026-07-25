@@ -22,7 +22,7 @@ export function useMemberActions() {
   })
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role'] }> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role']; failMode: Member['failMode'] }> }) =>
       api.members.update(id, data),
     onSuccess: () => { invalidate(); toast('Member updated') },
     onError: (e: Error) => toast(e.message, 'error'),

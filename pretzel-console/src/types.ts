@@ -80,6 +80,7 @@ export interface Member {
   lastName: string | null
   role: 'super_admin' | 'division_admin' | 'member'
   clerkId: string | null
+  failMode: 'open' | 'closed' | null
   createdAt: string
 }
 

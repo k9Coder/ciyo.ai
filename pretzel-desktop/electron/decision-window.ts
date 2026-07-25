@@ -34,7 +34,7 @@ function getDecisionWin(): BrowserWindow {
   if (isDev) {
     decisionWin.loadURL('http://localhost:5174/decision-ui/')
   } else {
-    decisionWin.loadFile(path.join(__dirname, '../renderer/decision-ui/index.html'))
+    decisionWin.loadFile(path.join(__dirname, '../dist/renderer/decision-ui/index.html'))
   }
 
   decisionWin.on('closed', () => { decisionWin = null })

@@ -15,7 +15,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     main: {
-      plugins: [externalizeDepsPlugin()],
+      // @mykka/detect ships only raw TypeScript source (its package.json
+      // "exports" points at ./src/index.ts, no compiled JS) — fine for
+      // bundlers that understand TS, fatal for plain Node require() at
+      // runtime. Bundle it into main.js instead of leaving a bare require.
+      plugins: [externalizeDepsPlugin({ exclude: ['@mykka/detect'] })],
       define: {
         'process.env.PRETZEL_API_URL': baked('PRETZEL_API_URL'),
         'process.env.CLERK_PUBLISHABLE_KEY': baked('CLERK_PUBLISHABLE_KEY'),

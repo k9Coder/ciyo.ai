@@ -1,0 +1,36 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ciyo-web
+  labels:
+    app: ciyo
+    component: mykka-web
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "2"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/ciyo/web:latest
+          ports:
+            - containerPort: 3001
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: production
+          # NEXT_PUBLIC_API_BASE / NEXT_PUBLIC_ENV are baked in at build time
+          # (Dockerfile ARGs + ENV) — no runtime secrets needed.
+  traffic:
+    - percent: 100
+      latestRevision: true

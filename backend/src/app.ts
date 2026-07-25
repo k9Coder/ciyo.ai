@@ -34,6 +34,7 @@ import { billingRouter } from './billing/router.js'
 import { onboardingRouter } from './onboarding/router.js'
 import { telemetryRouter } from './telemetry/router.js'
 import { meRouter } from './me/router.js'
+import { desktopAuthRouter } from './desktop-auth/router.js'
 // import { handleStripeEvent } from './billing/stripe.js'  // STRIPE DISABLED
 import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypal.js'
 import { requestLoggingPlugin } from './logger/request-logging.js'
@@ -72,7 +73,7 @@ export function buildApp() {
 
   const corsOrigin = env.CORS_ORIGIN
     ? env.CORS_ORIGIN.split(',')
-    : (env.NODE_ENV === 'test' ? true : ['https://console.mykka.ai'])
+    : (env.NODE_ENV === 'test' ? true : ['https://pretzel-console.mykka.ai'])
   const app = Fastify({ logger: env.NODE_ENV !== 'test', trustProxy: true })
   void app.register(cors, {
     origin:      corsOrigin,
@@ -199,6 +200,7 @@ export function buildApp() {
   void app.register(onboardingRouter, { prefix: '/v1' })
   void app.register(telemetryRouter,  { prefix: '/v1' })
   void app.register(meRouter,         { prefix: '/v1' })
+  void app.register(desktopAuthRouter, { prefix: '/auth/desktop' })
   void app.register(platformRouter,  { prefix: '/platform/v1' })
   void app.register(clerkWebhookRouter)
 

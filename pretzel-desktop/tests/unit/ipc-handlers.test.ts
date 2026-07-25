@@ -37,22 +37,17 @@ beforeEach(() => {
 
 describe('registerIpcHandlers', () => {
   it('registers decision:respond handler', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.on).toHaveBeenCalledWith('decision:respond', expect.any(Function))
   })
 
-  it('registers policy:update handler', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
-    expect(mockIpcMain.on).toHaveBeenCalledWith('policy:update', expect.any(Function))
-  })
-
   it('registers policy:get handle', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.handle).toHaveBeenCalledWith('policy:get', expect.any(Function))
   })
 
   it('registers proxy:status handle', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.handle).toHaveBeenCalledWith('proxy:status', expect.any(Function))
   })
 })
@@ -61,7 +56,6 @@ describe('unregisterIpcHandlers', () => {
   it('removes all listeners', () => {
     unregisterIpcHandlers()
     expect(mockIpcMain.removeAllListeners).toHaveBeenCalledWith('decision:respond')
-    expect(mockIpcMain.removeAllListeners).toHaveBeenCalledWith('policy:update')
     expect(mockIpcMain.removeHandler).toHaveBeenCalledWith('policy:get')
     expect(mockIpcMain.removeHandler).toHaveBeenCalledWith('proxy:status')
   })
@@ -70,7 +64,7 @@ describe('unregisterIpcHandlers', () => {
 describe('decision:respond IPC', () => {
   it('calls onDecision with valid payload', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     // Extract the handler registered for 'decision:respond'
     const handler = mockIpcMain.on.mock.calls.find(
@@ -83,7 +77,7 @@ describe('decision:respond IPC', () => {
 
   it('ignores invalid payload (missing requestId)', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     const handler = mockIpcMain.on.mock.calls.find(
       ([channel]) => channel === 'decision:respond'
@@ -95,7 +89,7 @@ describe('decision:respond IPC', () => {
 
   it('ignores non-boolean allow field', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     const handler = mockIpcMain.on.mock.calls.find(
       ([channel]) => channel === 'decision:respond'
@@ -106,36 +100,10 @@ describe('decision:respond IPC', () => {
   })
 })
 
-describe('policy:update IPC', () => {
-  it('calls onPolicyUpdate with valid failMode', () => {
-    const onPolicyUpdate = vi.fn()
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate })
-
-    const handler = mockIpcMain.on.mock.calls.find(
-      ([channel]) => channel === 'policy:update'
-    )?.[1] as (event: unknown, raw: unknown) => void
-
-    handler({}, { failMode: 'closed' })
-    expect(onPolicyUpdate).toHaveBeenCalledWith({ failMode: 'closed' })
-  })
-
-  it('ignores invalid failMode value', () => {
-    const onPolicyUpdate = vi.fn()
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate })
-
-    const handler = mockIpcMain.on.mock.calls.find(
-      ([channel]) => channel === 'policy:update'
-    )?.[1] as (event: unknown, raw: unknown) => void
-
-    handler({}, { failMode: 'maybe' })
-    expect(onPolicyUpdate).not.toHaveBeenCalled()
-  })
-})
-
 describe('policy:get handle', () => {
   it('returns null when policy not set', () => {
     setCurrentPolicy(null)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'policy:get'
@@ -147,7 +115,7 @@ describe('policy:get handle', () => {
   it('returns current policy when set', () => {
     const policy: Policy = { ...DEFAULT_POLICY }
     setCurrentPolicy(policy)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'policy:get'
@@ -160,7 +128,7 @@ describe('policy:get handle', () => {
 describe('proxy:status handle', () => {
   it('returns proxyRunning: false when proxy not running', () => {
     setProxyRunning(false)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'
@@ -171,7 +139,7 @@ describe('proxy:status handle', () => {
 
   it('returns proxyRunning: true when proxy running', () => {
     setProxyRunning(true)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'
@@ -183,7 +151,7 @@ describe('proxy:status handle', () => {
   it('returns systemProxyActive field', () => {
     setProxyRunning(true)
     setSystemProxyActive(true)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'

@@ -18,6 +18,7 @@ import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
+import { DesktopLoginPage } from './pages/DesktopLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
@@ -37,6 +38,7 @@ export function App() {
           <Route path="/onboarding"         element={<OnboardingPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
+          <Route path="/desktop-login" element={<DesktopLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />
           <Route
             element={
