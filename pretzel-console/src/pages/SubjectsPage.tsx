@@ -35,7 +35,7 @@ function SubjectForm({
         <span style={labelStyle}>Name</span>
         <input style={inputStyle} value={value.name}
           onChange={e => onChange({ ...value, name: e.target.value })}
-          placeholder="e.g. Litigation Docs" autoFocus />
+          placeholder="e.g. Litigation Docs" autoFocus required />
       </label>
       <label style={{ display: 'block' }}>
         <span style={labelStyle}>Description (optional)</span>
@@ -277,6 +277,7 @@ export function SubjectsPage() {
   function closeModal() { setModal(m => ({ ...m, open: false })) }
 
   async function handleSave() {
+    if (!modal.form.name.trim()) return
     try {
       if (modal.editing) {
         await mutations.update.mutateAsync({ id: modal.editing.id, data: modal.form })
