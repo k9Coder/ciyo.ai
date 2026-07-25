@@ -1,6 +1,6 @@
 {
   "name": "pretzel-desktop",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Pretzel Desktop — system-wide AI prompt DLP for mykka.ai",
   "homepage": "https://mykka.ai",
