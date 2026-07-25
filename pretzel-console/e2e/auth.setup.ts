@@ -18,11 +18,11 @@ setup('authenticate as org admin', async ({ page }) => {
 
   // Clerk modal: fill email
   await page.getByLabel(/email address/i).fill(process.env.E2E_CLERK_USER_EMAIL!)
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Clerk modal: fill password
   await page.locator('input[type="password"]').fill(process.env.E2E_CLERK_USER_PASSWORD!)
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Wait for redirect to dashboard
   await page.waitForURL('**/dashboard', { timeout: 15_000 })
