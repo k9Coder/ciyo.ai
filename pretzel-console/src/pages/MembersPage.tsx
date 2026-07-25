@@ -231,6 +231,7 @@ export function MembersPage() {
                     {editingId === m.id ? (
                       <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <select
+                          aria-label="Role"
                           value={editRole}
                           onChange={e => setEditRole(e.target.value as Member['role'])}
                           style={{
@@ -269,6 +270,7 @@ export function MembersPage() {
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <select
+                      aria-label="Fail mode"
                       value={m.failMode ?? ''}
                       disabled={update.isPending}
                       onChange={e => {

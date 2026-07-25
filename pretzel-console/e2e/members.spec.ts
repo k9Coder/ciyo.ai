@@ -46,7 +46,7 @@ test.describe('Members', () => {
     const memberRow = page.locator('tr', { hasText: 'e2e-role-edit@example.com' })
     await memberRow.getByRole('button', { name: 'Edit role' }).click()
 
-    await memberRow.getByRole('combobox').selectOption('division_admin')
+    await memberRow.getByRole('combobox', { name: 'Role' }).selectOption('division_admin')
     await memberRow.getByRole('button', { name: 'Save' }).click()
 
     await expect(memberRow.getByText('Division Admin')).toBeVisible()
