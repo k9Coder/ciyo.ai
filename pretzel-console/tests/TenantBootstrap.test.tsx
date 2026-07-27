@@ -2,13 +2,16 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('../src/hooks/useMemberships', () => ({ useMemberships: vi.fn() }))
+vi.mock('../src/hooks/useTenant', () => ({ useTenant: vi.fn() }))
 vi.mock('../src/lib/tenant', () => ({
   getSelectedTenantId: vi.fn(),
   setSelectedTenantId: vi.fn(),
   clearSelectedTenantId: vi.fn(),
 }))
+vi.mock('react-router-dom', () => ({ Navigate: ({ to }: { to: string }) => <div data-testid={`redirect:${to}`} /> }))
 
 import { useMemberships } from '../src/hooks/useMemberships'
+import { useTenant } from '../src/hooks/useTenant'
 import {
   getSelectedTenantId, setSelectedTenantId, clearSelectedTenantId,
 } from '../src/lib/tenant'
@@ -27,6 +30,9 @@ const TWO = [
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(getSelectedTenantId).mockReturnValue(null)
+  // Default: wizard already completed, so pre-existing tests below (which don't
+  // care about onboarding state) never trip the new redirect branch.
+  vi.mocked(useTenant).mockReturnValue({ data: { onboardingWizardCompleted: true }, isLoading: false, isError: false } as any)
 })
 
 function child() {
@@ -82,5 +88,47 @@ describe('TenantBootstrap', () => {
     render(<TenantBootstrap>{child()}</TenantBootstrap>)
     expect(screen.getByText('app shell')).toBeInTheDocument()
     expect(setSelectedTenantId).not.toHaveBeenCalled()
+  })
+})
+
+describe('TenantBootstrap — onboarding wizard redirect', () => {
+  const SOLO_SUPER_ADMIN = [{ tenantId: 't1', tenantName: 'Acme', role: 'super_admin' }]
+  const SOLO_MEMBER = [{ tenantId: 't1', tenantName: 'Acme', role: 'member' }]
+
+  it('redirects to /onboarding/profile when the sole super_admin has an incomplete wizard', () => {
+    vi.mocked(useMemberships).mockReturnValue({ data: SOLO_SUPER_ADMIN, isLoading: false, isError: false } as any)
+    vi.mocked(useTenant).mockReturnValue({ data: { onboardingWizardCompleted: false }, isLoading: false, isError: false } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.getByTestId('redirect:/onboarding/profile')).toBeInTheDocument()
+  })
+
+  it('renders children when the sole super_admin has a completed wizard', () => {
+    vi.mocked(useMemberships).mockReturnValue({ data: SOLO_SUPER_ADMIN, isLoading: false, isError: false } as any)
+    vi.mocked(useTenant).mockReturnValue({ data: { onboardingWizardCompleted: true }, isLoading: false, isError: false } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.getByText('app shell')).toBeInTheDocument()
+  })
+
+  it('shows a loader, not the app shell, while the tenant completeness check is in flight', () => {
+    vi.mocked(useMemberships).mockReturnValue({ data: SOLO_SUPER_ADMIN, isLoading: false, isError: false } as any)
+    vi.mocked(useTenant).mockReturnValue({ data: undefined, isLoading: true, isError: false } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.queryByText('app shell')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
+  })
+
+  it('fails open into the app shell when the tenant fetch errors', () => {
+    vi.mocked(useMemberships).mockReturnValue({ data: SOLO_SUPER_ADMIN, isLoading: false, isError: false } as any)
+    vi.mocked(useTenant).mockReturnValue({ data: undefined, isLoading: false, isError: true } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.getByText('app shell')).toBeInTheDocument()
+  })
+
+  it('never gates on tenant completeness for a non-admin sole membership', () => {
+    vi.mocked(useMemberships).mockReturnValue({ data: SOLO_MEMBER, isLoading: false, isError: false } as any)
+    vi.mocked(useTenant).mockReturnValue({ data: undefined, isLoading: false, isError: false } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.getByText('app shell')).toBeInTheDocument()
+    expect(vi.mocked(useTenant).mock.calls[0]![0]).toBe(false)
   })
 })

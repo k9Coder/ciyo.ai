@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { PageLoader } from '../components/ui/Spinner'
+import { useWireAuthToken } from '../hooks/useWireAuthToken'
 
 const PROFESSIONS = [
   { slug: 'accountant',  label: 'Accountant / Finance',      description: 'Tax, bookkeeping, financial advisory' },
@@ -46,6 +47,7 @@ const FOLLOW_UP: Record<string, { question: string; options: { slug: string; lab
 type Step = 'profession' | 'followup' | 'confirm' | 'done'
 
 export function OnboardingProfilePage() {
+  useWireAuthToken()
   const navigate = useNavigate()
   const qc = useQueryClient()
 

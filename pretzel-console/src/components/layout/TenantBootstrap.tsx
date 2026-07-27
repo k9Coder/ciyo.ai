@@ -1,4 +1,6 @@
+import { Navigate } from 'react-router-dom'
 import { useMemberships } from '../../hooks/useMemberships'
+import { useTenant } from '../../hooks/useTenant'
 import {
   getSelectedTenantId, setSelectedTenantId, clearSelectedTenantId,
 } from '../../lib/tenant'
@@ -11,6 +13,14 @@ function roleLabel(role: string): string {
     : 'Member'
 }
 
+function FullPageLoader({ label }: { label: string }) {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
+      <PageLoader label={label} />
+    </div>
+  )
+}
+
 /**
  * Sits inside RequireAuth (Clerk token already wired) and resolves which tenant
  * the console should talk to before rendering the app shell. Users invited to a
@@ -20,12 +30,15 @@ function roleLabel(role: string): string {
 export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   const { data: memberships, isLoading, isError } = useMemberships()
 
+  // Only a lone super_admin can complete the onboarding wizard (the tenant
+  // endpoint is admin-gated) — fetching it for anyone else would just draw a
+  // 403. Hooks must run unconditionally every render, so gate the query
+  // itself via `enabled`, not a conditional hook call.
+  const singleSuperAdmin = memberships?.length === 1 && memberships[0]!.role === 'super_admin'
+  const { data: tenant, isLoading: tenantLoading, isError: tenantError } = useTenant(singleSuperAdmin)
+
   if (isLoading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-        <PageLoader label="Loading organizations" />
-      </div>
-    )
+    return <FullPageLoader label="Loading organizations" />
   }
 
   // On error (or nowhere-enrolled) fall through to the app shell — do not regress
@@ -38,6 +51,18 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
 
   if (memberships.length === 1) {
     if (selected !== memberships[0]!.tenantId) setSelectedTenantId(memberships[0]!.tenantId)
+
+    if (singleSuperAdmin) {
+      // Don't flash the app shell then yank the user to /onboarding/profile —
+      // hold on a loader until we know whether the wizard is done.
+      if (tenantLoading) return <FullPageLoader label="Loading organization" />
+      // Fail open on a tenant-fetch error: don't hard-block behind a transient
+      // failure of an admin-status check that isn't itself the access gate.
+      if (!tenantError && tenant && !tenant.onboardingWizardCompleted) {
+        return <Navigate to="/onboarding/profile" replace />
+      }
+    }
+
     return <>{children}</>
   }
 
