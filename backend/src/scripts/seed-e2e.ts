@@ -54,6 +54,10 @@ async function main() {
     subscriptionStatus: 'active',
     plan:               'business',
     seatCount:          10,
+    // The seeded user is the tenant's sole super_admin — TenantBootstrap redirects
+    // any such admin to /onboarding/profile until this is true, which would send
+    // every admin-suite test off to the wizard instead of the page under test.
+    onboardingWizardCompleted: true,
   }).returning({ id: tenants.id })
 
   const tenantId = tenant!.id
