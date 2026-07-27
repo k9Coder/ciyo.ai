@@ -1,7 +1,7 @@
 export type Theme = 'dark' | 'light'
 
 const STORAGE_KEY = 'pretzel-theme'
-const LEGACY_KEY  = 'ciyo-theme'
+const LEGACY_KEY = 'mykka-theme'
 
 function migrateTheme(): void {
   const legacy = localStorage.getItem(LEGACY_KEY)

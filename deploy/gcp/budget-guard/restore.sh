@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REGION="${REGION:-us-central1}"
-SERVICES=(ciyo-backend ciyo-console ciyo-web)
+SERVICES=(mykka-backend mykka-console mykka-web)
 
 for svc in "${SERVICES[@]}"; do
   echo "Restoring public access to $svc..."

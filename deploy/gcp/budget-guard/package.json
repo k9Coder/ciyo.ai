@@ -1,5 +1,5 @@
 {
-  "name": "ciyo-budget-guard",
+  "name": "mykka-budget-guard",
   "version": "1.0.0",
   "private": true,
   "description": "Cloud Function: pauses public traffic to Cloud Run services when the GCP billing budget threshold fires.",

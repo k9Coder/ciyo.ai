@@ -22,9 +22,9 @@ artifacts, unaffected by this move.
 
 | Service | Idle cost | Under load |
 |---|---|---|
-| ciyo-backend | $0 (minScale 0) | ~$0.000024/vCPU-sec + $0.0000025/GiB-sec while handling requests |
-| ciyo-console | $0 (minScale 0) | static nginx, trivial CPU time per request |
-| ciyo-web | $0 (minScale 0) | same billing model as backend |
+| mykka-backend | $0 (minScale 0) | ~$0.000024/vCPU-sec + $0.0000025/GiB-sec while handling requests |
+| mykka-console | $0 (minScale 0) | static nginx, trivial CPU time per request |
+| mykka-web | $0 (minScale 0) | same billing model as backend |
 
 Free tier (per month, forever, not a trial): 2M requests, 360k vCPU-sec,
 180k GiB-sec, 1GB egress to North America. Realistic pilot-scale traffic
@@ -38,7 +38,7 @@ can burn at most 2 instances' worth of compute, not runaway.
 ## One-time setup
 
 ```bash
-PROJECT_ID=ciyo-ai
+PROJECT_ID=mykka-ai
 REGION=us-central1
 
 gcloud projects create $PROJECT_ID
@@ -47,7 +47,7 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
   secretmanager.googleapis.com cloudbilling.googleapis.com \
   cloudfunctions.googleapis.com pubsub.googleapis.com
 
-gcloud artifacts repositories create ciyo --repository-format=docker \
+gcloud artifacts repositories create mykka --repository-format=docker \
   --location=$REGION
 ```
 
@@ -66,10 +66,10 @@ ARGs) — nothing to put in Secret Manager for them.
 ### Build & push images
 
 ```bash
-for svc in backend:ciyo-backend pretzel-console:ciyo-console mykka-web:ciyo-web; do
+for svc in backend:mykka-backend pretzel-console:mykka-console mykka-web:mykka-web; do
   dir="${svc%%:*}"; name="${svc##*:}"
   gcloud builds submit "$dir" \
-    --tag "$REGION-docker.pkg.dev/$PROJECT_ID/ciyo/${name#ciyo-}:latest"
+    --tag "$REGION-docker.pkg.dev/$PROJECT_ID/mykka/${name#mykka-}:latest"
 done
 ```
 
@@ -83,7 +83,7 @@ gcloud run services replace deploy/gcp/console-service.yaml --region=$REGION
 gcloud run services replace deploy/gcp/web-service.yaml --region=$REGION
 
 # make them publicly reachable
-for s in ciyo-backend ciyo-console ciyo-web; do
+for s in mykka-backend mykka-console mykka-web; do
   gcloud run services add-iam-policy-binding $s --region=$REGION \
     --member=allUsers --role=roles/run.invoker
 done
@@ -106,7 +106,7 @@ images, and revisions are untouched. Reversible in one command
 ```bash
 gcloud billing budgets create \
   --billing-account=$BILLING_ACCOUNT_ID \
-  --display-name="ciyo-50-cap" \
+  --display-name="mykka-50-cap" \
   --budget-amount=50 \
   --threshold-rule=percent=0.8 \
   --threshold-rule=percent=1.0 \
@@ -119,7 +119,7 @@ gcloud functions deploy budget-guard \
   --source=deploy/gcp/budget-guard \
   --entry-point=budgetGuard \
   --trigger-topic=budget-alerts \
-  --set-env-vars=REGION=$REGION,GUARDED_SERVICES=ciyo-backend,ciyo-console,ciyo-web
+  --set-env-vars=REGION=$REGION,GUARDED_SERVICES=mykka-backend,mykka-console,mykka-web
 ```
 
 The Cloud Function's own invocations are themselves inside the free tier
