@@ -23,6 +23,12 @@ export class SSESubscriber implements IRealtimeSubscriber {
     let closed = false
     let retryDelay = 1_000
     const MAX_DELAY = 30_000
+    // Consecutive-failure cap: without this, a connection that can never
+    // succeed (e.g. caller stuck outside onboarding, or sustained 429s) would
+    // retry forever for as long as the tab stays open, adding permanent
+    // background load to the same rate-limit bucket as everything else.
+    const MAX_CONSECUTIVE_FAILURES = 6
+    let consecutiveFailures = 0
 
     const connect = async () => {
       // Guard: if cleanup already ran while we were awaiting getToken, bail out
@@ -39,18 +45,28 @@ export class SSESubscriber implements IRealtimeSubscriber {
       es.addEventListener('message', onUpdate)
 
       es.addEventListener('open', () => {
-        // Reset backoff on a successful connection.
+        // Reset backoff and failure count on a successful connection.
         retryDelay = 1_000
+        consecutiveFailures = 0
       })
 
       es.addEventListener('error', async () => {
         // readyState === 2 (CLOSED) means the server closed the connection or
-        // returned a non-2xx status (e.g. 401 token expired).
+        // returned a non-2xx status (e.g. 401 token expired, 429 rate limited).
         // readyState === 0 (CONNECTING) means the browser is auto-reconnecting
         // within the SSE spec — leave it alone.
         if (es?.readyState === EventSource.CLOSED && !closed) {
           es.close()
           es = null
+          consecutiveFailures += 1
+
+          if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            // Give up. Whatever is failing (stuck auth state, sustained rate
+            // limiting) isn't going to resolve itself by retrying faster —
+            // a fresh page load (which callers get after fixing the underlying
+            // issue) will start a new subscription with a clean counter.
+            return
+          }
 
           await new Promise(r => setTimeout(r, retryDelay))
           retryDelay = Math.min(retryDelay * 2, MAX_DELAY)

@@ -20,9 +20,24 @@ import { DesktopLoginPage } from './pages/DesktopLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
+import { AdminApiError } from './api'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
+  defaultOptions: {
+    queries: {
+      retry:      1,
+      staleTime:  30_000,
+      refetchOnWindowFocus: false,
+      refetchOnMount:       false,
+      // On a 429, honor the server's Retry-After instead of react-query's
+      // default ~1s retry delay — retrying immediately into the same
+      // rate-limit window just produces another 429.
+      retryDelay: (attempt, error) =>
+        error instanceof AdminApiError && error.status === 429 && error.retryAfterMs
+          ? error.retryAfterMs
+          : Math.min(1_000 * 2 ** attempt, 30_000),
+    },
+  },
 })
 
 export function App() {

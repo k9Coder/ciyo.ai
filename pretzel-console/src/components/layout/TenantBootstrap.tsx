@@ -28,7 +28,7 @@ function FullPageLoader({ label }: { label: string }) {
  * or the backend returns 400 on every call.
  */
 export function TenantBootstrap({ children }: { children: React.ReactNode }) {
-  const { data: memberships, isLoading, isError } = useMemberships()
+  const { data: memberships, isLoading, isError, refetch, isRefetching } = useMemberships()
 
   // Only a lone super_admin can complete the onboarding wizard (the tenant
   // endpoint is admin-gated) — fetching it for anyone else would just draw a
@@ -41,9 +41,18 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
     return <FullPageLoader label="Loading organizations" />
   }
 
-  // On error (or nowhere-enrolled) fall through to the app shell — do not regress
-  // the existing "not enrolled" experience.
-  if (isError || !memberships || memberships.length === 0) {
+  // A fetch error (e.g. 429, or the Clerk-webhook race right after signup where
+  // the tenant/membership row hasn't landed yet) is NOT the same state as a
+  // user who legitimately belongs to zero orgs — conflating them used to send
+  // brand-new signups straight to the dashboard instead of onboarding. Surface
+  // a retry instead of silently proceeding.
+  if (isError) {
+    return <ErrorState onRetry={() => void refetch()} retrying={isRefetching} />
+  }
+
+  // Nowhere-enrolled (no error, genuinely zero memberships) — fall through to
+  // the app shell. Preserves the existing "not enrolled" experience.
+  if (!memberships || memberships.length === 0) {
     return <>{children}</>
   }
 
@@ -73,6 +82,40 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   if (selected) clearSelectedTenantId()
 
   return <OrgPicker memberships={memberships} />
+}
+
+function ErrorState({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-base, #0f1117)',
+    }}>
+      <div style={{
+        background: 'var(--bg-surface, #1a1d27)', border: '1px solid var(--border, #2a2d3a)',
+        borderRadius: 16, padding: '40px 48px', maxWidth: 420, width: '100%',
+        display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'center',
+      }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #e8eaf0)', margin: 0 }}>
+          Couldn't load your account
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--text-muted, #6b7280)', margin: 0 }}>
+          This can happen right after signup while your organization is still being set up.
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={retrying}
+          style={{
+            background: 'var(--brand-primary, #6366f1)', color: '#fff', border: 'none',
+            borderRadius: 8, padding: '10px 16px', fontSize: 14, fontWeight: 600,
+            cursor: retrying ? 'default' : 'pointer', opacity: retrying ? 0.7 : 1,
+          }}
+        >
+          {retrying ? 'Retrying…' : 'Retry'}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function OrgPicker({ memberships }: { memberships: Membership[] }) {
