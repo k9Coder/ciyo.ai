@@ -29,9 +29,11 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: pretzel-console
 
-      - name: Run tests
-        run: pnpm test
-        working-directory: pretzel-console
+      # CI unit test run disabled — tests are now mandatory for the AI agent (Claude/Codex/etc.)
+      # to run locally before and after every change. See AGENTS.md "Mandatory AI Test Policy".
+      # - name: Run tests
+      #   run: pnpm test
+      #   working-directory: pretzel-console
 
       - name: Typecheck
         run: pnpm typecheck

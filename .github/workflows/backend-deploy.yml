@@ -75,14 +75,16 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptshield_test
 
-      - name: Run tests
-        run: pnpm test
-        working-directory: backend
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptshield_test
-          CLERK_SECRET_KEY: sk_test_dummy_for_tests
-          CLERK_WEBHOOK_SECRET: whsec_test_dummy_for_tests
-          INTERNAL_SECRET: test-secret
+      # CI unit test run disabled — tests are now mandatory for the AI agent (Claude/Codex/etc.)
+      # to run locally before and after every change. See AGENTS.md "Mandatory AI Test Policy".
+      # - name: Run tests
+      #   run: pnpm test
+      #   working-directory: backend
+      #   env:
+      #     DATABASE_URL: postgresql://postgres:postgres@localhost:5432/promptshield_test
+      #     CLERK_SECRET_KEY: sk_test_dummy_for_tests
+      #     CLERK_WEBHOOK_SECRET: whsec_test_dummy_for_tests
+      #     INTERNAL_SECRET: test-secret
 
   build-and-deploy:
     needs: test
