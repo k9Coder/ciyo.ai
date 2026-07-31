@@ -27,3 +27,11 @@ extension/e2e/playwright-report/
 # Desktop build/test artifacts
 pretzel-desktop/dist-electron/
 pretzel-desktop/test-results/
+
+# QA
+qa/.auth/
+qa/.env.qa.staging
+qa/.env.qa.prod
+qa/test-results/
+qa/playwright-report/
+.gstack/qa-reports/
