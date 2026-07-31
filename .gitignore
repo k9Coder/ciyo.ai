@@ -4,6 +4,7 @@ dist/
 .env
 .DS_Store
 .superpowers/
+.worktrees/
 
 # Prod env files across all packages — contain real secrets
 # .env.staging files are safe to commit (test keys only)
