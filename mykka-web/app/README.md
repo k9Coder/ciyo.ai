@@ -37,8 +37,6 @@ The `app/` directory owns public pages, route metadata, sitemap generation, robo
 | `/robots.txt` | `robots.ts` | Allows all user agents and points to the sitemap. |
 | `/sitemap.xml` | `sitemap.ts` | Static route list plus every blog post. |
 
-There is no `/changelog` route even though the footer links to it.
-
 ## Shared layout and navigation
 
 `layout.tsx` applies the Inter font, global metadata defaults, `Header`, and `Footer`. The header exposes Product, Pricing, Solutions, Security, Blog, sign-in, and onboarding links. The footer adds company, legal, documentation, and solution links.

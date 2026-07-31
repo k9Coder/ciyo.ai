@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const LINKS = {
-  Product:   [['Product', '/product'], ['Pricing', '/pricing'], ['Changelog', '/changelog']] as const,
+  Product:   [['Product', '/product'], ['Pricing', '/pricing']] as const,
   Solutions: [['Healthcare', '/solutions/healthcare'], ['Legal', '/solutions/legal'], ['Fintech', '/solutions/fintech'], ['Engineering', '/solutions/engineering']] as const,
   Company:   [['About', '/about'], ['Blog', '/blog'], ['Security', '/security']] as const,
   Docs:      [['Getting Started', 'https://docs.mykka.ai'], ['API Reference', 'https://docs.mykka.ai/api'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise']] as const,

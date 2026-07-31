@@ -29,7 +29,7 @@ This register records current implementation and operations defects discovered w
 | Medium | Console Docker | Implementation | Compose maps console port `5173:80` while nginx listens on `8080`; CSP also blocks configured local API and some external services. | Docker full-stack console access/networking is broken. | Chloe Dubois / Ryan Kowalski |
 | Medium | Console billing | Implementation | Console calls Stripe portal API while Stripe backend routes are disabled. | Stripe portal actions fail. | Chloe Dubois / Arjun Mehta |
 | Low | Console navigation | Implementation | Implemented routes for destinations, sites, and publish are not present in sidebar navigation. | Features require direct navigation. | Chloe Dubois |
-| Low | Website links/assets | Implementation | `/changelog` and referenced OG image are missing. | Broken links/previews. | Priya Nair |
+| Low | Website assets | Implementation | No `og:image`/Twitter-card image meta tag is set on marketing pages (confirmed via live staging fetch 2026-07-31). | Link previews on social/chat apps show no image. | Priya Nair |
 
 ## Maintenance
 
