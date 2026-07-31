@@ -29,5 +29,20 @@ export default defineConfig({
       testMatch: '**/console-login.setup.ts',
       use: { ...devices['Desktop Chrome'] },
     },
+
+    // ── Console journeys ─────────────────────────────────────────────────────
+    // Specs live in journeys/console/. Depends on console-setup for the
+    // authenticated storage state.
+    {
+      name: 'console',
+      dependencies: ['console-setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: env.QA_CONSOLE_URL,
+        storageState: path.resolve(__dirname, '.auth/console.json'),
+      },
+      testDir: path.resolve(__dirname, 'journeys/console'),
+      testMatch: '**/*.spec.ts',
+    },
   ],
 })
