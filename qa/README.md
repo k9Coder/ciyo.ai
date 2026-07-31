@@ -53,6 +53,14 @@ $env:QA_ENV_FILE = ".env.qa.prod"
 pnpm test:qa
 ```
 
+`pnpm test:qa -- --project=<name>` forwards arguments through the package
+script. On some shells the `--` doesn't pass through cleanly and the filter
+gets silently ignored (all projects run instead of one). If that happens,
+use the equivalent direct form:
+```powershell
+pnpm exec playwright test --config playwright.config.ts --project=<name>
+```
+
 Reports land in `.gstack/qa-reports/qa-report-<surface>-<date>.md` — one
 report per surface per run, same format whether the findings came from a
 scripted journey here or an exploratory `/qa-only` run.
