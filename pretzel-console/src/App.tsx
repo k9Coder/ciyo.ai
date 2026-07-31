@@ -48,6 +48,7 @@ export function App() {
         <Routes>
           <Route path="/login"          element={<LoginPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
+          <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
           <Route path="/desktop-login" element={<DesktopLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />

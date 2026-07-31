@@ -23,6 +23,11 @@ export function initSentry(): void {
       'localhost',
       /^https:\/\/api\.mykka\.ai/,
     ],
+    // Stale Clerk session touch() 404 — recovered client-side by
+    // clerkSessionRecovery.ts (forces sign-out redirect), not actionable here.
+    ignoreErrors: [
+      /No session was found with id/,
+    ],
     beforeSend: (event) => {
       if (window.location.hostname === 'localhost') return null
       return event

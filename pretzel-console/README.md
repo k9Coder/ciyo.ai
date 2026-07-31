@@ -48,7 +48,7 @@ Start from `.env.example`. Vite modes load `.env.staging` for `dev:staging`/`bui
 
 ## Access gates
 
-Public routes are `/login`, `/unauthorized`, `/onboarding`, `/invite/:token`, and `/accessibility`.
+Public routes are `/login`, `/unauthorized`, `/onboarding/profile`, `/invite/:token`, and `/accessibility`.
 
 Every application route requires:
 
@@ -56,7 +56,7 @@ Every application route requires:
 2. an active Clerk organization; and
 3. Clerk role `org:admin`.
 
-Users failing those checks are redirected to `/login`, `/onboarding`, or `/unauthorized`. `/assistant` has an additional billing-feature gate and renders only when `/v1/billing/status` reports `features.assistantEnabled`.
+Users failing those checks are redirected to `/login`, `/onboarding/profile`, or `/unauthorized`. `/assistant` has an additional billing-feature gate and renders only when `/v1/billing/status` reports `features.assistantEnabled`.
 
 See [src/README.md](src/README.md) for the complete route and subsystem map.
 

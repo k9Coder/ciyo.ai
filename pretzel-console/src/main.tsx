@@ -1,5 +1,7 @@
 import { initSentry } from './lib/sentry'
+import { installClerkSessionRecovery } from './lib/clerkSessionRecovery'
 initSentry()
+installClerkSessionRecovery()
 
 import LogRocket from 'logrocket'
 import { env } from './env'
