@@ -665,7 +665,8 @@ git commit -m "feat(qa): add console reference journeys (login smoke, member inv
 
 Scripted Playwright journeys that simulate a human QA hire exercising the
 real, deployed product — not the `e2e/` suite's job. See
-[`docs/superpowers/specs/2026-07-31-manual-qa-suite-design.md`](../docs/superpowers/specs/2026-07-31-manual-qa-suite-design.md)
+`docs/superpowers/specs/2026-07-31-manual-qa-suite-design.md` (linked from
+this file's own location as `../docs/superpowers/specs/2026-07-31-manual-qa-suite-design.md`)
 for the full design and how this relates to `e2e/` and to gstack's `/qa` /
 `/qa-only` skills.
 
@@ -806,10 +807,8 @@ Add `qa/package.json` to the frontmatter `sources:` list.
 
 - [ ] **Step 4: Update `docs/index.md`**
 
-Under "## Packages", add after the "Cross-package E2E" line:
-```
-- [Manual QA suite](../qa/README.md)
-```
+Under "## Packages", add after the "Cross-package E2E" line, a markdown
+link labeled "Manual QA suite" pointing at `../qa/README.md`.
 
 - [ ] **Step 5: Update `docs/operations/testing.md`**
 
@@ -820,9 +819,9 @@ Add a new section after "## Unified E2E Projects":
 `qa/` runs scripted journeys against a real deployed environment (staging or
 a prod smoke subset) that you point it at — never a local dev server, never
 a database this suite can truncate. It's the pre-release, human-simulation
-counterpart to `e2e/`'s pre-merge developer gate. See
-[`qa/README.md`](../../qa/README.md) for setup and the full pre-release QA
-cycle, including the hand-off to gstack's `/qa-only` for exploratory
+counterpart to `e2e/`'s pre-merge developer gate. See `qa/README.md`
+(linked from this file's own location as `../../qa/README.md`) for setup
+and the full pre-release QA cycle, including the hand-off to gstack's `/qa-only` for exploratory
 coverage.
 ```
 

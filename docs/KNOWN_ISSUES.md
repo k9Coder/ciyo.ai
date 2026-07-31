@@ -19,7 +19,7 @@ This register records current implementation and operations defects discovered w
 
 | Severity | Area | Type | Issue | Current impact | Owner |
 |---|---|---|---|---|---|
-| High | Root tooling | Implementation | Root scripts use recursive/filter pnpm commands but no `pnpm-workspace.yaml` exists. | Root `dev:*` commands are unreliable or invalid. | Marcus Webb |
+| Medium | Root tooling | Documentation/product claim | A `pnpm-workspace.yaml` now exists at the repository root (listing `pretzel`, `pretzel-console`, `pretzel-desktop`, `backend`, `mykka-web`, `e2e`, `qa`, `packages/*`), but several current docs (`AGENTS.md`, `docs/reference/repository-topology.md`, `docs/reference/commands.md`) still claimed no workspace configuration existed, discovered 2026-07-31 while adding the `qa/` package. Docs have been corrected; whether root `dev:*`/recursive scripts are actually reliable under this workspace file has not been re-verified. | Root `dev:*` command reliability is unverified either way; prior docs were actively wrong. | Marcus Webb |
 | High | E2E CI | Implementation | `.github/workflows/e2e.yml` installs/runs several commands from incorrect projects and omits required installs. | The advertised mandatory E2E gate is not reliable in a clean runner. | Ryan Kowalski |
 | High | Deployment | Risk | Backend deploy workflow deploys the image before running migrations and requires additive-only migrations. | A non-additive migration can break production during rollout. | Ryan Kowalski |
 | High | Marketing | Documentation/product claim | Public site claims integrations, capabilities, statistics, and payment behavior not evidenced by code. | Customers may receive inaccurate product/security information. | Priya Nair |

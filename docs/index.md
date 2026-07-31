@@ -46,6 +46,7 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Pretzel Console](../pretzel-console/README.md)
 - [mykka-web](../mykka-web/README.md)
 - [Cross-package E2E](../e2e/README.md)
+- [Manual QA suite](../qa/README.md)
 - [Repository scripts](../scripts/README.md)
 
 ## Ownership

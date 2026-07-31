@@ -31,7 +31,7 @@ sources:
 
 ## Repository Shape
 
-The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
+The repository has six independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, `e2e`, and `qa`. A `pnpm-workspace.yaml` exists at the repository root and lists all of them (see `docs/KNOWN_ISSUES.md` — its introduction predates this doc and root-script reliability under it is unverified).
 
 The unified Playwright configuration is `e2e/playwright.config.ts`. Run it from
 `e2e/`. These script forms forward project arguments to Playwright:
@@ -53,6 +53,7 @@ pnpm test:e2e -- --project=admin
 - Extension detection/adapters: run extension unit/E2E and document fail-open implications.
 - Console route/API changes: run console tests and admin E2E.
 - Documentation changes: run `pnpm docs:check` from the repository root.
+- Pre-release / release-readiness checks: run `qa/` scripted journeys against staging (`cd qa; pnpm test:qa`), plus gstack `/qa-only` for exploratory coverage. See `qa/README.md`.
 
 ## Mandatory AI Test Policy
 
