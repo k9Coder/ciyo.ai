@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 import path from 'path'
 import { env } from './env'
 
@@ -18,6 +18,16 @@ export default defineConfig({
       name: 'unit',
       testDir: path.resolve(__dirname, 'support/reporter'),
       testMatch: '**/*.test.ts',
+    },
+
+    // ── Console setup (auth state) ──────────────────────────────────────────
+    // Signs in through Clerk once and persists storage state so the console
+    // project below can reuse the authenticated session.
+    {
+      name: 'console-setup',
+      testDir: path.resolve(__dirname, 'support/auth'),
+      testMatch: '**/console-login.setup.ts',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 })
