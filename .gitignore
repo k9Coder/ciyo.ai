@@ -35,3 +35,4 @@ qa/.env.qa.prod
 qa/test-results/
 qa/playwright-report/
 .gstack/qa-reports/
+.gstack/
