@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { useToast } from './useToast'
 
-export function useTenant() {
-  return useQuery({ queryKey: ['tenant'], queryFn: api.tenant.get, staleTime: 60_000, refetchOnMount: false })
+export function useTenant(enabled = true) {
+  return useQuery({ queryKey: ['tenant'], queryFn: api.tenant.get, staleTime: 60_000, refetchOnMount: false, enabled })
 }
 
 export function useTenantMutations() {

@@ -3,13 +3,15 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('@clerk/react', () => ({
-  useOrganization: vi.fn(() => ({ organization: null })),
   useUser: vi.fn(() => ({ user: null })),
   UserButton: () => null,
 }))
 vi.mock('../src/hooks/usePolicyRealtime', () => ({ usePolicyRealtime: vi.fn() }))
 vi.mock('../src/hooks/useTenant', () => ({ useTenant: vi.fn(() => ({ data: undefined })) }))
-vi.mock('../src/hooks/useMemberships', () => ({ useMemberships: vi.fn(() => ({ data: undefined })) }))
+vi.mock('../src/hooks/useMemberships', () => ({
+  useMemberships: vi.fn(() => ({ data: undefined })),
+  useActiveOrg: vi.fn(() => undefined),
+}))
 vi.mock('../src/components/billing/UpgradeBanner', () => ({
   UpgradeBanner: () => null,
   PilotBanner: () => null,

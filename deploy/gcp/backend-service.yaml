@@ -1,9 +1,9 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: ciyo-backend
+  name: mykka-backend
   labels:
-    app: ciyo
+    app: mykka
     component: backend
   annotations:
     run.googleapis.com/ingress: all
@@ -22,7 +22,7 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 30
       containers:
-        - image: REGION-docker.pkg.dev/PROJECT_ID/ciyo/backend:latest
+        - image: REGION-docker.pkg.dev/PROJECT_ID/mykka/backend:latest
           ports:
             - containerPort: 3000
           resources:

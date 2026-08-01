@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useOrganization } from '@clerk/react'
+import { useActiveOrg } from '../hooks/useMemberships'
 import { InlineLoader, Spinner } from '../components/ui/Spinner'
 import {
   useAnalyticsSummary, useAnalyticsDaily, useAnalyticsIncidents,
@@ -31,7 +31,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export function DashboardPage() {
-  const { organization } = useOrganization()
+  const activeOrg = useActiveOrg()
   const [days, setDays] = useState<7 | 30 | 90>(30)
 
   const { data: summary, isLoading: summaryLoading, isError: summaryError } = useAnalyticsSummary(days)
@@ -52,7 +52,7 @@ export function DashboardPage() {
         <div>
           <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>Dashboard</h1>
           <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
-            Last {days} days · {organization?.name ?? 'All teams'}
+            Last {days} days · {activeOrg?.tenantName ?? 'All teams'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>

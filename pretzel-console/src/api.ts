@@ -17,7 +17,7 @@ import { getSelectedTenantId } from './lib/tenant'
 const TOKEN_KEY = 'ps_admin_token'
 
 export class AdminApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public retryAfterMs?: number) {
     super(message)
     this.name = 'AdminApiError'
   }
@@ -50,7 +50,12 @@ async function request<T>(method: string, path: string, body?: unknown, opts?: {
   })
   if (!res.ok) {
     const json = await res.json().catch(() => ({ error: res.statusText })) as { error?: string }
-    throw new AdminApiError(res.status, json.error ?? res.statusText)
+    // `Retry-After` on 429s is in seconds per RFC 9110 §10.2.3. Surface it so
+    // callers back off for as long as the server asked instead of retrying
+    // immediately into the same rate-limit window.
+    const retryAfterHeader = res.status === 429 ? res.headers.get('Retry-After') : null
+    const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1_000 : undefined
+    throw new AdminApiError(res.status, json.error ?? res.statusText, retryAfterMs)
   }
   if (res.status === 204) return undefined as T
   return res.json() as Promise<T>

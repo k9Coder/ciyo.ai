@@ -74,7 +74,6 @@ Manually verify changed routes and outbound links, especially dynamic solution/b
 ## Known issues
 
 - No automated tests exist.
-- The footer links to `/changelog`, but no `app/changelog/page.tsx` route exists.
 - Product-page screenshots are placeholder panels.
 - `NEXT_PUBLIC_API_BASE` is configured in environment/deploy paths but is unused by the current site source.
 - Marketing claims include externally verifiable assertions that code cannot substantiate; see [CONTENT_CLAIMS.md](CONTENT_CLAIMS.md).

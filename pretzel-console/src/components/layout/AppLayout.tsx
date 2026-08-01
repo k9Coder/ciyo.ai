@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
-import { useOrganization, useUser, UserButton } from '@clerk/react'
+import { useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
 import { getTheme, setTheme } from '../../utils/theme'
 import { useState, useEffect } from 'react'
@@ -8,7 +8,7 @@ import { PretzelLogo } from './PretzelLogo'
 import { EnforcementBanner } from './EnforcementBanner'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 import { useTenant } from '../../hooks/useTenant'
-import { useMemberships } from '../../hooks/useMemberships'
+import { useMemberships, useActiveOrg } from '../../hooks/useMemberships'
 import { getSelectedTenantId, setSelectedTenantId } from '../../lib/tenant'
 import LogRocket from 'logrocket'
 import { env } from '../../env'
@@ -115,7 +115,7 @@ function OrgSwitcher() {
 }
 
 export function AppLayout() {
-  const { organization } = useOrganization()
+  const activeOrg = useActiveOrg()
   const { user } = useUser()
   usePolicyRealtime()
 
@@ -166,7 +166,7 @@ export function AppLayout() {
         </Link>
 
         {/* Org badge */}
-        {organization && (
+        {activeOrg && (
           <div style={{
             margin: '10px 10px 4px', background: 'var(--bg-surface-raised)',
             borderRadius: 8, padding: '8px 12px', border: '1px solid var(--border)',
@@ -181,7 +181,7 @@ export function AppLayout() {
               color: 'var(--text-primary)', fontSize: 12,
               fontWeight: 600, marginTop: 3
             }}>
-              {organization.name}
+              {activeOrg.tenantName}
             </div>
           </div>
         )}

@@ -31,7 +31,7 @@ sources:
 
 ## Repository Shape
 
-The repository has five independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, and `e2e`. There is no `pnpm-workspace.yaml`.
+The repository has six independently installed pnpm projects: `backend`, `pretzel`, `pretzel-console`, `mykka-web`, `e2e`, and `qa`. A `pnpm-workspace.yaml` exists at the repository root and lists all of them (see `docs/KNOWN_ISSUES.md` — its introduction predates this doc and root-script reliability under it is unverified).
 
 The unified Playwright configuration is `e2e/playwright.config.ts`. Run it from
 `e2e/`. These script forms forward project arguments to Playwright:
@@ -53,6 +53,29 @@ pnpm test:e2e -- --project=admin
 - Extension detection/adapters: run extension unit/E2E and document fail-open implications.
 - Console route/API changes: run console tests and admin E2E.
 - Documentation changes: run `pnpm docs:check` from the repository root.
+- Pre-release / release-readiness checks: run `qa/` scripted journeys against staging (`cd qa; pnpm test:qa`), plus gstack `/qa-only` for exploratory coverage. See `qa/README.md`.
+
+## Mandatory AI Test Policy
+
+CI no longer runs unit/E2E tests (see `.github/workflows/e2e.yml`, `backend-deploy.yml`, `pretzel-console-deploy.yml`, and each package's own `.github/workflows/ci.yml`/`e2e.yml` — test steps are commented out there, not deleted). Running the relevant tests is now the responsibility of whichever agent (Claude, Codex, or any other LLM) makes the change, every time:
+
+1. **Before editing** — run the tests relevant to the area you're about to touch (see commands below) to get a clean baseline.
+2. **Make the change.**
+3. **After editing** — rerun the same tests. A failure that wasn't there before is a regression; fix it before finishing.
+4. **If the change is an intentional behavior change**, update the affected tests (or add new ones covering the new behavior) as part of the same change — don't leave tests red or stale.
+5. **If the change plainly doesn't touch tested behavior** (docs-only, comments, config with no test coverage, etc.), ask the user explicitly whether it's fine to skip running tests before proceeding without them. Don't silently skip.
+
+Test commands by package:
+
+| Package | Unit tests | E2E |
+|---|---|---|
+| `backend` | `pnpm test` (from `backend/`) | — |
+| `pretzel` | `pnpm test` (from `pretzel/`) | `pnpm test:e2e` (from `pretzel/`) |
+| `pretzel-console` | `pnpm test` (from `pretzel-console/`) | `pnpm test:e2e` (from `pretzel-console/`) |
+| `mykka-web` | none (`pnpm lint` + `pnpm build` only) | — |
+| cross-service / full stack | — | `pnpm test:e2e` (from `e2e/`, see [Repository Shape](#repository-shape) above) |
+
+Use the [Regression Rules](#regression-rules) above to decide which suites are relevant to a given change.
 
 ## Branch & Deploy Workflow
 

@@ -1,7 +1,7 @@
 ---
 status: active
 owner: mykka.ai engineering
-verified_at: 2026-06-13
+verified_at: 2026-07-27
 sources:
   - App.tsx
   - main.tsx
@@ -9,9 +9,13 @@ sources:
   - lib/api.ts
   - lib/sentry.ts
   - components/layout/RequireAuth.tsx
+  - components/layout/TenantBootstrap.tsx
   - components/layout/AppLayout.tsx
   - components/billing/PlanGate.tsx
   - hooks/usePolicyRealtime.ts
+  - hooks/useWireAuthToken.ts
+  - hooks/useMemberships.ts
+  - hooks/useTenant.ts
   - realtime/sse.adapter.ts
 ---
 
@@ -28,8 +32,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | Route | Access | Purpose |
 |---|---|---|
 | `/login` | Public | Opens Clerk sign-in and honors a `redirect` query parameter. |
-| `/unauthorized` | Public | Explains that the active user is not an organization admin. |
-| `/onboarding` | Public route; page requires sign-in | Creates a Clerk organization for a signed-in user without one. |
+| `/onboarding/profile` | Public route; page wires its own Clerk token | Lets a lone `super_admin` on a freshly auto-provisioned tenant apply or skip a recommended DLP policy template. `TenantBootstrap` redirects here automatically when needed. |
 | `/invite/:token` | Public | Previews and accepts a single invite token. |
 | `/accessibility` | Public | Console accessibility statement. |
 | `/` | Protected | Redirects to `/dashboard`. |
@@ -44,7 +47,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | `/audit` | Protected | Filter and paginate warn/block audit events. |
 | `/assistant` | Protected + Business feature | Chat, preview proposed actions, and apply assistant changes. |
 
-Protected means `RequireAuth` has confirmed a signed-in user, active Clerk organization, and `org:admin` role.
+Protected means `RequireAuth` has confirmed a signed-in Clerk user; `TenantBootstrap` (inside it) then resolves which backend tenant/membership applies from `/v1/me/memberships` and redirects to `/onboarding/profile` when the sole membership is a `super_admin` on a tenant that hasn't completed onboarding. Clerk is identity-only here — organization, tenant, and role data live entirely in our own backend (`tenants`/`members` tables), never in Clerk Organizations.
 
 ## State and API flow
 
@@ -68,8 +71,8 @@ The public API groups are subjects, rules, divisions, teams, members, destinatio
 
 - Clerk loading: show an authentication loader.
 - Signed out: redirect to `/login`.
-- No active organization: redirect to `/onboarding`.
-- Role other than `org:admin`: redirect to `/unauthorized`.
+
+`TenantBootstrap` resolves the active backend tenant from `/v1/me/memberships` and, for a lone `super_admin` membership on a tenant that hasn't completed onboarding, redirects to `/onboarding/profile`. Every sensitive backend endpoint independently re-checks `member.role === 'super_admin'` server-side (`requireAdminTokenOrClerkAdmin`), so the frontend gate is UX only, not the security boundary.
 
 `PlanGate` owns feature entitlements. It currently supports `assistantEnabled` and `advancedAnalytics`, but only `/assistant` uses it. When the feature is unavailable, Stripe-backed tenants get a billing-portal action; other tenants get a link to `https://mykka.ai/pricing`.
 

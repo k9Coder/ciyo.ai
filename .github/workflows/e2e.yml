@@ -120,25 +120,27 @@ jobs:
             exit 1
           }
 
-      - name: Run E2E suite
-        run: pnpm test:e2e
-        working-directory: e2e
-        env:
-          E2E_DATABASE_URL: postgres://e2e:e2e@localhost:5432/e2e
-          E2E_ADMIN_URL: http://localhost:5173
-          E2E_BACKEND_URL: http://localhost:3000
-          # global-setup runs seed:e2e, whose compilePolicy makes an internal-client call
-          # to the backend on :3000 — must present the same secret the backend expects.
-          INTERNAL_SECRET: test-secret-e2e-32chars-minimum-xxxx
-          CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
-          # seed:e2e boots backend modules whose env validation requires this —
-          # the webhook route itself is not exercised by the suite.
-          CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
-          E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
-          E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
-          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
-          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+      # CI E2E run disabled — tests are now mandatory for the AI agent (Claude/Codex/etc.)
+      # to run locally before and after every change. See AGENTS.md "Mandatory AI Test Policy".
+      # - name: Run E2E suite
+      #   run: pnpm test:e2e
+      #   working-directory: e2e
+      #   env:
+      #     E2E_DATABASE_URL: postgres://e2e:e2e@localhost:5432/e2e
+      #     E2E_ADMIN_URL: http://localhost:5173
+      #     E2E_BACKEND_URL: http://localhost:3000
+      #     # global-setup runs seed:e2e, whose compilePolicy makes an internal-client call
+      #     # to the backend on :3000 — must present the same secret the backend expects.
+      #     INTERNAL_SECRET: test-secret-e2e-32chars-minimum-xxxx
+      #     CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
+      #     # seed:e2e boots backend modules whose env validation requires this —
+      #     # the webhook route itself is not exercised by the suite.
+      #     CLERK_WEBHOOK_SECRET: ${{ secrets.E2E_CLERK_WEBHOOK_SECRET }}
+      #     CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
+      #     E2E_CLERK_USER_ID: ${{ secrets.E2E_CLERK_USER_ID }}
+      #     E2E_CLERK_ORG_ID: ${{ secrets.E2E_CLERK_ORG_ID }}
+      #     E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+      #     E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
 
       - name: Upload Playwright report on failure
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

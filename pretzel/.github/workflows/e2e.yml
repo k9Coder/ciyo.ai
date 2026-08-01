@@ -26,7 +26,9 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
       - name: Start fixture server
         run: node e2e/fixtures-server.mjs &
-      - run: pnpm test:e2e
+      # CI E2E run disabled — tests are now mandatory for the AI agent (Claude/Codex/etc.)
+      # to run locally before and after every change. See AGENTS.md "Mandatory AI Test Policy".
+      # - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

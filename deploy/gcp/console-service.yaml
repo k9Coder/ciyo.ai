@@ -1,9 +1,9 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: ciyo-console
+  name: mykka-console
   labels:
-    app: ciyo
+    app: mykka
     component: console
   annotations:
     run.googleapis.com/ingress: all
@@ -18,7 +18,7 @@ spec:
       containerConcurrency: 200 # static nginx, cheap to serve many concurrent requests per instance
       timeoutSeconds: 10
       containers:
-        - image: REGION-docker.pkg.dev/PROJECT_ID/ciyo/console:latest
+        - image: REGION-docker.pkg.dev/PROJECT_ID/mykka/console:latest
           ports:
             - containerPort: 8080
           resources:

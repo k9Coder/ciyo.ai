@@ -4,8 +4,6 @@ import { AppLayout } from './components/layout/AppLayout'
 import { RequireAuth } from './components/layout/RequireAuth'
 import { TenantBootstrap } from './components/layout/TenantBootstrap'
 import { LoginPage } from './pages/LoginPage'
-import { UnauthorizedPage } from './pages/UnauthorizedPage'
-import { OnboardingPage } from './pages/OnboardingPage'
 import { OnboardingProfilePage } from './pages/OnboardingProfilePage'
 import { DashboardPage } from './pages/DashboardPage'
 import { SubjectsPage } from './pages/SubjectsPage'
@@ -22,9 +20,24 @@ import { DesktopLoginPage } from './pages/DesktopLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
+import { AdminApiError } from './api'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
+  defaultOptions: {
+    queries: {
+      retry:      1,
+      staleTime:  30_000,
+      refetchOnWindowFocus: false,
+      refetchOnMount:       false,
+      // On a 429, honor the server's Retry-After instead of react-query's
+      // default ~1s retry delay — retrying immediately into the same
+      // rate-limit window just produces another 429.
+      retryDelay: (attempt, error) =>
+        error instanceof AdminApiError && error.status === 429 && error.retryAfterMs
+          ? error.retryAfterMs
+          : Math.min(1_000 * 2 ** attempt, 30_000),
+    },
+  },
 })
 
 export function App() {
@@ -34,9 +47,8 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login"          element={<LoginPage />} />
-          <Route path="/unauthorized"   element={<UnauthorizedPage />} />
-          <Route path="/onboarding"         element={<OnboardingPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
+          <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
           <Route path="/desktop-login" element={<DesktopLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />

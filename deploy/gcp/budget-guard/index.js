@@ -2,7 +2,7 @@ const { ServicesClient } = require('@google-cloud/run').v2;
 
 const PROJECT_ID = process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
 const REGION = process.env.REGION || 'us-central1';
-const SERVICES = (process.env.GUARDED_SERVICES || 'ciyo-backend,ciyo-console,ciyo-web')
+const SERVICES = (process.env.GUARDED_SERVICES || 'mykka-backend,mykka-console,mykka-web')
   .split(',')
   .map((s) => s.trim());
 // Pause once spend crosses this fraction of the budget (1.0 = 100%).
