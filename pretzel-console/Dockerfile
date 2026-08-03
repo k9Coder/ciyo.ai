@@ -13,5 +13,8 @@ RUN pnpm build:prod
 # nginxinc/nginx-unprivileged runs as the non-root 'nginx' user on port 8080.
 FROM nginxinc/nginx-unprivileged:alpine AS runtime
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Templated via the image's built-in envsubst-on-templates entrypoint script,
+# so CSP connect-src can point at a local backend without a rebuild.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV API_ORIGIN=https://api.mykka.ai
 EXPOSE 8080

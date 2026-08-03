@@ -6,10 +6,12 @@ sources:
   - scripts/set-env.mjs
   - scripts/agent-db-start.sh
   - scripts/agent-stack-start.sh
+  - scripts/local-env.sh
   - scripts/cleanup-worktrees.sh
   - package.json
   - backend/package.json
   - pretzel-console/src/lib/api.ts
+  - docker-compose.yml
 ---
 
 # Repository Scripts
@@ -140,6 +142,33 @@ unnecessary for the normal full runner.
   `E2E_ADMIN_URL` names consumed by the cross-package Playwright runner.
 
 These are descriptions of the current scripts, not fixes.
+
+## Full Local Docker Stack
+
+`local-env.sh` is a different tool from the agent scripts above: instead of
+random-port, per-agent-session isolation, it manages the **fixed-port**
+`docker-compose.yml` stack (`postgres`, `backend`, `pretzel-console`,
+`mykka-web`) intended for manual or `/qa-env local` browser QA.
+
+```bash
+scripts/local-env.sh up      # docker compose up -d --build, wait for backend health, print URLs
+scripts/local-env.sh down    # docker compose down (keeps the postgres_data volume)
+scripts/local-env.sh urls    # print the URL table without touching the stack
+scripts/local-env.sh status  # docker compose ps
+```
+
+Equivalent root scripts: `pnpm env:local:up`, `pnpm env:local:down`.
+
+| Service | URL |
+|---|---|
+| backend | `http://localhost:3000` |
+| pretzel-console | `http://localhost:5173` |
+| mykka-web | `http://localhost:3001` |
+| postgres | `localhost:5432` |
+
+`pretzel-desktop` and `pretzel` (the extension) are not part of this stack —
+run them natively with `PRETZEL_API_URL` / `VITE_API_BASE` set to
+`http://localhost:3000`. See [docs/operations/local-development.md](../docs/operations/local-development.md).
 
 ## Worktree Cleanup
 
