@@ -1,5 +1,7 @@
 # GCP Migration Implementation Plan
 
+> **STATUS: DEFERRED (2026-08-03).** Not executing this right now — GCP has no enforceable hard spending cap, which doesn't meet the user's actual requirement (a guaranteed ≤$10/mo ceiling, not a probable one). Staying on Render's flat-rate pricing instead; see `docs/superpowers/specs/2026-08-03-render-hard-cap-hosting-strategy.md` for the active plan and the concrete triggers that would bring this plan back into play. Task 1 was reached and blocked on interactive GCP account setup (gcloud CLI got installed locally in the process) before the pivot — nothing else in this plan was executed.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move `backend`, `mykka-web`, and `pretzel-console` off Render/Vercel onto GCP Cloud Run (staging + production), while keeping total GCP spend under $10/month, without touching the Neon-hosted Postgres database.

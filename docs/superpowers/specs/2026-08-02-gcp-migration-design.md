@@ -1,5 +1,12 @@
 ---
-status: draft
+status: deferred
+deferred_reason: >
+  GCP (and every usage-metered cloud — AWS, Azure, Fly.io) has no enforceable
+  hard spending cap, only after-the-fact budget alerts. The user's requirement
+  is a *guaranteed* ceiling, not a probable one. Render's flat per-service
+  pricing gives that guarantee today at ~$7/mo. See
+  docs/superpowers/specs/2026-08-03-render-hard-cap-hosting-strategy.md for
+  the active plan and the concrete triggers for revisiting this migration.
 owner: repository
 verified_at: 2026-08-02
 sources:
