@@ -41,12 +41,19 @@ services:
       context: ./pretzel-console
       dockerfile: Dockerfile
       args:
-        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+        # Dev/staging Clerk instance publishable key (public by design, safe to
+        # commit — see the NOTE in pretzel-console/Dockerfile). Matches the
+        # CLERK_SECRET_KEY already in backend/.env, so sign-in actually works
+        # against the local backend. Same key pretzel-console/.env.staging and
+        # e2e/.env.e2e use. Override via VITE_CLERK_PUBLISHABLE_KEY if needed.
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-pk_test_cGxlYXNlZC1jbGFtLTI1LmNsZXJrLmFjY291bnRzLmRldiQ}
         VITE_API_BASE: http://localhost:3000
     ports:
       - '5173:8080'
     environment:
       API_ORIGIN: http://localhost:3000
+      # Must match the Clerk instance baked into VITE_CLERK_PUBLISHABLE_KEY above.
+      CLERK_FRONTEND_API: pleased-clam-25.clerk.accounts.dev
     depends_on:
       backend:
         condition: service_healthy

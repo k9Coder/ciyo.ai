@@ -49,11 +49,12 @@ running first.
    part of this stack. If asked to QA either, tell the user to run them
    natively first (`PRETZEL_API_URL` / `VITE_API_BASE` =
    `http://localhost:3000`) — see `docs/operations/local-development.md`.
-4. Known gap: the containerized console's CSP doesn't allowlist Clerk's
-   domains yet (`docs/KNOWN_ISSUES.md`, "Console Docker"), so Clerk-backed
-   sign-in will fail there even though it can reach the local backend.
-   Non-auth pages and API calls work. Mention this if console QA hits an
-   auth wall.
+4. Console auth works end-to-end: `scripts/local-env.sh up` seeds a real
+   test org, so `/qa`'s auth parameter can sign in with
+   `testuser@gmail.com` / `TESTuser` and reach authed pages (dashboard,
+   policies, etc). Ignore CSP-blocked `clarity.ms` / `cdn.logr-in.com` /
+   `clerk-telemetry.com` console errors — pre-existing analytics-only gaps
+   tracked in `docs/KNOWN_ISSUES.md`, not real defects.
 
 ### staging / prod
 

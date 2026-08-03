@@ -7,10 +7,15 @@
 # agent-stack-start.sh's random-port per-agent-session isolation.
 #
 # Usage:
-#   scripts/local-env.sh up      # build + start, wait for health, print URLs
-#   scripts/local-env.sh down    # stop and remove containers (keeps postgres_data)
-#   scripts/local-env.sh urls    # print the URL table without touching the stack
-#   scripts/local-env.sh status  # docker compose ps
+#   scripts/local-env.sh up          # build + start, migrate, seed console test org, print URLs
+#   scripts/local-env.sh up --no-seed  # same, but skip the console test-org seed
+#   scripts/local-env.sh down        # stop and remove containers (keeps postgres_data)
+#   scripts/local-env.sh urls        # print the URL table without touching the stack
+#   scripts/local-env.sh status      # docker compose ps
+#
+# After `up`, pretzel-console at :5173 has a real logged-in-able test account
+# (unless --no-seed): testuser@gmail.com / TESTuser — same identity e2e/ uses,
+# sourced from pretzel-console/e2e/.env.e2e. Seeding TRUNCATES the local DB.
 
 set -euo pipefail
 
@@ -20,16 +25,22 @@ cd "$ROOT"
 print_urls() {
   echo ""
   echo "  backend           http://localhost:3000"
-  echo "  pretzel-console   http://localhost:5173"
+  echo "  pretzel-console   http://localhost:5173  (test login: testuser@gmail.com / TESTuser)"
   echo "  mykka-web         http://localhost:3001"
   echo "  postgres          localhost:5432"
   echo ""
 }
 
 cmd="${1:-up}"
+shift || true
 
 case "$cmd" in
   up)
+    do_seed=true
+    for arg in "$@"; do
+      [[ "$arg" == "--no-seed" ]] && do_seed=false
+    done
+
     echo "[local-env] building and starting stack..."
     docker compose up -d --build
 
@@ -42,6 +53,15 @@ case "$cmd" in
         exit 1
       fi
     done
+
+    echo "[local-env] running DB migrations..."
+    ( cd backend && DATABASE_URL="postgresql://postgres:postgres@localhost:5432/promptshield" pnpm db:migrate )
+
+    if $do_seed; then
+      echo "[local-env] seeding console test org (truncates the local DB)..."
+      ( cd backend && set -a && source ../pretzel-console/e2e/.env.e2e && set +a \
+        && DATABASE_URL="postgresql://postgres:postgres@localhost:5432/promptshield" pnpm seed:e2e )
+    fi
 
     echo "[local-env] ready."
     print_urls
