@@ -1,6 +1,6 @@
 ---
 name: qa-env
-description: Resolve a target environment (local | staging | prod) to a URL, stand up the local Docker stack if needed, then hand off to /qa or /qa-only.
+description: Resolve a target environment (local | staging | prod) and surface (web | console | backend | desktop | extension) to a URL or bridge, stand up the local Docker stack if needed, then hand off to /qa, /qa-only, /qa-desktop, or /qa-extension.
 allowed-tools:
   - Bash
   - Read
@@ -15,23 +15,30 @@ triggers:
 
 # /qa-env: Environment-aware QA launcher
 
-Thin wrapper around the existing `/qa` and `/qa-only` skills. It does not test
-or fix anything itself — it only resolves **which environment** to point
-those skills at, and (for `local`) makes sure that environment is actually
-running first.
+Thin wrapper around `/qa`, `/qa-only`, `/qa-desktop`, and `/qa-extension`. It
+does not test or fix anything itself — it only resolves **which
+environment/surface** to point one of those at, and (for `local`, `desktop`,
+`extension`) makes sure that surface is actually ready first.
 
 ## Parse the request
 
-`/qa-env <local|staging|prod> [console|web|backend] [--report-only]`
+`/qa-env <local|staging|prod> [console|web|backend|desktop|extension] [--report-only]`
 
 - Environment: `local`, `staging`, or `prod`. If missing, ask via
   `AskUserQuestion` (options: Local Docker stack / Staging / Production).
-- Surface: which service to point `/qa` at. Default `web` (mykka-web) for
-  `local`; default `console` for `staging`/`prod` (matches existing
-  `qa/` package convention — see `qa/README.md`, `qa/.env.qa.example`).
+  `desktop` and `extension` are environment-agnostic (native app / loaded
+  extension, not a deployed URL) — if the user asks for either, skip the
+  environment question and go straight to that surface.
+- Surface: which target to test. Default `web` (mykka-web) for `local`;
+  default `console` for `staging`/`prod` (matches existing `qa/` package
+  convention — see `qa/README.md`, `qa/.env.qa.example`). `desktop` and
+  `extension` are separate skills (`/qa-desktop`, `/qa-extension`), not URL
+  targets — see "desktop / extension" below.
 - `--report-only`: use `/qa-only` instead of `/qa` (never fixes code). Prod
   QA where testing is not explicitly "fix mode" should default to
-  `--report-only` unless the user says otherwise.
+  `--report-only` unless the user says otherwise. (`/qa-desktop` and
+  `/qa-extension` don't have report-only forks yet — they always run in fix
+  mode, same atomic-commit discipline as `/qa`.)
 
 ## Resolve the target URL
 
@@ -76,7 +83,33 @@ Mirrors the existing `qa/` package's environment convention
    fix-mode `/qa` (not `/qa-only`) against prod — that's a live-site
    mutation risk.
 
-## Hand off
+### desktop
+
+`pretzel-desktop` (Electron) — no URL, no Docker involved.
+
+1. Ensure it's built: `[ -f pretzel-desktop/dist-electron/main.js ] || (cd pretzel-desktop && pnpm build)`.
+2. Invoke the `Skill` tool for `qa-desktop` directly — it drives the app via
+   `pretzel-desktop/qa-bridge/` (a from-scratch Playwright-`_electron`-based
+   fork of gstack's browse binary, since gstack browse has no Electron
+   support). See `qa-desktop`'s own SKILL.md, "Electron / pretzel-desktop"
+   section, for what's in/out of scope (tray window: full coverage; decision
+   window: known gap, no way yet to trigger a real policy violation through
+   the proxy on demand).
+
+### extension
+
+The `pretzel` browser extension — not implemented yet. `qa/README.md`
+already flags this as unbuilt, for a real reason: meaningful extension QA
+means testing against actual ChatGPT/Claude/Gemini sessions, and automating
+third-party sign-in is fragile and ToS-risky. Existing test infra to build
+from: `e2e/pretzel/e2e/*.spec.ts` (Playwright `launchPersistentContext` with
+`--load-extension`, already solves the MV3-headless-service-worker problem —
+see `e2e/playwright.config.ts`'s `extension` project). Until a
+`qa-extension` bridge/skill exists (same pattern as `qa-desktop`), tell the
+user this surface isn't QA-able via `/qa-env` yet and point at `e2e/`'s
+existing extension tests as the closest thing.
+
+## Hand off (local / staging / prod, web surfaces)
 
 Once the URL is resolved, invoke the `Skill` tool:
 
