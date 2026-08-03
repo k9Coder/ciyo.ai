@@ -72,7 +72,7 @@ Test commands by package:
 | `backend` | `pnpm test` (from `backend/`) | — |
 | `pretzel` | `pnpm test` (from `pretzel/`) | `pnpm test:e2e` (from `pretzel/`) |
 | `pretzel-console` | `pnpm test` (from `pretzel-console/`) | `pnpm test:e2e` (from `pretzel-console/`) |
-| `mykka-web` | none (`pnpm lint` + `pnpm build` only) | — |
+| `mykka-web` | `pnpm test` (from `mykka-web/`), plus `pnpm lint` + `pnpm build` | — |
 | cross-service / full stack | — | `pnpm test:e2e` (from `e2e/`, see [Repository Shape](#repository-shape) above) |
 
 Use the [Regression Rules](#regression-rules) above to decide which suites are relevant to a given change.
