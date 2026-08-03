@@ -34,18 +34,19 @@ This plan only re-examined Render. `mykka-web` is still on Vercel, and Vercel's 
 
 ## Setup tasks
 
-### Task 1: Audit current spend on both platforms (do this first — it determines everything else)
+### Task 1: Audit current spend on both platforms (do this first — it determines everything else) — ✅ done 2026-08-03
 
-- [ ] Render dashboard → check the actual current plan for: `backend` (prod), `backend` (staging), `pretzel-console` (prod), `pretzel-console` (staging). Confirm no leftover Render Postgres add-on billing (DB should be Neon-only).
-- [ ] Vercel dashboard → check the current plan for the `mykka-web` project: Hobby or Pro. If Pro, check whether that's load-bearing (team seats, analytics, preview deployments you rely on) or leftover from setup.
-- [ ] Report back both findings before proceeding — the remaining tasks assume backend-prod needs to move to Starter and everything else needs to be confirmed free, but if something's already misconfigured (e.g., console accidentally on a paid plan, or a stray Postgres add-on), that gets fixed here instead.
+- [x] Render dashboard → checked `backend` (prod), `backend` (staging), `pretzel-console` (prod), `pretzel-console` (staging). **Findings:** everything is on Free tier today, no payment method on file at all (Render's own UI: "enter your payment information to select an instance type with higher limits"). Both `pretzel-console` services are static sites (free by nature, not a "plan" to right-size). No Render Postgres add-on found — confirmed Neon-only. Real current spend: **$0**, and literally un-billable with no card attached.
+- [x] Vercel dashboard → `mykka.ai` and `staging.mykka.ai` confirmed on **Hobby** (free, no card, hard-capped by nature). Nothing to change here.
+- [x] Reported back — since prod backend is Free (not Starter), the actual open item isn't "reduce cost," it's "prod backend cold-starts after 15min idle (30-60s first-request delay) — worth $7/mo to fix?" User chose yes. That's Task 2 below.
 
 ### Task 2: Right-size Render to the target state
 
-- [ ] Render dashboard → `backend` (production) service → Settings → change plan to **Starter** ($7/mo).
-- [ ] Render dashboard → `backend` (staging) service → confirm it's on **Free** (downgrade if it's on something paid).
-- [ ] Render dashboard → both `pretzel-console` services → confirm **static site** type (not a web service) — static sites don't have a "plan" to right-size, they're free by nature. If either is somehow provisioned as a web service instead of a static site, that's worth fixing regardless of cost (static sites are simpler and have no cold-start behavior to worry about at all).
-- [ ] Verify: Render's own billing page should now show a predictable $7/mo, with an itemized breakdown matching this table.
+- [ ] Render dashboard → `backend:master` (production) service → click **"enter your payment information"** (shown next to the greyed-out "Update" button on the Instance Type row) or the **Upgrade** button top-right → add a card.
+- [ ] Back on `backend:master` → Settings → General → Instance Type → select **Starter** (0.5 CPU / 512MB) → click **Update**.
+- [ ] Confirm the "Free" badge next to the service name at the top of the page now reads **"Starter"**.
+- [ ] Leave `backend:staging` and both `pretzel-console` services untouched — they stay on Free, no card needed for them specifically (the card is now on the account, but these services aren't upgraded).
+- [ ] Verify: Render's account billing page should show a predictable **$7/mo**, one line item.
 
 ### Task 3: Resolve the Vercel question
 
