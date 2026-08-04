@@ -98,16 +98,18 @@ Mirrors the existing `qa/` package's environment convention
 
 ### extension
 
-The `pretzel` browser extension — not implemented yet. `qa/README.md`
-already flags this as unbuilt, for a real reason: meaningful extension QA
-means testing against actual ChatGPT/Claude/Gemini sessions, and automating
-third-party sign-in is fragile and ToS-risky. Existing test infra to build
-from: `e2e/pretzel/e2e/*.spec.ts` (Playwright `launchPersistentContext` with
-`--load-extension`, already solves the MV3-headless-service-worker problem —
-see `e2e/playwright.config.ts`'s `extension` project). Until a
-`qa-extension` bridge/skill exists (same pattern as `qa-desktop`), tell the
-user this surface isn't QA-able via `/qa-env` yet and point at `e2e/`'s
-existing extension tests as the closest thing.
+The `pretzel` browser extension — no URL, no Docker involved.
+
+1. Ensure it's built: `[ -d pretzel/dist ] || (cd pretzel && pnpm build:e2e)`.
+2. Invoke the `Skill` tool for `qa-extension` directly — it drives the
+   extension via `pretzel/qa-bridge/` (Playwright `launchPersistentContext` +
+   `--load-extension`, same args `e2e/playwright.config.ts`'s `extension`
+   project already proved work, including the MV3-headless-service-worker
+   fix). See `qa-extension`'s own SKILL.md, "Browser Extension / pretzel"
+   section — critically, it must use the built-in fixture mock pages
+   (`goto chatgpt|claude|gemini|upload`) instead of real AI sites; automating
+   sign-in to actual ChatGPT/Claude/Gemini is a ToS risk, same reason
+   `qa/README.md` lists this surface as unbuilt for the manual-QA package.
 
 ## Hand off (local / staging / prod, web surfaces)
 
