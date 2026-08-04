@@ -40,12 +40,37 @@ async function ensureServer() {
   throw new Error('[qa-bridge] Server failed to start within 15s')
 }
 
+// The server is a long-running background process with its own cwd
+// (qa-bridge/), so relative output paths (e.g. `screenshot out.png`) must be
+// resolved against the CALLER's cwd here, before sending — otherwise they
+// silently land inside qa-bridge/ instead of wherever the caller expected.
+const PATH_ARG_INDEX = { screenshot: -1 } // -1 = last arg
+
+function resolvePathArgs(cmd, args) {
+  if (!(cmd in PATH_ARG_INDEX) && cmd !== 'snapshot') return args
+  const resolved = [...args]
+  if (cmd === 'screenshot' && resolved.length > 0) {
+    const last = resolved.length - 1
+    if (!resolved[last].startsWith('--') && !resolved[last].startsWith('@')) {
+      resolved[last] = path.resolve(process.cwd(), resolved[last])
+    }
+  }
+  if (cmd === 'snapshot') {
+    const oIdx = resolved.indexOf('-o')
+    if (oIdx !== -1 && resolved[oIdx + 1]) {
+      resolved[oIdx + 1] = path.resolve(process.cwd(), resolved[oIdx + 1])
+    }
+  }
+  return resolved
+}
+
 async function main() {
-  const [cmd, ...args] = process.argv.slice(2)
+  const [cmd, ...rawArgs] = process.argv.slice(2)
   if (!cmd) {
     console.error('Usage: cli.mjs <command> [args...]')
     process.exit(1)
   }
+  const args = resolvePathArgs(cmd, rawArgs)
   await ensureServer()
   const res = await fetch(`${BASE}/exec`, {
     method: 'POST',
