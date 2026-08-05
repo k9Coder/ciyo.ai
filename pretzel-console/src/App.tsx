@@ -73,6 +73,11 @@ export function App() {
             <Route path="/audit"        element={<AuditLogPage />} />
             <Route path="/assistant"    element={<PlanGate feature="assistantEnabled"><AssistantPage /></PlanGate>} />
           </Route>
+          {/* Unmatched paths (typos, stale bookmarks, guessed URLs like /sign-in)
+              render nothing under react-router — defer to "/" instead of a
+              hardcoded /login so an already-authenticated user lands on their
+              dashboard rather than being bounced to sign-in. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
