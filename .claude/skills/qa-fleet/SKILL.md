@@ -35,7 +35,10 @@ launcher, it composes on top of them.
 - `--timebox <duration>`: default `3m`. Passed straight through to each
   product's `/qa-only --timebox <duration>` invocation (see "Timebox mode" in
   `qa-only`'s SKILL.md — it's a stopping condition, not a depth setting: the
-  agent still picks what's worth probing itself).
+  agent still picks what's worth probing itself). This bounds *exploration*,
+  not the agent's total wall-clock (write-up, screenshots, and retries run on
+  top of it) — see Step 3's hard-timeout backstop for the actual kill switch
+  (`<duration> + 3 minutes`).
 - `--sequential`: run products one at a time instead of in parallel. Default
   is parallel — each product gets its own isolated Postgres container and
   backend process, so there's no shared-state reason to serialize. Use
@@ -100,6 +103,25 @@ source "$_ROOT/.gstack/agent-stacks/$AGENT_LABEL/env"
 Use `seed:e2e` so console/web auth (`testuser@gmail.com` / `TESTuser`, same
 identity `qa-env`'s local mode documents) works for products that need it.
 
+**Desktop/extension only, before building:** kill any `qa-bridge` server left
+running from a previous run. `qa-bridge` caches its browser/app context at
+module scope and reuses it across calls (`ensureServer`/`ensureContext`
+never restart it) — if a stale one from an earlier run is still alive, the
+build below changes the dist output's content-hashed filenames but the
+already-loaded extension/app instance keeps referencing the old ones,
+producing phantom 404s / a window that never re-renders that look like
+product bugs but are actually stale QA-tooling state. Same kill command as
+teardown (Step 3):
+```bash
+_BRIDGE_PATH="pretzel-desktop/qa-bridge/server.mjs"   # or pretzel/qa-bridge/server.mjs for extension
+if command -v pkill >/dev/null 2>&1; then
+  pkill -f "$_BRIDGE_PATH" 2>/dev/null
+else
+  _PID=$(wmic process where "CommandLine like '%${_BRIDGE_PATH//\//\\\\}%'" get ProcessId 2>/dev/null | grep -oE '[0-9]+')
+  [ -n "$_PID" ] && taskkill //F //PID "$_PID" //T 2>/dev/null
+fi
+```
+
 **Desktop only**, after the stack is up and `$BACKEND_URL` is known:
 ```bash
 ( cd "$_ROOT/pretzel-desktop" && PRETZEL_API_URL="$BACKEND_URL" pnpm build )
@@ -136,6 +158,18 @@ prompt — the subagent has no memory of this conversation:
 > what's actually there, don't run a fixed checklist, don't aim for
 > exhaustive coverage in the time available.
 >
+> **For `console`/`web` only:** the stack was seeded with `seed:e2e`, so a
+> real login exists — sign in through the UI with `testuser@gmail.com` /
+> `TESTuser` (same identity `qa-env`'s local mode documents) to reach the
+> authenticated surface. Don't stop at the login screen — an unauthenticated-
+> only pass misses the vast majority of the product.
+>
+> **Hard timeout: <duration_minutes + 3> minutes** for this whole task
+> (explore + write-up). If you're going to blow past it, stop wherever you
+> are and write whatever report/jira-tickets.md you can with what you've
+> found so far rather than leaving nothing — a partial report beats no
+> report.
+>
 > Output the normal QA report to `<OUT_DIR>/<product>/`.
 >
 > Additionally, once the report is written, create
@@ -166,20 +200,62 @@ prompt — the subagent has no memory of this conversation:
 > `jira-tickets.md` with just "No issues found in <duration> exploratory
 > pass" — don't skip the file.
 
-## Step 3: Track and teardown
+## Step 3: Track, hard-timeout, and teardown
 
-Record `<product> → AGENT_LABEL` before spawning so the mapping survives
-across the async gap between spawn and completion notification. When each
-product's agent reports back:
+Record `<product> → AGENT_LABEL` (and each agent's `agentId`) before spawning
+so the mapping survives across the async gap between spawn and completion
+notification. When each product's agent reports back:
 
 1. `"$_ROOT/scripts/agent-stack-stop.sh" "$AGENT_LABEL"` — tears down that
    product's isolated Postgres + backend (+ console/web).
-2. For `desktop`/`extension`: `rm -f "$_ROOT/.gstack/agent-stacks/.locks/<product>"`.
-3. Note completion (report path + issue count) for the fleet summary.
+2. **For `desktop`/`extension` only:** kill the `qa-bridge` server that
+   `qa-desktop`/`qa-extension` spawned, and the app/browser it launched.
+   `qa-bridge` is designed to stay alive across calls within a normal
+   session — nothing in those skills stops it, and if the app it launched
+   hung (e.g. a window that never rendered), the whole tree keeps running
+   and spamming child processes indefinitely. Kill by matching command
+   line, not by image name (`electron.exe`/`chrome.exe` match unrelated
+   apps like VS Code or the user's browser — never blanket-kill by name):
+   ```bash
+   _BRIDGE_PATH="pretzel-desktop/qa-bridge/server.mjs"   # or pretzel/qa-bridge/server.mjs for extension
+   if command -v pkill >/dev/null 2>&1; then
+     pkill -f "$_BRIDGE_PATH" 2>/dev/null   # macOS/Linux
+   else
+     _PID=$(wmic process where "CommandLine like '%${_BRIDGE_PATH//\//\\\\}%'" get ProcessId 2>/dev/null | grep -oE '[0-9]+')
+     [ -n "$_PID" ] && taskkill //F //PID "$_PID" //T 2>/dev/null   # //T kills the app it spawned too
+   fi
+   ```
+3. For `desktop`/`extension`: `rm -f "$_ROOT/.gstack/agent-stacks/.locks/<product>"`.
+4. Note completion (report path + issue count) for the fleet summary.
 
 Tear down **on completion regardless of whether the agent found issues or
 errored** — don't leave isolated stacks running because a product's QA pass
 failed partway.
+
+**Hard timeout backstop.** The in-prompt deadline (Step 2) is a request, not
+an enforcement — an agent can still hang (stuck selector, waiting on a
+dialog, etc.) past it. Right after spawning all agents for this run, start
+one background watcher per product so a hung agent still gets torn down
+instead of sitting there indefinitely:
+
+```bash
+TIMEOUT_MIN=$(( ${DURATION_MIN:-3} + 3 ))   # e.g. 3m timebox -> 6m hard cap
+( sleep "$(( TIMEOUT_MIN * 60 ))"; echo "TIMEOUT_CHECK: <product>" ) &
+```
+
+When a `TIMEOUT_CHECK: <product>` fires and that product's agent has **not**
+already reported completion:
+
+1. `TaskStop` the agent's `agentId` to kill it.
+2. Run the normal teardown (steps 1-2 above) for that product anyway.
+3. Write `<OUT_DIR>/<product>/jira-tickets.md` (if it doesn't already exist)
+   with just: `TIMED OUT — agent killed after <TIMEOUT_MIN>m, no report
+   produced.`
+4. Record it in the fleet summary as `TIMED OUT (killed after <TIMEOUT_MIN>m)`
+   in the Issues column instead of a count.
+
+If the agent *had* already reported by the time the watcher fires, the
+watcher is a no-op — just let it fire and ignore it.
 
 ## Step 4: Fleet summary
 
@@ -192,9 +268,10 @@ Once every requested product has reported back (and been torn down), write
 | Product | Health Score | Issues | Jira tickets |
 |---|---|---|---|
 | backend | 82/100 | 3 | [backend/jira-tickets.md](backend/jira-tickets.md) |
+| console | TIMED OUT (killed after 6m) | — | [console/jira-tickets.md](console/jira-tickets.md) |
 | ... | | | |
 
-Timebox: <duration> per product. Mode: <parallel|sequential>.
+Timebox: <duration> per product (hard cap: <duration> + 3m). Mode: <parallel|sequential>.
 ```
 
 Tell the user where it landed and how many total issues were found across
