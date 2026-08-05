@@ -9,7 +9,7 @@ sources:
   - docker-compose.yml
   - pretzel/src/policy/bridge.ts
   - pretzel/managed_schema.json
-  - pretzel-console/nginx.conf
+  - pretzel-console/nginx.conf.template
   - mykka-web
 ---
 
@@ -26,7 +26,7 @@ This register records current implementation and operations defects discovered w
 | Medium | Extension policy | Implementation | `destinations`, `allowSendAnywayWithReason`, `perSite.defaultAction`, and `auditRetentionDays` are parsed or documented but not fully enforced. | Admin expectations can differ from extension behavior. | Yuki Tanaka |
 | Medium | Extension management | Implementation | Managed storage schema does not define the tokens read by extension auth. | Enterprise managed deployment may not authenticate as intended. | Yuki Tanaka |
 | Medium | Extension privacy | Documentation/product claim | Local audit records include matched text and rich event reporting can transmit matched excerpts. | “No prompt content ever stored/sent” is inaccurate without qualification. | Yuki Tanaka / Noa Katz |
-| Medium | Console Docker | Implementation | Compose maps console port `5173:80` while nginx listens on `8080`; CSP also blocks configured local API and some external services. | Docker full-stack console access/networking is broken. | Chloe Dubois / Ryan Kowalski |
+| Low | Console Docker analytics CSP | Implementation | Nginx CSP doesn't allowlist Microsoft Clarity (`www.clarity.ms`, inline bootstrap script), LogRocket (`cdn.logr-in.com`), or Clerk's own telemetry beacon (`clerk-telemetry.com`) — pre-existing in the production CSP too, not introduced by the Docker local-env work. Auth and core app function are unaffected (see below); this only produces console-error noise. | Non-blocking analytics/telemetry scripts fail to load; shows up as console errors in QA runs and should be treated as expected noise, not a defect, until addressed. | Chloe Dubois / Ryan Kowalski |
 | Medium | Console billing | Implementation | Console calls Stripe portal API while Stripe backend routes are disabled. | Stripe portal actions fail. | Chloe Dubois / Arjun Mehta |
 | Low | Console navigation | Implementation | Implemented routes for destinations, sites, and publish are not present in sidebar navigation. | Features require direct navigation. | Chloe Dubois |
 | Low | Website assets | Implementation | No `og:image`/Twitter-card image meta tag is set on marketing pages (confirmed via live staging fetch 2026-07-31). | Link previews on social/chat apps show no image. | Priya Nair |

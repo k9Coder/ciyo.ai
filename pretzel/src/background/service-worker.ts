@@ -1,5 +1,5 @@
 import { initSentry, Sentry } from "@/lib/sentry";
-import { detectPrompt } from "@mykka/detect";
+import { detectPrompt, DEFAULT_POLICY } from "@mykka/detect";
 import { loadPolicy } from "@/policy/loader";
 import { dispatchEvents } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
@@ -56,18 +56,11 @@ async function isAuthenticated(): Promise<boolean> {
 
 const NUDGE_EVERY = 10;
 
-async function unauthResult(): Promise<DetectionResult> {
+async function shouldNudge(): Promise<boolean> {
   const stored = await chrome.storage.local.get("unauthPromptCount") as Record<string, unknown>;
   const count = (typeof stored["unauthPromptCount"] === "number" ? stored["unauthPromptCount"] : 0) + 1;
   await chrome.storage.local.set({ unauthPromptCount: count });
-  return {
-    findings: [],
-    highestAction: "log",
-    promptHash: "",
-    detectedAtMs: Date.now(),
-    durationMs: 0,
-    signInNudge: count % NUDGE_EVERY === 1 ? true : undefined,
-  };
+  return count % NUDGE_EVERY === 1;
 }
 
 async function getDisabledSites(): Promise<string[]> {
@@ -80,12 +73,23 @@ async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
       const { text, hostname, pasteDetected, inputType, filename, mimeType } = message.payload;
-      if (!await isAuthenticated()) return unauthResult();
+      const detectInput = { text, hostname, pasteDetected, inputType: inputType ?? "prompt" as const, filename, mimeType };
+
+      if (!await isAuthenticated()) {
+        // Signed-out users still get the built-in baseline ruleset — matches
+        // the desktop app's own documented behavior ("Without authentication,
+        // only default rules apply"). This used to skip detectPrompt()
+        // entirely and return empty findings unconditionally, meaning
+        // signed-out users got zero protection despite the extension's own
+        // About copy promising detection regardless of sign-in state.
+        // Event/scan dispatch stays gated on auth — there's no org/tenant to
+        // attribute them to without a signed-in account.
+        const result = await detectPrompt(detectInput, DEFAULT_POLICY);
+        return { ...result, signInNudge: (await shouldNudge()) ? true : undefined };
+      }
+
       const policy = await loadPolicy();
-      const result = await detectPrompt(
-        { text, hostname, pasteDetected, inputType: inputType ?? "prompt", filename, mimeType },
-        policy,
-      );
+      const result = await detectPrompt(detectInput, policy);
       void dispatchEvents(result, hostname);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();

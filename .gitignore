@@ -34,5 +34,12 @@ qa/.env.qa.staging
 qa/.env.qa.prod
 qa/test-results/
 qa/playwright-report/
-.gstack/qa-reports/
-.gstack/
+# Only jira-tickets.md files out of .gstack/qa-reports/ are tracked — those
+# are the paste-ready findings worth keeping. SUMMARY.md, qa-report-*.md,
+# screenshots, baseline.json etc. are disposable/re-generated every run.
+.gstack/*
+!.gstack/qa-reports/
+.gstack/qa-reports/**/*
+!.gstack/qa-reports/**/
+!.gstack/qa-reports/**/jira-tickets.md
+.gstack/qa-reports/**/screenshots/

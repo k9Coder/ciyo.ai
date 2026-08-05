@@ -29,7 +29,7 @@ export function Footer() {
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-[#94a3b8]">Privacy</Link>
             <Link href="/terms" className="hover:text-[#94a3b8]">Terms</Link>
-            <Link href="/accessibility" className="hover:text-[#94a3b8]">נגישות</Link>
+            <Link href="/accessibility" className="hover:text-[#94a3b8]">Accessibility</Link>
           </div>
         </div>
       </div>

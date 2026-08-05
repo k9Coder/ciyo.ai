@@ -81,11 +81,28 @@ echo "[stack] migrations done"
 # ── 4. Seed ───────────────────────────────────────────────────────────────────
 if [[ -n "$SEED_CMD" ]]; then
   echo "[stack] seeding: $SEED_CMD"
-  DATABASE_URL="$DATABASE_URL" pnpm "$SEED_CMD"
+  # seed-e2e.ts needs E2E_CLERK_USER_ID/EMAIL (only in e2e/.env.e2e, not
+  # backend/.env) to create the seeded users row — without them clerkId/email
+  # insert as null and the NOT NULL constraint on users.email fails.
+  DATABASE_URL="$DATABASE_URL" \
+    E2E_CLERK_USER_ID="$(grep -m1 '^E2E_CLERK_USER_ID=' "$ROOT/e2e/.env.e2e" | cut -d= -f2-)" \
+    E2E_CLERK_USER_EMAIL="$(grep -m1 '^E2E_CLERK_USER_EMAIL=' "$ROOT/e2e/.env.e2e" | cut -d= -f2-)" \
+    pnpm "$SEED_CMD"
   echo "[stack] seed done"
 fi
 
 # ── 5. Backend server ─────────────────────────────────────────────────────────
+# Console port is reserved *before* the backend starts (rather than in step 6)
+# so the backend's CORS allowlist can be seeded with its real origin —
+# without this, the backend falls back to its hardcoded production origin
+# and every authenticated console call gets silently CORS-blocked.
+CONSOLE_PORT=""
+export CONSOLE_URL=""
+if $WITH_CONSOLE; then
+  CONSOLE_PORT=$(free_port)
+  export CONSOLE_URL="http://localhost:${CONSOLE_PORT}"
+fi
+
 BACKEND_PID=""
 if ! $NO_BACKEND; then
   BACKEND_PORT=$(free_port)
@@ -94,7 +111,7 @@ if ! $NO_BACKEND; then
 
   echo "[stack] starting backend on port $BACKEND_PORT..."
   cd "$ROOT/backend"
-  DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" pnpm dev > /tmp/backend-${AGENT_LABEL}.log 2>&1 &
+  DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CONSOLE_URL" pnpm dev > /tmp/backend-${AGENT_LABEL}.log 2>&1 &
   export BACKEND_PID=$!
 
   # wait until health endpoint responds (max 30s)
@@ -108,9 +125,6 @@ fi
 # ── 6. Console dev server (optional) ─────────────────────────────────────────
 CONSOLE_PID=""
 if $WITH_CONSOLE; then
-  CONSOLE_PORT=$(free_port)
-  export CONSOLE_URL="http://localhost:${CONSOLE_PORT}"
-
   echo "[stack] starting console on port $CONSOLE_PORT..."
   cd "$ROOT/pretzel-console"
   VITE_API_URL="$BACKEND_URL" pnpm dev --port "$CONSOLE_PORT" > /tmp/console-${AGENT_LABEL}.log 2>&1 &
