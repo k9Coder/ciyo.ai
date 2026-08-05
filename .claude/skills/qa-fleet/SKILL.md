@@ -117,8 +117,23 @@ _BRIDGE_PATH="pretzel-desktop/qa-bridge/server.mjs"   # or pretzel/qa-bridge/ser
 if command -v pkill >/dev/null 2>&1; then
   pkill -f "$_BRIDGE_PATH" 2>/dev/null
 else
-  _PID=$(wmic process where "CommandLine like '%${_BRIDGE_PATH//\//\\\\}%'" get ProcessId 2>/dev/null | grep -oE '[0-9]+')
-  [ -n "$_PID" ] && taskkill //F //PID "$_PID" //T 2>/dev/null
+  # Plain substrings only, no backslash-converted path matching — an
+  # earlier version built the LIKE pattern with ${VAR//\//\\\\}, which
+  # wmic rejects as "Invalid query" (not "no match"). Since the query
+  # errors, `grep -oE '[0-9]+'` finds no digits, `_PID` stays empty, and
+  # the teardown looks like it succeeded while silently doing nothing —
+  # this is what let qa-bridge/Electron/Chrome trees survive past every
+  # prior "torn down clean" claim. "pretzel" is a substring of
+  # "pretzel-desktop", so distinguish the two explicitly, and loop over
+  # every matched PID (the query can match more than one process).
+  if [ "<product>" = "desktop" ]; then
+    _WHERE="CommandLine like '%pretzel-desktop%qa-bridge%'"
+  else
+    _WHERE="CommandLine like '%qa-bridge%server.mjs%' and not CommandLine like '%pretzel-desktop%'"
+  fi
+  wmic process where "$_WHERE" get ProcessId 2>/dev/null | grep -oE '^[0-9]+' | while read -r _PID; do
+    taskkill //F //PID "$_PID" //T 2>/dev/null
+  done
 fi
 ```
 
@@ -221,12 +236,28 @@ notification. When each product's agent reports back:
    if command -v pkill >/dev/null 2>&1; then
      pkill -f "$_BRIDGE_PATH" 2>/dev/null   # macOS/Linux
    else
-     _PID=$(wmic process where "CommandLine like '%${_BRIDGE_PATH//\//\\\\}%'" get ProcessId 2>/dev/null | grep -oE '[0-9]+')
-     [ -n "$_PID" ] && taskkill //F //PID "$_PID" //T 2>/dev/null   # //T kills the app it spawned too
+     # See the matching note in Step 1 — plain substrings, no backslash-
+     # converted path (wmic errors on that pattern rather than just not
+     # matching, so a silent no-op looks like a successful kill). Loop
+     # over every matched PID; "pretzel" is a substring of
+     # "pretzel-desktop" so the two products need distinct WHERE clauses.
+     if [ "<product>" = "desktop" ]; then
+       _WHERE="CommandLine like '%pretzel-desktop%qa-bridge%'"
+     else
+       _WHERE="CommandLine like '%qa-bridge%server.mjs%' and not CommandLine like '%pretzel-desktop%'"
+     fi
+     wmic process where "$_WHERE" get ProcessId 2>/dev/null | grep -oE '^[0-9]+' | while read -r _PID; do
+       taskkill //F //PID "$_PID" //T 2>/dev/null   # //T kills the app/browser it spawned too
+     done
    fi
    ```
-3. For `desktop`/`extension`: `rm -f "$_ROOT/.gstack/agent-stacks/.locks/<product>"`.
-4. Note completion (report path + issue count) for the fleet summary.
+3. **Verify the kill actually worked** — re-check for a matching process
+   after the kill (same `wmic`/`pkill` query, expect zero results) rather
+   than trusting the kill command's own exit code. A query that errors or
+   silently matches nothing is indistinguishable from "already dead"
+   unless you check.
+4. For `desktop`/`extension`: `rm -f "$_ROOT/.gstack/agent-stacks/.locks/<product>"`.
+5. Note completion (report path + issue count) for the fleet summary.
 
 Tear down **on completion regardless of whether the agent found issues or
 errored** — don't leave isolated stacks running because a product's QA pass
