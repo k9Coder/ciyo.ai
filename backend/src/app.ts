@@ -145,7 +145,17 @@ export function buildApp() {
       done(null, body)
     } else {
       try { done(null, JSON.parse(body as string)) }
-      catch (e) { done(e as Error) }
+      catch (e) {
+        // Fastify's built-in JSON parser tags parse failures with statusCode
+        // 400; this custom parser exists only so webhook routes can see the
+        // raw body for signature verification, but the SyntaxError from
+        // JSON.parse below has no statusCode of its own — without tagging
+        // it here, the global error handler's `err.statusCode ?? 500`
+        // falls through to 500 for every malformed request body.
+        const parseError = e as Error & { statusCode?: number }
+        parseError.statusCode = 400
+        done(parseError)
+      }
     }
   })
 
@@ -221,5 +231,9 @@ export function buildApp() {
   })
 
   app.get('/health', async () => ({ ok: true }))
+  // Bare API-discovery response so a liveness check or curl against '/' gets
+  // a 200 instead of a bare 404 — no internal detail, just confirms this is
+  // the pretzel API and points at /health.
+  app.get('/', async () => ({ service: 'pretzel-api', health: '/health' }))
   return app
 }
