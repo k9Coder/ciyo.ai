@@ -24,6 +24,10 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/promptshield
       PORT: '3000'
+      # pretzel-desktop's OAuth handoff redirects the system browser here to
+      # sign in — must point at the actually-running console, or it silently
+      # defaults to production and desktop sign-in never completes locally.
+      PRETZEL_CONSOLE_URL: http://localhost:5173
     env_file:
       - ./backend/.env
     depends_on:
