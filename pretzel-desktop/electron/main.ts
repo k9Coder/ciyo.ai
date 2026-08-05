@@ -32,6 +32,17 @@ if (process.env.PRETZEL_E2E === '1') {
   app.disableHardwareAcceleration()
 }
 
+// Without this, a second launch (e.g. a QA/dev instance started while a
+// packaged install is already running) silently shares the same userData/
+// Chromium profile as the first — no error, just contention on profile
+// files that can stall the second instance's window creation forever with
+// no visible cause. Fail fast instead: if another instance already holds
+// the lock, quit immediately rather than hang.
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+}
+
 let tray: Tray | null = null
 let trayWin: BrowserWindow | null = null
 let ca: CACert | null = null
@@ -157,6 +168,10 @@ async function startProxy(): Promise<void> {
   setSystemProxyActive(true)
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
 }
+
+app.on('second-instance', () => {
+  trayWin?.show()
+})
 
 app.whenReady().then(async () => {
   app.setLoginItemSettings({ openAtLogin: true })
