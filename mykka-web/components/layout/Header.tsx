@@ -77,6 +77,10 @@ export function Header() {
               {label}
             </Link>
           ))}
+          <Link href={APP_URL} onClick={() => setOpen(false)}
+            className="block py-2 text-[14px] text-[#94a3b8] hover:text-white">
+            Sign in
+          </Link>
         </div>
       )}
     </header>
