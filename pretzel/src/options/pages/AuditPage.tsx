@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/chrome-extension";
 import { queryAuditEvents, exportAuditCSV } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
-import { InlineLoader } from "../components/loading";
+import { InlineLoader, PageLoader } from "../components/loading";
 
 const PAGE_SIZE = 50;
 
@@ -20,6 +21,7 @@ const DECISION_LABELS: Record<string, string> = {
 };
 
 export function AuditPage() {
+  const { isLoaded, isSignedIn } = useAuth();
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [page, setPage] = useState(0);
   const [hostnameFilter, setHostnameFilter] = useState("");
@@ -59,12 +61,23 @@ export function AuditPage() {
     URL.revokeObjectURL(url);
   }
 
+  if (!isLoaded) return <PageLoader label="Authenticating" />;
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-8 text-center">
+        <p className="text-sm text-[var(--text-primary)] font-medium">Sign in to view your audit log</p>
+        <p className="text-sm text-[var(--text-muted)]">Switch to the Account tab to sign in.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Audit Log</h2>
-          <p className="text-sm text-gray-500 mt-1">Showing latest {PAGE_SIZE} events per page.</p>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Audit Log</h2>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Showing latest {PAGE_SIZE} events per page.</p>
         </div>
         <button
           onClick={handleExportCSV}
@@ -88,7 +101,7 @@ export function AuditPage() {
       {loading ? (
         <InlineLoader size="sm" />
       ) : events.length === 0 ? (
-        <p className="text-sm text-gray-500">No audit events found.</p>
+        <p className="text-sm text-[var(--text-muted)]">No audit events found.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full text-sm">
