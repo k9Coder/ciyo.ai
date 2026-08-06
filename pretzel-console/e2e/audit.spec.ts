@@ -59,7 +59,7 @@ async function mockAuditLog(page: Page, forcedLimit?: number) {
 test.describe('Audit Log', () => {
   test('page loads and renders event rows', async ({ page }) => {
     await mockAuditLog(page)
-    await page.goto('/audit')
+    await page.goto('/audit-log')
 
     await expect(page.getByRole('heading', { name: /audit log/i })).toBeVisible()
 
@@ -70,7 +70,7 @@ test.describe('Audit Log', () => {
 
   test('filter pill Blocked shows only block events', async ({ page }) => {
     await mockAuditLog(page)
-    await page.goto('/audit')
+    await page.goto('/audit-log')
 
     await page.getByRole('button', { name: 'Blocked' }).click()
 
@@ -84,7 +84,7 @@ test.describe('Audit Log', () => {
 
   test('filter pill Warned shows only warn events', async ({ page }) => {
     await mockAuditLog(page)
-    await page.goto('/audit')
+    await page.goto('/audit-log')
 
     await page.getByRole('button', { name: 'Warned' }).click()
 
@@ -98,7 +98,7 @@ test.describe('Audit Log', () => {
 
   test('filter pill All resets to show both actions', async ({ page }) => {
     await mockAuditLog(page)
-    await page.goto('/audit')
+    await page.goto('/audit-log')
 
     await page.getByRole('button', { name: 'Blocked' }).click()
     await page.getByRole('button', { name: 'All' }).click()
@@ -114,7 +114,7 @@ test.describe('Audit Log', () => {
   test('Load more button fetches the next page', async ({ page }) => {
     // Force limit=5 so the 15 mock events span multiple pages
     await mockAuditLog(page, 5)
-    await page.goto('/audit')
+    await page.goto('/audit-log')
 
     await expect(page.getByRole('button', { name: 'Load more' })).toBeVisible()
     // Wait for the first page to fully render before counting rows

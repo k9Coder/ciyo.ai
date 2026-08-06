@@ -70,7 +70,8 @@ export function App() {
             <Route path="/publish"      element={<PublishPage />} />
             <Route path="/settings"     element={<SettingsPage />} />
             <Route path="/members"      element={<MembersPage />} />
-            <Route path="/audit"        element={<AuditLogPage />} />
+            <Route path="/audit-log"    element={<AuditLogPage />} />
+            <Route path="/audit"        element={<Navigate to="/audit-log" replace />} />
             <Route path="/assistant"    element={<PlanGate feature="assistantEnabled"><AssistantPage /></PlanGate>} />
           </Route>
           {/* Unmatched paths (typos, stale bookmarks, guessed URLs like /sign-in)

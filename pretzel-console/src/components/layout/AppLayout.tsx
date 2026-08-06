@@ -48,7 +48,7 @@ const NAV = [
   { to: '/subjects', label: 'Policies', icon: '⊡', ai: false, dividerAbove: false },
   { to: '/org', label: 'Teams', icon: '⊞', ai: false, dividerAbove: false },
   { to: '/members', label: 'Members', icon: '◎', ai: false, dividerAbove: false },
-  { to: '/audit', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
+  { to: '/audit-log', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
   { to: '/assistant', label: 'AI Assistant', icon: null, ai: true, dividerAbove: true },
   { to: '/settings', label: 'Settings', icon: '⚙', ai: false, dividerAbove: false },
 ]
