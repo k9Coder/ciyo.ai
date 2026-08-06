@@ -172,7 +172,15 @@ export function buildApp() {
         // JSON.parse below has no statusCode of its own — without tagging
         // it here, the global error handler's `err.statusCode ?? 500`
         // falls through to 500 for every malformed request body.
-        const parseError = e as Error & { statusCode?: number }
+        //
+        // The raw SyntaxError message (e.g. "Expected property name or '}'
+        // in JSON at position 1") is V8-internal parser wording, not an
+        // app-authored message — buildErrorBody() passes 4xx messages
+        // through verbatim on the assumption they're safe to show, so swap
+        // in a generic message here instead of leaking the implementation
+        // detail. The original stays logged for debugging.
+        logger.warn('Malformed JSON request body', { url: req.url, parseError: (e as Error).message })
+        const parseError = new Error('Invalid JSON body') as Error & { statusCode?: number }
         parseError.statusCode = 400
         done(parseError)
       }
