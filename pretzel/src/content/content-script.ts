@@ -69,7 +69,11 @@ async function bootstrap() {
         },
       });
 
-      if (result.signInNudge) showSignInNudge();
+      // Don't nudge sign-in on a result that just blocked/warned — the modal
+      // about to show already proves protection is active while signed out,
+      // so "sign in to start protecting" would contradict what the user is
+      // seeing on screen.
+      if (result.signInNudge && result.highestAction === "log") showSignInNudge();
 
       if (result.highestAction === "log") {
         window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*");
@@ -118,7 +122,9 @@ async function bootstrap() {
 
       logger.debug("Detection result:", result);
 
-      if (result.signInNudge) {
+      // Don't nudge sign-in on a result that just blocked/warned — see the
+      // matching comment on the paste/file-upload path above.
+      if (result.signInNudge && result.highestAction === "log") {
         showSignInNudge();
       }
 

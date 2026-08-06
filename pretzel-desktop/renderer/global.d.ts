@@ -20,6 +20,7 @@ declare global {
       onAuthSuccess: (cb: () => void) => void
       onAuthError: (cb: (msg: string) => void) => void
       signIn: () => void
+      cancelSignIn: () => void
       getPolicy: () => Promise<unknown>
       getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
     }

@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld('pretzel', {
   signIn: () => {
     ipcRenderer.send('auth:sign-in')
   },
+  cancelSignIn: () => {
+    ipcRenderer.send('auth:cancel')
+  },
 
   // Policy
   getPolicy: () => ipcRenderer.invoke('policy:get'),

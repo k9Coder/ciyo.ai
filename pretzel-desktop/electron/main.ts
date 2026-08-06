@@ -14,7 +14,7 @@ import {
 } from './ipc-handlers'
 import { showDecisionWindow } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
-import { isAuthenticated, signIn } from './auth'
+import { isAuthenticated, signIn, cancelSignIn } from './auth'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
@@ -184,6 +184,7 @@ app.whenReady().then(async () => {
       proxy.resolveDecision(requestId, allow)
     },
     onSignIn: () => { handleSignIn() },
+    onCancelSignIn: () => { cancelSignIn() },
   })
 
   await setupTray(authenticated)

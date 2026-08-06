@@ -6,6 +6,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useMembers, useMemberActions } from '../hooks/useMembers'
 import { api } from '../api'
 import type { Member } from '../types'
+import { formatDate } from '../utils/date'
 
 const ROLE_LABEL: Record<Member['role'], string> = {
   super_admin:    'Super Admin',
@@ -288,7 +289,7 @@ export function MembersPage() {
                     </select>
                   </td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
-                    {new Date(m.createdAt).toLocaleDateString()}
+                    {formatDate(m.createdAt)}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

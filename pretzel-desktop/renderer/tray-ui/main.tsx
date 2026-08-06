@@ -24,6 +24,20 @@ function TrayUI() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [showCancelHint, setShowCancelHint] = useState(false)
+
+  useEffect(() => {
+    if (!signingIn) {
+      setShowCancelHint(false)
+      return
+    }
+    // If the OS browser never visibly opens (no default browser registered,
+    // sandboxed env, shell.openExternal silently no-op'd), the user has no
+    // way to tell the difference from a slow-but-working sign-in without
+    // this hint — give them a way out well before the 90s server timeout.
+    const t = setTimeout(() => setShowCancelHint(true), 8000)
+    return () => clearTimeout(t)
+  }, [signingIn])
 
   useEffect(() => {
     window.pretzel.onStatusUpdate(setStatus)
@@ -46,6 +60,10 @@ function TrayUI() {
     setSigningIn(true)
     setAuthError(null)
     window.pretzel.signIn()
+  }
+
+  function handleCancelSignIn() {
+    window.pretzel.cancelSignIn()
   }
 
   const dot = status.proxyRunning ? '🟢' : '🔴'
@@ -100,6 +118,22 @@ function TrayUI() {
           >
             {signingIn ? 'Opening browser…' : 'Sign in with mykka.ai'}
           </button>
+          {showCancelHint && (
+            <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.35rem' }}>
+                Still waiting — didn't see a browser open?
+              </p>
+              <button
+                onClick={handleCancelSignIn}
+                style={{
+                  background: 'none', border: 'none', color: '#4a90d9',
+                  fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0,
+                }}
+              >
+                Cancel and try again
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

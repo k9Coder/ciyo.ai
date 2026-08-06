@@ -13,16 +13,20 @@ const DecisionResponseSchema = z.object({
 
 type DecisionCallback = (requestId: string, allow: boolean) => void
 type SignInCallback = () => void
+type CancelSignInCallback = () => void
 
 let onDecision: DecisionCallback | null = null
 let onSignIn: SignInCallback | null = null
+let onCancelSignIn: CancelSignInCallback | null = null
 
 export function registerIpcHandlers(options: {
   onDecision: DecisionCallback
   onSignIn?: SignInCallback
+  onCancelSignIn?: CancelSignInCallback
 }): void {
   onDecision = options.onDecision
   onSignIn = options.onSignIn ?? null
+  onCancelSignIn = options.onCancelSignIn ?? null
 
   ipcMain.on('decision:respond', (_event, raw: unknown) => {
     const parsed = DecisionResponseSchema.safeParse(raw)
@@ -32,6 +36,10 @@ export function registerIpcHandlers(options: {
 
   ipcMain.on('auth:sign-in', () => {
     onSignIn?.()
+  })
+
+  ipcMain.on('auth:cancel', () => {
+    onCancelSignIn?.()
   })
 
   ipcMain.handle('policy:get', (): Policy | null => {
@@ -45,6 +53,7 @@ export function registerIpcHandlers(options: {
 export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('decision:respond')
   ipcMain.removeAllListeners('auth:sign-in')
+  ipcMain.removeAllListeners('auth:cancel')
   ipcMain.removeHandler('policy:get')
   ipcMain.removeHandler('proxy:status')
 }

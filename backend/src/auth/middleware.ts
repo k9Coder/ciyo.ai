@@ -151,8 +151,11 @@ export function invalidateTenantCache(tenantId: string): void {
 }
 
 export async function requireClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const token = req.headers.authorization?.slice(7) ?? ''
-  return resolveClerkJwt(req, reply, token)
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  return resolveClerkJwt(req, reply, auth.slice(7))
 }
 
 export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {

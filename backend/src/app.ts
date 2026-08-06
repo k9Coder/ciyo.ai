@@ -74,10 +74,30 @@ export function buildApp() {
   const corsOrigin = env.CORS_ORIGIN
     ? env.CORS_ORIGIN.split(',')
     : (env.NODE_ENV === 'test' ? true : ['https://pretzel-console.mykka.ai'])
-  const app = Fastify({ logger: env.NODE_ENV !== 'test', trustProxy: true })
+  // ignoreTrailingSlash/caseSensitive: false so `/v1/tenant/` and `/HEALTH`
+  // resolve to the same route as `/v1/tenant` and `/health` instead of a
+  // generic 404 that gives integrators no hint the route exists nearby.
+  const app = Fastify({
+    logger: env.NODE_ENV !== 'test',
+    trustProxy: true,
+    ignoreTrailingSlash: true,
+    caseSensitive: false,
+  })
   void app.register(cors, {
     origin:      corsOrigin,
     credentials: true,
+  })
+
+  // Collect only the public-facing `/v1/*` surface for `/docs` below — NOT
+  // `/internal/*` (trusts X-Tenant-ID outright) or `/platform/v1/*`
+  // (cross-tenant admin), which would otherwise hand an unauthenticated
+  // caller a full map of the API's internal/admin surface for free,
+  // including endpoints like rotate-org-token / rotate-admin-token.
+  const publicRoutes: string[] = []
+  app.addHook('onRoute', (routeOptions) => {
+    if (routeOptions.url.startsWith('/internal/') || routeOptions.url.startsWith('/platform/')) return
+    const methods = Array.isArray(routeOptions.method) ? routeOptions.method.join(',') : routeOptions.method
+    publicRoutes.push(`${methods} ${routeOptions.url}`)
   })
 
   // Security headers. This is a JSON API consumed cross-origin by the console,
@@ -230,10 +250,28 @@ export function buildApp() {
     return reply.status(statusCode).send(buildErrorBody(statusCode, err.message, traceId))
   })
 
+  // Without this, Fastify's built-in 404 uses its own envelope shape
+  // ({"message","error","statusCode"}) — different from every other error
+  // response in this API ({"error"}), so route the not-found case through
+  // the same buildErrorBody() everything else uses.
+  app.setNotFoundHandler((req, reply) => {
+    const traceId = req.headers['x-trace-id'] as string | undefined
+    return reply.status(404).send(buildErrorBody(404, 'Not Found', traceId))
+  })
+
   app.get('/health', async () => ({ ok: true }))
   // Bare API-discovery response so a liveness check or curl against '/' gets
   // a 200 instead of a bare 404 — no internal detail, just confirms this is
   // the pretzel API and points at /health.
-  app.get('/', async () => ({ service: 'pretzel-api', health: '/health' }))
+  app.get('/', async () => ({ service: 'pretzel-api', health: '/health', routes: '/docs' }))
+  // Minimal route catalog (no full OpenAPI spec) so an integrator/QA pass
+  // can enumerate the public API surface without reading source. Only
+  // `publicRoutes` (populated by the onRoute hook above, which excludes
+  // /internal/* and /platform/*) is exposed here — deliberately unauthenticated
+  // since it lists nothing sensitive.
+  app.get('/docs', async (_req, reply) => {
+    reply.type('text/plain')
+    return publicRoutes.sort().join('\n')
+  })
   return app
 }

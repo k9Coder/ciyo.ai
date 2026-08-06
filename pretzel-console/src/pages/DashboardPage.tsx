@@ -112,13 +112,18 @@ export function DashboardPage() {
             aria-label={`Threat activity bar chart. ${daily.map(d => `${d.day}: ${d.blocked} blocked, ${d.warned} warned`).join('; ')}`}
           >
             {(daily.length ? daily : Array.from({ length: 7 }, () => ({ day: '', date: '', blocked: 0, warned: 0, scanned: 0 }))).map(({ day, blocked, warned }, i) => {
-              const blockedH = Math.round((blocked / maxChart) * 80)
-              const warnedH  = Math.round((warned  / maxChart) * 80)
+              const total = blocked + warned
+              // A day with zero incidents still gets a visible 2px baseline
+              // segment instead of a 0px div — a quiet day should read as
+              // "nothing happened" rather than look like a rendering gap.
+              const blockedH = total === 0 ? 0 : Math.max(2, Math.round((blocked / maxChart) * 80))
+              const warnedH  = total === 0 ? 2 : Math.max(warned === 0 ? 0 : 2, Math.round((warned / maxChart) * 80))
               return (
                 <div key={day || i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-                    <div style={{ width: '100%', height: warnedH,  background: 'var(--status-warn)',   borderRadius: '2px 2px 0 0' }}/>
-                    <div style={{ width: '100%', height: blockedH, background: 'var(--status-danger)', borderRadius: '0 0 2px 2px' }}/>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 9, minHeight: 12 }}>{total > 0 ? total : ''}</span>
+                  <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', justifyContent: 'flex-end', height: 80 }}>
+                    <div style={{ width: '100%', height: warnedH,  background: total === 0 ? 'var(--border)' : 'var(--status-warn)',   borderRadius: '2px 2px 0 0' }}/>
+                    <div style={{ width: '100%', height: blockedH, background: 'var(--status-danger)', borderRadius: total === 0 ? '0' : '0 0 2px 2px' }}/>
                   </div>
                   <span style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 6 }}>{day}</span>
                 </div>
