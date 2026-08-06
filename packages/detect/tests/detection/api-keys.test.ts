@@ -55,6 +55,40 @@ describe("OpenAI project key detection", () => {
   });
 });
 
+describe("overlapping-rule dedup (regression: qa-fleet 20260806-195613)", () => {
+  // A single sk-proj- key used to surface as 3 separate findings — the
+  // generic openai-api-key pattern, the more specific openai-project-key
+  // pattern, and the high-entropy-token heuristic all matched the exact
+  // same span, and each rendered as its own card in the block modal.
+  it("collapses an sk-proj- key matched by 3 rules into a single finding", async () => {
+    const result = await detectPrompt(
+      "Here is my API key: sk-proj-abcdefghijklmnopqrstuvwxyz1234567890ABCD",
+      DEFAULT_POLICY,
+      "chatgpt.com"
+    );
+    const keyFindings = result.findings.filter(
+      (f) => f.matchedText === "sk-proj-abcdefghijklmnopqrstuvwxyz1234567890ABCD"
+    );
+    expect(keyFindings).toHaveLength(1);
+    // The more specific pattern rule wins over both the generic pattern
+    // rule and the entropy heuristic on this identical-span tie.
+    expect(keyFindings[0]!.ruleId).toBe("openai-project-key");
+  });
+
+  it("still reports the SSN as a separate finding alongside the deduped key", async () => {
+    const result = await detectPrompt(
+      "Here is my API key: sk-proj-abcdefghijklmnopqrstuvwxyz1234567890ABCD and my SSN is 123-45-6789",
+      DEFAULT_POLICY,
+      "chatgpt.com"
+    );
+    const ruleIds = new Set(result.findings.map((f) => f.ruleId));
+    expect(ruleIds.has("openai-project-key")).toBe(true);
+    expect(ruleIds.has("openai-api-key")).toBe(false);
+    expect(ruleIds.has("high-entropy-token")).toBe(false);
+    expect(result.findings.some((f) => f.matchedText.includes("123-45-6789"))).toBe(true);
+  });
+});
+
 describe("Anthropic API key detection", () => {
   const policy = policyWithOnly("anthropic-api-key");
 
