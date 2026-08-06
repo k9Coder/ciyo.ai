@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { DownloadAsset, Downloads } from './getDownloads'
 
 type Platform = 'mac-arm' | 'mac-intel' | 'windows' | 'linux' | 'unknown'
@@ -25,7 +25,15 @@ function formatBytes(bytes: number): string {
 }
 
 export function DownloadClient({ downloads: releaseDownloads }: { downloads: Downloads }) {
-  const [platform] = useState<Platform>(detectPlatform)
+  // Server-rendered HTML always sees 'unknown' (no `navigator` on the
+  // server), so the initial client render must match that exactly or React
+  // flags a hydration mismatch (which is what the Next dev overlay's "1
+  // Issue" badge was reporting on this route). Detect the real platform
+  // after mount instead, once hydration is already done.
+  const [platform, setPlatform] = useState<Platform>('unknown')
+  useEffect(() => {
+    setPlatform(detectPlatform())
+  }, [])
 
   const version = releaseDownloads.version ? `v${releaseDownloads.version}` : ''
 
