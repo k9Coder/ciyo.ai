@@ -48,11 +48,6 @@ vi.stubGlobal('crypto', { randomUUID: vi.fn().mockReturnValue('test-uuid') })
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
 
-const mockAppendAuditEvent = vi.fn().mockResolvedValue(undefined)
-vi.mock('@/audit/log', () => ({
-  appendAuditEvent: (...args: unknown[]) => mockAppendAuditEvent(...args),
-}))
-
 const mockShowWarningModal = vi.fn()
 vi.mock('@/content/overlay/overlay-root', () => ({
   showWarningModal: (...args: unknown[]) => mockShowWarningModal(...args),
@@ -115,6 +110,14 @@ beforeEach(async () => {
   mockSendMessage.mockResolvedValue({ scanLimitReached: false })
 })
 
+/** content-script.ts writes audit events via sendMessage({ type: "APPEND_AUDIT_EVENT" }), not a direct import. */
+function auditEventCalls(): unknown[] {
+  return mockSendMessage.mock.calls
+    .map((call: unknown[]) => call[0] as { type: string; payload: unknown })
+    .filter((msg) => msg.type === 'APPEND_AUDIT_EVENT')
+    .map((msg) => msg.payload)
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('content-script audit event ordering', () => {
@@ -123,15 +126,16 @@ describe('content-script audit event ordering', () => {
     mockSendMessage.mockImplementation((msg: { type: string }) => {
       if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
       if (msg.type === 'DETECT') return Promise.resolve(logResult)
+      if (msg.type === 'APPEND_AUDIT_EVENT') return Promise.resolve({ ok: true })
       return Promise.resolve(null)
     })
 
     await import('@/content/content-script')
     await triggerSendIntent()
 
-    const auditCalls = mockAppendAuditEvent.mock.calls
+    const auditCalls = auditEventCalls()
     expect(auditCalls).toHaveLength(1)
-    expect(auditCalls[0][0]).toMatchObject({ userDecision: 'sent' })
+    expect(auditCalls[0]).toMatchObject({ userDecision: 'sent' })
     expect(mockShowWarningModal).not.toHaveBeenCalled()
   })
 
@@ -140,6 +144,7 @@ describe('content-script audit event ordering', () => {
     mockSendMessage.mockImplementation((msg: { type: string }) => {
       if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
       if (msg.type === 'DETECT') return Promise.resolve(warnResult)
+      if (msg.type === 'APPEND_AUDIT_EVENT') return Promise.resolve({ ok: true })
       return Promise.resolve(null)
     })
     mockShowWarningModal.mockResolvedValue({ type: 'edit' })
@@ -147,9 +152,9 @@ describe('content-script audit event ordering', () => {
     await import('@/content/content-script')
     await triggerSendIntent()
 
-    const auditCalls = mockAppendAuditEvent.mock.calls
+    const auditCalls = auditEventCalls()
     expect(auditCalls).toHaveLength(1)
-    expect(auditCalls[0][0]).toMatchObject({ userDecision: 'edited' })
+    expect(auditCalls[0]).toMatchObject({ userDecision: 'edited' })
   })
 
   it('writes exactly one "sent_with_reason" event when user sends anyway', async () => {
@@ -157,6 +162,7 @@ describe('content-script audit event ordering', () => {
     mockSendMessage.mockImplementation((msg: { type: string }) => {
       if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
       if (msg.type === 'DETECT') return Promise.resolve(blockResult)
+      if (msg.type === 'APPEND_AUDIT_EVENT') return Promise.resolve({ ok: true })
       return Promise.resolve(null)
     })
     mockShowWarningModal.mockResolvedValue({ type: 'send_anyway', reason: 'false positive' })
@@ -164,9 +170,9 @@ describe('content-script audit event ordering', () => {
     await import('@/content/content-script')
     await triggerSendIntent()
 
-    const auditCalls = mockAppendAuditEvent.mock.calls
+    const auditCalls = auditEventCalls()
     expect(auditCalls).toHaveLength(1)
-    expect(auditCalls[0][0]).toMatchObject({
+    expect(auditCalls[0]).toMatchObject({
       userDecision: 'sent_with_reason',
       reason: 'false positive',
     })
