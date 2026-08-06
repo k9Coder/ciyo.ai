@@ -2,7 +2,6 @@ import { initSentry, Sentry } from "@/lib/sentry";
 import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
-import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
@@ -283,7 +282,11 @@ async function writeAuditEvent(
       promptLengthChars: promptText.length,
       promptHash: result.promptHash,
     };
-    await appendAuditEvent(event);
+    // Content scripts run in the injected page's origin, not the extension's
+    // — writing directly via appendAuditEvent() here would land in that
+    // page's IndexedDB, invisible to the options page's Audit Log. Route
+    // through the service worker, which runs at the extension's own origin.
+    await sendMessage({ type: "APPEND_AUDIT_EVENT", payload: event });
   } catch (err) {
     logger.error("Failed to write audit event:", err);
   }
