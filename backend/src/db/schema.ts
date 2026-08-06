@@ -295,6 +295,12 @@ export const invites = pgTable('invites', {
   token:        text('token').notNull(),
   email:        text('email'),                              // null = open link
   role:         memberRoleEnum('role').notNull().default('member'),
+  // Only meaningful when role = 'division_admin' — the division the invited
+  // admin will oversee once accepted. Must be captured at invite-creation
+  // time since acceptance happens later (a different session, possibly a
+  // different day), so it can't be supplied at accept time the way a direct
+  // POST /members call can.
+  divisionId:   uuid('division_id').references(() => divisions.id),
   createdById:  uuid('created_by_id').references(() => members.id),
   expiresAt:    timestamp('expires_at', { withTimezone: true }).notNull(),
   usedAt:       timestamp('used_at', { withTimezone: true }),

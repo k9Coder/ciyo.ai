@@ -44,6 +44,38 @@ describe('POST /v1/members', () => {
       .send({ email: 'alice@example.com' })
     expect(res.status).toBe(403)
   })
+
+  it('rejects a division_admin member with no adminDivisionId', async () => {
+    const res = await supertest(app.server)
+      .post('/v1/members')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'div-admin@example.com', role: 'division_admin' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('adminDivisionId is required')
+  })
+
+  it('creates a division_admin member with a valid adminDivisionId', async () => {
+    const res = await supertest(app.server)
+      .post('/v1/members')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'div-admin@example.com', role: 'division_admin', adminDivisionId: divisionId })
+    expect(res.status).toBe(201)
+    expect(res.body.role).toBe('division_admin')
+    expect(res.body.adminDivisionId).toBe(divisionId)
+  })
+
+  it('rejects an adminDivisionId belonging to a different tenant', async () => {
+    const other = await buildTestTenant('other')
+    const { body: foreignDivision } = await supertest(app.server)
+      .post('/v1/divisions').set('Authorization', `Bearer ${other.adminToken}`).send({ name: 'Foreign', slug: 'foreign' })
+
+    const res = await supertest(app.server)
+      .post('/v1/members')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'div-admin@example.com', role: 'division_admin', adminDivisionId: foreignDivision.id })
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('Division not found')
+  })
 })
 
 describe('GET /v1/members', () => {
@@ -102,6 +134,29 @@ describe('PATCH /v1/members/:id', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ failMode: 'bogus' })
     expect(res.status).toBe(400)
+  })
+
+  it('rejects promoting a member to division_admin without adminDivisionId in the same call', async () => {
+    const { body: created } = await supertest(app.server)
+      .post('/v1/members').set('Authorization', `Bearer ${adminToken}`).send({ email: 'erin@example.com' })
+    const res = await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ role: 'division_admin' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('adminDivisionId is required')
+  })
+
+  it('promotes a member to division_admin with adminDivisionId in the same call', async () => {
+    const { body: created } = await supertest(app.server)
+      .post('/v1/members').set('Authorization', `Bearer ${adminToken}`).send({ email: 'frank@example.com' })
+    const res = await supertest(app.server)
+      .patch(`/v1/members/${created.id as string}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ role: 'division_admin', adminDivisionId: divisionId })
+    expect(res.status).toBe(200)
+    expect(res.body.role).toBe('division_admin')
+    expect(res.body.adminDivisionId).toBe(divisionId)
   })
 })
 

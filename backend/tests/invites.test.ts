@@ -4,7 +4,7 @@ import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { createInvite, acceptInvite, getInvitePreview } from '../src/invites/service.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { invites, members, tenants } from '../src/db/schema.js'
+import { invites, members, tenants, divisions } from '../src/db/schema.js'
 import { eq, and, isNull } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 
@@ -28,9 +28,35 @@ describe('createInvite', () => {
     expect(token).toHaveLength(64) // 32 bytes hex
     expect(expiresAt.getTime()).toBeGreaterThan(Date.now())
   })
+
+  it('persists divisionId on the invite row for a division_admin invite', async () => {
+    const { tenantId } = await buildTestTenant()
+    const [division] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning({ id: divisions.id })
+    const { token } = await createInvite(tenantId, null, { role: 'division_admin', divisionId: division!.id })
+
+    const [row] = await db.select({ divisionId: invites.divisionId }).from(invites).where(eq(invites.token, token))
+    expect(row?.divisionId).toBe(division!.id)
+  })
 })
 
 describe('acceptInvite', () => {
+  // Regression: a division_admin invite used to create a member with
+  // adminDivisionId always null — there was no way to carry the division
+  // through from invite creation to accept-time member insert.
+  it('carries the invite divisionId onto the created member for a division_admin invite', async () => {
+    const { tenantId } = await buildTestTenant()
+    const [division] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning({ id: divisions.id })
+    const { token } = await createInvite(tenantId, null, { role: 'division_admin', divisionId: division!.id })
+    const user = await buildTestUser('clerk_invite_division', 'division-admin@example.com')
+
+    const result = await acceptInvite(token, user.id)
+    expect('error' in result).toBe(false)
+    if (!('error' in result)) {
+      expect(result.member.role).toBe('division_admin')
+      expect(result.member.adminDivisionId).toBe(division!.id)
+    }
+  })
+
   it('creates a member on first use', async () => {
     const { tenantId } = await buildTestTenant()
     const { token } = await createInvite(tenantId, null, { role: 'member' })
@@ -288,5 +314,47 @@ describe('POST /v1/invites', () => {
       .send({ role: 'super_admin' })
     expect(res.status).toBe(403)
     expect(res.body.error).toContain('Admin access required')
+  })
+
+  it('rejects a division_admin invite with no divisionId', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'division_admin' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('divisionId is required')
+  })
+
+  it('rejects a division_admin invite whose divisionId belongs to a different tenant', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
+
+    const otherTenant = await buildTestTenant('other')
+    const [foreignDivision] = await db.insert(divisions)
+      .values({ tenantId: otherTenant.tenantId, name: 'Foreign', slug: 'foreign' })
+      .returning({ id: divisions.id })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'division_admin', divisionId: foreignDivision!.id })
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('Division not found')
+  })
+
+  it('creates a division_admin invite with a valid divisionId', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
+    const [division] = await db.insert(divisions).values({ tenantId, name: 'Legal', slug: 'legal' }).returning({ id: divisions.id })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+      .send({ role: 'division_admin', divisionId: division!.id })
+    expect(res.status).toBe(201)
+    expect(res.body.token).toBeDefined()
   })
 })

@@ -100,9 +100,9 @@ export const api = {
   },
   members: {
     list: () => request<Member[]>('GET', '/v1/members'),
-    create: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
+    create: (data: { email: string; displayName?: string; role?: Member['role']; adminDivisionId?: string }) =>
       request<Member>('POST', '/v1/members', data),
-    update: (id: string, data: Partial<{ displayName: string; role: Member['role']; failMode: Member['failMode'] }>) =>
+    update: (id: string, data: Partial<{ displayName: string; role: Member['role']; adminDivisionId: string | null; failMode: Member['failMode'] }>) =>
       request<Member>('PATCH', `/v1/members/${id}`, data),
     remove: (id: string) => request<void>('DELETE', `/v1/members/${id}`),
     assignTeam: (memberId: string, teamId: string) =>
@@ -178,7 +178,7 @@ export const api = {
       request<{ memberships: Membership[] }>('GET', '/v1/me/memberships', undefined, { skipTenant: true }),
   },
   invites: {
-    create: (opts: { email?: string; role?: Member['role'] }) =>
+    create: (opts: { email?: string; role?: Member['role']; divisionId?: string }) =>
       request<InviteCreated>('POST', '/v1/invites', opts),
     preview: (token: string) =>
       request<InvitePreview>('GET', `/v1/invites/${token}`),

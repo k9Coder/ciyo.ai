@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAdminTokenOrClerkAdmin, requireClerkAuth } from '../auth/middleware.js'
 import { createInvite, getInvitePreview, acceptInvite } from './service.js'
+import { divisionExists } from '../divisions/service.js'
 import { env } from '../env.js'
 
 const BASE_URL = env.ADMIN_BASE_URL ?? 'http://localhost:5173'
@@ -16,15 +17,24 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
   // Admin creates an invite link
   fastify.post('/invites', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     if (!req.member) return reply.status(403).send({ error: 'Clerk auth required to create invites' })
-    const body = req.body as { email?: string; role?: string }
+    const body = req.body as { email?: string; role?: string; divisionId?: string }
     const role = body.role ?? 'member'
     if (!isAllowedRole(role)) return reply.status(400).send({ error: 'Invalid role' })
     if (role === 'super_admin' && req.member.role !== 'super_admin') {
       return reply.status(403).send({ error: 'Only a super admin can create super admin invites' })
     }
+    if (role === 'division_admin') {
+      if (!body.divisionId) {
+        return reply.status(400).send({ error: 'divisionId is required when role is division_admin' })
+      }
+      if (!(await divisionExists(req.tenant.id, body.divisionId))) {
+        return reply.status(404).send({ error: 'Division not found' })
+      }
+    }
     const { token, expiresAt } = await createInvite(req.tenant.id, req.member.id, {
       email: body.email?.trim() || undefined,
       role,
+      divisionId: role === 'division_admin' ? body.divisionId : undefined,
     })
     return reply.status(201).send({
       token,

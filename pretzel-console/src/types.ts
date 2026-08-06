@@ -79,6 +79,8 @@ export interface Member {
   firstName: string | null
   lastName: string | null
   role: 'super_admin' | 'division_admin' | 'member'
+  /** Only meaningful when role is 'division_admin' — which division they administer. */
+  adminDivisionId: string | null
   clerkId: string | null
   failMode: 'open' | 'closed' | null
   createdAt: string
