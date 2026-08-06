@@ -182,11 +182,22 @@ export async function signIn(): Promise<{ token: string; tenantId: string }> {
     signInUrl.searchParams.set('state', state)
     if (CLERK_PUBLISHABLE_KEY) signInUrl.searchParams.set('publishable_key', CLERK_PUBLISHABLE_KEY)
 
-    // openExternal resolving doesn't guarantee a browser actually launched
-    // (no default browser registered, sandboxed env, etc.) — that failure
-    // mode is exactly why startCallbackServer()'s timeout exists instead of
-    // relying on this call to reject.
-    await shell.openExternal(signInUrl.toString())
+    if (process.env.PRETZEL_E2E === '1') {
+      // Under QA/E2E, don't pop a real OS browser window — qa-bridge drives
+      // its own Playwright browser context through this same URL instead
+      // (the /authorize redirect lands on pretzel-console's own
+      // /desktop-login page, not a third-party site, so automating it is no
+      // different from the Clerk sign-ins qa-only/qa-extension already do
+      // everywhere else). Print the URL on a single, greppable line so
+      // qa-bridge can capture it off this process's stdout.
+      console.log(`[e2e-auth-url] ${signInUrl.toString()}`)
+    } else {
+      // openExternal resolving doesn't guarantee a browser actually launched
+      // (no default browser registered, sandboxed env, etc.) — that failure
+      // mode is exactly why startCallbackServer()'s timeout exists instead of
+      // relying on this call to reject.
+      await shell.openExternal(signInUrl.toString())
+    }
 
     const code = await codePromise
 
