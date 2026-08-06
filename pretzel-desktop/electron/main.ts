@@ -1,6 +1,16 @@
 /**
  * Electron main process — app lifecycle, system tray, IPC hub.
  */
+
+// A dev/QA harness that spawns this process (e.g. Playwright's electron.launch(),
+// or a terminal the user closes) can go away while this process is still
+// running, closing the read end of stdout/stderr. Node doesn't guard against
+// that by default — the next console.log/error call throws EPIPE, and since
+// nothing catches it, it crashes the whole main process. Logging to a pipe
+// nobody's reading should be a silent no-op, not a fatal error.
+process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+
 import { app, Tray, Menu, nativeImage, BrowserWindow } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
