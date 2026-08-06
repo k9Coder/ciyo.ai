@@ -250,6 +250,23 @@ describe('POST /v1/invites', () => {
   })
   afterAll(async () => { await app.close() })
 
+  it('regression (qa-fleet 20260806-225544): returns valid:false instead of 500 for a null-byte token', async () => {
+    const res = await supertest(app.server).get('/v1/invites/%00')
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ tenantName: '', role: '', expiresAt: '', valid: false })
+  })
+
+  it('regression: accept returns 400 instead of 500 for a null-byte token', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'nullbyte@example.com')
+    await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'member' })
+
+    const res = await supertest(app.server)
+      .post('/v1/invites/%00/accept')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Invite not found')
+  })
+
   it('S3: preview never leaks the restricted email and hides token existence', async () => {
     const { token } = await createInvite(tenantId, null, { email: 'secret@example.com', role: 'member' })
 

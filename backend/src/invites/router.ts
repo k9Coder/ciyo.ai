@@ -13,6 +13,13 @@ function isAllowedRole(role: string): role is InviteRole {
   return (ALLOWED_ROLES as readonly string[]).includes(role)
 }
 
+// Real tokens are always 64 lowercase hex chars (generateToken() in
+// service.ts: randomBytes(32).toString('hex')). Anything else can never
+// match a real invite — including values Postgres can't even represent in
+// a text column, like an embedded null byte, which crashes the query with
+// an uncaught 500 instead of a graceful "not found" if it reaches the DB.
+const TOKEN_SHAPE = /^[a-f0-9]{64}$/
+
 export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
   // Admin creates an invite link
   fastify.post('/invites', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
@@ -49,6 +56,9 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
   }, async (req) => {
     const { token } = req.params as { token: string }
+    if (!TOKEN_SHAPE.test(token)) {
+      return { tenantName: '', role: '', expiresAt: '', valid: false }
+    }
     const preview = await getInvitePreview(token)
     // Never expose the restricted email to an unauthenticated caller (targeted-phishing
     // vector), and collapse missing/used/expired into one uniform body so the endpoint
@@ -72,6 +82,7 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
   }, async (req, reply) => {
     const { token } = req.params as { token: string }
     if (!req.user) return reply.status(401).send({ error: 'Not authenticated' })
+    if (!TOKEN_SHAPE.test(token)) return reply.status(400).send({ error: 'Invite not found' })
     const result = await acceptInvite(token, req.user.id)
     if ('error' in result) return reply.status(result.statusCode ?? 400).send({ error: result.error })
     return reply.status(200).send(result.member)
