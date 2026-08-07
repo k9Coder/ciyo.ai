@@ -83,13 +83,18 @@ async function bootstrap() {
       const eventHostname = String(payload.hostname ?? hostname);
       const decision = await showWarningModal(result, label);
       const proceed = decision.type === "send_anyway";
-      // Record the outcome — the network/file backstop must be visible in the audit
-      // trail, not just the button-click path.
+      // Record the outcome — the network/file backstop must be visible in the
+      // audit trail, not just the button-click path. A hard block that the user
+      // couldn't send through logs as "cancelled"; a warn the user edited logs
+      // as "edited".
+      const userDecision = proceed
+        ? "sent_with_reason"
+        : result.highestAction === "block" ? "cancelled" : "edited";
       await writeAuditEvent(
         result,
         promptText,
         eventHostname,
-        proceed ? "sent_with_reason" : "edited",
+        userDecision,
         proceed && decision.type === "send_anyway" ? decision.reason : undefined,
       );
       window.postMessage({ type: MSG_DECISION, id, proceed }, "*");
@@ -136,15 +141,25 @@ async function bootstrap() {
         return { proceed: true };
       }
 
-      // For warn/block results, defer the audit write until AFTER the modal so
-      // the logged decision reflects what the user actually chose. Writing
-      // "sent" before the modal would produce a spurious extra event whenever
-      // the user clicks "Edit prompt".
+      // A hard block stops the send no matter what the user does in the modal,
+      // so its outcome is already known here (like the "log" branch above).
+      // Record it immediately as a "cancelled" send — otherwise a block that
+      // the user simply closes without picking "Edit" would never reach the
+      // audit log, hiding the rule trigger entirely. Warn is different: there
+      // the user's choice IS the outcome, so its write stays deferred to after
+      // the modal to avoid a spurious event before "Edit prompt".
+      const isBlock = result.highestAction === "block";
+      if (isBlock) {
+        await writeAuditEvent(result, promptText, hostname, "cancelled");
+      }
+
       const decision = await showWarningModal(result, promptText);
 
       switch (decision.type) {
         case "edit":
-          await writeAuditEvent(result, promptText, hostname, "edited");
+          // A block already logged its "cancelled" outcome above; only warn
+          // defers the write to the user's decision here.
+          if (!isBlock) await writeAuditEvent(result, promptText, hostname, "edited");
           composer.focus();
           return { proceed: false };
 

@@ -8,8 +8,11 @@
  *
  * After the fix:
  *   - For log-only results (no modal): one "sent" event.
- *   - For warn/block + user edits: one "edited" event only.
- *   - For warn/block + user sends anyway: one "sent_with_reason" event only.
+ *   - For warn + user edits: one "edited" event only.
+ *   - For warn + user sends anyway: one "sent_with_reason" event only.
+ *   - For block: one "cancelled" event, written the moment the block fires
+ *     (block modals are edit-only — no send-anyway — and the trigger must be
+ *     recorded even if the user just closes the modal without choosing Edit).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DetectionResult } from '@/detection/types'
@@ -157,11 +160,12 @@ describe('content-script audit event ordering', () => {
     expect(auditCalls[0]).toMatchObject({ userDecision: 'edited' })
   })
 
-  it('writes exactly one "sent_with_reason" event when user sends anyway', async () => {
-    const blockResult = makeResult('block')
+  it('writes exactly one "sent_with_reason" event when user sends anyway (warn)', async () => {
+    // Send-anyway only exists for warn — block modals are edit-only.
+    const warnResult = makeResult('warn')
     mockSendMessage.mockImplementation((msg: { type: string }) => {
       if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
-      if (msg.type === 'DETECT') return Promise.resolve(blockResult)
+      if (msg.type === 'DETECT') return Promise.resolve(warnResult)
       if (msg.type === 'APPEND_AUDIT_EVENT') return Promise.resolve({ ok: true })
       return Promise.resolve(null)
     })
@@ -176,5 +180,26 @@ describe('content-script audit event ordering', () => {
       userDecision: 'sent_with_reason',
       reason: 'false positive',
     })
+  })
+
+  it('writes exactly one "cancelled" block event when the block fires (even if the modal is closed via Edit)', async () => {
+    const blockResult = makeResult('block')
+    mockSendMessage.mockImplementation((msg: { type: string }) => {
+      if (msg.type === 'GET_SCAN_LIMIT_STATUS') return Promise.resolve({ scanLimitReached: false })
+      if (msg.type === 'DETECT') return Promise.resolve(blockResult)
+      if (msg.type === 'APPEND_AUDIT_EVENT') return Promise.resolve({ ok: true })
+      return Promise.resolve(null)
+    })
+    // Block modals only ever resolve to 'edit' (Edit button or Escape); the
+    // "cancelled" event is written before the modal regardless, so it must NOT
+    // double-write on the edit resolution.
+    mockShowWarningModal.mockResolvedValue({ type: 'edit' })
+
+    await import('@/content/content-script')
+    await triggerSendIntent()
+
+    const auditCalls = auditEventCalls()
+    expect(auditCalls).toHaveLength(1)
+    expect(auditCalls[0]).toMatchObject({ userDecision: 'cancelled', action: 'block' })
   })
 })
