@@ -250,9 +250,9 @@ describe('POST /v1/invites', () => {
   })
   afterAll(async () => { await app.close() })
 
-  it('regression (qa-fleet 20260806-225544): returns valid:false instead of 500 for a null-byte token', async () => {
+  it('regression (qa-fleet 20260806-225544): returns 404 valid:false instead of 500 for a null-byte token', async () => {
     const res = await supertest(app.server).get('/v1/invites/%00')
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(404)
     expect(res.body).toEqual({ tenantName: '', role: '', expiresAt: '', valid: false })
   })
 
@@ -276,8 +276,10 @@ describe('POST /v1/invites', () => {
     expect(ok.body.tenantName).toBeTruthy()
     expect(ok.body.email).toBeUndefined()
 
+    // Unknown, malformed, used and expired all return the SAME 404 + uniform
+    // body — a proper error status that still doesn't oracle token existence.
     const missing = await supertest(app.server).get('/v1/invites/does-not-exist')
-    expect(missing.status).toBe(200)
+    expect(missing.status).toBe(404)
     expect(missing.body).toEqual({ tenantName: '', role: '', expiresAt: '', valid: false })
   })
 

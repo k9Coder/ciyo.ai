@@ -54,25 +54,28 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
   // Tight per-IP limit: unauthenticated + enumerable, so throttle brute force.
   fastify.get('/invites/:token', {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
-  }, async (req) => {
+  }, async (req, reply) => {
     const { token } = req.params as { token: string }
+    // Every not-valid case (malformed, unknown, used, expired) returns the
+    // SAME 404 + uniform empty body — a proper HTTP error status for clients
+    // that check status alone, while staying indistinguishable from each
+    // other so the endpoint still doesn't oracle whether a token exists.
+    // Never expose the restricted email to an unauthenticated caller either
+    // (targeted-phishing vector); the accept flow re-checks it server-side.
+    const notFound = { tenantName: '', role: '', expiresAt: '', valid: false }
     if (!TOKEN_SHAPE.test(token)) {
-      return { tenantName: '', role: '', expiresAt: '', valid: false }
+      return reply.status(404).send(notFound)
     }
     const preview = await getInvitePreview(token)
-    // Never expose the restricted email to an unauthenticated caller (targeted-phishing
-    // vector), and collapse missing/used/expired into one uniform body so the endpoint
-    // does not oracle whether a given token exists. The accept flow re-checks the email
-    // server-side, so nothing downstream depends on it being echoed here.
     if (!preview || !preview.valid) {
-      return { tenantName: '', role: '', expiresAt: '', valid: false }
+      return reply.status(404).send(notFound)
     }
-    return {
+    return reply.status(200).send({
       tenantName: preview.tenantName,
       role:       preview.role,
       expiresAt:  preview.expiresAt,
       valid:      true,
-    }
+    })
   })
 
   // Authenticated user accepts an invite

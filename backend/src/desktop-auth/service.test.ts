@@ -6,6 +6,7 @@ import { desktopAuthCodes, deviceTokens } from '../db/schema.js'
 import { eq } from 'drizzle-orm'
 import {
   isLoopbackRedirectUri,
+  isValidCodeChallenge,
   createDesktopAuthCode,
   exchangeDesktopAuthCode,
 } from './service.js'
@@ -31,6 +32,27 @@ describe('isLoopbackRedirectUri', () => {
   })
   it('rejects garbage input', () => {
     expect(isLoopbackRedirectUri('not-a-url')).toBe(false)
+  })
+  it('rejects alternate IPv4 encodings that normalise to 127.0.0.1', () => {
+    // WHATWG URL canonicalises all of these to hostname 127.0.0.1; only the
+    // literal dotted-quad the desktop app actually sends is allowed.
+    expect(isLoopbackRedirectUri('http://2130706433/callback')).toBe(false)   // decimal
+    expect(isLoopbackRedirectUri('http://0177.0.0.1/callback')).toBe(false)   // octal
+    expect(isLoopbackRedirectUri('http://0x7f.0.0.1/callback')).toBe(false)   // hex
+  })
+})
+
+describe('isValidCodeChallenge', () => {
+  it('accepts a real base64url S256 challenge (43 chars)', () => {
+    const challenge = createHash('sha256').update(randomBytes(32)).digest('base64url')
+    expect(challenge).toHaveLength(43)
+    expect(isValidCodeChallenge(challenge)).toBe(true)
+  })
+  it('rejects too-short, wrong-charset, and empty challenges', () => {
+    expect(isValidCodeChallenge('tooshort')).toBe(false)
+    expect(isValidCodeChallenge('a'.repeat(43) + '=')).toBe(false)  // padding not allowed
+    expect(isValidCodeChallenge('has spaces and+slashes/'.padEnd(43, 'x'))).toBe(false)
+    expect(isValidCodeChallenge('')).toBe(false)
   })
 })
 

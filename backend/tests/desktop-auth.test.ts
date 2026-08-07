@@ -43,6 +43,7 @@ describe('desktop auth flow', () => {
       const res = await supertest(app.server)
         .get('/auth/desktop/authorize')
         .query({
+          client_id: 'pretzel-desktop',
           response_type: 'code',
           redirect_uri: REDIRECT,
           code_challenge: challenge,
@@ -62,6 +63,7 @@ describe('desktop auth flow', () => {
       const res = await supertest(app.server)
         .get('/auth/desktop/authorize')
         .query({
+          client_id: 'pretzel-desktop',
           response_type: 'code',
           redirect_uri: 'https://evil.example.com/callback',
           code_challenge: challenge,
@@ -75,10 +77,39 @@ describe('desktop auth flow', () => {
       const res = await supertest(app.server)
         .get('/auth/desktop/authorize')
         .query({
+          client_id: 'pretzel-desktop',
           response_type: 'code',
           redirect_uri: REDIRECT,
           code_challenge: 'x',
           code_challenge_method: 'plain',
+          state: 'st1',
+        })
+      expect(res.status).toBe(400)
+    })
+
+    it('rejects a missing/unknown client_id with 400', async () => {
+      const { challenge } = pkcePair()
+      const res = await supertest(app.server)
+        .get('/auth/desktop/authorize')
+        .query({
+          response_type: 'code',
+          redirect_uri: REDIRECT,
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+          state: 'st1',
+        })
+      expect(res.status).toBe(400)
+    })
+
+    it('rejects a malformed code_challenge with 400', async () => {
+      const res = await supertest(app.server)
+        .get('/auth/desktop/authorize')
+        .query({
+          client_id: 'pretzel-desktop',
+          response_type: 'code',
+          redirect_uri: REDIRECT,
+          code_challenge: 'too-short',
+          code_challenge_method: 'S256',
           state: 'st1',
         })
       expect(res.status).toBe(400)
@@ -115,10 +146,9 @@ describe('desktop auth flow', () => {
     })
 
     it('authorize/complete requires Clerk auth', async () => {
-      // No Authorization header — requireClerkAuth passes an empty token through to
-      // clerkVerifyToken, which the real Clerk SDK rejects. Simulate that rejection
-      // since the mock otherwise resolves unconditionally regardless of input.
-      mockVerifyToken.mockRejectedValueOnce(new Error('Invalid token'))
+      // No Authorization header — requireClerkAuth 401s on the missing-bearer
+      // guard before verifyToken is ever called, so no mock rejection is needed
+      // (queuing one here would leak into the next test's verifyToken call).
       const { challenge } = pkcePair()
       const res = await supertest(app.server)
         .post('/auth/desktop/authorize/complete')
