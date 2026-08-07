@@ -64,6 +64,10 @@ export function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard"    element={<DashboardPage />} />
             <Route path="/subjects"     element={<SubjectsPage />} />
+            {/* Sidebar labels this section "Policies"; the page lives at
+                /subjects. Redirect the labelled URL so bookmarks/guesses land
+                on it instead of the catch-all bouncing them to /dashboard. */}
+            <Route path="/policies"     element={<Navigate to="/subjects" replace />} />
             <Route path="/org"          element={<OrgPage />} />
             <Route path="/destinations" element={<DestinationsPage />} />
             <Route path="/sites"        element={<SitesPage />} />
