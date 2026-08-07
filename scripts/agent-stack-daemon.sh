@@ -175,7 +175,14 @@ if ! $NO_BACKEND; then
   # database/session entirely even with --with-console.
   PRETZEL_CONSOLE_URL_OVERRIDE=""
   [[ -n "$CONSOLE_URL" ]] && PRETZEL_CONSOLE_URL_OVERRIDE="$CONSOLE_URL"
+  # The backend's own service layer (policy compiler, etc.) calls its
+  # /internal/* endpoints via INTERNAL_API_URL, which defaults to
+  # localhost:3000 — the developer's real dev backend, NOT this isolated one.
+  # Without this override, compilePolicy() reads subjects/rules from the wrong
+  # server and publishes an empty policy, so nothing an isolated stack
+  # publishes ever reaches its own clients. Point it back at this backend.
   nohup env DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CORS_ORIGIN" \
+    INTERNAL_API_URL="$BACKEND_URL" \
     ${PRETZEL_CONSOLE_URL_OVERRIDE:+PRETZEL_CONSOLE_URL="$PRETZEL_CONSOLE_URL_OVERRIDE"} pnpm dev \
     > "/tmp/backend-${AGENT_LABEL}.log" 2>&1 &
   BACKEND_PID=$!
