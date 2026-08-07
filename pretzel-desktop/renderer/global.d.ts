@@ -2,7 +2,7 @@ declare global {
   interface DecisionPayload {
     requestId: string
     hostname: string
-    findings: Array<{ ruleId: string; severity: string; snippet?: string }>
+    findings: Array<{ ruleId: string; ruleName?: string; severity: string; matchedText?: string; snippet?: string }>
   }
 
   interface StatusPayload {
@@ -14,6 +14,7 @@ declare global {
   interface Window {
     pretzel: {
       onDecisionRequired: (cb: (p: DecisionPayload) => void) => void
+      decisionReady?: () => void
       respondDecision: (requestId: string, allow: boolean) => void
       onStatusUpdate: (cb: (s: StatusPayload) => void) => void
       onAuthNag: (cb: () => void) => void
@@ -23,6 +24,7 @@ declare global {
       cancelSignIn: () => void
       getPolicy: () => Promise<unknown>
       getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
+      triggerE2eDecision?: () => void
     }
   }
 }

@@ -201,6 +201,24 @@ async function cmdSignin(args) {
   return 'Sign-in flow completed — use `goto tray` + `snapshot` to confirm the app now shows signed-in state.'
 }
 
+// Opens the warn/block decision window via the PRETZEL_E2E-only IPC hook
+// (main.ts) with a synthetic finding, so the decision UI can be verified
+// without the MITM proxy + trusted CA the real enforcement path needs.
+async function cmdDecision() {
+  await ensureApp()
+  const trayPage = await app.firstWindow()
+  await trayPage.evaluate(() => globalThis.pretzel?.triggerE2eDecision?.())
+  for (let i = 0; i < 20; i++) {
+    if (app.windows().length > 1) break
+    await new Promise((r) => setTimeout(r, 250))
+  }
+  if (app.windows().length <= 1) throw new Error('Decision window did not open — is the app running with PRETZEL_E2E=1?')
+  currentPage = app.windows()[app.windows().length - 1]
+  wireConsole(currentPage)
+  await currentPage.bringToFront()
+  return 'Decision window opened — use `snapshot` / `screenshot` to inspect it (`goto decision` re-focuses it).'
+}
+
 async function dispatch(cmd, args) {
   switch (cmd) {
     case 'status': {
@@ -257,6 +275,8 @@ async function dispatch(cmd, args) {
     }
     case 'signin':
       return cmdSignin(args)
+    case 'decision':
+      return cmdDecision()
     default:
       throw new Error(`Unknown command: ${cmd}`)
   }
