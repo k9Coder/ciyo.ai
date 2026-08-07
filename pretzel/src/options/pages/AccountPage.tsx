@@ -1,9 +1,14 @@
 import { useAuth, useUser, SignIn, SignOutButton } from "@clerk/chrome-extension";
 import { PageLoader } from "../components/loading";
+import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
 
 export function AccountPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
+
+  // Persist the Clerk JWT so background policy sync is authenticated when the
+  // user signs in here rather than through the popup.
+  usePersistSessionToken();
 
   if (!isLoaded) return <PageLoader label="Authenticating" />;
 

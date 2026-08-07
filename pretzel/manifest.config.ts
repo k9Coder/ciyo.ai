@@ -19,11 +19,25 @@ const PRODUCTION_LLM_HOSTS = [
  */
 const DEV_EXTRA_HOSTS = ["http://localhost:9876/*"];
 
+// The backend API host must be a host_permission: the service worker fetches
+// the tenant policy from it, and without host access that cross-origin fetch is
+// CORS-gated (the backend only allow-lists the console origin). Derived from
+// the same VITE_API_BASE the extension code reads (src/env.ts), so dev/e2e
+// builds grant their local backend and prod grants api.mykka.ai.
+function apiHostPattern(): string {
+  const base = process.env.VITE_API_BASE ?? "https://api.mykka.ai";
+  const { protocol, host } = new URL(base);
+  return `${protocol}//${host}/*`;
+}
+
 export default defineManifest(async ({ mode }) => {
   const isDev = mode === "development" || mode === "test";
   const LLM_HOSTS = isDev
     ? [...PRODUCTION_LLM_HOSTS, ...DEV_EXTRA_HOSTS]
     : PRODUCTION_LLM_HOSTS;
+  // API host goes in host_permissions only — NOT content_scripts/matches (we
+  // never inject into the API) or web_accessible_resources.
+  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern()];
 
   return {
     manifest_version: 3,
@@ -31,7 +45,7 @@ export default defineManifest(async ({ mode }) => {
     version,
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
     permissions: ["storage", "scripting", "activeTab", "alarms"],
-    host_permissions: LLM_HOSTS,
+    host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",
       type: "module",
