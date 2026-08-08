@@ -177,7 +177,12 @@ export const siteConfigs = pgTable('site_configs', {
 export const events = pgTable('events', {
   id:          uuid('id').primaryKey().defaultRandom(),
   tenantId:    uuid('tenant_id').notNull().references(() => tenants.id),
-  ruleId:      uuid('rule_id').notNull().references(() => rules.id),
+  // Nullable + ON DELETE SET NULL: events are historical audit records that must
+  // outlive the rule that fired them. A NOT NULL / no-onDelete FK made it
+  // impossible to delete any rule that had ever fired an event, which broke the
+  // AI-assistant revert (subjects/service.ts deletes+recreates a subject's rules
+  // from a snapshot) for every policy that had recorded a violation.
+  ruleId:      uuid('rule_id').references(() => rules.id, { onDelete: 'set null' }),
   memberId:    uuid('member_id').references(() => members.id),
   action:      ruleActionEnum('action').notNull(),
   siteUrl:     text('site_url').notNull(),
