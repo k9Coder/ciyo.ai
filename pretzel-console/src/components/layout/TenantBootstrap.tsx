@@ -13,6 +13,14 @@ function roleLabel(role: string): string {
     : 'Member'
 }
 
+// The console is an admin surface. super_admin and division_admin may use it;
+// a plain `member` has nothing to manage here (they use the desktop app /
+// extension), so route them to /unauthorized instead of an app shell where
+// every admin call 403s.
+function isAdminRole(role: string): boolean {
+  return role === 'super_admin' || role === 'division_admin'
+}
+
 function FullPageLoader({ label }: { label: string }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
@@ -61,6 +69,8 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   if (memberships.length === 1) {
     if (selected !== memberships[0]!.tenantId) setSelectedTenantId(memberships[0]!.tenantId)
 
+    if (!isAdminRole(memberships[0]!.role)) return <Navigate to="/unauthorized" replace />
+
     if (singleSuperAdmin) {
       // Don't flash the app shell then yank the user to /onboarding/profile —
       // hold on a loader until we know whether the wizard is done.
@@ -76,7 +86,11 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   }
 
   const valid = selected && memberships.some(m => m.tenantId === selected)
-  if (valid) return <>{children}</>
+  if (valid) {
+    const active = memberships.find(m => m.tenantId === selected)!
+    if (!isAdminRole(active.role)) return <Navigate to="/unauthorized" replace />
+    return <>{children}</>
+  }
 
   // Invalid/stale persisted selection must be cleared, not silently kept.
   if (selected) clearSelectedTenantId()
