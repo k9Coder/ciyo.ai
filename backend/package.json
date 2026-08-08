@@ -18,6 +18,7 @@
     "teardown:e2e": "tsx src/scripts/teardown-e2e.ts",
     "seed:fintech": "tsx --env-file=.env src/scripts/seed-fintech.ts",
     "seed:templates": "tsx --env-file=.env src/db/seeds/run-profession-templates.ts",
+    "provision:clerk-users": "tsx --env-file=.env src/scripts/provision-clerk-users.ts",
     "test:e2e": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
