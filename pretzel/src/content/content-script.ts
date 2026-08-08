@@ -2,7 +2,6 @@ import { initSentry, Sentry } from "@/lib/sentry";
 import { getAdapter } from "./adapters/registry";
 import { showWarningModal } from "./overlay/overlay-root";
 import { sendMessage } from "@/shared/messages";
-import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
@@ -69,7 +68,11 @@ async function bootstrap() {
         },
       });
 
-      if (result.signInNudge) showSignInNudge();
+      // Don't nudge sign-in on a result that just blocked/warned — the modal
+      // about to show already proves protection is active while signed out,
+      // so "sign in to start protecting" would contradict what the user is
+      // seeing on screen.
+      if (result.signInNudge && result.highestAction === "log") showSignInNudge();
 
       if (result.highestAction === "log") {
         window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*");
@@ -80,13 +83,18 @@ async function bootstrap() {
       const eventHostname = String(payload.hostname ?? hostname);
       const decision = await showWarningModal(result, label);
       const proceed = decision.type === "send_anyway";
-      // Record the outcome — the network/file backstop must be visible in the audit
-      // trail, not just the button-click path.
+      // Record the outcome — the network/file backstop must be visible in the
+      // audit trail, not just the button-click path. A hard block that the user
+      // couldn't send through logs as "cancelled"; a warn the user edited logs
+      // as "edited".
+      const userDecision = proceed
+        ? "sent_with_reason"
+        : result.highestAction === "block" ? "cancelled" : "edited";
       await writeAuditEvent(
         result,
         promptText,
         eventHostname,
-        proceed ? "sent_with_reason" : "edited",
+        userDecision,
         proceed && decision.type === "send_anyway" ? decision.reason : undefined,
       );
       window.postMessage({ type: MSG_DECISION, id, proceed }, "*");
@@ -118,7 +126,9 @@ async function bootstrap() {
 
       logger.debug("Detection result:", result);
 
-      if (result.signInNudge) {
+      // Don't nudge sign-in on a result that just blocked/warned — see the
+      // matching comment on the paste/file-upload path above.
+      if (result.signInNudge && result.highestAction === "log") {
         showSignInNudge();
       }
 
@@ -131,15 +141,25 @@ async function bootstrap() {
         return { proceed: true };
       }
 
-      // For warn/block results, defer the audit write until AFTER the modal so
-      // the logged decision reflects what the user actually chose. Writing
-      // "sent" before the modal would produce a spurious extra event whenever
-      // the user clicks "Edit prompt".
+      // A hard block stops the send no matter what the user does in the modal,
+      // so its outcome is already known here (like the "log" branch above).
+      // Record it immediately as a "cancelled" send — otherwise a block that
+      // the user simply closes without picking "Edit" would never reach the
+      // audit log, hiding the rule trigger entirely. Warn is different: there
+      // the user's choice IS the outcome, so its write stays deferred to after
+      // the modal to avoid a spurious event before "Edit prompt".
+      const isBlock = result.highestAction === "block";
+      if (isBlock) {
+        await writeAuditEvent(result, promptText, hostname, "cancelled");
+      }
+
       const decision = await showWarningModal(result, promptText);
 
       switch (decision.type) {
         case "edit":
-          await writeAuditEvent(result, promptText, hostname, "edited");
+          // A block already logged its "cancelled" outcome above; only warn
+          // defers the write to the user's decision here.
+          if (!isBlock) await writeAuditEvent(result, promptText, hostname, "edited");
           composer.focus();
           return { proceed: false };
 
@@ -277,7 +297,11 @@ async function writeAuditEvent(
       promptLengthChars: promptText.length,
       promptHash: result.promptHash,
     };
-    await appendAuditEvent(event);
+    // Content scripts run in the injected page's origin, not the extension's
+    // — writing directly via appendAuditEvent() here would land in that
+    // page's IndexedDB, invisible to the options page's Audit Log. Route
+    // through the service worker, which runs at the extension's own origin.
+    await sendMessage({ type: "APPEND_AUDIT_EVENT", payload: event });
   } catch (err) {
     logger.error("Failed to write audit event:", err);
   }

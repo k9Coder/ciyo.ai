@@ -24,18 +24,24 @@ const selectStyle: React.CSSProperties = {
 }
 
 function SubjectForm({
-  value, onChange,
+  value, onChange, error,
 }: {
   value: { name: string; description: string }
   onChange: (v: { name: string; description: string }) => void
+  error?: string | null
 }) {
   return (
     <>
       <label style={{ display: 'block' }}>
         <span style={labelStyle}>Name</span>
-        <input style={inputStyle} value={value.name}
+        <input style={{ ...inputStyle, ...(error ? { borderColor: 'var(--status-danger)' } : null) }}
+          value={value.name}
           onChange={e => onChange({ ...value, name: e.target.value })}
-          placeholder="e.g. Litigation Docs" autoFocus required />
+          placeholder="e.g. Litigation Docs" autoFocus required
+          aria-invalid={!!error} />
+        {error && (
+          <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: 'var(--status-danger)' }}>{error}</span>
+        )}
       </label>
       <label style={{ display: 'block' }}>
         <span style={labelStyle}>Description (optional)</span>
@@ -270,14 +276,16 @@ export function SubjectsPage() {
   const [modal, setModal] = useState<{ open: boolean; editing: Subject | null; form: typeof blank }>({
     open: false, editing: null, form: blank,
   })
+  const [nameError, setNameError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<Subject | null>(null)
 
-  function openNew() { setModal({ open: true, editing: null, form: blank }) }
-  function openEdit(s: Subject) { setModal({ open: true, editing: s, form: { name: s.name, description: s.description ?? '' } }) }
-  function closeModal() { setModal(m => ({ ...m, open: false })) }
+  function openNew() { setNameError(null); setModal({ open: true, editing: null, form: blank }) }
+  function openEdit(s: Subject) { setNameError(null); setModal({ open: true, editing: s, form: { name: s.name, description: s.description ?? '' } }) }
+  function closeModal() { setNameError(null); setModal(m => ({ ...m, open: false })) }
 
   async function handleSave() {
-    if (!modal.form.name.trim()) return
+    if (!modal.form.name.trim()) { setNameError('Name is required.'); return }
+    setNameError(null)
     try {
       if (modal.editing) {
         await mutations.update.mutateAsync({ id: modal.editing.id, data: modal.form })
@@ -304,15 +312,22 @@ export function SubjectsPage() {
       ) : (
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {subjects.map(s => (
-            <button
+            // Row is a div (not a button) so the Edit/Delete buttons can nest
+            // inside without producing a <button>-in-<button> DOM-validity
+            // error; role/tabIndex/onKeyDown keep it keyboard-operable.
+            <div
               key={s.id}
+              role="button"
+              tabIndex={0}
               onClick={() => setSelected(s)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(s) } }}
               style={{
                 width: '100%', textAlign: 'left', padding: '10px 16px',
-                borderBottom: '1px solid var(--border)', cursor: 'pointer',
-                background: selected?.id === s.id ? 'var(--bg-surface-raised)' : 'transparent',
+                borderTop: 'none', borderRight: 'none',
+                borderBottom: '1px solid var(--border)',
                 borderLeft: selected?.id === s.id ? '2px solid var(--brand-primary)' : '2px solid transparent',
-                border: 'none', display: 'block',
+                cursor: 'pointer', display: 'block',
+                background: selected?.id === s.id ? 'var(--bg-surface-raised)' : 'transparent',
               }}
               className="group"
             >
@@ -344,7 +359,7 @@ export function SubjectsPage() {
                   Delete
                 </button>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
@@ -375,7 +390,8 @@ export function SubjectsPage() {
         onSave={handleSave}
         saving={mutations.create.isPending || mutations.update.isPending}
       >
-        <SubjectForm value={modal.form} onChange={form => setModal(m => ({ ...m, form }))} />
+        <SubjectForm value={modal.form} error={nameError}
+          onChange={form => { if (nameError && form.name.trim()) setNameError(null); setModal(m => ({ ...m, form })) }} />
       </EntityModal>
 
       <ConfirmModal

@@ -47,9 +47,13 @@ test.describe('Members', () => {
     await memberRow.getByRole('button', { name: 'Edit role' }).click()
 
     await memberRow.getByRole('combobox', { name: 'Role' }).selectOption('division_admin')
+    // A division_admin must be assigned a division in the same edit — the
+    // picker only renders once that role is selected.
+    await memberRow.getByRole('combobox', { name: 'Division' }).selectOption({ label: 'E2E Division' })
     await memberRow.getByRole('button', { name: 'Save' }).click()
 
     await expect(memberRow.getByText('Division Admin')).toBeVisible()
+    await expect(memberRow.getByText('E2E Division')).toBeVisible()
 
     // Cleanup
     const cleanupApi = await playwrightRequest.newContext()

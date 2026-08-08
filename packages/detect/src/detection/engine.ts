@@ -1,6 +1,6 @@
 import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule } from "../policy/schema";
 import type { DetectionResult, DetectionInput, Finding, ScoreRule, ScoreSignalConfig } from "./types";
-import { maxAction } from "./types";
+import { maxAction, compareSeverity } from "./types";
 import { normalizeText } from "./normalize";
 import { findCodeSpans, isInsideCode } from "./code-block";
 import { luhnCheck, ssnCheck, ibanCheck } from "./layer1-patterns/pii";
@@ -143,6 +143,49 @@ function runDictionaryRule(text: string, rule: DictionaryRule): Finding[] {
   ];
 }
 
+interface KindedFinding {
+  finding: Finding;
+  isEntropy: boolean;
+}
+
+/**
+ * Multiple rules can independently flag the exact same substring — e.g. the
+ * generic "sk-..." OpenAI API key pattern also matches "sk-proj-..." project
+ * keys, and the high-entropy heuristic catches the same token again on top
+ * of both. Without this, the UI shows one piece of sensitive data as N
+ * separate findings. Collapse findings that share an identical
+ * [startOffset, endOffset) span down to the single most severe one.
+ *
+ * Tie-break when severities are equal: a structural rule (pattern/
+ * dictionary/score) always wins over the high-entropy heuristic — entropy
+ * is a generic statistical fallback, never more specific than a rule that
+ * matched actual structure. Among two structural ties (e.g. the OpenAI
+ * example above), keep whichever was defined later in the rule list, since
+ * this policy's convention is to list a specific rule (openai-project-key)
+ * after the generic one it refines (openai-api-key).
+ */
+function dedupeIdenticalSpanFindings(kinded: KindedFinding[]): Finding[] {
+  const bestBySpan = new Map<string, KindedFinding>();
+  const spanOrder: string[] = [];
+  for (const candidate of kinded) {
+    const { finding } = candidate;
+    const key = `${finding.startOffset}:${finding.endOffset}`;
+    const current = bestBySpan.get(key);
+    if (!current) {
+      spanOrder.push(key);
+      bestBySpan.set(key, candidate);
+      continue;
+    }
+    const severityCmp = compareSeverity(finding.severity, current.finding.severity);
+    const keepCandidate =
+      severityCmp > 0 ||
+      (severityCmp === 0 && current.isEntropy && !candidate.isEntropy) ||
+      (severityCmp === 0 && current.isEntropy === candidate.isEntropy);
+    if (keepCandidate) bestBySpan.set(key, candidate);
+  }
+  return spanOrder.map((key) => bestBySpan.get(key)!.finding);
+}
+
 function runRule(
   text: string,
   normalised: string,
@@ -196,11 +239,13 @@ export async function detectPrompt(
   const effectivePasteDetected = isFile ? false : pasteDetected;
   const allRules = [...policy.baseline, ...policy.custom];
 
-  const findings: Finding[] = [];
+  const kindedFindings: KindedFinding[] = [];
   for (const rule of allRules) {
     const ruleFindings = runRule(promptText, normalised, rule as Rule | ScoreRule, codeSpans, effectivePasteDetected);
-    findings.push(...ruleFindings);
+    const isEntropy = (rule as Rule | ScoreRule).kind === "entropy";
+    for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy });
   }
+  const findings = dedupeIdenticalSpanFindings(kindedFindings);
 
   let highestAction: Finding["action"] = "log";
   for (const f of findings) {

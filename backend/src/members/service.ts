@@ -5,6 +5,14 @@ import { usersClient, tenantsClient, teamsClient } from '../http/internal-client
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 import { getContext } from '../context/request-context.js'
 import { anonymizeMember } from '../scans/service.js'
+import { divisionExists } from '../divisions/service.js'
+
+async function assertDivisionOwnership(tenantId: string, adminDivisionId: string | null | undefined): Promise<void> {
+  if (!adminDivisionId) return
+  if (!(await divisionExists(tenantId, adminDivisionId))) {
+    throw Object.assign(new Error('Division not found'), { statusCode: 404 })
+  }
+}
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
@@ -33,10 +41,11 @@ export async function getMemberByEmail(tenantId: string, email: string): Promise
 
 export async function createMember(
   tenantId: string,
-  data: Pick<NewMember, 'email' | 'displayName' | 'role'>
+  data: Pick<NewMember, 'email' | 'displayName' | 'role' | 'adminDivisionId'>
 ): Promise<Member> {
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+  await assertDivisionOwnership(tenantId, data.adminDivisionId)
 
   const tenant = await tenantsClient.get<{ plan: string }>(`/${tenantId}`)
     .then(r => r.data)
@@ -74,6 +83,7 @@ export async function updateMember(
   id: string,
   data: Partial<Pick<NewMember, 'displayName' | 'role' | 'adminDivisionId' | 'failMode'>>
 ): Promise<Member | null> {
+  if ('adminDivisionId' in data) await assertDivisionOwnership(tenantId, data.adminDivisionId)
   const [row] = await db
     .update(members)
     .set(data)

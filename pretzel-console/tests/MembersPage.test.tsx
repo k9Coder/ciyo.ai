@@ -6,6 +6,7 @@ vi.mock('../src/api', () => ({
   api: {
     members: { list: vi.fn(), update: vi.fn(), remove: vi.fn(), create: vi.fn() },
     invites: { create: vi.fn() },
+    divisions: { list: vi.fn() },
   },
 }))
 
@@ -23,14 +24,15 @@ function renderPage() {
 
 const MEMBER = {
   id: 'm1', tenantId: 't1', email: 'alice@example.com', displayName: 'Alice',
-  firstName: null, lastName: null, role: 'member' as const, clerkId: null,
-  failMode: null, createdAt: new Date().toISOString(),
+  firstName: null, lastName: null, role: 'member' as const, adminDivisionId: null,
+  clerkId: null, failMode: null, createdAt: new Date().toISOString(),
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(api.members.list).mockResolvedValue([MEMBER])
   vi.mocked(api.members.update).mockResolvedValue({ ...MEMBER, failMode: 'closed' })
+  vi.mocked(api.divisions.list).mockResolvedValue([])
 })
 
 describe('MembersPage fail mode', () => {

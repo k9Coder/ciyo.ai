@@ -1,5 +1,6 @@
 import type { DetectionResult, InputType } from "@mykka/detect";
 import type { Policy } from "@mykka/detect";
+import type { AuditEvent } from "@/audit/types";
 
 /** Typed message bus for runtime.sendMessage / onMessage. */
 
@@ -15,7 +16,8 @@ export type Message =
   | { type: "GET_ROLE"; payload?: never }
   | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never }
   | { type: "GET_SCAN_LIMIT_STATUS"; payload?: never }
-  | { type: "REPORT_DEGRADED"; payload: { hostname: string; reason: EnforcementReason } };
+  | { type: "REPORT_DEGRADED"; payload: { hostname: string; reason: EnforcementReason } }
+  | { type: "APPEND_AUDIT_EVENT"; payload: AuditEvent };
 
 /** Reasons the extension can report degraded enforcement (no prompt content). */
 export type EnforcementReason = "decision_timeout" | "bridge_error" | "adapter_miss";

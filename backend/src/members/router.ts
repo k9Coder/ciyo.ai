@@ -11,11 +11,20 @@ export async function membersRouter(fastify: FastifyInstance): Promise<void> {
   })
 
   fastify.post('/members', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
-    const body = req.body as { email: string; displayName?: string; role?: 'member' | 'division_admin' | 'super_admin' }
+    const body = req.body as {
+      email: string; displayName?: string
+      role?: 'member' | 'division_admin' | 'super_admin'
+      adminDivisionId?: string
+    }
+    const role = body.role ?? 'member'
+    if (role === 'division_admin' && !body.adminDivisionId) {
+      return reply.status(400).send({ error: 'adminDivisionId is required when role is division_admin' })
+    }
     const member = await createMember(req.tenant.id, {
-      email: body.email,
-      displayName: body.displayName,
-      role: body.role ?? 'member',
+      email:           body.email,
+      displayName:     body.displayName,
+      role,
+      adminDivisionId: role === 'division_admin' ? body.adminDivisionId! : null,
     })
     return reply.status(201).send(member)
   })
@@ -28,9 +37,15 @@ export async function membersRouter(fastify: FastifyInstance): Promise<void> {
 
   fastify.patch('/members/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id } = req.params as { id: string }
-    const body = req.body as Partial<{ displayName: string; role: string; adminDivisionId: string; failMode: 'open' | 'closed' | null }>
+    const body = req.body as Partial<{ displayName: string; role: string; adminDivisionId: string | null; failMode: 'open' | 'closed' | null }>
     if (body.failMode !== undefined && body.failMode !== null && body.failMode !== 'open' && body.failMode !== 'closed') {
       return reply.status(400).send({ error: 'failMode must be "open", "closed", or null' })
+    }
+    // Only enforced when both fields land in the same call — promoting a
+    // member to division_admin without also naming the division in that
+    // same request is exactly the gap this whole flow was fixed for.
+    if (body.role === 'division_admin' && body.adminDivisionId === undefined) {
+      return reply.status(400).send({ error: 'adminDivisionId is required when setting role to division_admin' })
     }
     const updated = await updateMember(req.tenant.id, id, body as any)
     if (!updated) return reply.status(404).send({ error: 'Member not found' })

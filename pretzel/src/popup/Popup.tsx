@@ -4,7 +4,7 @@ import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { getTheme, setTheme } from "@/shared/theme";
-import { ensureTenantSelected } from "@/auth/tenant";
+import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
 import { Spinner } from "../options/components/loading";
 
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
@@ -98,20 +98,13 @@ function SignedOutView() {
 
 function SignedInView() {
   const { user } = useUser();
-  const { getToken } = useAuth();
   const [hostname, setHostname] = useState<string>("");
   const [siteEnabled, setSiteEnabled] = useState(true);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getToken().then((token) => {
-      if (token) {
-        void chrome.storage.local.set({ clerkSessionToken: token });
-        void ensureTenantSelected(token); // sign-in: resolve tenant for X-Tenant-Id header
-      }
-    });
-  }, [getToken]);
+  // Persist the Clerk JWT so the background worker can authenticate policy sync.
+  usePersistSessionToken();
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {

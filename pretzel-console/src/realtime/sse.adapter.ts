@@ -18,7 +18,7 @@ import type { IRealtimeSubscriber } from './types'
 // avoid logging the URL in error-tracking calls.
 
 export class SSESubscriber implements IRealtimeSubscriber {
-  subscribe(getToken: () => Promise<string>, onUpdate: () => void): () => void {
+  subscribe(getToken: () => Promise<string>, onUpdate: () => void, onDegraded?: () => void): () => void {
     let es: EventSource | null = null
     let closed = false
     let retryDelay = 1_000
@@ -51,28 +51,46 @@ export class SSESubscriber implements IRealtimeSubscriber {
       })
 
       es.addEventListener('error', async () => {
+        if (closed) return
+
         // readyState === 2 (CLOSED) means the server closed the connection or
-        // returned a non-2xx status (e.g. 401 token expired, 429 rate limited).
-        // readyState === 0 (CONNECTING) means the browser is auto-reconnecting
-        // within the SSE spec — leave it alone.
-        if (es?.readyState === EventSource.CLOSED && !closed) {
+        // returned a non-2xx status (e.g. 401 token expired, 429 rate limited)
+        // — the browser will NOT auto-retry, so we own reconnection below.
+        // readyState === 0 (CONNECTING) covers two cases: we're mid-handshake
+        // on a fresh attempt, or the underlying transport failed outright
+        // (e.g. ERR_CONNECTION_REFUSED, nothing listening on the host) — for
+        // that second case the browser silently auto-reconnects forever on
+        // its own timer (~1-3s) without ever surfacing readyState CLOSED, so
+        // the failure count must still advance here or the cap below never
+        // triggers and this retries indefinitely with nothing shown to the
+        // user.
+        consecutiveFailures += 1
+
+        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+          // Give up. Whatever is failing (stuck auth state, sustained rate
+          // limiting, unreachable server) isn't going to resolve itself by
+          // retrying faster — a fresh page load (which callers get after
+          // fixing the underlying issue) will start a new subscription with
+          // a clean counter. Force-close so the browser's own auto-reconnect
+          // (readyState CONNECTING case) stops too.
+          closed = true
+          es?.close()
+          es = null
+          onDegraded?.()
+          return
+        }
+
+        if (es?.readyState === EventSource.CLOSED) {
           es.close()
           es = null
-          consecutiveFailures += 1
-
-          if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-            // Give up. Whatever is failing (stuck auth state, sustained rate
-            // limiting) isn't going to resolve itself by retrying faster —
-            // a fresh page load (which callers get after fixing the underlying
-            // issue) will start a new subscription with a clean counter.
-            return
-          }
 
           await new Promise(r => setTimeout(r, retryDelay))
           retryDelay = Math.min(retryDelay * 2, MAX_DELAY)
 
           if (!closed) connect()
         }
+        // else: readyState CONNECTING — browser is already retrying on its
+        // own timer, nothing more to do here besides the count above.
       })
     }
 

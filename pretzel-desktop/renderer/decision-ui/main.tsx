@@ -6,6 +6,9 @@ function DecisionUI() {
 
   useEffect(() => {
     window.pretzel.onDecisionRequired((payload) => setPending(payload))
+    // Tell main the listener is live so it (re)sends any pending decision —
+    // otherwise the first block races React mount and is dropped.
+    window.pretzel.decisionReady?.()
   }, [])
 
   function respond(allow: boolean) {
@@ -38,8 +41,8 @@ function DecisionUI() {
         {pending.findings.map((f, i) => (
           <div key={i} style={{ marginBottom: i < pending.findings.length - 1 ? '0.5rem' : 0 }}>
             <span style={{ color: '#ff6b6b', fontSize: '0.8rem', fontWeight: 600 }}>{f.severity.toUpperCase()}</span>
-            <span style={{ marginLeft: '0.5rem', color: '#ccc', fontSize: '0.85rem' }}>{f.ruleId}</span>
-            {f.snippet && <p style={{ color: '#777', fontSize: '0.75rem', marginTop: 2, fontFamily: 'monospace' }}>{f.snippet}</p>}
+            <span style={{ marginLeft: '0.5rem', color: '#ccc', fontSize: '0.85rem' }}>{f.ruleName ?? f.ruleId}</span>
+            {(f.matchedText ?? f.snippet) && <p style={{ color: '#777', fontSize: '0.75rem', marginTop: 2, fontFamily: 'monospace' }}>{f.matchedText ?? f.snippet}</p>}
           </div>
         ))}
       </div>

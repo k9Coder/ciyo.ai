@@ -155,6 +155,28 @@ describe("Credit card detection", () => {
     const result = await detectPrompt("not a card: 4532015112830367", policy, "chatgpt.com");
     expect(result.findings).toHaveLength(0);
   });
+
+  it("detects a card number formatted with spaces (how people actually type/paste them)", async () => {
+    const result = await detectPrompt("card: 4111 1111 1111 1111", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("credit-card");
+  });
+
+  it("detects a card number formatted with hyphens", async () => {
+    const result = await detectPrompt("card: 4111-1111-1111-1111", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]!.ruleId).toBe("credit-card");
+  });
+
+  it("does not flag a space-formatted number that fails Luhn", async () => {
+    const result = await detectPrompt("not a card: 4111 1111 1111 1112", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
+
+  it("does not flag an arbitrary spaced digit sequence with no valid card prefix", async () => {
+    const result = await detectPrompt("order ref: 1234 5678 9012 3456", policy, "chatgpt.com");
+    expect(result.findings).toHaveLength(0);
+  });
 });
 
 // ─── SSN detection ────────────────────────────────────────────────────────────

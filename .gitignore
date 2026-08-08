@@ -43,3 +43,5 @@ qa/playwright-report/
 !.gstack/qa-reports/**/
 !.gstack/qa-reports/**/jira-tickets.md
 .gstack/qa-reports/**/screenshots/
+.gstack/
+.gstack/

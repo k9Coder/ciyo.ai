@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { requireClerkAuth } from '../auth/middleware.js'
-import { createDesktopAuthCode, exchangeDesktopAuthCode, isLoopbackRedirectUri } from './service.js'
+import { createDesktopAuthCode, exchangeDesktopAuthCode, isLoopbackRedirectUri, isValidCodeChallenge, DESKTOP_CLIENT_ID } from './service.js'
 import { env } from '../env.js'
 
 export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void> {
@@ -10,6 +10,9 @@ export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void>
   }, async (req, reply) => {
     const q = req.query as Record<string, string | undefined>
 
+    if (q.client_id !== DESKTOP_CLIENT_ID) {
+      return reply.status(400).send({ error: 'Unknown client_id' })
+    }
     if (q.response_type !== 'code') {
       return reply.status(400).send({ error: 'response_type must be code' })
     }
@@ -21,6 +24,9 @@ export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void>
     }
     if (!q.state || !q.code_challenge) {
       return reply.status(400).send({ error: 'Missing state or code_challenge' })
+    }
+    if (!isValidCodeChallenge(q.code_challenge)) {
+      return reply.status(400).send({ error: 'code_challenge must be a base64url-encoded S256 challenge' })
     }
 
     const target = new URL('/desktop-login', env.PRETZEL_CONSOLE_URL)
@@ -39,6 +45,9 @@ export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void>
     const body = req.body as { state?: string; code_challenge?: string; redirect_uri?: string }
     if (!body.state || !body.code_challenge || !body.redirect_uri) {
       return reply.status(400).send({ error: 'Missing state, code_challenge, or redirect_uri' })
+    }
+    if (!isValidCodeChallenge(body.code_challenge)) {
+      return reply.status(400).send({ error: 'code_challenge must be a base64url-encoded S256 challenge' })
     }
     if (!isLoopbackRedirectUri(body.redirect_uri)) {
       return reply.status(400).send({ error: 'redirect_uri must be a 127.0.0.1 loopback URL' })

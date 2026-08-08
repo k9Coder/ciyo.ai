@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useAuditLog } from '../hooks/useAuditLog'
 import { InlineLoader, Spinner } from '../components/ui/Spinner'
+import { formatDateTime } from '../utils/date'
 
 type ActionFilter = 'all' | 'warn' | 'block'
 
@@ -67,7 +68,7 @@ export function AuditLogPage() {
               {entries.map(e => (
                 <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '10px 16px', color: 'var(--text-muted)', fontSize: 11, whiteSpace: 'nowrap' }}>
-                    {new Date(e.occurredAt).toLocaleString()}
+                    {formatDateTime(e.occurredAt)}
                   </td>
                   <td style={{ padding: '10px 16px', color: 'var(--text-secondary)' }}>
                     {e.memberEmail ?? <span style={{ color: 'var(--text-muted)' }}>anonymous</span>}

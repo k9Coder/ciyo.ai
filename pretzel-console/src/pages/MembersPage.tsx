@@ -4,8 +4,10 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { InlineLoader } from '../components/ui/Spinner'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useMembers, useMemberActions } from '../hooks/useMembers'
+import { useDivisions } from '../hooks/useDivisions'
 import { api } from '../api'
 import type { Member } from '../types'
+import { formatDate } from '../utils/date'
 
 const ROLE_LABEL: Record<Member['role'], string> = {
   super_admin:    'Super Admin',
@@ -44,28 +46,36 @@ function InfoIcon({ title }: { title: string }) {
 
 export function MembersPage() {
   const { data: members = [], isLoading } = useMembers()
+  const { data: divisions = [] } = useDivisions()
   const { update, remove } = useMemberActions()
 
-  const [showInvite, setShowInvite]       = useState(false)
-  const [inviteEmail, setInviteEmail]     = useState('')
-  const [inviteRole, setInviteRole]       = useState<Member['role']>('member')
-  const [generatedUrl, setGeneratedUrl]   = useState<string | null>(null)
-  const [copied, setCopied]               = useState(false)
+  const [showInvite, setShowInvite]           = useState(false)
+  const [inviteEmail, setInviteEmail]         = useState('')
+  const [inviteRole, setInviteRole]           = useState<Member['role']>('member')
+  const [inviteDivisionId, setInviteDivisionId] = useState('')
+  const [generatedUrl, setGeneratedUrl]       = useState<string | null>(null)
+  const [copied, setCopied]                   = useState(false)
 
-  const [editingId, setEditingId]         = useState<string | null>(null)
-  const [editRole, setEditRole]           = useState<Member['role']>('member')
-  const [confirmRemove, setConfirmRemove] = useState<Member | null>(null)
+  const [editingId, setEditingId]             = useState<string | null>(null)
+  const [editRole, setEditRole]               = useState<Member['role']>('member')
+  const [editDivisionId, setEditDivisionId]   = useState('')
+  const [confirmRemove, setConfirmRemove]     = useState<Member | null>(null)
+
+  const inviteNeedsDivision = inviteRole === 'division_admin' && !inviteDivisionId
+  const editNeedsDivision   = editRole === 'division_admin' && !editDivisionId
 
   const generateInvite = useMutation({
     mutationFn: () => api.invites.create({
-      email: inviteEmail.trim() || undefined,
-      role:  inviteRole,
+      email:      inviteEmail.trim() || undefined,
+      role:       inviteRole,
+      divisionId: inviteRole === 'division_admin' ? inviteDivisionId : undefined,
     }),
     onSuccess: (data) => setGeneratedUrl(data.url),
   })
 
   function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
+    if (inviteNeedsDivision) return
     setGeneratedUrl(null)
     setCopied(false)
     generateInvite.mutate()
@@ -82,13 +92,22 @@ export function MembersPage() {
     setShowInvite(false)
     setInviteEmail('')
     setInviteRole('member')
+    setInviteDivisionId('')
     setGeneratedUrl(null)
     setCopied(false)
   }
 
-  function startEdit(m: Member) { setEditingId(m.id); setEditRole(m.role) }
+  function startEdit(m: Member) {
+    setEditingId(m.id)
+    setEditRole(m.role)
+    setEditDivisionId(m.adminDivisionId ?? '')
+  }
   function saveEdit(id: string) {
-    update.mutate({ id, data: { role: editRole } }, { onSuccess: () => setEditingId(null) })
+    if (editNeedsDivision) return
+    update.mutate(
+      { id, data: { role: editRole, adminDivisionId: editRole === 'division_admin' ? editDivisionId : null } },
+      { onSuccess: () => setEditingId(null) }
+    )
   }
 
   const inputStyle: React.CSSProperties = {
@@ -141,8 +160,23 @@ export function MembersPage() {
                   <option value="super_admin">Super Admin</option>
                 </select>
               </label>
+              {inviteRole === 'division_admin' && (
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 180px' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Division</span>
+                  <select
+                    value={inviteDivisionId}
+                    onChange={e => setInviteDivisionId(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="">Select a division…</option>
+                    {divisions.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <button
-                type="submit" disabled={generateInvite.isPending}
+                type="submit" disabled={generateInvite.isPending || inviteNeedsDivision}
                 style={{
                   background: 'var(--brand-primary)', color: '#fff', border: 'none',
                   borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -243,8 +277,24 @@ export function MembersPage() {
                           <option value="division_admin">Division Admin</option>
                           <option value="super_admin">Super Admin</option>
                         </select>
+                        {editRole === 'division_admin' && (
+                          <select
+                            aria-label="Division"
+                            value={editDivisionId}
+                            onChange={e => setEditDivisionId(e.target.value)}
+                            style={{
+                              border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px',
+                              fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                            }}
+                          >
+                            <option value="">Select a division…</option>
+                            {divisions.map(d => (
+                              <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                          </select>
+                        )}
                         <button
-                          onClick={() => saveEdit(m.id)} disabled={update.isPending}
+                          onClick={() => saveEdit(m.id)} disabled={update.isPending || editNeedsDivision}
                           style={{
                             background: 'var(--brand-primary)', color: '#fff', border: 'none',
                             borderRadius: 4, padding: '3px 8px', fontSize: 12, cursor: 'pointer',
@@ -265,6 +315,12 @@ export function MembersPage() {
                         background: 'var(--bg-surface-raised)', color: ROLE_COLOR[m.role],
                       }}>
                         {ROLE_LABEL[m.role]}
+                        {m.role === 'division_admin' && (
+                          <span style={{ fontWeight: 400, opacity: 0.8 }}>
+                            {' — '}
+                            {divisions.find(d => d.id === m.adminDivisionId)?.name ?? 'no division set'}
+                          </span>
+                        )}
                       </span>
                     )}
                   </td>
@@ -288,7 +344,7 @@ export function MembersPage() {
                     </select>
                   </td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
-                    {new Date(m.createdAt).toLocaleDateString()}
+                    {formatDate(m.createdAt)}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

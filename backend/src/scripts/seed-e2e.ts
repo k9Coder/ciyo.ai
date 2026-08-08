@@ -160,6 +160,19 @@ async function main() {
     })),
   ])
 
+  // Every real block/warn event traces back to the scan that triggered it —
+  // the dashboard's "Active Users" tile counts distinct scans.memberId, not
+  // events.memberId. Without a matching scans row per event above, that tile
+  // reads 0 despite 15 incidents from this exact member being visible on the
+  // same screen.
+  await db.insert(scans).values(
+    Array.from({ length: 15 }, (_, i) => ({
+      tenantId,
+      memberId:   member!.id,
+      occurredAt: new Date(now.getTime() - i * 60_000),
+    })),
+  )
+
   const [chatSession1] = await db.insert(chatSessions).values({
     tenantId,
     memberId: member!.id,

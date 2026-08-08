@@ -7,6 +7,28 @@ import { generateSecret, hashToken, formatDeviceToken } from '../auth/tokens.js'
 const CODE_TTL_MS = 5 * 60 * 1000                    // matches the desktop app's callback-server timeout
 const DEVICE_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000 // 90 days
 
+// The only client this endpoint serves is the desktop app. A fixed client_id
+// lets /authorize reject requests that don't originate from it instead of
+// redirecting for any arbitrary value.
+export const DESKTOP_CLIENT_ID = 'pretzel-desktop'
+
+// PKCE S256 code_challenge is the base64url-encoded SHA-256 of the verifier:
+// always exactly 43 chars from the base64url alphabet (no padding). Reject
+// anything else before it's persisted so a too-short/garbage challenge can't
+// be stored and later "verified" against.
+const CODE_CHALLENGE_SHAPE = /^[A-Za-z0-9_-]{43}$/
+
+export function isValidCodeChallenge(challenge: string): boolean {
+  return CODE_CHALLENGE_SHAPE.test(challenge)
+}
+
+// Host must be the literal 127.0.0.1 dotted-quad, right after the scheme and
+// optional userinfo. WHATWG URL normalises alternate IPv4 encodings (octal
+// 0177.0.0.1, decimal 2130706433, hex 0x7f.0.0.1) to 127.0.0.1, so a parsed
+// hostname check alone would silently accept those forms — require the
+// canonical literal in the raw string too.
+const RAW_LOOPBACK_HOST = /^http:\/\/(?:[^@/?#]*@)?127\.0\.0\.1(?::\d+)?(?:[/?#]|$)/
+
 /**
  * The desktop app always constructs redirect_uri as http://127.0.0.1:<port>/callback
  * (electron/auth.ts). Anything else is rejected — a wider allowance here would make
@@ -16,7 +38,7 @@ const DEVICE_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000 // 90 days
 export function isLoopbackRedirectUri(redirectUri: string): boolean {
   try {
     const url = new URL(redirectUri)
-    return url.protocol === 'http:' && url.hostname === '127.0.0.1'
+    return url.protocol === 'http:' && url.hostname === '127.0.0.1' && RAW_LOOPBACK_HOST.test(redirectUri)
   } catch {
     return false
   }

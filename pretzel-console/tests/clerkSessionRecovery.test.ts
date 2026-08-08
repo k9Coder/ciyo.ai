@@ -46,4 +46,16 @@ describe('installClerkSessionRecovery', () => {
 
     expect(assign).not.toHaveBeenCalled()
   })
+
+  it('does not redirect when clerk-js still reports a live session (transient race, not a real revocation)', () => {
+    ;(window as unknown as { Clerk?: { session?: unknown } }).Clerk = { session: { id: 'sess_still_alive' } }
+    installClerkSessionRecovery()
+
+    const event = dispatchRejection(new Error('No session was found with id sess_abc123'))
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(assign).not.toHaveBeenCalled()
+
+    delete (window as unknown as { Clerk?: unknown }).Clerk
+  })
 })

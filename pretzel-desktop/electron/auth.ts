@@ -54,27 +54,49 @@ export function isAuthenticated(): boolean {
 
 // ─── Keychain ──────────────────────────────────────────────────────────────
 
+// Under automated QA/E2E (PRETZEL_E2E=1) the native keytar module may be
+// absent (not compiled in the dev/CI environment). Fall back to a plaintext
+// file under userData so cross-product integration tests can exercise the
+// signed-in flow. This path is NEVER taken in a real build — production always
+// uses the OS keychain — so no real device token is ever written to disk.
+const E2E_CRED_FALLBACK = process.env.PRETZEL_E2E === '1'
+
+function e2eCredPath(): string {
+  return path.join(app.getPath('userData'), 'e2e-credentials.json')
+}
+function readE2eCreds(): Record<string, string> {
+  try { return JSON.parse(fs.readFileSync(e2eCredPath(), 'utf-8')) as Record<string, string> } catch { return {} }
+}
+function writeE2eCreds(creds: Record<string, string>): void {
+  fs.writeFileSync(e2eCredPath(), JSON.stringify(creds), 'utf-8')
+}
+
 export async function storeToken(token: string): Promise<void> {
+  if (E2E_CRED_FALLBACK) { const c = readE2eCreds(); c[KEYCHAIN_ACCOUNT_TOKEN] = token; writeE2eCreds(c); return }
   const keytar = await import('keytar')
   await keytar.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN, token)
 }
 
 export async function loadToken(): Promise<string | null> {
+  if (E2E_CRED_FALLBACK) return readE2eCreds()[KEYCHAIN_ACCOUNT_TOKEN] ?? null
   const keytar = await import('keytar')
   return keytar.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN)
 }
 
 export async function storeTenantId(tenantId: string): Promise<void> {
+  if (E2E_CRED_FALLBACK) { const c = readE2eCreds(); c[KEYCHAIN_ACCOUNT_TENANT] = tenantId; writeE2eCreds(c); return }
   const keytar = await import('keytar')
   await keytar.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT, tenantId)
 }
 
 export async function loadTenantId(): Promise<string | null> {
+  if (E2E_CRED_FALLBACK) return readE2eCreds()[KEYCHAIN_ACCOUNT_TENANT] ?? null
   const keytar = await import('keytar')
   return keytar.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT)
 }
 
 export async function clearCredentials(): Promise<void> {
+  if (E2E_CRED_FALLBACK) { try { fs.unlinkSync(e2eCredPath()) } catch { /* already gone */ } saveAuthState({ authenticated: false }); return }
   const keytar = await import('keytar')
   await keytar.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN)
   await keytar.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT)
@@ -91,7 +113,10 @@ function generatePKCE(): { verifier: string; challenge: string } {
 
 // ─── One-shot callback server ───────────────────────────────────────────────
 
-function startCallbackServer(): Promise<{ port: number; codePromise: Promise<string> }> {
+// Set while a sign-in is in flight so cancelSignIn() can reach into it.
+let activeCancel: (() => void) | null = null
+
+function startCallbackServer(): Promise<{ port: number; codePromise: Promise<string>; cancel: () => void }> {
   return new Promise((resolve, reject) => {
     let resolveCode: (code: string) => void
     let rejectCode: (err: Error) => void
@@ -131,17 +156,30 @@ function startCallbackServer(): Promise<{ port: number; codePromise: Promise<str
         reject(new Error('Failed to bind callback server'))
         return
       }
-      resolve({ port: addr.port, codePromise })
+      const cancel = () => {
+        clearTimeout(timeoutHandle)
+        server.close()
+        rejectCode(new Error('Sign-in cancelled'))
+      }
+      resolve({ port: addr.port, codePromise, cancel })
     })
 
     server.on('error', reject)
 
-    // Timeout after 5 minutes
-    setTimeout(() => {
+    // Timeout after 90 seconds — long enough for a real browser round-trip,
+    // short enough that a silently-failed shell.openExternal() (no default
+    // browser registered, sandboxed/headless env) doesn't leave the button
+    // stuck on "Opening browser…" for the full 5 minutes it used to.
+    const timeoutHandle = setTimeout(() => {
       server.close()
-      rejectCode(new Error('Auth timeout'))
-    }, 5 * 60 * 1000)
+      rejectCode(new Error('Auth timeout — no response after 90s'))
+    }, 90 * 1000)
   })
+}
+
+/** Aborts an in-flight signIn(), if any. No-op otherwise. */
+export function cancelSignIn(): void {
+  activeCancel?.()
 }
 
 // ─── Main sign-in flow ─────────────────────────────────────────────────────
@@ -151,39 +189,60 @@ const CLERK_PUBLISHABLE_KEY = env.CLERK_PUBLISHABLE_KEY
 
 export async function signIn(): Promise<{ token: string; tenantId: string }> {
   const { verifier, challenge } = generatePKCE()
-  const { port, codePromise } = await startCallbackServer()
+  const { port, codePromise, cancel } = await startCallbackServer()
+  activeCancel = cancel
 
-  const redirectUri = `http://127.0.0.1:${port}/callback`
-  const state = crypto.randomBytes(16).toString('hex')
+  try {
+    const redirectUri = `http://127.0.0.1:${port}/callback`
+    const state = crypto.randomBytes(16).toString('hex')
 
-  const signInUrl = new URL(`${PRETZEL_API_BASE}/auth/desktop/authorize`)
-  signInUrl.searchParams.set('response_type', 'code')
-  signInUrl.searchParams.set('redirect_uri', redirectUri)
-  signInUrl.searchParams.set('code_challenge', challenge)
-  signInUrl.searchParams.set('code_challenge_method', 'S256')
-  signInUrl.searchParams.set('state', state)
-  if (CLERK_PUBLISHABLE_KEY) signInUrl.searchParams.set('publishable_key', CLERK_PUBLISHABLE_KEY)
+    const signInUrl = new URL(`${PRETZEL_API_BASE}/auth/desktop/authorize`)
+    signInUrl.searchParams.set('client_id', 'pretzel-desktop')
+    signInUrl.searchParams.set('response_type', 'code')
+    signInUrl.searchParams.set('redirect_uri', redirectUri)
+    signInUrl.searchParams.set('code_challenge', challenge)
+    signInUrl.searchParams.set('code_challenge_method', 'S256')
+    signInUrl.searchParams.set('state', state)
+    if (CLERK_PUBLISHABLE_KEY) signInUrl.searchParams.set('publishable_key', CLERK_PUBLISHABLE_KEY)
 
-  await shell.openExternal(signInUrl.toString())
+    if (process.env.PRETZEL_E2E === '1') {
+      // Under QA/E2E, don't pop a real OS browser window — qa-bridge drives
+      // its own Playwright browser context through this same URL instead
+      // (the /authorize redirect lands on pretzel-console's own
+      // /desktop-login page, not a third-party site, so automating it is no
+      // different from the Clerk sign-ins qa-only/qa-extension already do
+      // everywhere else). Print the URL on a single, greppable line so
+      // qa-bridge can capture it off this process's stdout.
+      console.log(`[e2e-auth-url] ${signInUrl.toString()}`)
+    } else {
+      // openExternal resolving doesn't guarantee a browser actually launched
+      // (no default browser registered, sandboxed env, etc.) — that failure
+      // mode is exactly why startCallbackServer()'s timeout exists instead of
+      // relying on this call to reject.
+      await shell.openExternal(signInUrl.toString())
+    }
 
-  const code = await codePromise
+    const code = await codePromise
 
-  // Exchange code for token
-  const tokenRes = await fetch(`${PRETZEL_API_BASE}/auth/desktop/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: redirectUri }),
-  })
+    // Exchange code for token
+    const tokenRes = await fetch(`${PRETZEL_API_BASE}/auth/desktop/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: redirectUri }),
+    })
 
-  if (!tokenRes.ok) {
-    throw new Error(`Token exchange failed: ${tokenRes.status}`)
+    if (!tokenRes.ok) {
+      throw new Error(`Token exchange failed: ${tokenRes.status}`)
+    }
+
+    const { token, tenantId } = await tokenRes.json() as { token: string; tenantId: string }
+
+    await storeToken(token)
+    await storeTenantId(tenantId)
+    saveAuthState({ authenticated: true, tenantId, authenticatedAt: new Date().toISOString() })
+
+    return { token, tenantId }
+  } finally {
+    activeCancel = null
   }
-
-  const { token, tenantId } = await tokenRes.json() as { token: string; tenantId: string }
-
-  await storeToken(token)
-  await storeTenantId(tenantId)
-  saveAuthState({ authenticated: true, tenantId, authenticatedAt: new Date().toISOString() })
-
-  return { token, tenantId }
 }

@@ -44,7 +44,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | `/publish` | Protected | Publish, inspect history, and roll back policy versions. |
 | `/settings` | Protected | Tenant name, billing status/portal, and token rotation. |
 | `/members` | Protected | Generate invites, change roles, and remove members. |
-| `/audit` | Protected | Filter and paginate warn/block audit events. |
+| `/audit-log` | Protected | Filter and paginate warn/block audit events. Matches the backend's `/v1/audit-log` naming; `/audit` redirects here for old bookmarks. |
 | `/assistant` | Protected + Business feature | Chat, preview proposed actions, and apply assistant changes. |
 
 Protected means `RequireAuth` has confirmed a signed-in Clerk user; `TenantBootstrap` (inside it) then resolves which backend tenant/membership applies from `/v1/me/memberships` and redirects to `/onboarding/profile` when the sole membership is a `super_admin` on a tenant that hasn't completed onboarding. Clerk is identity-only here — organization, tenant, and role data live entirely in our own backend (`tenants`/`members` tables), never in Clerk Organizations.

@@ -15,6 +15,12 @@ import { env } from '../../env'
 
 const ONBOARDING_BADGE_ENABLED = env.VITE_FEATURE_ONBOARDING_BADGE === 'true'
 
+const ROLE_LABEL: Record<string, string> = {
+  super_admin:    'Super Admin',
+  division_admin: 'Division Admin',
+  member:         'Member',
+}
+
 function OnboardingBadge() {
   const { data: tenant } = useTenant()
   if (!ONBOARDING_BADGE_ENABLED) return null
@@ -48,7 +54,7 @@ const NAV = [
   { to: '/subjects', label: 'Policies', icon: '⊡', ai: false, dividerAbove: false },
   { to: '/org', label: 'Teams', icon: '⊞', ai: false, dividerAbove: false },
   { to: '/members', label: 'Members', icon: '◎', ai: false, dividerAbove: false },
-  { to: '/audit', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
+  { to: '/audit-log', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
   { to: '/assistant', label: 'AI Assistant', icon: null, ai: true, dividerAbove: true },
   { to: '/settings', label: 'Settings', icon: '⚙', ai: false, dividerAbove: false },
 ]
@@ -242,7 +248,7 @@ export function AppLayout() {
             }}>
               {user?.fullName ?? user?.primaryEmailAddress?.emailAddress}
             </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 9 }}>Admin</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 9 }}>{ROLE_LABEL[activeOrg?.role ?? 'member']}</div>
           </div>
         </div>
       </aside>

@@ -1,7 +1,17 @@
 /**
  * Electron main process — app lifecycle, system tray, IPC hub.
  */
-import { app, Tray, Menu, nativeImage, BrowserWindow } from 'electron'
+
+// A dev/QA harness that spawns this process (e.g. Playwright's electron.launch(),
+// or a terminal the user closes) can go away while this process is still
+// running, closing the read end of stdout/stderr. Node doesn't guard against
+// that by default — the next console.log/error call throws EPIPE, and since
+// nothing catches it, it crashes the whole main process. Logging to a pipe
+// nobody's reading should be a silent no-op, not a fatal error.
+process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+
+import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
 import { generateCACert, saveCACertFile, installCACert, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
@@ -14,7 +24,7 @@ import {
 } from './ipc-handlers'
 import { showDecisionWindow } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
-import { isAuthenticated, signIn } from './auth'
+import { isAuthenticated, signIn, cancelSignIn } from './auth'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
 import forge from 'node-forge'
@@ -93,8 +103,10 @@ async function handleSignIn(): Promise<void> {
     await triggerSync()
     trayWin?.webContents.send('auth:success')
   } catch (err) {
+    // Log the raw error for debugging, but never surface it to the user —
+    // strings like "Token exchange failed: 400" are developer-facing.
     console.error('[pretzel-desktop] Sign-in failed:', err)
-    trayWin?.webContents.send('auth:error', String(err))
+    trayWin?.webContents.send('auth:error', "Couldn't sign you in. Please try again.")
   }
 }
 
@@ -184,7 +196,36 @@ app.whenReady().then(async () => {
       proxy.resolveDecision(requestId, allow)
     },
     onSignIn: () => { handleSignIn() },
+    onCancelSignIn: () => { cancelSignIn() },
   })
+
+  // QA-only: let the qa-bridge open the decision window directly with a
+  // synthetic finding, so the warn/block UI can be verified without standing up
+  // the MITM proxy + trusted CA (not automatable in the test harness). Gated on
+  // PRETZEL_E2E so it never exists in a real build.
+  if (process.env.PRETZEL_E2E === '1') {
+    ipcMain.on('e2e:trigger-decision', () => {
+      showDecisionWindow({
+        requestId: `e2e-${Date.now()}`,
+        hostname: 'chatgpt.com',
+        result: {
+          findings: [{
+            ruleId: 'e2e-canary',
+            ruleName: 'Integration canary',
+            severity: 'critical',
+            action: 'block',
+            matchedText: 'ZZINTEGCANARY',
+            startOffset: 0,
+            endOffset: 13,
+          }],
+          highestAction: 'block',
+          promptHash: 'e2e',
+          detectedAtMs: Date.now(),
+          durationMs: 0,
+        },
+      })
+    })
+  }
 
   await setupTray(authenticated)
 

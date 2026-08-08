@@ -173,11 +173,12 @@ prompt — the subagent has no memory of this conversation:
 > what's actually there, don't run a fixed checklist, don't aim for
 > exhaustive coverage in the time available.
 >
-> **For `console`/`web` only:** the stack was seeded with `seed:e2e`, so a
-> real login exists — sign in through the UI with `testuser@gmail.com` /
-> `TESTuser` (same identity `qa-env`'s local mode documents) to reach the
-> authenticated surface. Don't stop at the login screen — an unauthenticated-
-> only pass misses the vast majority of the product.
+> **For `console`/`web`/`extension`:** the stack was seeded with `seed:e2e`,
+> so a real login exists — sign in through the UI with `testuser@gmail.com` /
+> `TESTuser` (same identity `qa-env`'s local mode documents; for `extension`
+> this is the options page's Account tab, same Clerk instance as console) to
+> reach the authenticated surface. Don't stop at the login screen — an
+> unauthenticated-only pass misses the vast majority of the product.
 >
 > **Hard timeout: <duration_minutes + 3> minutes** for this whole task
 > (explore + write-up). If you're going to blow past it, stop wherever you

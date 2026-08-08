@@ -15,14 +15,14 @@ export function useMemberActions() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['members'] })
 
   const create = useMutation({
-    mutationFn: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
+    mutationFn: (data: { email: string; displayName?: string; role?: Member['role']; adminDivisionId?: string }) =>
       api.members.create(data),
     onSuccess: () => { invalidate(); toast('Member added') },
     onError: (e: Error) => toast(e.message, 'error'),
   })
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role']; failMode: Member['failMode'] }> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<{ displayName: string; role: Member['role']; adminDivisionId: string | null; failMode: Member['failMode'] }> }) =>
       api.members.update(id, data),
     onSuccess: () => { invalidate(); toast('Member updated') },
     onError: (e: Error) => toast(e.message, 'error'),

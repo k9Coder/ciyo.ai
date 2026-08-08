@@ -134,6 +134,17 @@ fi
 # allowlist can be seeded with their real origins from the first request —
 # without this, the backend falls back to its hardcoded production origin
 # and every authenticated console/web call gets silently CORS-blocked.
+# mykka-web's own "Sign in" link always points at NEXT_PUBLIC_APP_URL (the
+# console origin) — without a console instance to point it at, that env var
+# is left unset and mykka-web/lib/env.ts falls back to its production
+# default (https://app.mykka.ai), so any sign-in click from an isolated
+# --with-web run silently escapes the sandbox onto real production. Force
+# console up alongside web so there's always an isolated target to redirect
+# into.
+if $WITH_WEB; then
+  WITH_CONSOLE=true
+fi
+
 CONSOLE_PORT=""
 CONSOLE_URL=""
 if $WITH_CONSOLE; then
@@ -157,7 +168,22 @@ if ! $NO_BACKEND; then
 
   echo "[stack-daemon] starting backend on port $BACKEND_PORT..."
   cd "$ROOT/backend"
-  nohup env DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CORS_ORIGIN" pnpm dev \
+  # Without this, /auth/desktop/authorize (the desktop app's OAuth redirect
+  # target) falls back to backend/.env's PRETZEL_CONSOLE_URL — the user's own
+  # real local dev console (localhost:5173) — instead of this stack's own
+  # isolated one, silently sending desktop-auth flows to the wrong
+  # database/session entirely even with --with-console.
+  PRETZEL_CONSOLE_URL_OVERRIDE=""
+  [[ -n "$CONSOLE_URL" ]] && PRETZEL_CONSOLE_URL_OVERRIDE="$CONSOLE_URL"
+  # The backend's own service layer (policy compiler, etc.) calls its
+  # /internal/* endpoints via INTERNAL_API_URL, which defaults to
+  # localhost:3000 — the developer's real dev backend, NOT this isolated one.
+  # Without this override, compilePolicy() reads subjects/rules from the wrong
+  # server and publishes an empty policy, so nothing an isolated stack
+  # publishes ever reaches its own clients. Point it back at this backend.
+  nohup env DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CORS_ORIGIN" \
+    INTERNAL_API_URL="$BACKEND_URL" \
+    ${PRETZEL_CONSOLE_URL_OVERRIDE:+PRETZEL_CONSOLE_URL="$PRETZEL_CONSOLE_URL_OVERRIDE"} pnpm dev \
     > "/tmp/backend-${AGENT_LABEL}.log" 2>&1 &
   BACKEND_PID=$!
   disown "$BACKEND_PID"
@@ -200,8 +226,11 @@ if $WITH_WEB; then
   echo "[stack-daemon] starting mykka-web on port $WEB_PORT..."
   cd "$ROOT/mykka-web"
   # Bypass the package.json "dev" script (hardcoded to -p 4000) so each
-  # isolated run gets its own port.
-  nohup env NEXT_PUBLIC_API_BASE="$BACKEND_URL" pnpm exec next dev -p "$WEB_PORT" \
+  # isolated run gets its own port. NEXT_PUBLIC_APP_URL points sign-in/
+  # onboarding links at this run's own isolated console (started above)
+  # instead of falling back to production — see the WITH_CONSOLE note near
+  # the port-reservation block.
+  nohup env NEXT_PUBLIC_API_BASE="$BACKEND_URL" NEXT_PUBLIC_APP_URL="$CONSOLE_URL" pnpm exec next dev -p "$WEB_PORT" \
     > "/tmp/web-${AGENT_LABEL}.log" 2>&1 &
   WEB_PID=$!
   disown "$WEB_PID"

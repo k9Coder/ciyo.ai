@@ -1,16 +1,26 @@
 import { useAuth, useUser, SignIn, SignOutButton } from "@clerk/chrome-extension";
 import { PageLoader } from "../components/loading";
+import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
 
 export function AccountPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
+
+  // Persist the Clerk JWT so background policy sync is authenticated when the
+  // user signs in here rather than through the popup.
+  usePersistSessionToken();
 
   if (!isLoaded) return <PageLoader label="Authenticating" />;
 
   if (!isSignedIn || !user) {
     return (
       <div className="flex justify-center py-8">
-        <SignIn routing="hash" />
+        {/* Without an explicit redirect target, Clerk falls back to "/"
+            relative to the current origin — under chrome-extension://<id>/,
+            that resolves to a path with no resource behind it, so the
+            browser briefly shows ERR_FILE_NOT_FOUND right after a successful
+            sign-in before the user reloads back to this page. */}
+        <SignIn routing="hash" fallbackRedirectUrl={window.location.href} />
       </div>
     );
   }

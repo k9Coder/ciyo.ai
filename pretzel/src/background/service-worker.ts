@@ -8,6 +8,7 @@ import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
+import { appendAuditEvent } from "@/audit/log";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
@@ -134,6 +135,17 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "REPORT_DEGRADED": {
       const { hostname, reason } = message.payload;
       void reportDegraded(hostname, reason);
+      return { ok: true };
+    }
+
+    case "APPEND_AUDIT_EVENT": {
+      // Content scripts run in the injected page's origin, so `indexedDB`
+      // there resolves to that page's storage, not the extension's — the
+      // options page (which reads via the same @/audit/log module but from
+      // the chrome-extension:// origin) would never see events written from
+      // a content script directly. Route through here instead, since the
+      // service worker runs at the extension's own origin.
+      await appendAuditEvent(message.payload);
       return { ok: true };
     }
 

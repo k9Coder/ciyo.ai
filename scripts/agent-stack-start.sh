@@ -111,7 +111,19 @@ if ! $NO_BACKEND; then
 
   echo "[stack] starting backend on port $BACKEND_PORT..."
   cd "$ROOT/backend"
-  DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CONSOLE_URL" pnpm dev > /tmp/backend-${AGENT_LABEL}.log 2>&1 &
+  # Without this, /auth/desktop/authorize (the desktop app's OAuth redirect
+  # target) falls back to backend/.env's PRETZEL_CONSOLE_URL — the user's own
+  # real local dev console (localhost:5173) — instead of this stack's own
+  # isolated one, silently sending desktop-auth flows to the wrong
+  # database/session entirely even with --with-console.
+  PRETZEL_CONSOLE_URL_OVERRIDE=""
+  [[ -n "$CONSOLE_URL" ]] && PRETZEL_CONSOLE_URL_OVERRIDE="$CONSOLE_URL"
+  # Point the backend's internal-service client at itself — INTERNAL_API_URL
+  # otherwise defaults to localhost:3000 (the dev's real backend), which makes
+  # compilePolicy() read from the wrong server and publish an empty policy.
+  DATABASE_URL="$DATABASE_URL" PORT="$BACKEND_PORT" CORS_ORIGIN="$CONSOLE_URL" \
+    INTERNAL_API_URL="$BACKEND_URL" \
+    ${PRETZEL_CONSOLE_URL_OVERRIDE:+PRETZEL_CONSOLE_URL="$PRETZEL_CONSOLE_URL_OVERRIDE"} pnpm dev > /tmp/backend-${AGENT_LABEL}.log 2>&1 &
   export BACKEND_PID=$!
 
   # wait until health endpoint responds (max 30s)
