@@ -6,6 +6,7 @@ on:
     paths:
       - 'mykka-web/**'
       - '.github/workflows/mykka-web-deploy.yml'
+  workflow_dispatch:
 
 jobs:
   check:
@@ -33,12 +34,65 @@ jobs:
         run: pnpm lint
         working-directory: mykka-web
 
+      # Compile gate only. The real build+env come from the Vercel project
+      # during `vercel build` in the deploy job, not from these values.
       - name: Build (type-check)
         run: pnpm build
         working-directory: mykka-web
         env:
           NEXT_PUBLIC_API_BASE: http://localhost:3000
           NEXT_PUBLIC_ENV: staging
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Resolves VERCEL_PROJECT_ID from the matching GitHub Environment so the
+    # STAGING branch deploys the staging Vercel project and MASTER deploys the
+    # production project. Previously both Vercel projects tracked `staging` via
+    # dashboard git-integration (production deploying from staging code) — after
+    # this lands, disconnect that git-integration so CI is the single deployer.
+    environment: ${{ github.ref_name == 'master' && 'production' || 'staging' }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Guard required secrets
+        run: |
+          missing=""
+          [ -z "$VERCEL_TOKEN" ] && missing="$missing VERCEL_TOKEN"
+          [ -z "$VERCEL_ORG_ID" ] && missing="$missing VERCEL_ORG_ID"
+          [ -z "$VERCEL_PROJECT_ID" ] && missing="$missing VERCEL_PROJECT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing Vercel secret(s):$missing. Add VERCEL_TOKEN + VERCEL_ORG_ID as repo secrets and VERCEL_PROJECT_ID as a secret in BOTH the 'staging' and 'production' GitHub Environments (each pointing at its own Vercel project)."
+            exit 1
+          fi
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      # Each Vercel project's own Production deployment is the live site for that
+      # environment (staging project's prod = the staging site), so we build and
+      # deploy with --prod against the environment's VERCEL_PROJECT_ID.
+      - name: Pull Vercel env
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+        working-directory: mykka-web
+
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+        working-directory: mykka-web
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
+        working-directory: mykka-web
 
       - name: Notify Discord
         if: always()
@@ -47,4 +101,4 @@ jobs:
           webhook: ${{ secrets.SHARED_DISCORD_WEBHOOK_URL }}
           status: ${{ job.status }}
           title: "mykka-web → ${{ github.ref_name == 'master' && 'production' || 'staging' }} (Vercel)"
-          description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}`"
+          description: "Branch `${{ github.ref_name }}` · commit `${{ github.sha }}` · ${{ steps.deploy.outputs.url }}"
