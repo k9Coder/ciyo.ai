@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import type { DownloadAsset, Downloads } from './getDownloads'
 
 type Platform = 'mac-arm' | 'mac-intel' | 'windows' | 'linux' | 'unknown'
@@ -27,13 +27,15 @@ function formatBytes(bytes: number): string {
 export function DownloadClient({ downloads: releaseDownloads }: { downloads: Downloads }) {
   // Server-rendered HTML always sees 'unknown' (no `navigator` on the
   // server), so the initial client render must match that exactly or React
-  // flags a hydration mismatch (which is what the Next dev overlay's "1
-  // Issue" badge was reporting on this route). Detect the real platform
-  // after mount instead, once hydration is already done.
-  const [platform, setPlatform] = useState<Platform>('unknown')
-  useEffect(() => {
-    setPlatform(detectPlatform())
-  }, [])
+  // flags a hydration mismatch. useSyncExternalStore returns the server
+  // snapshot ('unknown') during SSR + initial hydration, then the client
+  // snapshot (the real platform) afterwards — the correct post-hydration
+  // pattern, without a setState-in-effect (which the lint rule rejects).
+  const platform = useSyncExternalStore<Platform>(
+    () => () => {}, // platform never changes at runtime — nothing to subscribe to
+    () => detectPlatform(), // client snapshot
+    () => 'unknown', // server / first-hydration snapshot
+  )
 
   const version = releaseDownloads.version ? `v${releaseDownloads.version}` : ''
 
