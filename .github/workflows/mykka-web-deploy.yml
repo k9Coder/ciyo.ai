@@ -72,19 +72,29 @@ jobs:
             exit 1
           fi
 
+      # vercel build runs the project's pnpm install, so pnpm must be on PATH.
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
       - name: Install Vercel CLI
         run: npm i -g vercel@latest
 
-      # Each Vercel project's own Production deployment is the live site for that
-      # environment (staging project's prod = the staging site), so we build and
-      # deploy with --prod against the environment's VERCEL_PROJECT_ID.
+      # Run from the repo ROOT (not mykka-web) — the Vercel project has its Root
+      # Directory set to "mykka-web", so vercel resolves the app from there;
+      # running inside mykka-web double-nests to mykka-web/mykka-web. Each
+      # project's own Production deployment is the live site for its environment
+      # (staging project's prod = the staging site), so build/deploy with --prod
+      # against the environment's VERCEL_PROJECT_ID.
       - name: Pull Vercel env
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-        working-directory: mykka-web
 
       - name: Build
         run: vercel build --prod --token="$VERCEL_TOKEN"
-        working-directory: mykka-web
 
       - name: Deploy
         id: deploy
@@ -92,7 +102,6 @@ jobs:
           url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed: $url"
-        working-directory: mykka-web
 
       - name: Notify Discord
         if: always()
