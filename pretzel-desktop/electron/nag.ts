@@ -17,6 +17,14 @@ let nagTimer: ReturnType<typeof setInterval> | null = null
 let onSignInRequest: (() => void) | null = null
 
 function showNag(trayWin: BrowserWindow): void {
+  // The nag runs on a timer, so the tray window can be gone (app quit, window
+  // closed) by the time it fires. Touching a destroyed window throws an uncaught
+  // "Object has been destroyed" and crashes the main process — stop nagging and
+  // bail instead.
+  if (trayWin.isDestroyed()) {
+    stopNagging()
+    return
+  }
   if (isAuthenticated()) {
     stopNagging()
     return
@@ -30,6 +38,7 @@ function showNag(trayWin: BrowserWindow): void {
       urgency: 'normal',
     })
     notif.on('click', () => {
+      if (trayWin.isDestroyed()) return
       trayWin.show()
       trayWin.focus()
       onSignInRequest?.()
@@ -42,7 +51,9 @@ function showNag(trayWin: BrowserWindow): void {
   trayWin.focus()
 
   // Tell renderer to show sign-in prompt
-  trayWin.webContents.send('auth:nag')
+  if (!trayWin.webContents.isDestroyed()) {
+    trayWin.webContents.send('auth:nag')
+  }
 }
 
 /**
