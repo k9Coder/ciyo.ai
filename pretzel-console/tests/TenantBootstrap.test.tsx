@@ -68,11 +68,23 @@ describe('TenantBootstrap', () => {
   })
 
   it('proceeds without a picker when the persisted selection is valid', () => {
-    vi.mocked(getSelectedTenantId).mockReturnValue('t2')
+    // t1 = Acme (super_admin). The persisted selection must resolve to an admin
+    // membership to reach the app shell — a valid-but-member selection is
+    // redirected to /unauthorized (covered separately below).
+    vi.mocked(getSelectedTenantId).mockReturnValue('t1')
     vi.mocked(useMemberships).mockReturnValue({ data: TWO, isLoading: false, isError: false } as any)
     render(<TenantBootstrap>{child()}</TenantBootstrap>)
     expect(screen.getByText('app shell')).toBeInTheDocument()
     expect(clearSelectedTenantId).not.toHaveBeenCalled()
+  })
+
+  it('redirects to /unauthorized when the valid persisted selection is a non-admin membership', () => {
+    // t2 = Globex (member). Valid selection, but the console is admin-only.
+    vi.mocked(getSelectedTenantId).mockReturnValue('t2')
+    vi.mocked(useMemberships).mockReturnValue({ data: TWO, isLoading: false, isError: false } as any)
+    render(<TenantBootstrap>{child()}</TenantBootstrap>)
+    expect(screen.getByTestId('redirect:/unauthorized')).toBeInTheDocument()
+    expect(screen.queryByText('app shell')).not.toBeInTheDocument()
   })
 
   it('clears an invalid persisted selection and shows the picker', () => {
@@ -124,11 +136,13 @@ describe('TenantBootstrap — onboarding wizard redirect', () => {
     expect(screen.getByText('app shell')).toBeInTheDocument()
   })
 
-  it('never gates on tenant completeness for a non-admin sole membership', () => {
+  it('redirects a non-admin sole membership to /unauthorized without gating on tenant completeness', () => {
     vi.mocked(useMemberships).mockReturnValue({ data: SOLO_MEMBER, isLoading: false, isError: false } as any)
     vi.mocked(useTenant).mockReturnValue({ data: undefined, isLoading: false, isError: false } as any)
     render(<TenantBootstrap>{child()}</TenantBootstrap>)
-    expect(screen.getByText('app shell')).toBeInTheDocument()
+    expect(screen.getByTestId('redirect:/unauthorized')).toBeInTheDocument()
+    expect(screen.queryByText('app shell')).not.toBeInTheDocument()
+    // The tenant/onboarding query stays disabled for a non-admin (never a 403).
     expect(vi.mocked(useTenant).mock.calls[0]![0]).toBe(false)
   })
 })
