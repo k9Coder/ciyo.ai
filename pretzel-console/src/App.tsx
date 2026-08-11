@@ -18,6 +18,7 @@ import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
 import { DesktopLoginPage } from './pages/DesktopLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
+import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
 import { AdminApiError } from './api'
@@ -52,6 +53,7 @@ export function App() {
           <Route path="/invite/:token"  element={<InvitePage />} />
           <Route path="/desktop-login" element={<DesktopLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />
+          <Route path="/unauthorized"   element={<UnauthorizedPage />} />
           <Route
             element={
               <RequireAuth>

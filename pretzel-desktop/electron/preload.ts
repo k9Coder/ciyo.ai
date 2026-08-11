@@ -44,6 +44,14 @@ contextBridge.exposeInMainWorld('pretzel', {
   getPolicy: () => ipcRenderer.invoke('policy:get'),
   getProxyStatus: () => ipcRenderer.invoke('proxy:status'),
 
+  // Updates
+  checkForUpdate: (): Promise<{ current: string; latest: string | null; updateAvailable: boolean }> =>
+    ipcRenderer.invoke('update:check'),
+  openDownloadPage: () => ipcRenderer.send('update:open-download'),
+  onUpdateAvailable: (cb: (payload: { current: string; latest: string }) => void) => {
+    ipcRenderer.on('update:available', (_event, payload) => cb(payload))
+  },
+
   // QA-only: trigger the decision window with a synthetic finding. The main
   // process only honours this when PRETZEL_E2E=1 (see main.ts), so it is a
   // no-op in real builds.

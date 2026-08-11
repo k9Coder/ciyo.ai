@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { useAuth } from '@clerk/react'
 import { api } from '../api'
 import { setSelectedTenantId } from '../lib/tenant'
+import { useWireAuthToken } from '../hooks/useWireAuthToken'
 
 export function InvitePage() {
   const { token }  = useParams<{ token: string }>()
-  const { isSignedIn, isLoaded } = useAuth()
+  // /invite is a top-level route OUTSIDE RequireAuth, so the api token getter
+  // isn't wired here unless we do it ourselves — without this, accept() fires
+  // unauthenticated and the backend returns 401 (same reason OnboardingProfilePage
+  // calls this hook). useAuth alone only reads state; it never wires the token.
+  const { isSignedIn, isLoaded } = useWireAuthToken()
   const [accepted, setAccepted]  = useState(false)
   const [error, setError]        = useState<string | null>(null)
 

@@ -6,6 +6,7 @@ on:
     paths:
       - 'pretzel-console/**'
       - '.github/workflows/pretzel-console-deploy.yml'
+  workflow_dispatch:
 
 jobs:
   test:

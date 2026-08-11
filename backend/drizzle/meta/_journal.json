@@ -57,6 +57,13 @@
       "when": 1786039591203,
       "tag": "0007_military_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1786186934666,
+      "tag": "0008_productive_hiroim",
+      "breakpoints": true
     }
   ]
 }

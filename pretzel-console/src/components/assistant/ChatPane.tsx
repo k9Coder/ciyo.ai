@@ -13,6 +13,34 @@ interface ChatPaneProps {
   onSelectSession:  (id: string) => void
   onNewSession:     () => void
   pendingMessageId: string | null
+  error?:           string | null
+  onRetry?:         () => void
+}
+
+function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      background: 'color-mix(in srgb, var(--status-danger, #ef4444) 12%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--status-danger, #ef4444) 40%, transparent)',
+      borderRadius: 10, padding: '10px 14px',
+      fontSize: 12, color: 'var(--status-danger, #ef4444)',
+    }}>
+      <span style={{ flex: 1 }}>{message}</span>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          style={{
+            background: 'none', border: '1px solid currentColor', borderRadius: 6,
+            color: 'inherit', fontSize: 12, fontWeight: 600, padding: '4px 10px', cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
+      )}
+    </div>
+  )
 }
 
 function TypingIndicator() {
@@ -96,7 +124,7 @@ function EmptyState() {
 
 export function ChatPane({
   sessions, messages, activeSessionId, isSending,
-  onSend, onSelectSession, onNewSession,
+  onSend, onSelectSession, onNewSession, error, onRetry,
 }: ChatPaneProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -172,6 +200,7 @@ export function ChatPane({
             ))
         }
         {isSending && <TypingIndicator />}
+        {error && <ErrorBanner message={error} onRetry={onRetry} />}
         <div ref={bottomRef} />
       </div>
 

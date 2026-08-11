@@ -1,13 +1,15 @@
 ---
 status: current
 owner: platform
-verified_at: 2026-07-04
+verified_at: 2026-08-11
 sources:
   - .github/workflows
   - pretzel/package.json
   - pretzel/manifest.config.ts
   - pretzel-desktop/package.json
   - pretzel-desktop/build/electron-builder.yml
+  - pretzel-desktop/electron/version-check.ts
+  - mykka-web/app/api/desktop-version/route.ts
 ---
 
 # Release Process
@@ -90,9 +92,14 @@ new GitHub Release assets into Blob automatically — **you must run `pnpm publi
   `publish-blob:prod` finishes, no redeploy needed.
 - **`pretzel-console` Settings → Desktop Agent section**: links point to `mykka.ai/download`,
   so it inherits the same Blob-backed data with no separate action needed.
-- **In-app auto-updater** (`electron-updater`): checks GitHub Releases (not Blob) on startup
-  and every 2h, so already-installed apps still auto-update straight from the GitHub Release
-  regardless of the Blob publish step.
+- **In-app update check** (`pretzel-desktop/electron/version-check.ts`): there is **no**
+  silent auto-updater yet (`electron-updater` is a dependency but unwired — macOS silent
+  updates need notarization, which is still TODO). Instead the installed app polls
+  `mykka.ai/api/desktop-version` (which reads the same Blob `version`) on launch and on the
+  tray UI's "Check for updates" button. If a newer version is published it shows an OS
+  notification + a tray banner linking to `mykka.ai/download` — the user then downloads and
+  installs the new build manually. So the Blob publish step (step 5) **is** what makes
+  existing installs aware of an update; nothing updates automatically.
 
 ### Required GitHub secrets
 

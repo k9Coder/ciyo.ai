@@ -18,9 +18,18 @@ export function AssistantPage() {
   const [discarded, setDiscarded] = useState<string | null>(null)
   const pendingMsg = latestAssistantMsg?.id !== discarded ? latestAssistantMsg : null
 
+  // Remember the last thing the user tried to send so a failed request (LLM
+  // outage, 500, network drop) can be retried without retyping.
+  const [lastMessage, setLastMessage] = useState<string | null>(null)
+
   function handleSend(message: string) {
     setDiscarded(null)
+    setLastMessage(message)
     send.mutate({ message })
+  }
+
+  function handleRetry() {
+    if (lastMessage) send.mutate({ message: lastMessage })
   }
 
   function handleApply(messageId: string) {
@@ -38,6 +47,8 @@ export function AssistantPage() {
         onSelectSession={(id) => { switchSession(id); setDiscarded(null) }}
         onNewSession={() => { startNewSession(); setDiscarded(null) }}
         pendingMessageId={pendingMsg?.id ?? null}
+        error={send.isError ? ((send.error as Error)?.message || 'Something went wrong. Please try again.') : null}
+        onRetry={handleRetry}
       />
       {pendingMsg && (
         <PreviewPane

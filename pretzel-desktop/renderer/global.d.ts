@@ -24,6 +24,9 @@ declare global {
       cancelSignIn: () => void
       getPolicy: () => Promise<unknown>
       getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
+      checkForUpdate: () => Promise<{ current: string; latest: string | null; updateAvailable: boolean }>
+      openDownloadPage: () => void
+      onUpdateAvailable: (cb: (payload: { current: string; latest: string }) => void) => void
       triggerE2eDecision?: () => void
     }
   }
