@@ -29,7 +29,10 @@ function makeMockWin(): BrowserWindow {
     show: vi.fn(),
     focus: vi.fn(),
     isVisible: vi.fn(() => false),
-    webContents: { send: mockWebContentsSend },
+    // nag.ts guards against a destroyed tray window / webContents before
+    // touching them (a timer can fire after the window is gone).
+    isDestroyed: vi.fn(() => false),
+    webContents: { send: mockWebContentsSend, isDestroyed: vi.fn(() => false) },
   } as unknown as BrowserWindow
 }
 

@@ -235,6 +235,11 @@ app.whenReady().then(async () => {
       showDecisionWindow({
         requestId: `e2e-${Date.now()}`,
         hostname: 'chatgpt.com',
+        // No real proxied request to release here — the e2e trigger only needs
+        // the decision window to render for the qa-bridge to assert against.
+        resolve: (allow: boolean) => {
+          console.log(`[pretzel-desktop][e2e] decision resolved: ${allow ? 'allow' : 'block'}`)
+        },
         result: {
           findings: [{
             ruleId: 'e2e-canary',
