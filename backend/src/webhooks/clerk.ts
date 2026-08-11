@@ -4,6 +4,7 @@ import { db } from '../db/client.js'
 import { tenants, members } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
 import { usersClient } from '../http/internal-client.js'
+import { publishInitialPolicy } from '../policy/service.js'
 import { env } from '../env.js'
 import type { FastifyInstance } from 'fastify'
 
@@ -82,6 +83,12 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
             email,
             role:     'super_admin',
           })
+
+          // Publish an initial (empty) policy so the new org's clients get a
+          // real policy from GET /policy immediately, instead of 404-ing until
+          // an admin manually publishes. failMode defaults to 'open' to match
+          // the tenant row we just inserted (no failMode override set).
+          await publishInitialPolicy(tenant!.id)
         }
         break
       }

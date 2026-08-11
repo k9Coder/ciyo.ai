@@ -28,6 +28,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { tenants, members, users } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
+import { publishInitialPolicy } from '../policy/service.js'
 import { env } from '../env.js'
 
 type Flags = {
@@ -107,7 +108,11 @@ type Outcome =
 // Mirrors webhooks/clerk.ts `user.created`. Runs in a transaction so a partial
 // failure never leaves a user row without its tenant/membership.
 async function reconcileOne(p: ClerkPerson, apply: boolean): Promise<Outcome> {
-  return db.transaction(async (tx) => {
+  // Set inside the tx when we auto-provision, so we can publish the initial
+  // policy AFTER the tx commits — publishInitialPolicy uses the global db
+  // connection, so running it inside would insert against an uncommitted tenant.
+  let provisionedTenantId: string | null = null
+  const outcome = await db.transaction(async (tx) => {
     // Resolve the users row: prefer clerkId, fall back to the unique email
     // (covers a re-signup after Clerk deletion nulled the old clerkId).
     let [user] = await tx.select().from(users).where(eq(users.clerkId, p.clerkId)).limit(1)
@@ -188,9 +193,16 @@ async function reconcileOne(p: ClerkPerson, apply: boolean): Promise<Outcome> {
         email:    p.email,
         role:     'super_admin',
       })
+      provisionedTenantId = tenant!.id
     }
     return apply ? 'done:auto-provision' : 'would:auto-provision'
   })
+
+  // Post-commit: give the freshly auto-provisioned org an initial published
+  // policy (mirrors the webhook) so its clients don't 404 on GET /policy.
+  if (apply && provisionedTenantId) await publishInitialPolicy(provisionedTenantId)
+
+  return outcome
 }
 
 async function main() {
