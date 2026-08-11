@@ -42,9 +42,18 @@ export default defineManifest(async ({ mode }) => {
   // worker's policy fetch blocked by host_permissions on every dev/e2e build.
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const apiBase = env.VITE_API_BASE ?? process.env.VITE_API_BASE ?? "https://api.mykka.ai";
+  // Production Clerk needs the extension to reach the Clerk Frontend API and to
+  // sync the session from the console (the Sync Host, a trusted mykka.ai
+  // origin) — a pk_live instance won't authenticate the chrome-extension origin
+  // directly. Dev (pk_test) allows the extension origin, so no extra hosts are
+  // needed there. Keep these in sync with CLERK_SYNC_HOST in shared/constants.
+  const clerkPk = env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  const CLERK_HOSTS = clerkPk.startsWith("pk_live")
+    ? ["https://clerk.mykka.ai/*", "https://pretzel-console.mykka.ai/*"]
+    : [];
   // API host goes in host_permissions only — NOT content_scripts/matches (we
   // never inject into the API) or web_accessible_resources.
-  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern(apiBase)];
+  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern(apiBase), ...CLERK_HOSTS];
 
   return {
     manifest_version: 3,
