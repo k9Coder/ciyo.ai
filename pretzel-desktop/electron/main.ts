@@ -11,7 +11,7 @@
 process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 
-import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain } from 'electron'
+import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
 import { generateCACert, saveCACertFile, installCACert, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
@@ -21,7 +21,9 @@ import {
   setProxyRunning,
   setSystemProxyActive,
   pushStatusUpdate,
+  pushUpdateAvailable,
 } from './ipc-handlers'
+import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { showDecisionWindow } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn } from './auth'
@@ -181,6 +183,31 @@ async function startProxy(): Promise<void> {
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
 }
 
+/**
+ * Check for a newer published version once on launch. If we're behind, fire an
+ * OS notification (click → download page) and push a banner into the tray UI.
+ * Silent when up to date or when the check fails — a failed update check must
+ * never interrupt the user.
+ */
+async function checkForUpdatesOnLaunch(): Promise<void> {
+  const result = await checkForUpdate()
+  if (!result.updateAvailable || !result.latest) return
+
+  if (Notification.isSupported()) {
+    const notif = new Notification({
+      title: 'Pretzel Desktop — update available',
+      body: `Version ${result.latest} is out (you have ${result.current}). Click to download.`,
+      urgency: 'normal',
+    })
+    notif.on('click', () => { void shell.openExternal(DOWNLOAD_URL) })
+    notif.show()
+  }
+
+  if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+    pushUpdateAvailable(trayWin, { current: result.current, latest: result.latest })
+  }
+}
+
 app.on('second-instance', () => {
   trayWin?.show()
 })
@@ -246,6 +273,9 @@ app.whenReady().then(async () => {
   if (trayWin) {
     startNagging(trayWin, { onSignInRequest: handleSignIn })
   }
+
+  // Non-blocking: tell the user if a newer version is out (no auto-updater yet).
+  void checkForUpdatesOnLaunch()
 
   try {
     await startProxy()

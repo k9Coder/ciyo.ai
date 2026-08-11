@@ -19,12 +19,20 @@ function InfoIcon({ title }: { title: string }) {
   return <span style={infoIconStyle} title={title}>i</span>
 }
 
+type UpdateState =
+  | { kind: 'idle' }
+  | { kind: 'checking' }
+  | { kind: 'current'; version: string }
+  | { kind: 'available'; latest: string }
+  | { kind: 'error' }
+
 function TrayUI() {
   const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [showSignIn, setShowSignIn] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [showCancelHint, setShowCancelHint] = useState(false)
+  const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
 
   useEffect(() => {
     if (!signingIn) {
@@ -54,7 +62,23 @@ function TrayUI() {
       setSigningIn(false)
       setAuthError(msg)
     })
+    // Launch auto-check found a newer version — surface it without the user asking.
+    window.pretzel.onUpdateAvailable(({ latest }) => setUpdate({ kind: 'available', latest }))
   }, [])
+
+  async function handleCheckForUpdate() {
+    setUpdate({ kind: 'checking' })
+    try {
+      const r = await window.pretzel.checkForUpdate()
+      if (r.updateAvailable && r.latest) {
+        setUpdate({ kind: 'available', latest: r.latest })
+      } else {
+        setUpdate({ kind: 'current', version: r.current })
+      }
+    } catch {
+      setUpdate({ kind: 'error' })
+    }
+  }
 
   function handleSignIn() {
     setSigningIn(true)
@@ -136,6 +160,47 @@ function TrayUI() {
           )}
         </div>
       )}
+
+      <div style={{ borderTop: '1px solid #2a2a44', paddingTop: '0.85rem', marginTop: '0.25rem' }}>
+        {update.kind === 'available' ? (
+          <div style={{ background: '#16213e', borderRadius: 8, padding: '0.75rem', borderLeft: '3px solid #4a90d9' }}>
+            <p style={{ fontSize: '0.8rem', color: '#8ec1f0', marginBottom: '0.6rem', fontWeight: 600 }}>
+              ⬆ Version {update.latest} available
+            </p>
+            <button
+              onClick={() => window.pretzel.openDownloadPage()}
+              style={{
+                width: '100%', padding: '0.5rem',
+                background: '#4a90d9', color: '#fff', border: 'none', borderRadius: 6,
+                cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              }}
+            >
+              Download update
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', color: '#888' }}>
+              {update.kind === 'checking' && 'Checking…'}
+              {update.kind === 'current' && `✓ Up to date (${update.version})`}
+              {update.kind === 'error' && "Couldn't check — try again"}
+              {update.kind === 'idle' && 'Check for updates'}
+            </span>
+            <button
+              onClick={handleCheckForUpdate}
+              disabled={update.kind === 'checking'}
+              style={{
+                background: 'none', border: '1px solid #444', borderRadius: 6,
+                color: update.kind === 'checking' ? '#555' : '#8ec1f0',
+                fontSize: '0.72rem', padding: '0.3rem 0.6rem',
+                cursor: update.kind === 'checking' ? 'default' : 'pointer',
+              }}
+            >
+              Check
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -2,9 +2,10 @@
  * IPC channel registry — main ↔ renderer.
  * All messages validated with Zod before acting. Renderer is untrusted.
  */
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, shell } from 'electron'
 import { z } from 'zod'
 import type { Policy } from '@mykka/detect'
+import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 
 const DecisionResponseSchema = z.object({
   requestId: z.string(),
@@ -48,14 +49,26 @@ export function registerIpcHandlers(options: {
   })
 
   ipcMain.handle('proxy:status', () => ({ proxyRunning, systemProxyActive }))
+
+  // Manual "Check for updates" from the tray UI. Returns the same shape the
+  // launch auto-check uses; the renderer renders "up to date" / "update
+  // available" from it. Never throws (checkForUpdate swallows failures).
+  ipcMain.handle('update:check', () => checkForUpdate())
+
+  // "Download" button — open the installer page in the user's browser.
+  ipcMain.on('update:open-download', () => {
+    void shell.openExternal(DOWNLOAD_URL)
+  })
 }
 
 export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('decision:respond')
   ipcMain.removeAllListeners('auth:sign-in')
   ipcMain.removeAllListeners('auth:cancel')
+  ipcMain.removeAllListeners('update:open-download')
   ipcMain.removeHandler('policy:get')
   ipcMain.removeHandler('proxy:status')
+  ipcMain.removeHandler('update:check')
 }
 
 // State shared between ipc-handlers and main — kept minimal
@@ -89,4 +102,12 @@ export function pushStatusUpdate(
   payload: { proxyRunning: boolean; policyAvailable: boolean; systemProxyActive?: boolean },
 ): void {
   win.webContents.send('status:update', payload)
+}
+
+/** Push an "update available" event to the tray renderer (from launch auto-check). */
+export function pushUpdateAvailable(
+  win: BrowserWindow,
+  payload: { current: string; latest: string },
+): void {
+  win.webContents.send('update:available', payload)
 }
