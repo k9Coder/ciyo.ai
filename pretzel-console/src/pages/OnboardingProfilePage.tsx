@@ -56,10 +56,16 @@ export function OnboardingProfilePage() {
   const [followUpAnswer, setFollowUpAnswer] = useState('')
   const [apiError, setApiError]         = useState<string | null>(null)
 
+  // Await the tenant refetch BEFORE navigating. invalidateQueries returns a
+  // promise that resolves once the refetch settles; navigating before it lands
+  // makes TenantBootstrap read the stale tenant (onboardingWizardCompleted still
+  // false) and bounce right back to /onboarding — a redirect loop that only
+  // "resolves" once the background refetch happens to complete (worse on a
+  // cold/slow API). Awaiting closes the race so the dashboard sees the fresh flag.
   const apply = useMutation({
     mutationFn: () => api.onboarding.applyTemplate(profession, followUpAnswer),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['tenant'] })
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['tenant'] })
       navigate('/dashboard', { replace: true })
     },
     onError: (e: Error) => setApiError(e.message),
@@ -67,8 +73,8 @@ export function OnboardingProfilePage() {
 
   const skip = useMutation({
     mutationFn: () => api.onboarding.skip(),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['tenant'] })
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['tenant'] })
       navigate('/dashboard', { replace: true })
     },
     onError: (e: Error) => setApiError(e.message),

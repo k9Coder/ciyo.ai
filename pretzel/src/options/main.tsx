@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { ClerkProvider } from "@clerk/chrome-extension";
-import { CLERK_PUBLISHABLE_KEY } from "@/shared/constants";
+import { CLERK_PUBLISHABLE_KEY, CLERK_SYNC_HOST } from "@/shared/constants";
 import { App } from "./App";
 import "./styles.css";
 import { initTheme } from "@/shared/theme";
@@ -14,6 +14,7 @@ if (!root) throw new Error("No #root element");
 createRoot(root).render(
   <ClerkProvider
     publishableKey={CLERK_PUBLISHABLE_KEY}
+    syncHost={CLERK_SYNC_HOST}
     afterSignOutUrl={window.location.href}
   >
     <LoadingProvider>

@@ -8,6 +8,7 @@ import forge from 'node-forge'
 import { execSync } from 'child_process'
 import path from 'path'
 import fs from 'fs'
+import { getKeytar } from './keytar-interop'
 
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT = 'local-ca-key'
@@ -129,12 +130,12 @@ export function installCACert(certPath: string): void {
 
 /** Store the CA private key PEM in the OS keychain. */
 export async function storeCAKeyInKeychain(keyPem: string): Promise<void> {
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   await keytar.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, keyPem)
 }
 
 /** Retrieve the CA private key PEM from the OS keychain. Returns null if not stored. */
 export async function loadCAKeyFromKeychain(): Promise<string | null> {
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   return keytar.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
 }
