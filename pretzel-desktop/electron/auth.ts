@@ -17,6 +17,7 @@ import { app, shell } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { env } from './env'
+import { getKeytar } from './keytar-interop'
 
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT_TOKEN = 'session-token'
@@ -73,31 +74,31 @@ function writeE2eCreds(creds: Record<string, string>): void {
 
 export async function storeToken(token: string): Promise<void> {
   if (E2E_CRED_FALLBACK) { const c = readE2eCreds(); c[KEYCHAIN_ACCOUNT_TOKEN] = token; writeE2eCreds(c); return }
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   await keytar.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN, token)
 }
 
 export async function loadToken(): Promise<string | null> {
   if (E2E_CRED_FALLBACK) return readE2eCreds()[KEYCHAIN_ACCOUNT_TOKEN] ?? null
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   return keytar.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN)
 }
 
 export async function storeTenantId(tenantId: string): Promise<void> {
   if (E2E_CRED_FALLBACK) { const c = readE2eCreds(); c[KEYCHAIN_ACCOUNT_TENANT] = tenantId; writeE2eCreds(c); return }
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   await keytar.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT, tenantId)
 }
 
 export async function loadTenantId(): Promise<string | null> {
   if (E2E_CRED_FALLBACK) return readE2eCreds()[KEYCHAIN_ACCOUNT_TENANT] ?? null
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   return keytar.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT)
 }
 
 export async function clearCredentials(): Promise<void> {
   if (E2E_CRED_FALLBACK) { try { fs.unlinkSync(e2eCredPath()) } catch { /* already gone */ } saveAuthState({ authenticated: false }); return }
-  const keytar = await import('keytar')
+  const keytar = await getKeytar()
   await keytar.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TOKEN)
   await keytar.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_TENANT)
   saveAuthState({ authenticated: false })
