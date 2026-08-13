@@ -7,8 +7,14 @@
  * is blind-tunnelled (raw TCP pipe, no interception) so we never MITM banking,
  * email, SSO, or cert-pinned traffic.
  *
- *   monitored host:  client → TLS-terminate → detect → forward/block → upstream
+ *   monitored host, mutating (POST/PUT/PATCH):
+ *                    client → TLS-terminate → detect → forward/block → upstream
+ *   monitored host, other methods (GET/asset/poll):
+ *                    client → TLS-terminate → stream straight through (no detect)
  *   other host:      client → raw pipe → upstream   (no TLS interception)
+ *
+ * Only mutating requests can carry a prompt, so only those are buffered and
+ * inspected; everything else is streamed to keep the site fast and intact.
  *
  * Streaming/SSE: the request body (the prompt) is buffered — it is a small
  * JSON POST — but the upstream RESPONSE is piped straight through and never
@@ -161,12 +167,41 @@ export class PretzelProxy extends EventEmitter {
     upstream.on('error', () => clientSocket.destroy())
   }
 
+  // Hop-by-hop headers must not be forwarded to the upstream (RFC 7230 §6.1).
+  // Passing them through — especially after downgrading the client's HTTP/2 to
+  // the HTTP/1.1 we speak upstream — is what let chatgpt's edge reject the
+  // re-emitted request with 431 (Request Header Fields Too Large).
+  private static readonly HOP_BY_HOP = new Set([
+    'connection', 'proxy-connection', 'keep-alive', 'transfer-encoding',
+    'upgrade', 'te', 'trailer', 'proxy-authorization',
+  ])
+
+  private sanitizeHeaders(headers: http.IncomingHttpHeaders): http.OutgoingHttpHeaders {
+    const out: http.OutgoingHttpHeaders = {}
+    for (const [k, v] of Object.entries(headers)) {
+      if (v === undefined) continue
+      if (PretzelProxy.HOP_BY_HOP.has(k.toLowerCase())) continue
+      out[k] = v
+    }
+    return out
+  }
+
   private async handleInterceptedRequest(
     hostname: string,
     port: number,
     clientReq: http.IncomingMessage,
     clientRes: http.ServerResponse,
   ): Promise<void> {
+    // Only mutating requests can carry a prompt body — inspect just those.
+    // Everything else on a monitored host (GET page loads, static assets, SSE
+    // polls like /sentinel/ping) is streamed straight through with no buffering,
+    // which is both faster and avoids corrupting non-prompt traffic.
+    const method = (clientReq.method ?? 'GET').toUpperCase()
+    if (method !== 'POST' && method !== 'PUT' && method !== 'PATCH') {
+      this.forwardStream(hostname, port, clientReq, clientRes)
+      return
+    }
+
     // Buffer the request body (capped). Prompts are small JSON POSTs.
     const chunks: Buffer[] = []
     let total = 0
@@ -217,7 +252,7 @@ export class PretzelProxy extends EventEmitter {
         port,
         path: clientReq.url,
         method: clientReq.method,
-        headers: clientReq.headers,
+        headers: this.sanitizeHeaders(clientReq.headers),
         servername: hostname,
       },
       (upstreamRes) => {
@@ -231,6 +266,39 @@ export class PretzelProxy extends EventEmitter {
     })
     if (body.length) upstreamReq.write(body)
     upstreamReq.end()
+  }
+
+  /**
+   * Forward a request we never need to inspect (non-mutating methods on a
+   * monitored host) straight upstream, streaming both directions — no body
+   * buffering, no detection. This is the fast path for the bulk of a monitored
+   * site's traffic (page loads, assets, polls).
+   */
+  private forwardStream(
+    hostname: string,
+    port: number,
+    clientReq: http.IncomingMessage,
+    clientRes: http.ServerResponse,
+  ): void {
+    const upstreamReq = https.request(
+      {
+        hostname,
+        port,
+        path: clientReq.url,
+        method: clientReq.method,
+        headers: this.sanitizeHeaders(clientReq.headers),
+        servername: hostname,
+      },
+      (upstreamRes) => {
+        clientRes.writeHead(upstreamRes.statusCode ?? 502, upstreamRes.headers)
+        upstreamRes.pipe(clientRes)
+      },
+    )
+    upstreamReq.on('error', () => {
+      if (!clientRes.headersSent) clientRes.writeHead(502)
+      clientRes.end()
+    })
+    clientReq.pipe(upstreamReq) // stream the request body straight through
   }
 
   private tunnelUpgrade(
