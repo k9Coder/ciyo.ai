@@ -14,7 +14,8 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
-import { generateCACert, saveCACertFile, installCACert, isCACertTrusted, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { ensureHostHardening } from './hardening'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
@@ -75,19 +76,11 @@ async function ensureCA(): Promise<CACert> {
     ca = generated
   }
 
-  // Ensure the cert is actually trusted every launch — not just when first
-  // generated. This self-heals the common case where the very first run
-  // couldn't elevate (so the store write was skipped) and every launch since
-  // has silently served an untrusted MITM cert (ERR_CERT_AUTHORITY_INVALID).
-  // installCACert pops a single native elevation prompt; if the user declines,
-  // we log and carry on (proxy works, just untrusted) rather than crash.
-  if (!isCACertTrusted()) {
-    try {
-      await installCACert(certPath)
-    } catch (err) {
-      console.error('[pretzel-desktop] CA trust install failed or was declined:', err)
-    }
-  }
+  // Ensure the host is set up for interception every launch — trust our CA in
+  // the OS root store AND block QUIC so Chromium's HTTP/3 can't bypass the
+  // proxy. Batched into one elevation prompt, only for whatever's missing, and
+  // self-healing if a prior run couldn't elevate. Never throws.
+  await ensureHostHardening(certPath)
   return ca
 }
 
