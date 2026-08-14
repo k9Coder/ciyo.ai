@@ -36,6 +36,20 @@ export const PROXY_PORT = 18888
 /** Max request body we will buffer for inspection (2 MB). Larger → forward unscanned. */
 const MAX_INSPECT_BYTES = 2 * 1024 * 1024
 
+/**
+ * Max size (bytes) of the request headers our servers will parse from the
+ * client. Node's http.Server defaults to 16KB — fine for ordinary sites, but
+ * chatgpt (and similarly cookie-heavy SPAs) routinely exceeds it, and Node's
+ * parser doesn't degrade gracefully: it throws "Parse Error: Header overflow"
+ * and emits 'clientError' — silently dropping the request (destroying the
+ * socket) unless clientError is explicitly handled. This is a DIFFERENT limit
+ * from chatgpt's own upstream HTTP/1.1 rejection (431, fixed by forwarding
+ * over HTTP/2) — this one is on our INBOUND side, parsing what the browser
+ * sends to us, and no upstream fix can touch it. 128KB gives real headroom
+ * for large session cookies.
+ */
+const MAX_HEADER_SIZE = 128 * 1024
+
 /** How long we hold a request waiting for a user decision before applying failMode. */
 const DECISION_TIMEOUT_MS = 30_000
 
@@ -102,7 +116,7 @@ export class PretzelProxy extends EventEmitter {
 
   start(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.server = http.createServer()
+      this.server = http.createServer({ maxHeaderSize: MAX_HEADER_SIZE })
       this.server.on('connect', (req, socket, head) => {
         this.handleConnect(req, socket as net.Socket, head)
       })
@@ -158,12 +172,19 @@ export class PretzelProxy extends EventEmitter {
     })
     tlsSocket.on('error', () => tlsSocket.destroy())
 
-    const interceptServer = http.createServer((clientReq, clientRes) => {
+    const interceptServer = http.createServer({ maxHeaderSize: MAX_HEADER_SIZE }, (clientReq, clientRes) => {
       void this.handleInterceptedRequest(hostname, port, clientReq, clientRes)
     })
     // Upgrades (WebSocket) are not inspected — pass them straight upstream.
     interceptServer.on('upgrade', (upReq, upSocket) => {
       this.tunnelUpgrade(hostname, port, upReq, upSocket as net.Socket)
+    })
+    // Without an explicit handler, Node's http.Server responds to a request it
+    // can't parse (e.g. headers over maxHeaderSize) by just destroying the
+    // socket — the request vanishes with no signal to the client at all,
+    // which is worse than an honest error.
+    interceptServer.on('clientError', (_err, socket) => {
+      if (!socket.destroyed) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
     })
     interceptServer.emit('connection', tlsSocket)
   }
