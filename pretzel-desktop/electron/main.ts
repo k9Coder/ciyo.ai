@@ -318,4 +318,22 @@ for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) {
   })
 }
 
+// Last-resort safety nets so we never strand the user behind our proxy with no
+// internet. restoreSystemProxy() is synchronous (execSync), so it's safe to run
+// in an 'exit' handler. 'exit' covers normal/most abrupt teardowns the signal
+// handlers above miss; uncaughtException/unhandledRejection cover a crash in our
+// own code. (A hard SIGKILL / Task Manager "End task" still can't be caught —
+// that's what the activate-time crash-recovery guard in system-proxy.ts is for.)
+process.on('exit', () => { restoreSystemProxy() })
+process.on('uncaughtException', (err) => {
+  console.error('[pretzel-desktop] Uncaught exception:', err)
+  restoreSystemProxy()
+  process.exit(1)
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('[pretzel-desktop] Unhandled rejection:', reason)
+  restoreSystemProxy()
+  process.exit(1)
+})
+
 export { setCurrentPolicy }
