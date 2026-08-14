@@ -14,7 +14,7 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
-import { generateCACert, saveCACertFile, installCACert, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { generateCACert, saveCACertFile, installCACert, isCACertTrusted, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
@@ -62,21 +62,33 @@ let ca: CACert | null = null
 async function ensureCA(): Promise<CACert> {
   const storedKey = await loadCAKeyFromKeychain()
   const certPath = path.join(app.getPath('userData'), 'pretzel-ca.crt')
+  const fs = await import('fs')
 
-  if (storedKey) {
-    const fs = await import('fs')
-    if (fs.existsSync(certPath)) {
-      const certPem = fs.readFileSync(certPath, 'utf-8')
-      const cert = forge.pki.certificateFromPem(certPem)
-      return { cert, certPem, keyPem: storedKey }
-    }
+  let ca: CACert
+  if (storedKey && fs.existsSync(certPath)) {
+    const certPem = fs.readFileSync(certPath, 'utf-8')
+    ca = { cert: forge.pki.certificateFromPem(certPem), certPem, keyPem: storedKey }
+  } else {
+    const generated = generateCACert()
+    saveCACertFile(generated.certPem)
+    await storeCAKeyInKeychain(generated.keyPem)
+    ca = generated
   }
 
-  const generated = generateCACert()
-  const saved = saveCACertFile(generated.certPem)
-  await storeCAKeyInKeychain(generated.keyPem)
-  installCACert(saved)
-  return generated
+  // Ensure the cert is actually trusted every launch — not just when first
+  // generated. This self-heals the common case where the very first run
+  // couldn't elevate (so the store write was skipped) and every launch since
+  // has silently served an untrusted MITM cert (ERR_CERT_AUTHORITY_INVALID).
+  // installCACert pops a single native elevation prompt; if the user declines,
+  // we log and carry on (proxy works, just untrusted) rather than crash.
+  if (!isCACertTrusted()) {
+    try {
+      await installCACert(certPath)
+    } catch (err) {
+      console.error('[pretzel-desktop] CA trust install failed or was declined:', err)
+    }
+  }
+  return ca
 }
 
 function rebuildTrayMenu(authenticated: boolean): void {
