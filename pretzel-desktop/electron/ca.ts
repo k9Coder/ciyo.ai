@@ -126,10 +126,15 @@ export function isCACertTrusted(): boolean {
       case 'darwin':
         execSync(`security find-certificate -c "${CA_COMMON_NAME}" /Library/Keychains/System.keychain`, { stdio: 'ignore' })
         return true
-      case 'win32':
-        // certutil exits non-zero if the store has no cert matching the CN.
-        execSync(`certutil -store Root "${CA_COMMON_NAME}"`, { stdio: 'ignore' })
-        return true
+      case 'win32': {
+        // NOT `certutil -store Root "<CN>"` — that filters by CN, but exits 0
+        // ("command completed successfully") even when the filter matches
+        // nothing, so it can never observe "not trusted". List the whole
+        // store instead and text-search the output for our CN — the only
+        // reliable signal.
+        const out = execSync('certutil -store Root', { encoding: 'utf8' })
+        return out.includes(CA_COMMON_NAME)
+      }
       case 'linux':
         return fs.existsSync('/usr/local/share/ca-certificates/pretzel-ca.crt')
       default:
