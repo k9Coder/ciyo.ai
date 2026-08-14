@@ -13,6 +13,8 @@ import { getKeytar } from './keytar-interop'
 const KEYCHAIN_SERVICE = 'pretzel-desktop'
 const KEYCHAIN_ACCOUNT = 'local-ca-key'
 const CA_CERT_FILENAME = 'pretzel-ca.crt'
+/** Common Name of the CA — used to look it up in the OS trust store. */
+const CA_COMMON_NAME = 'Pretzel Desktop Local CA'
 
 export interface CACert {
   cert: forge.pki.Certificate
@@ -113,18 +115,58 @@ export function saveCACertFile(certPem: string): string {
   return certPath
 }
 
-/** Install CA cert into OS trust store. Requires elevated privileges on first run. */
-export function installCACert(certPath: string): void {
+/**
+ * Is our CA already trusted in the OS root store? Lets us install it once and
+ * skip (or re-attempt) on later launches, and — critically — recover when a
+ * first-run install was silently skipped because the app wasn't elevated.
+ */
+export function isCACertTrusted(): boolean {
+  try {
+    switch (process.platform) {
+      case 'darwin':
+        execSync(`security find-certificate -c "${CA_COMMON_NAME}" /Library/Keychains/System.keychain`, { stdio: 'ignore' })
+        return true
+      case 'win32':
+        // certutil exits non-zero if the store has no cert matching the CN.
+        execSync(`certutil -store Root "${CA_COMMON_NAME}"`, { stdio: 'ignore' })
+        return true
+      case 'linux':
+        return fs.existsSync('/usr/local/share/ca-certificates/pretzel-ca.crt')
+      default:
+        return false
+    }
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Install the CA cert into the OS trust store, elevating with a single native
+ * prompt (UAC on Windows, admin password on macOS, pkexec on Linux). Writing to
+ * the machine root store requires admin, so a plain unelevated exec silently
+ * failed before — leaving the MITM proxy untrusted (ERR_CERT_AUTHORITY_INVALID)
+ * with only a "Proxy start failed" log. Rejects if the user cancels the prompt.
+ */
+export async function installCACert(certPath: string): Promise<void> {
   switch (process.platform) {
-    case 'darwin':
-      execSync(`security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "${certPath}"`)
+    case 'darwin': {
+      const inner = `security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \\"${certPath}\\"`
+      // osascript shows the native admin dialog and runs the command as root.
+      execSync(`osascript -e 'do shell script "${inner}" with administrator privileges'`)
       break
-    case 'win32':
-      execSync(`certutil -addstore Root "${certPath}"`)
+    }
+    case 'win32': {
+      // Start-Process -Verb RunAs triggers the UAC prompt; -Wait so we don't
+      // return before the store write completes.
+      const ps = `Start-Process -FilePath certutil -ArgumentList '-addstore','Root','"${certPath}"' -Verb RunAs -Wait`
+      execSync(`powershell -NoProfile -Command "${ps}"`)
       break
-    case 'linux':
-      execSync(`cp "${certPath}" /usr/local/share/ca-certificates/pretzel-ca.crt && update-ca-certificates`)
+    }
+    case 'linux': {
+      // pkexec pops the polkit auth dialog on desktop Linux.
+      execSync(`pkexec sh -c 'cp "${certPath}" /usr/local/share/ca-certificates/pretzel-ca.crt && update-ca-certificates'`)
       break
+    }
   }
 }
 

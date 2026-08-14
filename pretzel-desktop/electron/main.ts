@@ -14,7 +14,8 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
-import { generateCACert, saveCACertFile, installCACert, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { ensureHostHardening } from './hardening'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
@@ -62,21 +63,25 @@ let ca: CACert | null = null
 async function ensureCA(): Promise<CACert> {
   const storedKey = await loadCAKeyFromKeychain()
   const certPath = path.join(app.getPath('userData'), 'pretzel-ca.crt')
+  const fs = await import('fs')
 
-  if (storedKey) {
-    const fs = await import('fs')
-    if (fs.existsSync(certPath)) {
-      const certPem = fs.readFileSync(certPath, 'utf-8')
-      const cert = forge.pki.certificateFromPem(certPem)
-      return { cert, certPem, keyPem: storedKey }
-    }
+  let ca: CACert
+  if (storedKey && fs.existsSync(certPath)) {
+    const certPem = fs.readFileSync(certPath, 'utf-8')
+    ca = { cert: forge.pki.certificateFromPem(certPem), certPem, keyPem: storedKey }
+  } else {
+    const generated = generateCACert()
+    saveCACertFile(generated.certPem)
+    await storeCAKeyInKeychain(generated.keyPem)
+    ca = generated
   }
 
-  const generated = generateCACert()
-  const saved = saveCACertFile(generated.certPem)
-  await storeCAKeyInKeychain(generated.keyPem)
-  installCACert(saved)
-  return generated
+  // Ensure the host is set up for interception every launch — trust our CA in
+  // the OS root store AND block QUIC so Chromium's HTTP/3 can't bypass the
+  // proxy. Batched into one elevation prompt, only for whatever's missing, and
+  // self-healing if a prior run couldn't elevate. Never throws.
+  await ensureHostHardening(certPath)
+  return ca
 }
 
 function rebuildTrayMenu(authenticated: boolean): void {
@@ -317,5 +322,23 @@ for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) {
     process.exit(0)
   })
 }
+
+// Last-resort safety nets so we never strand the user behind our proxy with no
+// internet. restoreSystemProxy() is synchronous (execSync), so it's safe to run
+// in an 'exit' handler. 'exit' covers normal/most abrupt teardowns the signal
+// handlers above miss; uncaughtException/unhandledRejection cover a crash in our
+// own code. (A hard SIGKILL / Task Manager "End task" still can't be caught —
+// that's what the activate-time crash-recovery guard in system-proxy.ts is for.)
+process.on('exit', () => { restoreSystemProxy() })
+process.on('uncaughtException', (err) => {
+  console.error('[pretzel-desktop] Uncaught exception:', err)
+  restoreSystemProxy()
+  process.exit(1)
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('[pretzel-desktop] Unhandled rejection:', reason)
+  restoreSystemProxy()
+  process.exit(1)
+})
 
 export { setCurrentPolicy }
