@@ -22,8 +22,10 @@
  */
 import http from 'http'
 import https from 'https'
+import http2 from 'http2'
 import net from 'net'
 import tls from 'tls'
+import zlib from 'zlib'
 import { EventEmitter } from 'events'
 import { detectPrompt } from '@mykka/detect'
 import type { Policy, DetectionResult } from '@mykka/detect'
@@ -76,6 +78,11 @@ export class PretzelProxy extends EventEmitter {
   private ca: CACert | null = null
   private policy: Policy | null = null
   private pending = new Map<string, (allow: boolean) => void>()
+  // Pooled HTTP/2 client sessions, keyed by "host:port". We forward monitored
+  // traffic to upstream over HTTP/2 (see forwardH2) so we don't downgrade the
+  // client's HTTP/2 to HTTP/1.1 — that downgrade is what tripped chatgpt's edge
+  // into 431 (Request Header Fields Too Large) on every request.
+  private h2Sessions = new Map<string, http2.ClientHttp2Session>()
 
   setCA(ca: CACert): void {
     this.ca = ca
@@ -107,6 +114,10 @@ export class PretzelProxy extends EventEmitter {
   stop(): Promise<void> {
     return new Promise((resolve) => {
       for (const [id, r] of this.pending) { r(this.failOpen()); this.pending.delete(id) }
+      for (const session of this.h2Sessions.values()) {
+        try { session.close() } catch { /* already gone */ }
+      }
+      this.h2Sessions.clear()
       if (!this.server) return resolve()
       this.server.close(() => resolve())
       this.server = null
@@ -167,10 +178,9 @@ export class PretzelProxy extends EventEmitter {
     upstream.on('error', () => clientSocket.destroy())
   }
 
-  // Hop-by-hop headers must not be forwarded to the upstream (RFC 7230 §6.1).
-  // Passing them through — especially after downgrading the client's HTTP/2 to
-  // the HTTP/1.1 we speak upstream — is what let chatgpt's edge reject the
-  // re-emitted request with 431 (Request Header Fields Too Large).
+  // Hop-by-hop headers must not be forwarded to the upstream (RFC 7230 §6.1),
+  // and several are outright illegal in HTTP/2. Stripped on both the HTTP/2 and
+  // the HTTP/1.1-fallback forward paths.
   private static readonly HOP_BY_HOP = new Set([
     'connection', 'proxy-connection', 'keep-alive', 'transfer-encoding',
     'upgrade', 'te', 'trailer', 'proxy-authorization',
@@ -198,7 +208,8 @@ export class PretzelProxy extends EventEmitter {
     // which is both faster and avoids corrupting non-prompt traffic.
     const method = (clientReq.method ?? 'GET').toUpperCase()
     if (method !== 'POST' && method !== 'PUT' && method !== 'PATCH') {
-      this.forwardStream(hostname, port, clientReq, clientRes)
+      // No prompt body to inspect — forward with no body (GET/HEAD/etc.).
+      this.forwardH2(hostname, port, clientReq, clientRes, null)
       return
     }
 
@@ -213,7 +224,11 @@ export class PretzelProxy extends EventEmitter {
       chunks.push(buf)
     }
     const bodyBuf = Buffer.concat(chunks)
-    const body = bodyBuf.toString('utf-8')
+    // Detection needs plaintext. If the client compressed the request body
+    // (content-encoding gzip/br/deflate), decompress a copy for inspection but
+    // forward the ORIGINAL bytes unchanged so we never corrupt the upstream
+    // request. On any decompression failure, fall back to the raw bytes.
+    const body = this.decompressForInspection(bodyBuf, clientReq.headers)
 
     if (!truncated && body.length > 0 && this.policy) {
       try {
@@ -236,7 +251,104 @@ export class PretzelProxy extends EventEmitter {
       }
     }
 
-    this.forwardUpstream(hostname, port, clientReq, clientRes, bodyBuf)
+    this.forwardH2(hostname, port, clientReq, clientRes, bodyBuf)
+  }
+
+  /** Decompress a request body for inspection only; never mutates what's forwarded. */
+  private decompressForInspection(bodyBuf: Buffer, headers: http.IncomingHttpHeaders): string {
+    const enc = String(headers['content-encoding'] ?? '').toLowerCase()
+    try {
+      if (enc.includes('br'))      return zlib.brotliDecompressSync(bodyBuf).toString('utf-8')
+      if (enc.includes('gzip'))    return zlib.gunzipSync(bodyBuf).toString('utf-8')
+      if (enc.includes('deflate')) return zlib.inflateSync(bodyBuf).toString('utf-8')
+    } catch { /* not actually compressed / bad data → inspect raw */ }
+    return bodyBuf.toString('utf-8')
+  }
+
+  // ─── HTTP/2 upstream forwarding ────────────────────────────────────────────
+
+  private getH2Session(hostname: string, port: number): http2.ClientHttp2Session {
+    const key = `${hostname}:${port}`
+    const existing = this.h2Sessions.get(key)
+    if (existing && !existing.closed && !existing.destroyed) return existing
+
+    const session = http2.connect(`https://${hostname}:${port}`)
+    const drop = () => { this.h2Sessions.delete(key) }
+    session.on('error', () => { drop(); try { session.destroy() } catch { /* noop */ } })
+    session.on('close', drop)
+    this.h2Sessions.set(key, session)
+    return session
+  }
+
+  private toH2RequestHeaders(clientReq: http.IncomingMessage, hostname: string): http2.OutgoingHttpHeaders {
+    const h: http2.OutgoingHttpHeaders = {
+      ':method':    clientReq.method ?? 'GET',
+      ':path':      clientReq.url ?? '/',
+      ':scheme':    'https',
+      ':authority': hostname,
+    }
+    for (const [k, v] of Object.entries(clientReq.headers)) {
+      if (v === undefined) continue
+      const key = k.toLowerCase()
+      // Drop hop-by-hop + anything HTTP/2 forbids (host → :authority).
+      if (PretzelProxy.HOP_BY_HOP.has(key) || key === 'host' || key === 'http2-settings') continue
+      h[key] = v
+    }
+    return h
+  }
+
+  private fromH2ResponseHeaders(headers: http2.IncomingHttpHeaders): http.OutgoingHttpHeaders {
+    const out: http.OutgoingHttpHeaders = {}
+    for (const [k, v] of Object.entries(headers)) {
+      if (k.startsWith(':') || v === undefined) continue // strip pseudo-headers
+      out[k] = v as string | string[]
+    }
+    return out
+  }
+
+  /**
+   * Forward a monitored request to upstream over HTTP/2 (matching what the
+   * browser speaks), streaming the response back. Falls back to HTTP/1.1
+   * (forwardUpstream) if the h2 stream errors before a response — e.g. the rare
+   * upstream that doesn't offer h2. `body` is the already-buffered request body
+   * (POST/PUT/PATCH) or null for methods with no body.
+   */
+  private forwardH2(
+    hostname: string,
+    port: number,
+    clientReq: http.IncomingMessage,
+    clientRes: http.ServerResponse,
+    body: Buffer | null,
+  ): void {
+    let session: http2.ClientHttp2Session
+    try {
+      session = this.getH2Session(hostname, port)
+    } catch {
+      this.forwardUpstream(hostname, port, clientReq, clientRes, body ?? Buffer.alloc(0))
+      return
+    }
+
+    const h2req = session.request(this.toH2RequestHeaders(clientReq, hostname))
+    let responded = false
+
+    h2req.on('response', (headers) => {
+      responded = true
+      const status = Number(headers[':status'] ?? 502)
+      clientRes.writeHead(status, this.fromH2ResponseHeaders(headers))
+      h2req.pipe(clientRes) // stream — SSE-safe, never buffered
+    })
+    h2req.on('error', () => {
+      // Fall back to HTTP/1.1 once, but only if nothing was sent to the client
+      // yet. The request body is fully buffered (or empty), so re-sending is safe.
+      if (!responded && !clientRes.headersSent) {
+        this.forwardUpstream(hostname, port, clientReq, clientRes, body ?? Buffer.alloc(0))
+      } else if (!clientRes.writableEnded) {
+        clientRes.end()
+      }
+    })
+
+    if (body && body.length) h2req.end(body)
+    else h2req.end()
   }
 
   private forwardUpstream(
@@ -266,39 +378,6 @@ export class PretzelProxy extends EventEmitter {
     })
     if (body.length) upstreamReq.write(body)
     upstreamReq.end()
-  }
-
-  /**
-   * Forward a request we never need to inspect (non-mutating methods on a
-   * monitored host) straight upstream, streaming both directions — no body
-   * buffering, no detection. This is the fast path for the bulk of a monitored
-   * site's traffic (page loads, assets, polls).
-   */
-  private forwardStream(
-    hostname: string,
-    port: number,
-    clientReq: http.IncomingMessage,
-    clientRes: http.ServerResponse,
-  ): void {
-    const upstreamReq = https.request(
-      {
-        hostname,
-        port,
-        path: clientReq.url,
-        method: clientReq.method,
-        headers: this.sanitizeHeaders(clientReq.headers),
-        servername: hostname,
-      },
-      (upstreamRes) => {
-        clientRes.writeHead(upstreamRes.statusCode ?? 502, upstreamRes.headers)
-        upstreamRes.pipe(clientRes)
-      },
-    )
-    upstreamReq.on('error', () => {
-      if (!clientRes.headersSent) clientRes.writeHead(502)
-      clientRes.end()
-    })
-    clientReq.pipe(upstreamReq) // stream the request body straight through
   }
 
   private tunnelUpgrade(
