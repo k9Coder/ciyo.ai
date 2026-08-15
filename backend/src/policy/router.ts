@@ -31,6 +31,17 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
       const policy = req.member
         ? await resolveMemberPolicy(req.tenant.id, req.member.id, snapshot)
         : snapshot
+      // TEMP DIAGNOSTIC — surfaced as a response header (not the body, so
+      // PolicyDocSchema on the client can't choke on it) so it's directly
+      // curl-able without needing access to the Render log dashboard.
+      reply.header('X-Diag-Resolution', JSON.stringify({
+        reqTenantId: req.tenant.id,
+        reqMemberId: req.member?.id ?? null,
+        tokenPrefix: req.tokenPrefix,
+        rowVersion: row.version,
+        snapshotSubjects: snapshot.subjects.length,
+        resolvedSubjects: (policy as { subjects: unknown[] }).subjects.length,
+      }))
 
       const response: Record<string, unknown> = {
         version: row.version,

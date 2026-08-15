@@ -15,7 +15,7 @@
  * invocation so the user sees at most one native prompt (UAC / admin dialog /
  * polkit), and only when something actually needs doing.
  */
-import { execSync } from 'child_process'
+import { execSync, execFileSync } from 'child_process'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -81,17 +81,24 @@ function runElevated(fragments: string[]): void {
   if (!script) return
 
   if (process.platform === 'win32') {
-    // Write a temp .bat and elevate it via UAC — far more robust than trying to
-    // quote certutil paths + netsh args through a single powershell -Command.
+    // Write the work to a temp .bat, then a wrapper .ps1 that elevates it via
+    // UAC (Start-Process -Verb RunAs -Wait), and invoke that .ps1 with
+    // execFileSync (argv array, NOT a shell string). execSync would run this
+    // through cmd.exe, and a quoted `-Command "Start-Process ... -Verb RunAs
+    // ..."` inside an outer quoted string gets mangled by cmd's quote
+    // parsing — it silently no-ops (no UAC ever appears) instead of erroring,
+    // which is exactly the bug this replaces. execFileSync passes args
+    // directly to the process with no shell involved, so there's no quoting
+    // to get wrong.
     const bat = path.join(os.tmpdir(), `pretzel-setup-${Date.now()}.bat`)
+    const ps1 = path.join(os.tmpdir(), `pretzel-setup-${Date.now()}.ps1`)
     fs.writeFileSync(bat, `@echo off\r\n${script}\r\n`, 'utf-8')
+    fs.writeFileSync(ps1, `Start-Process -FilePath '${bat}' -Verb RunAs -Wait\r\n`, 'utf-8')
     try {
-      execSync(
-        `powershell -NoProfile -Command "Start-Process -FilePath '${bat}' -Verb RunAs -Wait"`,
-        { stdio: 'ignore' },
-      )
+      execFileSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1], { stdio: 'ignore' })
     } finally {
       try { fs.unlinkSync(bat) } catch { /* best effort */ }
+      try { fs.unlinkSync(ps1) } catch { /* best effort */ }
     }
     return
   }

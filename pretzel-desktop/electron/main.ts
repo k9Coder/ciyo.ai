@@ -60,28 +60,31 @@ let tray: Tray | null = null
 let trayWin: BrowserWindow | null = null
 let ca: CACert | null = null
 
+function caCertPath(): string {
+  return path.join(app.getPath('userData'), 'pretzel-ca.crt')
+}
+
+// Deliberately does NOT run host hardening (elevation) — see startProxy(),
+// which fires that in the background AFTER the proxy is already listening and
+// the system proxy is already pointed at it. Blocking here on a UAC prompt
+// (as an earlier version did) meant that if the prompt went unnoticed, the OS
+// proxy could sit pointed at a port nothing was listening on yet for as long
+// as the prompt was pending — a full internet outage, not just "degraded
+// protection". Getting the proxy up must never wait on elevation.
 async function ensureCA(): Promise<CACert> {
   const storedKey = await loadCAKeyFromKeychain()
-  const certPath = path.join(app.getPath('userData'), 'pretzel-ca.crt')
+  const certPath = caCertPath()
   const fs = await import('fs')
 
-  let ca: CACert
   if (storedKey && fs.existsSync(certPath)) {
     const certPem = fs.readFileSync(certPath, 'utf-8')
-    ca = { cert: forge.pki.certificateFromPem(certPem), certPem, keyPem: storedKey }
-  } else {
-    const generated = generateCACert()
-    saveCACertFile(generated.certPem)
-    await storeCAKeyInKeychain(generated.keyPem)
-    ca = generated
+    return { cert: forge.pki.certificateFromPem(certPem), certPem, keyPem: storedKey }
   }
 
-  // Ensure the host is set up for interception every launch — trust our CA in
-  // the OS root store AND block QUIC so Chromium's HTTP/3 can't bypass the
-  // proxy. Batched into one elevation prompt, only for whatever's missing, and
-  // self-healing if a prior run couldn't elevate. Never throws.
-  await ensureHostHardening(certPath)
-  return ca
+  const generated = generateCACert()
+  saveCACertFile(generated.certPem)
+  await storeCAKeyInKeychain(generated.keyPem)
+  return generated
 }
 
 function rebuildTrayMenu(authenticated: boolean): void {
@@ -186,6 +189,16 @@ async function startProxy(): Promise<void> {
   activateSystemProxy(PROXY_PORT)
   setSystemProxyActive(true)
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
+
+  // Host hardening (CA trust + QUIC block) runs in the BACKGROUND, only after
+  // the proxy is already up and the OS is already pointed at it — it must
+  // never be on the critical path to getting the user's internet working.
+  // Until it's approved, intercepted hosts show a cert warning and QUIC can
+  // bypass inspection on them; general (non-monitored) browsing is unaffected
+  // either way, so there's nothing to lose by not waiting on it here.
+  void ensureHostHardening(caCertPath()).catch((err) => {
+    console.error('[pretzel-desktop] Host hardening failed:', err)
+  })
 }
 
 /**

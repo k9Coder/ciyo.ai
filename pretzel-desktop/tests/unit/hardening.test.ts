@@ -1,15 +1,17 @@
 /**
  * Unit tests for hardening.ts — CA-trust + QUIC-block batched into a single
- * elevation. execSync/fs are mocked so no real OS commands or prompts run.
+ * elevation. execSync/execFileSync/fs are mocked so no real OS commands or
+ * prompts run.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { mockExecSync, mockIsCACertTrusted } = vi.hoisted(() => ({
+const { mockExecSync, mockExecFileSync, mockIsCACertTrusted } = vi.hoisted(() => ({
   mockExecSync: vi.fn(),
+  mockExecFileSync: vi.fn(),
   mockIsCACertTrusted: vi.fn(() => false),
 }))
 
-vi.mock('child_process', () => ({ execSync: mockExecSync }))
+vi.mock('child_process', () => ({ execSync: mockExecSync, execFileSync: mockExecFileSync }))
 vi.mock('fs', () => ({ default: { writeFileSync: vi.fn(), unlinkSync: vi.fn() }, writeFileSync: vi.fn(), unlinkSync: vi.fn() }))
 vi.mock('../../electron/ca', () => ({ isCACertTrusted: mockIsCACertTrusted }))
 
@@ -41,34 +43,39 @@ describe('isQuicBlocked (win32)', () => {
 })
 
 describe('ensureHostHardening', () => {
-  it('runs ONE elevated invocation when both CA + QUIC are missing', async () => {
+  it('runs ONE elevated invocation (via execFileSync, no shell) when both CA + QUIC are missing', async () => {
     mockIsCACertTrusted.mockReturnValue(false)
     mockExecSync.mockImplementation((cmd: string) => {
       if (cmd.includes('show rule')) return 'No rules match the specified criteria.\n'
       return ''
     })
     await ensureHostHardening(CERT)
-    // Exactly one elevation (Start-Process -Verb RunAs); the show-rule query
-    // above is a read, not an elevation.
-    const elevations = mockExecSync.mock.calls.filter(([c]) => typeof c === 'string' && c.includes('RunAs'))
-    expect(elevations).toHaveLength(1)
+    // The elevation must go through execFileSync (argv array, no shell — this
+    // is what actually pops UAC; execSync would shell out through cmd.exe and
+    // mangle the nested quotes, silently no-opping instead).
+    expect(mockExecFileSync).toHaveBeenCalledTimes(1)
+    const [bin, args] = mockExecFileSync.mock.calls[0]!
+    expect(bin).toBe('powershell.exe')
+    expect(args).toContain('-File')
+    // Never elevate by shelling a "...RunAs..." string through execSync.
+    const shelledElevation = mockExecSync.mock.calls.find(([c]) => typeof c === 'string' && c.includes('RunAs'))
+    expect(shelledElevation).toBeUndefined()
   })
 
   it('does nothing when CA is trusted AND QUIC is blocked', async () => {
     mockIsCACertTrusted.mockReturnValue(true)
     mockExecSync.mockReturnValue('Rule Name: Pretzel Desktop - Block QUIC (UDP 443)\n')
     await ensureHostHardening(CERT)
-    const elevations = mockExecSync.mock.calls.filter(([c]) => typeof c === 'string' && c.includes('RunAs'))
-    expect(elevations).toHaveLength(0)
+    expect(mockExecFileSync).not.toHaveBeenCalled()
   })
 
   it('never throws when elevation fails or is declined', async () => {
     mockIsCACertTrusted.mockReturnValue(false)
     mockExecSync.mockImplementation((cmd: string) => {
       if (cmd.includes('show rule')) return 'No rules match.\n'
-      if (cmd.includes('RunAs')) throw new Error('user declined UAC')
       return ''
     })
+    mockExecFileSync.mockImplementation(() => { throw new Error('user declined UAC') })
     await expect(ensureHostHardening(CERT)).resolves.toBeUndefined()
   })
 })

@@ -1,14 +1,19 @@
 /**
  * CA cert generation and per-host signing tests.
- * Does NOT test OS trust store install (that requires elevated privileges).
+ * Does NOT test the actual OS trust store install (that requires elevated
+ * privileges) — but isCACertTrusted's read-only check IS covered below, with
+ * execSync mocked.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import forge from 'node-forge'
+
+const { mockExecSync } = vi.hoisted(() => ({ mockExecSync: vi.fn() }))
 
 // Mock electron so ca.ts can be imported without a real Electron binary
 vi.mock('electron', () => ({ app: { getPath: vi.fn(() => '/tmp/pretzel-test') } }))
+vi.mock('child_process', () => ({ execSync: mockExecSync }))
 
-import { generateCACert, signHostCert, signHostCertCached, clearHostCertCache } from '../../electron/ca'
+import { generateCACert, signHostCert, signHostCertCached, clearHostCertCache, isCACertTrusted } from '../../electron/ca'
 
 describe('generateCACert', () => {
   it('returns certPem, keyPem, and cert object', () => {
@@ -110,5 +115,39 @@ describe('S8: signHostCertCached', () => {
     const a = signHostCertCached('host.example.com', ca1)
     const b = signHostCertCached('host.example.com', ca2)
     expect(b).not.toBe(a)
+  })
+})
+
+describe('isCACertTrusted (win32)', () => {
+  const realPlatform = process.platform
+  function setPlatform(p: NodeJS.Platform) {
+    Object.defineProperty(process, 'platform', { value: p, configurable: true })
+  }
+
+  afterEach(() => {
+    setPlatform(realPlatform)
+    mockExecSync.mockReset()
+  })
+
+  it('false when the store listing does not mention our CA', () => {
+    setPlatform('win32')
+    // Regression: `certutil -store Root "<CN>"` exits 0 ("command completed
+    // successfully") even when the filter matches nothing, so checking the
+    // exit code alone can never observe "not trusted" — it must inspect the
+    // actual listing.
+    mockExecSync.mockReturnValue('================ Certificate 0 ================\nSome Other CA\nCertUtil: -store command completed successfully.\n')
+    expect(isCACertTrusted()).toBe(false)
+  })
+
+  it('true when the store listing includes our CA CN', () => {
+    setPlatform('win32')
+    mockExecSync.mockReturnValue('================ Certificate 3 ================\nIssuer: CN=Pretzel Desktop Local CA, O=mykka.ai\n...\nCertUtil: -store command completed successfully.\n')
+    expect(isCACertTrusted()).toBe(true)
+  })
+
+  it('false when the command itself throws', () => {
+    setPlatform('win32')
+    mockExecSync.mockImplementation(() => { throw new Error('certutil not found') })
+    expect(isCACertTrusted()).toBe(false)
   })
 })
