@@ -16,6 +16,7 @@ import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
 import { ensureHostHardening } from './hardening'
+import { ensureProxyWatchdog } from './proxy-watchdog'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
@@ -189,6 +190,14 @@ async function startProxy(): Promise<void> {
   activateSystemProxy(PROXY_PORT)
   setSystemProxyActive(true)
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
+
+  // Independent OS-scheduled safety net: nothing inside this process can react
+  // to a hard kill (Task Manager "End Task", crash, power loss) — no JS runs on
+  // a SIGKILL. The watchdog runs outside the process entirely and resets the
+  // system proxy within about a minute if we're gone but still configured as
+  // the active proxy. No elevation needed — same trust level as the proxy
+  // registry key it corrects. Fire-and-forget; never blocks startup.
+  ensureProxyWatchdog(app.getPath('userData'), PROXY_PORT)
 
   // Host hardening (CA trust + QUIC block) runs in the BACKGROUND, only after
   // the proxy is already up and the OS is already pointed at it — it must
