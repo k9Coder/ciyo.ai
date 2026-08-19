@@ -64,6 +64,13 @@
       "when": 1786186934666,
       "tag": "0008_productive_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1786896010334,
+      "tag": "0009_glossy_hellion",
+      "breakpoints": true
     }
   ]
 }

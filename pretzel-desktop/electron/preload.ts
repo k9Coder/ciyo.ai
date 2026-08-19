@@ -3,6 +3,8 @@
  * No nodeIntegration; renderer is sandboxed.
  */
 import { contextBridge, ipcRenderer } from 'electron'
+import type { AutoUpdateEvent as AutoUpdateEventPayload } from './auto-update'
+import type { ActivityEntry as ActivityEntryPayload } from './activity-log'
 
 contextBridge.exposeInMainWorld('pretzel', {
   // Decision UI
@@ -16,6 +18,9 @@ contextBridge.exposeInMainWorld('pretzel', {
   },
   respondDecision: (requestId: string, allow: boolean) => {
     ipcRenderer.send('decision:respond', { requestId, allow })
+  },
+  alwaysAllowRule: (ruleId: string) => {
+    ipcRenderer.send('decision:always-allow', ruleId)
   },
 
   // Status (tray UI)
@@ -44,12 +49,33 @@ contextBridge.exposeInMainWorld('pretzel', {
   getPolicy: () => ipcRenderer.invoke('policy:get'),
   getProxyStatus: () => ipcRenderer.invoke('proxy:status'),
 
+  // Window chrome (tray UI has none of its own — frame: false)
+  hideWindow: () => ipcRenderer.send('window:hide'),
+
+  // Settings
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setSettings: (patch: Record<string, unknown>) => ipcRenderer.invoke('settings:set', patch),
+
+  // Recent activity (local, in-memory — see activity-log.ts)
+  getRecentActivity: () => ipcRenderer.invoke('activity:list'),
+  onActivityUpdate: (cb: (entries: ActivityEntryPayload[]) => void) => {
+    ipcRenderer.on('activity:update', (_event, entries) => cb(entries))
+  },
+
   // Updates
-  checkForUpdate: (): Promise<{ current: string; latest: string | null; updateAvailable: boolean }> =>
-    ipcRenderer.invoke('update:check'),
+  checkForUpdate: (): Promise<{
+    current: string; latest: string | null; updateAvailable: boolean; autoUpdateSupported: boolean
+  }> => ipcRenderer.invoke('update:check'),
   openDownloadPage: () => ipcRenderer.send('update:open-download'),
   onUpdateAvailable: (cb: (payload: { current: string; latest: string }) => void) => {
     ipcRenderer.on('update:available', (_event, payload) => cb(payload))
+  },
+
+  // In-app auto-update (win32 only — no-ops elsewhere, see auto-update.ts)
+  downloadUpdate: () => ipcRenderer.send('update:download'),
+  installUpdate: () => ipcRenderer.send('update:install'),
+  onAutoUpdateStatus: (cb: (event: AutoUpdateEventPayload) => void) => {
+    ipcRenderer.on('update:auto-status', (_event, payload) => cb(payload))
   },
 
   // QA-only: trigger the decision window with a synthetic finding. The main

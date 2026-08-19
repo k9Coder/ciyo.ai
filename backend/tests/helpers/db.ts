@@ -3,11 +3,13 @@ import {
   tenants, policies, divisions, teams, users, members, memberTeams,
   subjects, rules, subjectVersions, destinationGroups, siteConfigs, events, scans,
   enforcementSignals, chatMessages, chatSessions, invites, desktopAuthCodes, deviceTokens,
+  memberRuleExceptions,
 } from '../../src/db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../../src/auth/tokens.js'
 import type { User } from '../../src/db/schema.js'
 
 export async function truncateAll(): Promise<void> {
+  await db.delete(memberRuleExceptions)
   await db.delete(events)
   await db.delete(enforcementSignals)
   await db.delete(scans)

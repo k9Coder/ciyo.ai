@@ -16,6 +16,14 @@ for the full design and how this relates to `e2e/` and to gstack's `/qa` /
 | `pretzel-desktop` | Not yet implemented |
 | backend API (direct) | Not yet implemented |
 
+## Plain-language test plans
+
+Before a surface has an executable journey, its coverage lives as a
+human- and AI-readable test plan under [`plans/`](plans/) — one file per
+product (title, description, steps, expected). These are what gstack `/qa` /
+`/qa-only` run with a timebox, and the source material to promote into
+`journeys/<surface>/` specs. See [`plans/README.md`](plans/README.md).
+
 ## What this is not
 
 - Not a replacement for `e2e/`. `e2e/` truncates and reseeds a disposable

@@ -63,6 +63,37 @@ export function isMonitoredHost(hostname: string): boolean {
   return MONITORED_HOST_RE.test(hostname)
 }
 
+/**
+ * Known-noise API paths on monitored hosts: telemetry/analytics beacons,
+ * WebRTC voice-mode signaling, anti-abuse fingerprint/heartbeat calls, and
+ * live-typing autocomplete drafts. None of these are the actual send action:
+ * - telemetry/webrtc/sentinel payloads are random session tokens/trace IDs
+ *   that occasionally collide by chance with a pattern rule (a 13-digit
+ *   trace ID matching the Visa-card regex, a token matching the GitHub-token
+ *   shape) and fire a false-positive popup for content the user never typed.
+ * - `generate_autocompletions` and `f/conversation/prepare` both fire
+ *   repeatedly and speculatively on a live, unsent draft — restoring a saved
+ *   draft on page load is enough to trigger them, no typing or Send required
+ *   — separate from the real send endpoint (`/backend-api/f/conversation`,
+ *   no `/prepare` suffix), which gets its own, independent inspection when
+ *   the user actually hits Send. Blocking either speculative call doesn't
+ *   prevent the real send, so inspecting them adds zero protection — only
+ *   duplicate popups for a draft nobody has decided to send yet.
+ * Confirmed live, twice: an in-progress AWS-key draft (never sent) produced
+ * multiple popups with zero typing/Enter involved — first traced to
+ * `generate_autocompletions`, then, after excluding that, to
+ * `f/conversation/prepare` firing 5 times in a row on page load alone.
+ * Deliberately a narrow, path-based denylist rather than an allowlist of
+ * "real" prompt endpoints — allowlisting is fragile against any client API
+ * change; this only excludes traffic that's unambiguously not a completed
+ * send action, regardless of what OpenAI/Anthropic/Google renames elsewhere.
+ */
+const NOISE_PATH_RE = /\/(ces\/|realtime\/|backend-api\/sentinel\/|generate_autocompletions|f\/conversation\/prepare)/i
+
+export function isNoisePath(url: string): boolean {
+  return NOISE_PATH_RE.test(url)
+}
+
 export interface ProxyDecisionEvent {
   requestId: string
   hostname: string
@@ -85,6 +116,81 @@ export async function evaluateRequest(
 /** True if a detection result requires holding the request for a user decision. */
 export function needsDecision(result: DetectionResult): boolean {
   return result.highestAction === 'warn' || result.highestAction === 'block'
+}
+
+/**
+ * Best-effort extraction of "the text the user actually typed" from a blocked
+ * request body, so it can be handed back to the page and restored into the
+ * composer (see sendBlocked / injectRestoreScript). Each monitored site has
+ * its own request shape; unrecognized shapes (or non-JSON bodies) return null
+ * — that's a silent no-op on the restore convenience, not a detection miss,
+ * the block itself already happened before this runs.
+ */
+export function extractRestoreText(hostname: string, body: string): string | null {
+  try {
+    if (/(^|\.)(chatgpt\.com|chat\.openai\.com)$/i.test(hostname)) {
+      const parsed = JSON.parse(body) as {
+        messages?: Array<{ content?: { parts?: unknown[] } }>
+      }
+      const parts = parsed.messages?.[0]?.content?.parts
+      if (Array.isArray(parts)) {
+        const text = parts.filter((p) => typeof p === 'string').join('\n').trim()
+        return text.length > 0 ? text : null
+      }
+    }
+  } catch { /* not JSON, or not the shape we expect — no restore, still blocked */ }
+  return null
+}
+
+/**
+ * Injected once per monitored-host document load (see forwardDocument). Wraps
+ * fetch to detect our own X-Pretzel-Blocked marker and, when present, drops
+ * the original text back into the page's composer — undoing the site's own
+ * optimistic input-clear so the user doesn't have to retype a blocked message
+ * from memory. Kept intentionally tiny/dependency-free: this runs directly in
+ * the page, unbundled, on every monitored-host navigation.
+ */
+const RESTORE_SCRIPT = `
+<script>(function(){
+  if (window.__pretzelRestoreInstalled) return;
+  window.__pretzelRestoreInstalled = true;
+  var origFetch = window.fetch;
+  window.fetch = function(){
+    return origFetch.apply(this, arguments).then(function(res){
+      if (res.headers.get('x-pretzel-blocked') === '1') {
+        res.clone().json().then(function(data){
+          if (!data.restoreText) return;
+          var composer = document.querySelector('#prompt-textarea')
+            || document.querySelector('[contenteditable="true"][data-id]')
+            || document.querySelector('div[contenteditable="true"]');
+          if (!composer) return;
+          composer.focus();
+          if (composer.tagName === 'TEXTAREA') {
+            var setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+            setter.call(composer, data.restoreText);
+            composer.dispatchEvent(new Event('input', { bubbles: true }));
+            composer.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            document.execCommand('selectAll');
+            document.execCommand('insertText', false, data.restoreText);
+          }
+        }).catch(function(){});
+      }
+      return res;
+    });
+  };
+})();</script>`
+
+/** True if this looks like a top-level page navigation (not an asset/XHR/poll). */
+export function isDocumentRequest(headers: http.IncomingHttpHeaders): boolean {
+  return headers['sec-fetch-dest'] === 'document'
+}
+
+/** Inject RESTORE_SCRIPT just before </body>, or append it if no </body> tag is found. */
+export function injectRestoreScript(html: string): string {
+  const idx = html.lastIndexOf('</body>')
+  if (idx === -1) return html + RESTORE_SCRIPT
+  return html.slice(0, idx) + RESTORE_SCRIPT + html.slice(idx)
 }
 
 export class PretzelProxy extends EventEmitter {
@@ -229,7 +335,13 @@ export class PretzelProxy extends EventEmitter {
     // which is both faster and avoids corrupting non-prompt traffic.
     const method = (clientReq.method ?? 'GET').toUpperCase()
     if (method !== 'POST' && method !== 'PUT' && method !== 'PATCH') {
-      // No prompt body to inspect — forward with no body (GET/HEAD/etc.).
+      // Top-level page loads get the restore-on-block script injected (see
+      // forwardDocument) — everything else (assets/XHR/SSE polls) streams
+      // straight through unbuffered, same as before.
+      if (method === 'GET' && isDocumentRequest(clientReq.headers)) {
+        this.forwardDocument(hostname, port, clientReq, clientRes)
+        return
+      }
       this.forwardH2(hostname, port, clientReq, clientRes, null)
       return
     }
@@ -251,28 +363,61 @@ export class PretzelProxy extends EventEmitter {
     // request. On any decompression failure, fall back to the raw bytes.
     const body = this.decompressForInspection(bodyBuf, clientReq.headers)
 
-    if (!truncated && body.length > 0 && this.policy) {
+    // TEMP DIAGNOSTIC — only logs when the body actually contains AKIA.
+    if (body.includes('AKIA')) {
+      console.log(`[proxy][diag] AKIA in body: ${method} ${hostname}${clientReq.url ?? ''} truncated=${truncated} bodyLen=${body.length} hasPolicy=${!!this.policy} ruleCount=${this.policy ? this.policy.baseline.length + this.policy.custom.length : 'n/a'} noisePath=${isNoisePath(clientReq.url ?? '')}`)
+    }
+
+    if (!truncated && body.length > 0 && this.policy && !isNoisePath(clientReq.url ?? '')) {
       try {
         const result = await evaluateRequest(this.policy, hostname, body)
+        if (body.includes('AKIA')) {
+          console.log(`[proxy][diag] AKIA result: action=${result.highestAction} findings=${result.findings.length}`)
+        }
         if (needsDecision(result)) {
+          // Low-volume by design — only fires when a rule actually matches,
+          // not on every request. Exists because tracing which endpoint a
+          // false-positive match came from has repeatedly needed one-off
+          // temp diagnostics added and removed by hand; this makes that
+          // traceable for free going forward.
+          const ruleNames = result.findings.map(f => f.ruleName ?? f.ruleId).join(', ')
+          console.log(`[pretzel-desktop] Policy match: ${method} ${hostname}${clientReq.url ?? ''} → ${ruleNames}`)
           const allowed = await this.awaitDecision(hostname, result)
           if (!allowed) {
-            clientRes.writeHead(403, { 'Content-Type': 'text/plain' })
-            clientRes.end('Blocked by Pretzel Desktop policy')
+            this.sendBlocked(clientRes, hostname, body, 'Blocked by Pretzel Desktop policy')
             return
           }
         }
-      } catch {
-        // Detection failure → fail per policy failMode.
+      } catch (err) {
+        // Detection failure → fail per policy failMode. Logged either way —
+        // silently swallowing this meant a real bug here looked identical to
+        // "nothing matched," with zero signal to debug from.
+        console.error('[pretzel-desktop] Detection failed:', err)
         if (!this.failOpen()) {
-          clientRes.writeHead(403, { 'Content-Type': 'text/plain' })
-          clientRes.end('Blocked by Pretzel Desktop policy (detection unavailable)')
+          this.sendBlocked(clientRes, hostname, body, 'Blocked by Pretzel Desktop policy (detection unavailable)')
           return
         }
       }
     }
 
     this.forwardH2(hostname, port, clientReq, clientRes, bodyBuf)
+  }
+
+  /**
+   * Send a 403 for a blocked request. Marked with X-Pretzel-Blocked so the
+   * script injected into monitored-host pages (see injectRestoreScript) can
+   * recognize it and restore the user's typed text into the composer — the
+   * site's own JS already optimistically cleared the input the instant Send
+   * fired, well before our detection result comes back, so without this the
+   * user's message is just gone and they have to retype it from memory.
+   */
+  private sendBlocked(clientRes: http.ServerResponse, hostname: string, body: string, message: string): void {
+    const restoreText = extractRestoreText(hostname, body)
+    clientRes.writeHead(403, {
+      'Content-Type': 'application/json',
+      'X-Pretzel-Blocked': '1',
+    })
+    clientRes.end(JSON.stringify({ pretzelBlocked: true, message, restoreText }))
   }
 
   /** Decompress a request body for inspection only; never mutates what's forwarded. */
@@ -370,6 +515,67 @@ export class PretzelProxy extends EventEmitter {
 
     if (body && body.length) h2req.end(body)
     else h2req.end()
+  }
+
+  /**
+   * Forward a top-level page navigation on a monitored host. Requests plain
+   * (uncompressed) so an HTML response can be safely buffered and rewritten
+   * with RESTORE_SCRIPT — everything else (assets/XHR/SSE, the vast majority
+   * of GETs) still goes through the unbuffered forwardH2 fast path untouched.
+   * Falls back to a bare passthrough on any error, same failure posture as
+   * forwardH2/forwardUpstream elsewhere in this file.
+   */
+  private forwardDocument(
+    hostname: string,
+    port: number,
+    clientReq: http.IncomingMessage,
+    clientRes: http.ServerResponse,
+  ): void {
+    let session: http2.ClientHttp2Session
+    try {
+      session = this.getH2Session(hostname, port)
+    } catch {
+      this.forwardH2(hostname, port, clientReq, clientRes, null)
+      return
+    }
+
+    const headers = this.toH2RequestHeaders(clientReq, hostname)
+    headers['accept-encoding'] = 'identity'
+    const h2req = session.request(headers)
+    let responded = false
+
+    h2req.on('response', (respHeaders) => {
+      responded = true
+      const status = Number(respHeaders[':status'] ?? 502)
+      const contentType = String(respHeaders['content-type'] ?? '')
+      const contentEncoding = respHeaders['content-encoding']
+      // Not HTML, or the server ignored our accept-encoding:identity and sent
+      // a compressed body anyway — pipe through unmodified rather than risk
+      // injecting into (and corrupting) compressed bytes.
+      if (!contentType.includes('text/html') || contentEncoding) {
+        clientRes.writeHead(status, this.fromH2ResponseHeaders(respHeaders))
+        h2req.pipe(clientRes)
+        return
+      }
+
+      const chunks: Buffer[] = []
+      h2req.on('data', (c: Buffer) => chunks.push(c))
+      h2req.on('end', () => {
+        const html = injectRestoreScript(Buffer.concat(chunks).toString('utf-8'))
+        const outHeaders = this.fromH2ResponseHeaders(respHeaders)
+        outHeaders['content-length'] = Buffer.byteLength(html)
+        clientRes.writeHead(status, outHeaders)
+        clientRes.end(html)
+      })
+    })
+    h2req.on('error', () => {
+      if (!responded && !clientRes.headersSent) {
+        this.forwardH2(hostname, port, clientReq, clientRes, null)
+      } else if (!clientRes.writableEnded) {
+        clientRes.end()
+      }
+    })
+    h2req.end()
   }
 
   private forwardUpstream(

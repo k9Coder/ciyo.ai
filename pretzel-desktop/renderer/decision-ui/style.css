@@ -1,0 +1,122 @@
+@import '../shared/tokens.css';
+
+html, body, #root { height: 100%; }
+body { overflow: hidden; } /* the window itself never scrolls — only .findings-list does */
+
+.waiting {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.accent-bar { height: 3px; flex-shrink: 0; }
+.accent-bar.danger { background: linear-gradient(90deg, var(--status-danger), #ff9aa8); }
+.accent-bar.warn   { background: linear-gradient(90deg, var(--status-warn), #ffd28a); }
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.3rem 1.3rem;
+  gap: 0.9rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+.header-text { min-width: 0; }
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.3rem;
+}
+.title.danger { color: var(--status-danger); }
+.title.warn   { color: var(--status-warn); }
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+.subtitle strong { color: var(--text-primary); font-weight: 600; }
+
+.findings-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.2rem;
+}
+
+.finding-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+  min-width: 0;
+}
+.finding-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.finding-rule {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.finding-snippet {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0.4rem 0 0;
+  max-height: 3.6em;
+  overflow-y: auto;
+}
+
+.actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+.actions .btn {
+  flex: 1;
+  padding: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.always-allow-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.3rem 0 0;
+  align-self: center;
+  flex-shrink: 0;
+}
+.always-allow-link:hover {
+  color: var(--text-secondary);
+}

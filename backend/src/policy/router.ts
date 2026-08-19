@@ -12,6 +12,7 @@ import { getVersionOnly, getLatestPolicy, publishPolicy, getHistory, rollback } 
 import { compilePolicy, type PolicyDoc } from './compiler.js'
 import { resolveMemberPolicy } from './resolver.js'
 import { policyBus, policyUpdatedEvent } from '../events/policy-bus.js'
+import { addException, removeException, getExceptionSummary } from './exceptions.js'
 
 export async function policyRouter(fastify: FastifyInstance): Promise<void> {
   fastify.get('/policy/version', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
@@ -31,17 +32,6 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
       const policy = req.member
         ? await resolveMemberPolicy(req.tenant.id, req.member.id, snapshot)
         : snapshot
-      // TEMP DIAGNOSTIC — surfaced as a response header (not the body, so
-      // PolicyDocSchema on the client can't choke on it) so it's directly
-      // curl-able without needing access to the Render log dashboard.
-      reply.header('X-Diag-Resolution', JSON.stringify({
-        reqTenantId: req.tenant.id,
-        reqMemberId: req.member?.id ?? null,
-        tokenPrefix: req.tokenPrefix,
-        rowVersion: row.version,
-        snapshotSubjects: snapshot.subjects.length,
-        resolvedSubjects: (policy as { subjects: unknown[] }).subjects.length,
-      }))
 
       const response: Record<string, unknown> = {
         version: row.version,
@@ -115,4 +105,30 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     return { version: newVersion }
   })
 
+  // "Always allow" — a member mutes a specific rule for themselves (a decision
+  // popup in pretzel-desktop today). Requires a real member identity (device
+  // token or Clerk JWT) — an org token (ps_) has no per-member context to
+  // attach the exception to.
+  fastify.post('/policy/exceptions', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
+    if (!req.member) return reply.status(400).send({ error: 'Member context required' })
+    const { ruleId } = req.body as { ruleId?: string }
+    if (typeof ruleId !== 'string' || !ruleId) {
+      return reply.status(400).send({ error: 'ruleId is required' })
+    }
+    await addException(req.tenant.id, req.member.id, ruleId)
+    return reply.status(201).send({ ok: true })
+  })
+
+  fastify.delete('/policy/exceptions/:ruleId', { preHandler: requireOrgTokenOrClerkAuth }, async (req, reply) => {
+    if (!req.member) return reply.status(400).send({ error: 'Member context required' })
+    const { ruleId } = req.params as { ruleId: string }
+    await removeException(req.tenant.id, req.member.id, ruleId)
+    return reply.status(204).send()
+  })
+
+  // Admin-only: not silent — this is how an admin sees that members have been
+  // muting a rule for themselves, and who.
+  fastify.get('/policy/exceptions', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
+    return { exceptions: await getExceptionSummary(req.tenant.id) }
+  })
 }
