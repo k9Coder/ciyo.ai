@@ -39,15 +39,19 @@ function getDecisionWin(): BrowserWindow {
 
   rendererReady = false
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  const winWidth = 520
+  const winHeight = 400
   decisionWin = new BrowserWindow({
-    width: 480,
-    height: 320,
-    x: Math.round(width / 2 - 240),
-    y: Math.round(height / 2 - 160),
+    width: winWidth,
+    height: winHeight,
+    x: Math.round(width / 2 - winWidth / 2),
+    y: Math.round(height / 2 - winHeight / 2),
     resizable: false,
     alwaysOnTop: true,
     show: false,
     frame: false,
+    roundedCorners: true,
+    backgroundColor: '#0b0e16',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -76,6 +80,24 @@ export function showDecisionWindow(event: ProxyDecisionEvent): void {
   // If the renderer is already mounted (window reused for a later decision),
   // push now; otherwise the 'decision:ready' handshake above replays it.
   if (rendererReady) pushEvent(win, event)
+}
+
+/**
+ * Hide the decision window once its decision has been resolved (Block /
+ * Allow / Always allow). Nothing called this before — the window used to
+ * just sit there after every click, showing an empty "Waiting for policy
+ * decision…" placeholder until the user noticed and dismissed it manually,
+ * or the next decision happened to arrive and overwrite it.
+ *
+ * `.hide()`, not `.close()` (see closeDecisionWindow below) — this fires on
+ * every single decision, so keeping the window (and its loaded renderer)
+ * warm for the next one avoids a full destroy+recreate+reload cycle each
+ * time, same tradeoff the tray window already makes.
+ */
+export function hideDecisionWindow(): void {
+  if (decisionWin && !decisionWin.isDestroyed()) {
+    decisionWin.hide()
+  }
 }
 
 export function closeDecisionWindow(): void {

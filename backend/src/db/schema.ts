@@ -114,6 +114,23 @@ export const memberTeams = pgTable('member_teams', {
   pk: primaryKey({ columns: [t.memberId, t.teamId] }),
 }))
 
+// A member's own "always allow" exceptions — set from a decision popup
+// (pretzel-desktop today), filtered out of that member's resolved policy in
+// resolveMemberPolicy so the rule stops triggering for them specifically.
+// Deliberately NOT silent: admins can see exception counts per rule via
+// GET /v1/policy/exceptions — this is a per-member override, not a way to
+// quietly disable a rule tenant-wide.
+export const memberRuleExceptions = pgTable('member_rule_exceptions', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  tenantId:  uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:  uuid('member_id').notNull().references(() => members.id),
+  ruleId:    uuid('rule_id').notNull().references(() => rules.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  memberRuleUniq: unique().on(t.memberId, t.ruleId),
+  ruleIdx:        index().on(t.ruleId),
+}))
+
 // ── Subjects ──────────────────────────────────────────────────────────────────
 // Scope: teamId set = team-scoped; divisionId set + teamId null = division-scoped; both null = global
 export const subjects = pgTable('subjects', {

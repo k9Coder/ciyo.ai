@@ -77,3 +77,30 @@ export function stopPolicySync(): void {
 export function triggerSync(): Promise<void> {
   return doSync()
 }
+
+/**
+ * "Always allow this rule" — reported to the backend (not a local-only
+ * mute): the exception is stored per-member there, admin-visible via
+ * GET /v1/policy/exceptions, and baked directly into what resolveMemberPolicy
+ * returns for this member going forward. Re-syncs immediately after so the
+ * rule stops appearing in findings without waiting for the next 2-minute
+ * interval. Returns false (never throws) on any failure — the current
+ * decision can still be resolved as a one-off allow even if this didn't
+ * take.
+ */
+export async function alwaysAllowRule(ruleId: string): Promise<boolean> {
+  const token = await loadToken()
+  if (!token) return false
+  try {
+    const res = await fetch(`${PRETZEL_API_BASE}/v1/policy/exceptions`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ruleId }),
+    })
+    if (!res.ok) return false
+  } catch {
+    return false
+  }
+  await doSync()
+  return true
+}

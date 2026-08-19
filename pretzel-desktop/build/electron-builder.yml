@@ -44,6 +44,15 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   perMachine: false
+  # Full reset on uninstall — the CA cert file, watchdog/sentinel temp
+  # scripts, and cached auth state all live under userData; without this
+  # they'd survive an uninstall and a later reinstall would start from
+  # half-cleaned state.
+  deleteAppDataOnUninstall: true
+  # Custom cleanup for what lives OUTSIDE userData: OS proxy setting,
+  # scheduled watchdog task, trusted CA cert, QUIC-block firewall rule.
+  # See build/installer.nsh.
+  include: build/installer.nsh
 
 publish:
   provider: github

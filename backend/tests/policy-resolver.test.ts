@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { db } from '../src/db/client.js'
-import { divisions, teams, members, memberTeams, destinationGroups } from '../src/db/schema.js'
+import { divisions, teams, members, memberTeams, destinationGroups, memberRuleExceptions } from '../src/db/schema.js'
 import { createSubject } from '../src/subjects/service.js'
 import { createRule } from '../src/rules/service.js'
 import { compilePolicy } from '../src/policy/compiler.js'
@@ -192,5 +192,38 @@ describe('resolveMemberPolicy', () => {
       return resolveMemberPolicy(tenantId, memberId, snapshot)
     })
     expect(resolved.failMode).toBe('closed')
+  })
+
+  it('omits a rule this member has always-allowed (member_rule_exceptions)', async () => {
+    const subject = await createSubject(tenantId, { name: 'Global' })
+    const keptRule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['keep'], action: 'warn' })
+    const exceptedRule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['skip'], action: 'block' })
+
+    await db.insert(memberRuleExceptions).values({ tenantId, memberId, ruleId: exceptedRule.id })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    const allRuleIds = resolved.subjects.flatMap(s => s.rules).map(r => r.id)
+    expect(allRuleIds).toContain(keptRule.id)
+    expect(allRuleIds).not.toContain(exceptedRule.id)
+  })
+
+  it('exceptions are per-member — a different member still sees the rule', async () => {
+    const subject = await createSubject(tenantId, { name: 'Global' })
+    const rule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['x'], action: 'block' })
+    await db.insert(memberRuleExceptions).values({ tenantId, memberId, ruleId: rule.id })
+
+    const [otherMember] = await db.insert(members).values({ tenantId, email: 'bob@example.com', role: 'member' }).returning()
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, otherMember!.id, snapshot)
+    })
+
+    const allRuleIds = resolved.subjects.flatMap(s => s.rules).map(r => r.id)
+    expect(allRuleIds).toContain(rule.id)
   })
 })

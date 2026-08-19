@@ -11,11 +11,15 @@
 process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 
-import { app, Tray, Menu, nativeImage, BrowserWindow, ipcMain, Notification, shell } from 'electron'
+import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
 import { ensureHostHardening } from './hardening'
+import { ensureProxyWatchdog } from './proxy-watchdog'
+import { spawnProxySentinel } from './proxy-sentinel'
+import { renderTrayIcon } from './tray-icon'
+import { deriveTrayState, formatTrayTooltip, type TrayStatus } from './tray-status'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
@@ -23,13 +27,20 @@ import {
   setSystemProxyActive,
   pushStatusUpdate,
   pushUpdateAvailable,
+  pushAutoUpdateStatus,
+  pushActivityUpdate,
 } from './ipc-handlers'
 import { checkForUpdate, DOWNLOAD_URL } from './version-check'
-import { showDecisionWindow } from './decision-window'
+import { isAutoUpdateSupported, initAutoUpdate, checkForAutoUpdateAsync } from './auto-update'
+import { loadSettings } from './settings'
+import { notifyDecision } from './decision-notify'
+import { recordActivity, getRecentActivity } from './activity-log'
+import { reportEvent } from './report-event'
+import { showDecisionWindow, hideDecisionWindow } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn } from './auth'
 import { startNagging, stopNagging } from './nag'
-import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
+import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule } from './policy-sync'
 import forge from 'node-forge'
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
@@ -92,7 +103,7 @@ function rebuildTrayMenu(authenticated: boolean): void {
   const menu = Menu.buildFromTemplate([
     { label: 'Pretzel Desktop', enabled: false },
     { type: 'separator' },
-    { label: 'Open Status', click: () => trayWin?.show() },
+    { label: 'Open Status', click: () => showTrayWindow() },
     ...(authenticated ? [] : [{
       label: 'Sign in…',
       click: () => handleSignIn(),
@@ -101,7 +112,34 @@ function rebuildTrayMenu(authenticated: boolean): void {
     { label: 'Quit', click: () => app.quit() },
   ])
   tray.setContextMenu(menu)
-  tray.setToolTip(authenticated ? 'Pretzel Desktop — Active' : 'Pretzel Desktop — Sign in required')
+  // Icon + tooltip are owned separately by updateTrayVisual (they reflect
+  // live proxy/policy status, not just auth) — see the pushStatusUpdate call
+  // sites below.
+}
+
+/**
+ * Single source of truth for what the tray icon + tooltip look like. Called
+ * everywhere status changes (see the pushStatusUpdate call sites) so the
+ * icon in the taskbar always matches what the status window would show if
+ * opened, instead of a static icon that never reflects reality.
+ */
+let lastTrayStatus: TrayStatus = { proxyRunning: false, policyAvailable: false, systemProxyActive: false }
+function updateTrayVisual(status: TrayStatus): void {
+  lastTrayStatus = status
+  if (!tray) return
+  tray.setImage(renderTrayIcon(deriveTrayState(status)))
+  tray.setToolTip(formatTrayTooltip(status))
+}
+
+function showTrayWindow(): void {
+  trayWin?.show()
+  trayWin?.focus()
+}
+
+/** Push a status update to both the tray window (if open) and the tray icon/tooltip (always). */
+function pushStatus(status: TrayStatus): void {
+  if (trayWin) pushStatusUpdate(trayWin, status)
+  updateTrayVisual(status)
 }
 
 async function handleSignIn(): Promise<void> {
@@ -131,12 +169,24 @@ async function createTrayWindow(): Promise<BrowserWindow> {
     show: process.env.PRETZEL_E2E === '1',
     frame: false,
     resizable: false,
+    roundedCorners: true,
+    backgroundColor: '#0b0e16',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
   })
+
+  // Click-away-to-dismiss, like a native tray flyout / macOS menu-bar app —
+  // the old behavior (only the tray icon itself could open/close it) meant
+  // the only way to get rid of the window was to find and re-click a tiny
+  // icon in the notification area. Skipped under E2E: Playwright driving the
+  // window inevitably shifts OS focus around, which would blur-hide it out
+  // from under the test.
+  if (process.env.PRETZEL_E2E !== '1') {
+    win.on('blur', () => win.hide())
+  }
 
   const isDev = process.env.NODE_ENV === 'development'
   try {
@@ -158,20 +208,23 @@ async function setupTray(authenticated: boolean): Promise<void> {
   // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
   // used here instead — it's still readable at runtime in the built bundle.)
   if (process.env.PRETZEL_E2E !== '1') {
-    const iconPath = path.join(__dirname, '../build/icon.png')
-    const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-    tray = new Tray(icon)
+    tray = new Tray(renderTrayIcon('inactive'))
+    updateTrayVisual(lastTrayStatus)
   }
   trayWin = await createTrayWindow()
 
   rebuildTrayMenu(authenticated)
 
+  // Explicit close (×) button inside the window itself, in addition to
+  // click-away and re-clicking the tray icon — a visible target beats an
+  // implicit one for anyone who hasn't learned the blur-to-dismiss behavior.
+  ipcMain.on('window:hide', () => trayWin?.hide())
+
   tray?.on('click', () => {
     if (trayWin?.isVisible()) {
       trayWin.hide()
     } else {
-      trayWin?.show()
-      trayWin?.focus()
+      showTrayWindow()
     }
   })
 }
@@ -184,11 +237,43 @@ async function startProxy(): Promise<void> {
 
   proxy.on('decision-required', (event: ProxyDecisionEvent) => {
     showDecisionWindow(event)
+    const settings = loadSettings(app.getPath('userData'))
+    const level = event.result.highestAction === 'block' ? settings.notifyOnBlock : settings.notifyOnWarn
+    notifyDecision(level, event)
+
+    for (const finding of event.result.findings) {
+      recordActivity({
+        hostname: event.hostname,
+        ruleName: finding.ruleName ?? finding.ruleId,
+        severity: finding.severity,
+        action: event.result.highestAction === 'block' ? 'block' : 'warn',
+        timestamp: Date.now(),
+      })
+    }
+    if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
+    void reportEvent(event)
   })
 
   activateSystemProxy(PROXY_PORT)
   setSystemProxyActive(true)
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
+
+  // Fast recovery path (~1-2s): a detached companion process watching our PID
+  // directly. Covers the common case — closing the terminal window, a crash —
+  // far quicker than the scheduled-task watchdog below can (Task Scheduler
+  // floors at a 1-minute repetition interval, which means up to a full
+  // minute with no internet; unacceptable for something this disruptive).
+  spawnProxySentinel(PROXY_PORT)
+
+  // Independent OS-scheduled safety net: nothing inside this process can react
+  // to a hard kill (Task Manager "End Task", crash, power loss) — no JS runs on
+  // a SIGKILL. The watchdog runs outside the process entirely and resets the
+  // system proxy within about a minute if we're gone but still configured as
+  // the active proxy. No elevation needed — same trust level as the proxy
+  // registry key it corrects. Fire-and-forget; never blocks startup. Slower
+  // fallback for what the sentinel above doesn't catch (e.g. it gets killed
+  // too, or a reboot happens before it fires).
+  ensureProxyWatchdog(app.getPath('userData'), PROXY_PORT)
 
   // Host hardening (CA trust + QUIC block) runs in the BACKGROUND, only after
   // the proxy is already up and the OS is already pointed at it — it must
@@ -202,12 +287,24 @@ async function startProxy(): Promise<void> {
 }
 
 /**
- * Check for a newer published version once on launch. If we're behind, fire an
- * OS notification (click → download page) and push a banner into the tray UI.
- * Silent when up to date or when the check fails — a failed update check must
- * never interrupt the user.
+ * Check for a newer published version once on launch.
+ *
+ * On win32 this runs the real electron-updater check — its own events
+ * (wired via initAutoUpdate below) already push live status into the tray
+ * UI, so there's nothing further to do here beyond kicking it off.
+ *
+ * Everywhere else (no in-app auto-update — see auto-update.ts) this is the
+ * existing lightweight version-string check: fire an OS notification
+ * (click → download page) and push a banner into the tray UI. Silent when
+ * up to date or when the check fails — a failed update check must never
+ * interrupt the user.
  */
 async function checkForUpdatesOnLaunch(): Promise<void> {
+  if (isAutoUpdateSupported()) {
+    void checkForAutoUpdateAsync()
+    return
+  }
+
   const result = await checkForUpdate()
   if (!result.updateAvailable || !result.latest) return
 
@@ -239,9 +336,23 @@ app.whenReady().then(async () => {
     onDecision: (requestId, allow) => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
+      hideDecisionWindow()
     },
     onSignIn: () => { handleSignIn() },
     onCancelSignIn: () => { cancelSignIn() },
+    onAlwaysAllow: (ruleId) => {
+      // Was previously fire-and-forget with the result silently discarded —
+      // a failure here (network blip, auth issue, backend error) looked
+      // identical to success from the user's side: the current request
+      // still went through (that's respond(true) in the renderer, resolved
+      // independently), but the exception was never actually recorded, so
+      // the same rule would just fire again next time with zero signal why.
+      alwaysAllowRule(ruleId)
+        .then((ok) => {
+          if (!ok) console.error(`[pretzel-desktop] Always-allow failed to save for rule ${ruleId} — will fire again next time`)
+        })
+        .catch((err) => console.error('[pretzel-desktop] Always-allow threw:', err))
+    },
   })
 
   // QA-only: let the qa-bridge open the decision window directly with a
@@ -283,13 +394,7 @@ app.whenReady().then(async () => {
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
-    if (trayWin) {
-      pushStatusUpdate(trayWin, {
-        proxyRunning: true,
-        policyAvailable: true,
-        systemProxyActive: true,
-      })
-    }
+    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true })
   })
 
   // Nag unauthenticated users every 24h until they sign in
@@ -297,23 +402,24 @@ app.whenReady().then(async () => {
     startNagging(trayWin, { onSignInRequest: handleSignIn })
   }
 
-  // Non-blocking: tell the user if a newer version is out (no auto-updater yet).
+  // In-app auto-update wiring (win32 only — no-op elsewhere, see
+  // auto-update.ts). Must be wired before the launch check below fires, or
+  // its early events (checking/available) would have nowhere to go.
+  initAutoUpdate((event) => {
+    if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+      pushAutoUpdateStatus(trayWin, event)
+    }
+  })
+
+  // Non-blocking: tell the user if a newer version is out.
   void checkForUpdatesOnLaunch()
 
   try {
     await startProxy()
-    if (trayWin) {
-      pushStatusUpdate(trayWin, {
-        proxyRunning: true,
-        policyAvailable: false,
-        systemProxyActive: true,
-      })
-    }
+    pushStatus({ proxyRunning: true, policyAvailable: false, systemProxyActive: true })
   } catch (err) {
     console.error('[pretzel-desktop] Proxy start failed:', err)
-    if (trayWin) {
-      pushStatusUpdate(trayWin, { proxyRunning: false, policyAvailable: false, systemProxyActive: false })
-    }
+    pushStatus({ proxyRunning: false, policyAvailable: false, systemProxyActive: false })
   }
 })
 

@@ -1,8 +1,60 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useAuditLog } from '../hooks/useAuditLog'
+import { useRuleExceptions } from '../hooks/useRuleExceptions'
 import { InlineLoader, Spinner } from '../components/ui/Spinner'
 import { formatDateTime } from '../utils/date'
+
+function RuleExceptionsPanel() {
+  const { data, isLoading } = useRuleExceptions()
+  const exceptions = data?.exceptions ?? []
+
+  if (isLoading || exceptions.length === 0) return null
+
+  return (
+    <div style={{
+      background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+      overflow: 'hidden', marginBottom: 16,
+    }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+          Always-allowed rules
+        </p>
+        <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+          Rules individual members have muted for themselves from a desktop decision popup.
+        </p>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <tbody>
+          {exceptions.map(e => (
+            <tr key={e.ruleId} style={{ borderBottom: '1px solid var(--border)' }}>
+              <td style={{ padding: '10px 16px', color: 'var(--text-primary)' }}>
+                {e.ruleMessage ?? <span style={{ color: 'var(--text-muted)' }}>(no message set)</span>}
+              </td>
+              <td style={{ padding: '10px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                  background: 'rgba(245,158,11,0.12)', color: 'var(--status-warn)',
+                }}>
+                  {e.memberCount} member{e.memberCount === 1 ? '' : 's'}
+                </span>
+              </td>
+              <td
+                style={{
+                  padding: '10px 16px', color: 'var(--text-muted)', fontSize: 12,
+                  maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
+                title={e.memberEmails.join(', ')}
+              >
+                {e.memberEmails.join(', ')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 type ActionFilter = 'all' | 'warn' | 'block'
 
@@ -32,6 +84,8 @@ export function AuditLogPage() {
   return (
     <div style={{ padding: '16px 24px' }}>
       <PageHeader title="Audit Log" />
+
+      <RuleExceptionsPanel />
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>

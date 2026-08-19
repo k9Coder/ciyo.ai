@@ -4,6 +4,7 @@ import type {
   AnalyticsSummary, AnalyticsDailyEntry, AnalyticsIncident,
   AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
   AuditLogPage,
+  RuleExceptionSummary,
   ChatSession, ChatMessage, AssistantChatResponse, AssistantApplyResponse,
   InvitePreview, InviteCreated,
   BillingStatus,
@@ -131,6 +132,10 @@ export const api = {
     publish: () => request<{ version: number }>('POST', '/v1/policy/publish', {}),
     history: () => request<PolicyHistoryEntry[]>('GET', '/v1/policy/history'),
     rollback: (version: number) => request<{ version: number }>('POST', `/v1/policy/rollback/${version}`),
+    // Admin-only view of per-member "always allow" exceptions (set from a
+    // decision popup in pretzel-desktop) — not silent: this is how an admin
+    // sees a rule is being muted and by whom.
+    exceptions: () => request<{ exceptions: RuleExceptionSummary[] }>('GET', '/v1/policy/exceptions'),
   },
   tenant: {
     get:              ()                                    => request<TenantInfo>('GET', '/v1/tenant'),

@@ -33,8 +33,11 @@ function showNag(trayWin: BrowserWindow): void {
   // OS native notification
   if (Notification.isSupported()) {
     const notif = new Notification({
-      title: 'Pretzel Desktop — Sign in required',
-      body: 'Sign in to load your organisation\'s policy. Without it, only default rules apply.',
+      title: 'Pretzel Desktop — Protection is off',
+      // Accurate, not softened: with no policy loaded, the proxy has nothing
+      // to check requests against and forwards everything unexamined — this
+      // is genuinely "nothing is protected," not "default rules apply."
+      body: "Nothing you send to ChatGPT, Claude, or Gemini is being checked right now. Sign in to load your organisation's policy.",
       urgency: 'normal',
     })
     notif.on('click', () => {

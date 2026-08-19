@@ -9,6 +9,7 @@ dist/
 # Prod env files across all packages — contain real secrets
 # .env.staging files are safe to commit (test keys only)
 **/.env.prod
+**/.env.production
 
 # E2E
 e2e/.auth/
@@ -27,6 +28,10 @@ extension/e2e/playwright-report/
 # Desktop build/test artifacts
 pretzel-desktop/dist-electron/
 pretzel-desktop/test-results/
+pretzel-desktop/release/
+
+# gstack QA screenshot dumps — disposable, re-generated every run
+**/.gstack-qa-shots/
 
 # QA
 qa/.auth/

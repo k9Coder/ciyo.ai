@@ -3,6 +3,7 @@ import { db } from '../db/client.js'
 import { memberTeams, members } from '../db/schema.js'
 import { teamsClient, destinationGroupsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
+import { getMemberExceptionRuleIds } from '../policy/exceptions.js'
 import type { PolicyDoc, RulePolicy, SubjectPolicy } from '../policy/compiler.js'
 
 export interface ResolvedRulePolicy {
@@ -66,6 +67,8 @@ export async function resolveMemberPolicy(
     .where(eq(memberTeams.memberId, memberId))
   const memberTeamIds = new Set(teamRows.map(r => r.teamId))
 
+  const exceptionRuleIds = await getMemberExceptionRuleIds(tenantId, memberId)
+
   let memberDivisionIds = new Set<string>()
   if (memberTeamIds.size > 0) {
     const divRows = await Promise.all(
@@ -117,6 +120,11 @@ export async function resolveMemberPolicy(
 
   const subjectMap = new Map<string, ResolvedSubjectPolicy>()
   for (const { rule, subjectId, subjectName } of byKey.values()) {
+    // This member has always-allowed this specific rule — leave it out of
+    // their resolved policy entirely rather than sending it and trusting the
+    // client to also skip it (a compromised/buggy client should not be able
+    // to un-skip a rule the server already decided not to enforce for them).
+    if (exceptionRuleIds.has(rule.id)) continue
     if (!subjectMap.has(subjectId)) {
       subjectMap.set(subjectId, { id: subjectId, name: subjectName, rules: [] })
     }

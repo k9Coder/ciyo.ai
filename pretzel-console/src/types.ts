@@ -195,6 +195,13 @@ export interface AuditLogPage {
   nextBefore: string | null
 }
 
+export interface RuleExceptionSummary {
+  ruleId:       string
+  ruleMessage:  string | null
+  memberCount:  number
+  memberEmails: string[]
+}
+
 export interface ChatSession {
   id:        string
   tenantId:  string
