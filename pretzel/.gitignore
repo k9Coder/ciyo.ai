@@ -1,5 +1,6 @@
 node_modules/
 dist/
+release/
 
 # Environment files — .env.staging is safe to commit (test keys only)
 .env
