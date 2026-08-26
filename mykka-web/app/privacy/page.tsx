@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'How mykka.ai collects, uses, and protects data in the Pretzel AI DLP platform.',
 }
 
-const LAST_UPDATED = 'June 2026'
+const LAST_UPDATED = 'August 2026'
 
 export default function PrivacyPage() {
   return (
@@ -178,7 +178,7 @@ export default function PrivacyPage() {
             <h2 className="mb-3 text-[20px] font-bold text-white">9. Cookies</h2>
             <p>
               The Pretzel marketing website (mykka.ai) uses functional cookies required for authentication and session management. We do not use third-party advertising or tracking cookies on the marketing website.
-              The Pretzel Chrome extension does not set cookies.
+              The Pretzel Chrome extension requests the browser&apos;s cookies permission solely to read the session cookie set by our sign-in page (pretzel-console.mykka.ai) so the extension can recognise that you are signed in. The extension does not set its own tracking cookies and does not read cookies from any site other than pretzel-console.mykka.ai.
             </p>
           </section>
 
