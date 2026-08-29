@@ -6,11 +6,6 @@ export function Hero() {
     <section className="relative overflow-hidden px-6 pb-20 pt-24 text-center"
       style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,106,255,.18) 0%, transparent 60%)' }}>
 
-      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#5b8cff]/30 bg-[#5b8cff]/10 px-4 py-1.5 text-[12px] font-semibold text-[#8fb3ff]">
-        <span className="size-1.5 rounded-full bg-[#34d399]" style={{ boxShadow: '0 0 6px #34d399' }} />
-        Now protecting teams at 200+ companies
-      </div>
-
       <h1 className="mx-auto mb-5 max-w-3xl text-5xl font-extrabold leading-[1.08] tracking-[-0.04em] text-white md:text-6xl">
         Stop Your Team from Leaking{' '}
         <span className="bg-gradient-to-r from-[#8fb3ff] to-[#5b8cff] bg-clip-text text-transparent">
@@ -80,10 +75,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
-      <p className="mt-8 text-[12px] text-[#94a3b8]">
-        Trusted by security teams at healthcare, legal, and fintech companies
-      </p>
     </section>
   )
 }

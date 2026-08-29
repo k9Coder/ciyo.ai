@@ -24,10 +24,12 @@ const jsonLd = {
       '@id': 'https://mykka.ai/#org',
       name: 'mykka.ai',
       url: 'https://mykka.ai',
+      logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png', width: 512, height: 512 },
       description: 'mykka.ai builds Pretzel, a browser-native AI data loss prevention platform that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
       foundingDate: '2024',
       sameAs: [
         'https://www.linkedin.com/company/mykka-ai',
+        'https://twitter.com/mykka_ai',
       ],
     },
     {

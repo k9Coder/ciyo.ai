@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "publish-blob:staging": "node --env-file=.env.staging scripts/publish-desktop-blob.mjs",
-    "publish-blob:prod": "node --env-file=.env.prod scripts/publish-desktop-blob.mjs"
+    "publish-blob:prod": "node --env-file=.env.prod scripts/publish-desktop-blob.mjs",
+    "indexnow": "node scripts/indexnow-ping.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

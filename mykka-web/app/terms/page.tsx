@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for the mykka.ai Pretzel AI DLP platform.',
+  alternates: { canonical: 'https://mykka.ai/terms' },
 }
 
 const LAST_UPDATED = 'June 2026'

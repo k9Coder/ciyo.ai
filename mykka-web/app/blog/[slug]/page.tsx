@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getPost(slug)
   if (!post) return {}
   return {
-    title: `${post.title} | mykka.ai Blog`,
+    title: post.title,
     description: post.description,
     alternates: { canonical: `https://mykka.ai/blog/${post.slug}` },
     openGraph: { title: post.title, description: post.description },
@@ -132,25 +132,37 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: post.description,
-    datePublished: post.date,
-    dateModified: post.date,
-    url: postUrl,
-    author: {
-      '@type': 'Person',
-      name: author,
-      jobTitle: 'Content & SEO Writer',
-      worksFor: { '@id': 'https://mykka.ai/#org' },
-    },
-    publisher: {
-      '@id': 'https://mykka.ai/#org',
-      '@type': 'Organization',
-      name: 'mykka.ai',
-      logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png' },
-    },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: post.title,
+        description: post.description,
+        datePublished: post.date,
+        dateModified: post.date,
+        url: postUrl,
+        author: {
+          '@type': 'Person',
+          name: author,
+          jobTitle: 'Content & SEO Writer',
+          worksFor: { '@id': 'https://mykka.ai/#org' },
+        },
+        publisher: {
+          '@id': 'https://mykka.ai/#org',
+          '@type': 'Organization',
+          name: 'mykka.ai',
+          logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png' },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mykka.ai/' },
+          { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mykka.ai/blog' },
+          { '@type': 'ListItem', position: 3, name: post.title, item: postUrl },
+        ],
+      },
+    ],
   }
 
   return (

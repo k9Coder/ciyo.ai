@@ -93,6 +93,26 @@ async function main() {
     writePng(path(`${pkg}/public/logo-light.png`), iconLight);
   }
 
+  // --- mykka-web/public/images: sitewide logo.png (schema publisher.logo) + og-default.png
+  // (social-share fallback). Reuses the same 512px icon render as the favicon/desktop icons
+  // below, plus the full lockup SVG composed onto a branded card for the OG image.
+  writePng(path("mykka-web/public/images/logo.png"), icon512);
+
+  const ogWidth = 1200;
+  const ogHeight = 630;
+  await page.setViewportSize({ width: ogWidth, height: ogHeight });
+  await page.setContent(
+    `<html><body style="margin:0;padding:0">` +
+      `<div style="width:${ogWidth}px;height:${ogHeight}px;background:#0b0e16;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif">` +
+      `<div style="position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle, rgba(91,140,255,0.18) 0%, rgba(91,140,255,0) 65%)"></div>` +
+      `<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:28px">` +
+      `<div style="width:540px;height:144px">${lockupDarkSvg}</div>` +
+      `<div style="color:#9aa4bc;font-size:28px;font-weight:500;letter-spacing:-0.2px">AI Prompt Data Loss Prevention</div>` +
+      `</div></div></body></html>`
+  );
+  const ogBuffer = await page.screenshot();
+  writePng(path("mykka-web/public/images/og-default.png"), ogBuffer);
+
   await browser.close();
 
   // --- mykka-web favicon.ico (multi-size ICO packed from the 512px icon) --------------

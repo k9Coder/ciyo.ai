@@ -192,12 +192,20 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>What it does</div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <li>🔍 Inspects all HTTPS traffic system-wide</li>
+            <li>🔍 Inspects HTTPS traffic to AI chat sites only — everything else passes through untouched</li>
             <li>🛡️ Applies your org policy to every AI request</li>
             <li>🪟 Works with Chrome, Edge, Safari, Copilot</li>
             <li>🔔 Decision window for warn/block actions</li>
             <li>📊 Audit events sent to your dashboard</li>
           </ul>
+        </div>
+      </div>
+
+      {/* Why this isn't the network-proxy TLS inspection our blog argues against */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 28, marginBottom: 40 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10 }}>Not the TLS inspection you&apos;re thinking of</div>
+        <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+          If you&apos;ve read our take on why network-level TLS inspection is the wrong approach to AI DLP, this looks like a contradiction — it isn&apos;t. That critique is about corporate-proxy inspection: a gateway decrypting every app&apos;s traffic for the whole network, which breaks certificate-pinned apps and needs real IT infrastructure. Pretzel Desktop does something narrower: it runs locally on your own machine and only terminates TLS for four AI hostnames (ChatGPT, Claude, Gemini, and their variants) — every other app and site is blind-tunnelled straight through, untouched. It&apos;s the same &quot;read the prompt before it&apos;s gone&quot; principle as the browser extension, just extended to native apps that don&apos;t run in a browser tab.
         </div>
       </div>
 
@@ -208,7 +216,7 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
           {[
             ['1', 'Launch Pretzel Desktop', 'It installs a local CA cert and sets up your system proxy. You\'ll be prompted for admin password once.'],
             ['2', 'Sign in with mykka.ai', 'Click the tray icon → "Sign in" to load your organisation\'s policy. Opens in your browser.'],
-            ['3', 'Done', 'The tray icon turns green. Every HTTPS request from every app is now checked against your policy.'],
+            ['3', 'Done', 'The tray icon turns green. Every request to a supported AI site — from any app on your machine — is now checked against your policy.'],
           ].map(([num, title, desc]) => (
             <div key={num} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

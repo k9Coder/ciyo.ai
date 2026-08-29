@@ -169,7 +169,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">8. Security</h2>
             <p>
-              All data in transit is protected by TLS 1.3. Data at rest is encrypted with AES-256. Organisation tokens are hashed with bcrypt. We are working toward SOC 2 Type II certification (targeted Q3 2026). For our full security posture, see our{' '}
+              All data in transit is protected by TLS 1.3. Data at rest is encrypted with AES-256. Organisation tokens are hashed with bcrypt. We are working toward SOC 2 Type II certification. For our full security posture, see our{' '}
               <a href="/security" className="text-[#8fb3ff] hover:underline">Security &amp; Trust page</a>.
             </p>
           </section>

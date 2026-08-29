@@ -103,6 +103,15 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed: $url"
 
+      # IndexNow only makes sense against the real mykka.ai domain — staging's
+      # Vercel URL doesn't match the hosted key file, so this only runs for
+      # the production (master) deploy. Best-effort: the script itself never
+      # throws, so this can't fail the job.
+      - name: Ping IndexNow (Bing/Yandex)
+        if: github.ref_name == 'master'
+        run: pnpm indexnow
+        working-directory: mykka-web
+
       - name: Notify Discord
         if: always()
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'הצהרת נגישות | Accessibility Statement',
   description: 'הצהרת נגישות לנכים באתר mykka.ai',
+  alternates: { canonical: 'https://mykka.ai/accessibility' },
 }
 
 export default function AccessibilityPage() {
