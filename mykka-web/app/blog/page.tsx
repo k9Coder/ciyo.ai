@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI DLP Blog — Security Research & Guides | mykka.ai',
+  title: 'AI DLP Blog — Security Research & Guides',
   description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams managing generative AI risk.',
   alternates: { canonical: 'https://mykka.ai/blog' },
   openGraph: {
@@ -19,7 +19,7 @@ const jsonLd = {
   url: 'https://mykka.ai/blog',
   name: 'AI DLP Blog — Security Research & Guides',
   description: 'Practical guides, policy templates, and research on AI data loss prevention. Written for CISOs, security engineers, and compliance teams.',
-  publisher: { '@id': 'https://mykka.ai/#org' },
+  publisher: { '@id': 'https://mykka.ai/#org', '@type': 'Organization', name: 'mykka.ai', url: 'https://mykka.ai' },
 }
 
 export default function BlogPage() {

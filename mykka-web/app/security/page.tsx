@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI DLP Security Architecture — How Pretzel Handles Your Data | mykka.ai',
+  title: 'AI DLP Security Architecture — How Pretzel Handles Your Data',
   description: 'Pretzel runs detection locally in the browser — full prompt text never reaches mykka.ai servers. TLS 1.3, AES-256, EU data residency, SOC 2 Type II in progress. Honest answers to CISO questions.',
   alternates: { canonical: 'https://mykka.ai/security' },
   openGraph: {
@@ -24,12 +24,12 @@ const POINTS = [
   {
     icon: '📋',
     title: 'SOC 2 Type II — in progress',
-    body: 'We are actively working toward SOC 2 Type II certification, targeted for Q3 2026. Our security practices are designed to meet those controls now, before the audit. Interim controls documentation is available on request — contact security@mykka.ai.',
+    body: 'We are actively working toward SOC 2 Type II certification. Our security practices are designed to meet those controls now, before the audit. Interim controls documentation is available on request — contact security@mykka.ai.',
   },
   {
     icon: '🇪🇺',
     title: 'GDPR & CCPA aligned by design',
-    body: 'Data is stored in the EU by default (AWS eu-west-1, Frankfurt region). We are designed for GDPR and CCPA compliance. We are happy to sign a Data Processing Agreement (DPA) for enterprise customers — request one at privacy@mykka.ai.',
+    body: 'Data is stored in the EU by default (AWS eu-west-1, Ireland region). We are designed for GDPR and CCPA compliance. We are happy to sign a Data Processing Agreement (DPA) for enterprise customers — request one at privacy@mykka.ai.',
   },
   {
     icon: '🐛',
@@ -64,7 +64,7 @@ const jsonLd = {
       name: 'Is Pretzel SOC 2 certified?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'SOC 2 Type II certification is in progress, targeted for Q3 2026. Security practices are designed to meet SOC 2 controls before the audit. Interim controls documentation is available on request at security@mykka.ai.',
+        text: 'SOC 2 Type II certification is in progress. Security practices are designed to meet SOC 2 controls before the audit. Interim controls documentation is available on request at security@mykka.ai.',
       },
     },
     {

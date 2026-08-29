@@ -21,9 +21,10 @@ const jsonLd = {
     '@type': 'Organization',
     name: 'mykka.ai',
     url: 'https://mykka.ai',
+    logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png', width: 512, height: 512 },
     foundingDate: '2024',
     description: 'mykka.ai builds Pretzel — a Chrome browser extension that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
-    sameAs: ['https://www.linkedin.com/company/mykka-ai'],
+    sameAs: ['https://www.linkedin.com/company/mykka-ai', 'https://twitter.com/mykka_ai'],
     contactPoint: { '@type': 'ContactPoint', email: 'hello@mykka.ai', contactType: 'customer support' },
   },
 }
@@ -38,7 +39,7 @@ export default function AboutPage() {
         <div className="space-y-4 text-[15px] leading-relaxed text-[#94a3b8]">
           <p>We watched teams at fast-growing companies adopt ChatGPT overnight — and watched their security teams scramble to catch up. Existing DLP tools weren&apos;t built for a world where every employee has a direct line to a public AI model.</p>
           <p>Pretzel started as a simple Chrome extension to block PII from leaving the browser. It&apos;s grown into a full policy platform that lets security teams configure, enforce, and audit AI usage across their entire organization.</p>
-          <p>We&apos;re mykka.ai — a small team obsessed with making enterprise security tools that people actually install, use, and recommend to peers. We&apos;re funded by customers, not VCs.</p>
+          <p>We&apos;re an independent team building the tool we wished existed.</p>
         </div>
         <div className="mt-12 rounded-2xl border border-[#5b8cff]/20 bg-[#5b8cff]/[0.06] p-6">
           <p className="text-[14px] font-semibold text-white">Want to talk?</p>

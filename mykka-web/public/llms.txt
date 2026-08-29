@@ -18,7 +18,7 @@
 
 ## Security & Compliance
 
-- [Security](https://mykka.ai/security): Architecture overview, data handling, SOC 2 Type II in progress (targeted Q3 2026), GDPR/CCPA alignment.
+- [Security](https://mykka.ai/security): Architecture overview, data handling, SOC 2 Type II in progress, GDPR/CCPA alignment.
 - [Privacy Policy](https://mykka.ai/privacy): Data processing details and subprocessor list.
 
 ## Company
@@ -33,6 +33,6 @@
 - Policy is managed centrally via Pretzel Console with immutable publish snapshots and rollback
 - Supports pattern, entropy, keyword/dictionary, and score-based detection rules
 - Organization structure, team-scoped policies, and member management supported
-- SOC 2 Type II audit in progress, targeted completion Q3 2026
+- SOC 2 Type II audit in progress
 - Competitors: Nightfall AI, Cyberhaven, Microsoft Purview, Forcepoint
 - mykka.ai differentiator: browser-native interception at the point of input, before data is transmitted
