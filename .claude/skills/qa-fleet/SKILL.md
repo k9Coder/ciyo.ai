@@ -299,8 +299,8 @@ Once every requested product has reported back (and been torn down), write
 
 | Product | Health Score | Issues | Jira tickets |
 |---|---|---|---|
-| backend | 82/100 | 3 | [backend/jira-tickets.md](backend/jira-tickets.md) |
-| console | TIMED OUT (killed after 6m) | — | [console/jira-tickets.md](console/jira-tickets.md) |
+| backend | 82/100 | 3 | backend/jira-tickets.md |
+| console | TIMED OUT (killed after 6m) | — | console/jira-tickets.md |
 | ... | | | |
 
 Timebox: <duration> per product (hard cap: <duration> + 3m). Mode: <parallel|sequential>.
