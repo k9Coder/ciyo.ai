@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'How mykka.ai collects, uses, and protects data in the Pretzel AI DLP platform.',
 }
 
-const LAST_UPDATED = 'August 2026'
+const LAST_UPDATED = 'September 2026'
 
 export default function PrivacyPage() {
   return (
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
-                <span><strong className="text-white">Scan event data.</strong> When the Pretzel extension evaluates a prompt, we record: which rule matched, which AI site was used, which organisation member submitted the prompt, the action taken (warn/block/allow), and a timestamp. For rules configured to report matched content, a brief excerpt of the matched text may also be retained for audit purposes. <strong className="text-white">Full prompt text is never transmitted to or stored on our servers.</strong></span>
+                <span><strong className="text-white">Scan event data (Chrome extension).</strong> When the Pretzel extension evaluates a prompt on a supported AI chat site, it may collect: <strong className="text-white">personally identifiable information</strong> (your account email, see Account data above); <strong className="text-white">authentication information</strong> (a matched excerpt when a rule detects an API key, access token, or similar credential); <strong className="text-white">financial and payment information</strong> (a matched excerpt when a rule detects a credit card number or similar financial identifier); <strong className="text-white">personal communications</strong> (a matched excerpt of your AI chat prompt — never the full prompt); <strong className="text-white">web history</strong> (the hostname of the AI site used and a timestamp); and <strong className="text-white">website content</strong> (the matched excerpt read from the page&apos;s composer). Each category is collected only when a configured policy rule matches, retained in our backend for the period described in Section 5 (Data Retention), and shared only with the sub-processors listed in Section 4 (Third-Party Processors). <strong className="text-white">Full prompt text is never transmitted to or stored on our servers.</strong></span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
