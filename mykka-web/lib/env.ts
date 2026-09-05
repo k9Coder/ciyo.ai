@@ -6,6 +6,7 @@ const schema = z.object({
   NEXT_PUBLIC_ENV: z.string().optional(),
   NEXT_PUBLIC_PILOT_MODE: z.string().optional(),
   NEXT_PUBLIC_LOGROCKET_ID: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 })
 
 // Next.js inlines NEXT_PUBLIC_* at build time — every var MUST be referenced
@@ -16,4 +17,5 @@ export const env = schema.parse({
   NEXT_PUBLIC_ENV: process.env.NEXT_PUBLIC_ENV,
   NEXT_PUBLIC_PILOT_MODE: process.env.NEXT_PUBLIC_PILOT_MODE,
   NEXT_PUBLIC_LOGROCKET_ID: process.env.NEXT_PUBLIC_LOGROCKET_ID,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 })

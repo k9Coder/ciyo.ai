@@ -11,6 +11,9 @@
 process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
 
+import { initSentry, Sentry } from './sentry'
+initSentry()
+
 import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
@@ -452,12 +455,16 @@ process.on('exit', () => { restoreSystemProxy() })
 process.on('uncaughtException', (err) => {
   console.error('[pretzel-desktop] Uncaught exception:', err)
   restoreSystemProxy()
-  process.exit(1)
+  // Sentry's own OnUncaughtException integration also runs off this same
+  // event and reports async — without waiting for it here, this handler's
+  // process.exit(1) wins the race and kills the process before the report
+  // ever reaches the network, silently dropping every real crash.
+  void Sentry.flush(2000).finally(() => process.exit(1))
 })
 process.on('unhandledRejection', (reason) => {
   console.error('[pretzel-desktop] Unhandled rejection:', reason)
   restoreSystemProxy()
-  process.exit(1)
+  void Sentry.flush(2000).finally(() => process.exit(1))
 })
 
 export { setCurrentPolicy }

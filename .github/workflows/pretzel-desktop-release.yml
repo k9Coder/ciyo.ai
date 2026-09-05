@@ -99,6 +99,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
+          SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
+          VITE_SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
           # CSC_IDENTITY_AUTO_DISCOVERY=false tells electron-builder to skip
           # signing when no certificate is present instead of failing
           CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -145,6 +147,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
+          SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
+          VITE_SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
         working-directory: pretzel-desktop
         run: |
           pnpm build
@@ -185,6 +189,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRETZEL_API_URL: ${{ secrets.PRETZEL_DESKTOP_API_URL }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.PRETZEL_CLERK_PUBLISHABLE_KEY }}
+          SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
+          VITE_SENTRY_DSN_DESKTOP: ${{ secrets.PRETZEL_SENTRY_DSN_DESKTOP }}
         working-directory: pretzel-desktop
         run: |
           pnpm build

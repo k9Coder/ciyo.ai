@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import * as Sentry from '@sentry/electron/renderer'
 import { Logo } from '../shared/Logo'
 import './style.css'
+
+if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
+  Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN_DESKTOP })
+}
 
 function DecisionUI() {
   const [pending, setPending] = useState<DecisionPayload | null>(null)

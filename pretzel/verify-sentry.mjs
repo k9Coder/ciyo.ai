@@ -15,7 +15,7 @@ const DIST = path.resolve(__dirname, 'dist')
 
 ;(async () => {
   // Use the Playwright-managed Chromium (supports extensions + service workers).
-  const chromiumExe = 'C:/Users/yarin/AppData/Local/ms-playwright/chromium-1223/chrome-win64/chrome.exe'
+  const chromiumExe = 'C:/Users/yarin/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'
 
   const ctx = await chromium.launchPersistentContext('', {
     executablePath: chromiumExe,

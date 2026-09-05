@@ -50,6 +50,8 @@ const schema = z.object({
   RATE_LIMIT_DISABLED: z.string().optional(),
   RATE_LIMIT_MAX: z.string().optional(),
   RATE_LIMIT_WINDOW: z.string().optional(),
+
+  SENTRY_DSN: z.string().optional(),
 })
 
 // Fail fast at import: the server must not boot with a missing/invalid env.
