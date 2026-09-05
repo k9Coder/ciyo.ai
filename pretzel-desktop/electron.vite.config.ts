@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
       define: {
         'process.env.PRETZEL_API_URL': baked('PRETZEL_API_URL'),
         'process.env.CLERK_PUBLISHABLE_KEY': baked('CLERK_PUBLISHABLE_KEY'),
+        'process.env.SENTRY_DSN_DESKTOP': baked('SENTRY_DSN_DESKTOP'),
       },
       build: {
         outDir: 'dist-electron',

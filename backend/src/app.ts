@@ -40,6 +40,7 @@ import { handlePayPalEvent, verifyPayPalWebhookSignature } from './billing/paypa
 import { requestLoggingPlugin } from './logger/request-logging.js'
 import { logger } from './logger/index.js'
 import { env } from './env.js'
+import { Sentry } from './sentry.js'
 
 /**
  * Client-facing error body. 5xx (and untagged) errors must not leak internal
@@ -254,6 +255,11 @@ export function buildApp() {
   app.setErrorHandler((err, req, reply) => {
     const statusCode = (err as { statusCode?: number }).statusCode ?? 500
     logger.error('Unhandled error', { message: err.message, stack: err.stack, statusCode })
+    // Only 5xx (server-fault) errors go to Sentry — 4xx are expected traffic
+    // (bad input, auth failures, 404s) and would just burn the shared org quota.
+    if (statusCode >= 500) {
+      Sentry.captureException(err, { extra: { traceId: req.headers['x-trace-id'], url: req.url } })
+    }
     const traceId = req.headers['x-trace-id'] as string | undefined
     return reply.status(statusCode).send(buildErrorBody(statusCode, err.message, traceId))
   })

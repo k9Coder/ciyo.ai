@@ -1,3 +1,6 @@
+import { initSentry, Sentry } from './sentry.js'
+initSentry()
+
 import { buildApp } from './app.js'
 import { logger } from './logger/index.js'
 import { pingDb } from './db/client.js'
@@ -15,6 +18,8 @@ try {
   logger.info('database connected')
 } catch (err) {
   logger.error('database connection failed — check DATABASE_URL', { error: (err as Error).message })
+  Sentry.captureException(err)
+  await Sentry.flush(2000)
   process.exit(1)
 }
 
