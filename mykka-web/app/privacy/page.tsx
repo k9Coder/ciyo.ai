@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <ul className="space-y-3">
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
-                <span><strong className="text-white">Account data.</strong> Name, email address, and organisation details collected when you sign up via Clerk (our identity provider).</span>
+                <span><strong className="text-white">Account data.</strong> Name, email address, organisation details, and — if you sign up with email and password rather than Google sign-in — your account password, collected when you sign up via Clerk (our identity provider). Your password is hashed and stored by Clerk using industry-standard practices; mykka.ai never receives or stores your plaintext password.</span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded text-[11px] text-[#34d399]">✓</span>
