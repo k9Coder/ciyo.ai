@@ -16,6 +16,9 @@ createRoot(root).render(
     publishableKey={CLERK_PUBLISHABLE_KEY}
     syncHost={CLERK_SYNC_HOST}
     afterSignOutUrl={window.location.href}
+    // Without this, Clerk rejects the chrome-extension:// callback URL as an
+    // unauthorized redirect URI even when allowed_origins is set correctly.
+    allowedRedirectProtocols={["chrome-extension:"]}
   >
     <LoadingProvider>
       <App />
