@@ -11,7 +11,11 @@ const root = document.getElementById("root");
 if (!root) throw new Error("No #root element");
 
 createRoot(root).render(
-  <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} syncHost={CLERK_SYNC_HOST}>
+  <ClerkProvider
+    publishableKey={CLERK_PUBLISHABLE_KEY}
+    syncHost={CLERK_SYNC_HOST}
+    allowedRedirectProtocols={["chrome-extension:"]}
+  >
     <Popup />
   </ClerkProvider>
 );

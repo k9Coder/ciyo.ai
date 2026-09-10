@@ -20,7 +20,16 @@ export function AccountPage() {
             that resolves to a path with no resource behind it, so the
             browser briefly shows ERR_FILE_NOT_FOUND right after a successful
             sign-in before the user reloads back to this page. */}
-        <SignIn routing="hash" fallbackRedirectUrl={window.location.href} />
+        {/* Social/OAuth sign-in (Google) can't complete inside a Chrome
+            extension: Google's OAuth server rejects chrome-extension:// as a
+            redirect scheme, and Clerk's chrome-extension SDK only supports
+            OAuth via Sync Host (the web console), not in-extension. Hide the
+            social buttons so users aren't offered a flow that always errors. */}
+        <SignIn
+          routing="hash"
+          fallbackRedirectUrl={window.location.href}
+          appearance={{ elements: { socialButtonsBlockButton: "hidden", dividerRow: "hidden" } }}
+        />
       </div>
     );
   }
