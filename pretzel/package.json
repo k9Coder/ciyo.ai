@@ -1,6 +1,6 @@
 {
   "name": "pretzel-extension",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Pretzel by mykka.ai — browser-based AI prompt DLP",
   "private": true,
   "scripts": {
