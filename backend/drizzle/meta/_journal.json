@@ -71,6 +71,13 @@
       "when": 1786896010334,
       "tag": "0009_glossy_hellion",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1789224748502,
+      "tag": "0010_clear_bishop",
+      "breakpoints": true
     }
   ]
 }
