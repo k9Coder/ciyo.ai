@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/chrome-extension";
+import { useUser } from "@clerk/chrome-extension";
 import { sendMessage } from "@/shared/messages";
 import { queryAuditEvents } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { getTheme, setTheme } from "@/shared/theme";
 import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
+import { useExtensionAuth } from "@/shared/useExtensionAuth";
+import { signInWithDeviceAuth } from "@/auth/deviceAuth";
+import { CLERK_SYNC_HOST } from "@/shared/constants";
 import { Spinner } from "../options/components/loading";
 
 function LogoIcon({ danger = false, size = 24 }: { danger?: boolean; size?: number }) {
@@ -60,7 +63,38 @@ function ThemeToggle() {
   );
 }
 
+function GoogleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+      <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.8 2.73v2.27h2.92c1.7-1.57 2.68-3.88 2.68-6.64z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.27c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A9 9 0 0 0 9 18z" />
+      <path fill="#FBBC05" d="M3.97 10.7A5.4 5.4 0 0 1 3.68 9c0-.59.1-1.17.29-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l3.01-2.33z" />
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+    </svg>
+  );
+}
+
 function SignedOutView() {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogleSignIn() {
+    setError(null);
+    setPending(true);
+    try {
+      const { token } = await signInWithDeviceAuth();
+      await chrome.storage.local.set({ orgToken: token });
+      await sendMessage({ type: "SYNC_NOW" });
+      // No further action needed here: useExtensionAuth's storage.onChanged
+      // listener picks up the new orgToken and flips this popup to
+      // SignedInView on its own.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign-in failed");
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <div style={{ background: "var(--bg-base)", minWidth: 320 }}>
       <div style={{
@@ -76,10 +110,33 @@ function SignedOutView() {
         </button>
         <ThemeToggle />
       </div>
-      <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+      <div style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
         <p style={{ fontSize: 13, color: "var(--text-secondary)", textAlign: "center", margin: 0 }}>
           Sign in to enable policy enforcement for your organization.
         </p>
+        {/* Google OAuth can't complete inside a Chrome extension page directly
+            (Google rejects chrome-extension:// as a redirect scheme) -- this
+            runs the PKCE device-auth flow instead, see @/auth/deviceAuth.
+            Only offered on the production (pk_live) Clerk setup, matching
+            where the backend route actually exists for now. */}
+        {CLERK_SYNC_HOST && (
+          <button
+            onClick={() => void handleGoogleSignIn()}
+            disabled={pending}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "8px 16px", background: "var(--bg-surface)", color: "var(--text-primary)",
+              border: "1px solid var(--border)", borderRadius: 6, fontSize: 13,
+              fontWeight: 600, cursor: pending ? "default" : "pointer", opacity: pending ? 0.6 : 1,
+            }}
+          >
+            <GoogleIcon />
+            {pending ? "Signing in…" : "Continue with Google"}
+          </button>
+        )}
+        {error && (
+          <p style={{ fontSize: 11, color: "var(--status-danger)", textAlign: "center", margin: 0 }}>{error}</p>
+        )}
         <button
           onClick={() => chrome.runtime.openOptionsPage()}
           style={{
@@ -263,7 +320,7 @@ function SignedInView() {
 }
 
 export function Popup() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useExtensionAuth();
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {

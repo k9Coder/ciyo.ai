@@ -10,6 +10,7 @@ export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'en
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 export const failModeEnum    = pgEnum('fail_mode',    ['open', 'closed'])
+export const deviceClientEnum = pgEnum('device_client', ['desktop', 'extension'])
 
 // ── Users (global identity, not tenant-scoped) ────────────────────────────────
 export const users = pgTable('users', {
@@ -351,15 +352,40 @@ export const desktopAuthCodes = pgTable('desktop_auth_codes', {
   codeUniq: unique().on(t.code),
 }))
 
+// ── Extension Auth Codes ──────────────────────────────────────────────────
+// Same shape and purpose as Desktop Auth Codes above, minted by
+// POST /auth/extension/authorize/complete and redeemed by
+// POST /auth/extension/token. Kept as its own table (mirroring the desktop
+// one) rather than a shared table with a client column, matching the
+// existing per-client convention here and keeping desktop's code/tests
+// untouched.
+export const extensionAuthCodes = pgTable('extension_auth_codes', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  code:          text('code').notNull(),
+  memberId:      uuid('member_id').notNull().references(() => members.id),
+  tenantId:      uuid('tenant_id').notNull().references(() => tenants.id),
+  codeChallenge: text('code_challenge').notNull(),
+  redirectUri:   text('redirect_uri').notNull(),
+  expiresAt:     timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:        timestamp('used_at', { withTimezone: true }),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  codeUniq: unique().on(t.code),
+}))
+
 // ── Device Tokens ────────────────────────────────────────────────────────
-// Long-lived, revocable per-member credential for pretzel-desktop, minted at
-// the end of the PKCE exchange. 90-day expiry; revokedAt exists for a future
-// manual-revoke feature (not built yet — no endpoint sets it today).
+// Long-lived, revocable per-member credential for pretzel-desktop and
+// pretzel-extension, minted at the end of the PKCE exchange. 90-day expiry;
+// revokedAt exists for a future manual-revoke feature (not built yet — no
+// endpoint sets it today). `client` distinguishes which app a token belongs
+// to (for a future "manage devices" console screen); the auth middleware
+// itself is client-agnostic and doesn't branch on it.
 export const deviceTokens = pgTable('device_tokens', {
   id:         uuid('id').primaryKey().defaultRandom(),
   memberId:   uuid('member_id').notNull().references(() => members.id),
   tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
   tokenHash:  text('token_hash').notNull(),
+  client:     deviceClientEnum('client').notNull().default('desktop'),
   createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt:  timestamp('expires_at', { withTimezone: true }).notNull(),
   lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
@@ -435,6 +461,9 @@ export type NewInvite = typeof invites.$inferInsert
 
 export type DesktopAuthCode    = typeof desktopAuthCodes.$inferSelect
 export type NewDesktopAuthCode = typeof desktopAuthCodes.$inferInsert
+
+export type ExtensionAuthCode    = typeof extensionAuthCodes.$inferSelect
+export type NewExtensionAuthCode = typeof extensionAuthCodes.$inferInsert
 
 export type DeviceToken    = typeof deviceTokens.$inferSelect
 export type NewDeviceToken = typeof deviceTokens.$inferInsert

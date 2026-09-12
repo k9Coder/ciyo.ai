@@ -9,8 +9,8 @@ import { API_BASE } from "@/shared/constants";
  * `buildAuthHeaders` in `@/auth/headers`.
  *
  * IMPORTANT: this module is only relevant on the Clerk-JWT auth path.
- * MDM/org-token (`ps_`) requests are tenant-implicit and must never carry
- * X-Tenant-Id — see `getAuthToken` in `@/policy/auth`.
+ * MDM/org-token (`ps_`) and device-token (`pd_`) requests are tenant-implicit
+ * and must never carry X-Tenant-Id — see `getAuthToken` in `@/policy/auth`.
  */
 
 export interface TenantMembership {
