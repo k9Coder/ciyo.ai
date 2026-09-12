@@ -60,7 +60,7 @@ export default defineManifest(async ({ mode }) => {
     name: "Pretzel",
     version,
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
-    permissions: ["storage", "activeTab", "alarms", "cookies"],
+    permissions: ["storage", "activeTab", "alarms", "cookies", "identity"],
     host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",

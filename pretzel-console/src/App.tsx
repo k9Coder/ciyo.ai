@@ -17,6 +17,7 @@ import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { InvitePage } from './pages/InvitePage'
 import { DesktopLoginPage } from './pages/DesktopLoginPage'
+import { ExtensionLoginPage } from './pages/ExtensionLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
 import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { PlanGate } from './components/billing/PlanGate'
@@ -52,6 +53,7 @@ export function App() {
           <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
           <Route path="/invite/:token"  element={<InvitePage />} />
           <Route path="/desktop-login" element={<DesktopLoginPage />} />
+          <Route path="/extension-login" element={<ExtensionLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />
           <Route path="/unauthorized"   element={<UnauthorizedPage />} />
           <Route
