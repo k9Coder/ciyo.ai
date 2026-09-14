@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/chrome-extension";
+import { useExtensionAuth } from "@/shared/useExtensionAuth";
 import { queryAuditEvents, exportAuditCSV } from "@/audit/log";
 import type { AuditEvent } from "@/audit/types";
 import { InlineLoader, PageLoader } from "../components/loading";
@@ -21,7 +21,7 @@ const DECISION_LABELS: Record<string, string> = {
 };
 
 export function AuditPage() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useExtensionAuth();
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [page, setPage] = useState(0);
   const [hostnameFilter, setHostnameFilter] = useState("");
