@@ -1,7 +1,7 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, gt, ilike, isNull } from 'drizzle-orm'
 import { Webhook } from 'svix'
 import { db } from '../db/client.js'
-import { tenants, members } from '../db/schema.js'
+import { tenants, members, invites } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
 import { usersClient } from '../http/internal-client.js'
 import { publishInitialPolicy } from '../policy/service.js'
@@ -58,8 +58,26 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
           .from(members)
           .where(and(eq(members.email, email), isNull(members.userId)))
 
+        // A pending email-scoped invite (backend/src/invites/service.ts) means
+        // someone already added this person to an existing org — auto-provisioning
+        // a personal tenant here would win the race against them clicking "Accept"
+        // on /invite/:token, stranding them as owner of the wrong org. Leave them
+        // at zero memberships; acceptInvite() enrolls them into the invited tenant
+        // once they accept. Open links (email = null) aren't addressed to them, so
+        // they don't block auto-provisioning.
+        const [pendingInvite] = await db.select({ id: invites.id })
+          .from(invites)
+          .where(and(
+            ilike(invites.email, email),
+            isNull(invites.usedAt),
+            gt(invites.expiresAt, new Date()),
+          ))
+          .limit(1)
+
         if (pending.length > 0) {
           await usersClient.post('/claim-pending', { email, userId: user.id })
+        } else if (pendingInvite) {
+          // Leave the user un-enrolled; they'll join via acceptInvite().
         } else {
           // No pre-enrollment — auto-provision a tenant for this user
           const localPart = email.split('@')[0] ?? email

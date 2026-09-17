@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { tenants, members, users } from '../src/db/schema.js'
+import { tenants, members, users, invites } from '../src/db/schema.js'
 import type { FastifyInstance } from 'fastify'
 
 vi.mock('svix', () => ({
@@ -85,6 +85,70 @@ describe('POST /webhooks/clerk — user.created', () => {
     // Must NOT have created an extra tenant
     const tenantRows = await db.select().from(tenants)
     expect(tenantRows).toHaveLength(1)
+  })
+
+  it('does not auto-provision a tenant when a pending email-scoped invite exists', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.insert(invites).values({
+      tenantId,
+      token:     'invite-token-carol',
+      email:     'carol@acme.com',
+      role:      'member',
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    })
+
+    const res = await makeWebhookRequest({
+      type: 'user.created',
+      data: {
+        id: 'user_carol1',
+        first_name: 'Carol',
+        last_name: 'Lee',
+        image_url: '',
+        email_addresses: [{ email_address: 'carol@acme.com' }],
+      },
+    })
+    expect(res.status).toBe(200)
+
+    const userRows = await db.select().from(users).where(eq(users.clerkId, 'user_carol1'))
+    expect(userRows).toHaveLength(1)
+
+    // No membership yet — they join via acceptInvite() when they click Accept.
+    const memberRows = await db.select().from(members).where(eq(members.email, 'carol@acme.com'))
+    expect(memberRows).toHaveLength(0)
+
+    // Must NOT have auto-provisioned a second tenant.
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
+  })
+
+  it('still auto-provisions when the only invite is an expired/used open link', async () => {
+    const { tenantId } = await buildTestTenant()
+    await db.insert(invites).values({
+      tenantId,
+      token:     'invite-token-expired',
+      email:     'dave@newco.com',
+      role:      'member',
+      expiresAt: new Date(Date.now() - 60 * 60 * 1000), // expired
+    })
+
+    const res = await makeWebhookRequest({
+      type: 'user.created',
+      data: {
+        id: 'user_dave1',
+        first_name: 'Dave',
+        last_name: 'Park',
+        image_url: '',
+        email_addresses: [{ email_address: 'dave@newco.com' }],
+      },
+    })
+    expect(res.status).toBe(200)
+
+    const memberRows = await db.select().from(members).where(eq(members.email, 'dave@newco.com'))
+    expect(memberRows).toHaveLength(1)
+    expect(memberRows[0]!.role).toBe('super_admin')
+
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(2)
   })
 })
 
