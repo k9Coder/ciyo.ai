@@ -146,6 +146,38 @@ export async function resolveClerkJwt(
   request.tokenPrefix = 'clerk'
 }
 
+// Verifies the Clerk JWT and resolves req.user only — unlike requireClerkAuth,
+// it does NOT require an existing membership. Needed for routes a brand-new,
+// not-yet-enrolled user must call to become a member in the first place (e.g.
+// POST /invites/:token/accept) — requireClerkAuth would 401 them with "Not
+// enrolled in any organisation" before they ever get the chance to enroll.
+export async function requireClerkUser(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  const secretKey = env.CLERK_SECRET_KEY
+  if (!secretKey) {
+    return reply.status(500).send({ error: 'Clerk not configured' })
+  }
+
+  let clerkUserId: string
+  try {
+    const payload = await clerkVerifyToken(auth.slice(7), { secretKey })
+    clerkUserId = payload.sub
+  } catch {
+    return reply.status(401).send({ error: 'Invalid Clerk token' })
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  if (!user) {
+    return reply.status(401).send({ error: 'User not found — sign up first' })
+  }
+
+  req.user = user
+  req.tokenPrefix = 'clerk'
+}
+
 export function invalidateTenantCache(tenantId: string): void {
   _tenantCache.delete(tenantId)
 }
