@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { requireAdminTokenOrClerkAdmin, requireClerkAuth } from '../auth/middleware.js'
+import { requireAdminTokenOrClerkAdmin, requireClerkUser } from '../auth/middleware.js'
 import { createInvite, getInvitePreview, acceptInvite } from './service.js'
 import { divisionExists } from '../divisions/service.js'
 import { env } from '../env.js'
@@ -78,9 +78,12 @@ export async function invitesRouter(fastify: FastifyInstance): Promise<void> {
     })
   })
 
-  // Authenticated user accepts an invite
+  // Authenticated user accepts an invite. Uses requireClerkUser, NOT
+  // requireClerkAuth — a user accepting their first invite has zero
+  // memberships at this point (see clerk.ts webhook), and requireClerkAuth
+  // would 401 them before they can ever enroll.
   fastify.post('/invites/:token/accept', {
-    preHandler: requireClerkAuth,
+    preHandler: requireClerkUser,
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
   }, async (req, reply) => {
     const { token } = req.params as { token: string }
