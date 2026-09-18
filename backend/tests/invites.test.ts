@@ -364,6 +364,24 @@ describe('POST /v1/invites', () => {
     expect(res.body.error).toBe('Division not found')
   })
 
+  it('regression: a brand-new user with zero memberships can accept an invite over HTTP', async () => {
+    // Unlike every other accept test above, this user has NO members row before
+    // calling accept — the real shape of a first-time invitee post clerk.ts's
+    // pending-invite check (which now deliberately skips auto-provisioning).
+    // requireClerkAuth would 401 this with "Not enrolled in any organisation"
+    // before ever reaching the route; the accept endpoint uses requireClerkUser
+    // instead, which doesn't require an existing membership.
+    await buildTestUser(MOCK_CLERK_USER_ID, 'brand-new@example.com')
+    const { token } = await createInvite(tenantId, null, { role: 'member' })
+
+    const res = await supertest(app.server)
+      .post(`/v1/invites/${token}/accept`)
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(200)
+    expect(res.body.email).toBe('brand-new@example.com')
+    expect(res.body.tenantId).toBe(tenantId)
+  })
+
   it('creates a division_admin invite with a valid divisionId', async () => {
     const user = await buildTestUser(MOCK_CLERK_USER_ID, 'super@example.com')
     await db.insert(members).values({ tenantId, userId: user.id, email: user.email, role: 'super_admin' })
