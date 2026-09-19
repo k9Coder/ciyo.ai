@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/electron/renderer'
 import { Logo } from '../shared/Logo'
+import { isBlockingDecision } from './decision-kind'
 import './style.css'
 
 if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
@@ -41,7 +42,7 @@ function DecisionUI() {
     return <div className="waiting">Waiting for policy decision…</div>
   }
 
-  const isBlock = pending.findings.some((f) => f.severity === 'critical')
+  const isBlock = isBlockingDecision(pending.findings)
   const severityClass = isBlock ? 'danger' : 'warn'
 
   return (

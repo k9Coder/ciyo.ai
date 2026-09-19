@@ -2,7 +2,7 @@ declare global {
   interface DecisionPayload {
     requestId: string
     hostname: string
-    findings: Array<{ ruleId: string; ruleName?: string; severity: string; matchedText?: string; snippet?: string }>
+    findings: Array<{ ruleId: string; ruleName?: string; severity: string; action?: string; matchedText?: string; snippet?: string }>
   }
 
   interface StatusPayload {
