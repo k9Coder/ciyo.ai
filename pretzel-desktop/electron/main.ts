@@ -14,7 +14,7 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { initSentry, Sentry } from './sentry'
 initSentry()
 
-import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell } from 'electron'
+import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
@@ -45,7 +45,7 @@ import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
 import { fetchSession, buildAuthView, type SessionInfo } from './session'
 import { startNagging, stopNagging } from './nag'
-import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule } from './policy-sync'
+import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule, getLastKnownPolicy, resetPolicySync } from './policy-sync'
 import forge from 'node-forge'
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
@@ -209,7 +209,8 @@ async function handleSessionLost(): Promise<void> {
   sessionInfo = null
   setCurrentPolicy(null)
   proxy.setPolicy(null)
-  pushStatus({ ...lastTrayStatus, policyAvailable: false })
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
   pushAuth()
   if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn })
 }
@@ -470,8 +471,16 @@ app.whenReady().then(async () => {
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
-    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true })
-  }, { onUnauthorized: () => { void handleSessionLost() } })
+    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: null })
+  }, {
+    onUnauthorized: () => { void handleSessionLost() },
+    // Lets the tray say "Can't reach server — retrying" instead of a silent "Waiting".
+    onSyncIssue: (issue) => pushStatus({ ...lastTrayStatus, policyAvailable: getLastKnownPolicy() !== null, syncIssue: issue }),
+  })
+
+  // Waking from sleep is the other common time the network is briefly down
+  // and a sync was missed — refresh right away instead of waiting for the tick.
+  powerMonitor.on('resume', () => { void triggerSync() })
 
   void refreshSession()
   setInterval(() => { void refreshSession() }, SESSION_REFRESH_MS)
@@ -495,7 +504,9 @@ app.whenReady().then(async () => {
 
   try {
     await startProxy()
-    pushStatus({ proxyRunning: true, policyAvailable: false, systemProxyActive: true })
+    // policyAvailable must reflect reality: the first policy sync starts before
+    // the proxy finishes starting, so it may already have landed.
+    pushStatus({ proxyRunning: true, policyAvailable: getLastKnownPolicy() !== null, systemProxyActive: true, syncIssue: null })
   } catch (err) {
     console.error('[pretzel-desktop] Proxy start failed:', err)
     pushStatus({ proxyRunning: false, policyAvailable: false, systemProxyActive: false })

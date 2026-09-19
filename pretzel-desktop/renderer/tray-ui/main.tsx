@@ -151,10 +151,19 @@ function TrayUI() {
   const needsSignIn = showSignIn || auth?.authenticated === false
   const sessionExpired = auth?.reason === 'expired'
 
-  const policyLabel = status.policyAvailable ? 'Policy active' : 'No policy cached'
+  const unreachable = !status.policyAvailable && status.syncIssue === 'unreachable'
+  const unreadable = !status.policyAvailable && status.syncIssue === 'invalid'
+  const policyLabel = status.policyAvailable
+    ? 'Policy active'
+    : unreachable ? "Can't reach server" : unreadable ? 'Policy unavailable' : 'No policy cached'
+  const policyPill = status.policyAvailable ? 'Active' : unreachable ? 'Retrying' : unreadable ? 'Error' : 'Waiting'
   const policyInfo = status.policyAvailable
     ? "Pretzel has your organisation's rules loaded and is checking traffic against them."
-    : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
+    : unreachable
+      ? "Pretzel couldn't reach your organisation's server. It keeps retrying automatically; until it connects, nothing is checked."
+      : unreadable
+        ? "The server sent a policy Pretzel couldn't read. It will try again every couple of minutes. Contact your admin if this continues."
+        : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
   const sysProxyLabel = status.systemProxyActive
     ? 'System proxy active'
     : 'System proxy inactive'
@@ -194,7 +203,7 @@ function TrayUI() {
           <span className="status-row-label">{policyLabel}</span>
           <span className={`pill ${status.policyAvailable ? 'pill-safe' : 'pill-muted'}`}>
             <span className={`dot ${status.policyAvailable ? 'dot-safe' : 'dot-warn'}`} />
-            {status.policyAvailable ? 'Active' : 'Waiting'}
+            {policyPill}
           </span>
           <InfoIcon title={policyInfo} />
         </div>

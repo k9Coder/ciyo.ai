@@ -37,3 +37,21 @@ describe('formatTrayTooltip', () => {
     expect(tooltip).toContain('Policy: not loaded')
   })
 })
+
+describe('formatTrayTooltip - failed policy sync', () => {
+  it("says the server can't be reached instead of telling the user to sign in", () => {
+    const text = formatTrayTooltip({ proxyRunning: true, policyAvailable: false, systemProxyActive: true, syncIssue: 'unreachable' })
+    expect(text).toContain("can't reach server")
+    expect(text).not.toContain('sign in')
+  })
+
+  it('says the policy was unreadable', () => {
+    expect(formatTrayTooltip({ proxyRunning: true, policyAvailable: false, systemProxyActive: true, syncIssue: 'invalid' }))
+      .toContain('unreadable')
+  })
+
+  it('ignores a sync issue once a policy is loaded', () => {
+    expect(formatTrayTooltip({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: 'unreachable' }))
+      .toContain('Policy: active')
+  })
+})

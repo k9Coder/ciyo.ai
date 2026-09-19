@@ -9,6 +9,7 @@ declare global {
     proxyRunning: boolean
     policyAvailable: boolean
     systemProxyActive?: boolean
+    syncIssue?: 'unreachable' | 'invalid' | null
   }
 
   interface AuthStatePayload {

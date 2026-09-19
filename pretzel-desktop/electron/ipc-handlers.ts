@@ -156,7 +156,7 @@ export function pushAuthState(win: BrowserWindow, payload: AuthViewState): void 
 /** Push status update to tray window renderer. */
 export function pushStatusUpdate(
   win: BrowserWindow,
-  payload: { proxyRunning: boolean; policyAvailable: boolean; systemProxyActive?: boolean },
+  payload: { proxyRunning: boolean; policyAvailable: boolean; systemProxyActive?: boolean; syncIssue?: 'unreachable' | 'invalid' | null },
 ): void {
   win.webContents.send('status:update', payload)
 }
