@@ -87,9 +87,11 @@ scripted journey here or an exploratory `/qa-only` run.
 Each spec under `journeys/<surface>/` is one real, end-to-end business flow
 — not an isolated click. It must create and clean up any data it needs
 itself; this runs against shared staging state, not a disposable database.
-Prefer read-only or self-cancelling actions (like the open-invite journey)
-over anything that leaves lasting state when a full cleanup step isn't
-practical.
+Prefer read-only or self-cancelling actions over anything that leaves lasting
+state when a full cleanup step isn't practical — e.g. the member-add journey
+(`journeys/console/member-invite.spec.ts`) adds a member by email and removes
+it again in the same test, since (unlike the old open-invite-link flow it
+replaced) admin-add-by-email writes a real row immediately.
 
 ## Known maintenance cost: extension auth (once extension coverage lands)
 

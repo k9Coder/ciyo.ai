@@ -29,7 +29,7 @@ import { auditLogRouter } from './audit-log/router.js'
 import { tenantsRouter } from './tenants/router.js'
 import { assistantRouter } from './assistant/router.js'
 import { platformRouter } from './platform/router.js'
-import { invitesRouter } from './invites/router.js'
+// import { invitesRouter } from './invites/router.js' // retired — see mount site below
 import { billingRouter } from './billing/router.js'
 import { onboardingRouter } from './onboarding/router.js'
 import { telemetryRouter } from './telemetry/router.js'
@@ -235,7 +235,10 @@ export function buildApp() {
   void app.register(auditLogRouter,  { prefix: '/v1' })
   void app.register(tenantsRouter,   { prefix: '/v1' })
   void app.register(assistantRouter, { prefix: '/v1' })
-  void app.register(invitesRouter,   { prefix: '/v1' })
+  // Token-invite-link flow retired in favor of admin-add-by-email
+  // (POST /v1/members) + POST /v1/me/self-serve-org. Router kept in the tree,
+  // unmounted — see backend/src/invites/.
+  // void app.register(invitesRouter,   { prefix: '/v1' })
   void app.register(billingRouter,    { prefix: '/v1' })
   void app.register(onboardingRouter, { prefix: '/v1' })
   void app.register(telemetryRouter,  { prefix: '/v1' })

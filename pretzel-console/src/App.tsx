@@ -15,7 +15,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
-import { InvitePage } from './pages/InvitePage'
+// import { InvitePage } from './pages/InvitePage' // retired — see route below
 import { DesktopLoginPage } from './pages/DesktopLoginPage'
 import { ExtensionLoginPage } from './pages/ExtensionLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
@@ -51,7 +51,10 @@ export function App() {
           <Route path="/login"          element={<LoginPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
           <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
-          <Route path="/invite/:token"  element={<InvitePage />} />
+          {/* Token-invite-link flow retired in favor of admin-add-by-email
+              (Members page "+ Add Member") + POST /me/self-serve-org.
+              Route kept commented rather than deleted. */}
+          {/* <Route path="/invite/:token"  element={<InvitePage />} /> */}
           <Route path="/desktop-login" element={<DesktopLoginPage />} />
           <Route path="/extension-login" element={<ExtensionLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />

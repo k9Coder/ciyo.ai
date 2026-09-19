@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 vi.mock('../src/api', () => ({
   api: {
     members: { list: vi.fn(), update: vi.fn(), remove: vi.fn(), create: vi.fn() },
-    invites: { create: vi.fn() },
+    // invites.create intentionally not mocked — token-invite-link flow
+    // retired, MembersPage no longer calls it (see src/App.tsx).
     divisions: { list: vi.fn() },
   },
 }))
@@ -57,5 +58,22 @@ describe('MembersPage fail mode', () => {
     fireEvent.change(select, { target: { value: '' } })
 
     await waitFor(() => expect(api.members.update).toHaveBeenCalledWith('m1', { failMode: null }))
+  })
+})
+
+describe('MembersPage add member', () => {
+  it('adds a member directly by email — no invite link generated', async () => {
+    vi.mocked(api.members.create).mockResolvedValue({ ...MEMBER, id: 'm2', email: 'new@example.com' })
+    renderPage()
+
+    fireEvent.click(await screen.findByText('+ Add Member'))
+    fireEvent.change(screen.getByPlaceholderText('alice@lawfirm.com'), { target: { value: 'new@example.com' } })
+    fireEvent.click(screen.getByText('Add member'))
+
+    await waitFor(() => expect(api.members.create).toHaveBeenCalledWith({
+      email: 'new@example.com', role: 'member', adminDivisionId: undefined,
+    }))
+    // No "Generate link" / "Copy link" UI exists anymore.
+    expect(screen.queryByText('Copy link')).not.toBeInTheDocument()
   })
 })

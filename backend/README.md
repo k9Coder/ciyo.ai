@@ -12,7 +12,7 @@ sources:
 
 # mykka.ai backend
 
-Fastify 4 REST API written in TypeScript. PostgreSQL persistence is accessed through Drizzle ORM. The service owns tenant administration, compiled browser policies, telemetry, assistant actions, invites, billing, and provider webhooks.
+Fastify 4 REST API written in TypeScript. PostgreSQL persistence is accessed through Drizzle ORM. The service owns tenant administration, compiled browser policies, telemetry, assistant actions, member enrollment (admin-add-by-email + console self-serve; token-invite-links disabled, see `src/invites/`), billing, and provider webhooks.
 
 ## Run locally
 

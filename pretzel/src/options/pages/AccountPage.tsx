@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { useAuth, useUser, SignIn, SignOutButton } from "@clerk/chrome-extension";
+import { useEffect, useState } from "react";
+import { useAuth, useUser, useClerk, SignIn, SignOutButton } from "@clerk/chrome-extension";
 import { PageLoader } from "../components/loading";
 import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
 import { useExtensionAuth } from "@/shared/useExtensionAuth";
 import { signInWithDeviceAuth } from "@/auth/deviceAuth";
+import { fetchMemberships } from "@/auth/tenant";
 import { CLERK_SYNC_HOST } from "@/shared/constants";
 
 function GoogleIcon() {
@@ -23,15 +24,41 @@ export function AccountPage() {
   // only consulted afterward to decide WHICH signed-in view to render, since
   // a device-token session never has a live Clerk session in this page.
   const { isLoaded, isSignedIn } = useExtensionAuth();
-  const { isSignedIn: clerkSignedIn } = useAuth();
+  const { isSignedIn: clerkSignedIn, getToken } = useAuth();
   const { user } = useUser();
+  const { signOut } = useClerk();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingEnrollment, setCheckingEnrollment] = useState(false);
 
   // Persist the Clerk JWT so background policy sync is authenticated when the
   // user signs in here rather than through the popup. No-op for a
   // device-token session (isSignedIn is false from Clerk's own perspective).
   usePersistSessionToken();
+
+  // The device-token (Google) sign-in path is already rejected server-side —
+  // /auth/extension/authorize/complete 401s a zero-membership caller before a
+  // token is ever minted (see backend/src/extension-auth/router.ts). This
+  // inline Clerk sign-in doesn't go through that handshake at sign-in time,
+  // so without this check a not-admin-added user would appear "signed in"
+  // here and only discover something's wrong when every later API call 401s.
+  useEffect(() => {
+    if (!clerkSignedIn || !user) return;
+    let cancelled = false;
+    setError(null);
+    setCheckingEnrollment(true);
+    void getToken().then(async (token) => {
+      if (!token) { setCheckingEnrollment(false); return; }
+      const memberships = await fetchMemberships(token);
+      if (cancelled) return;
+      if (memberships !== null && memberships.length === 0) {
+        setError("No account found for this email — ask your admin to add you.");
+        await signOut();
+      }
+      setCheckingEnrollment(false);
+    });
+    return () => { cancelled = true; };
+  }, [clerkSignedIn, user, getToken, signOut]);
 
   async function handleGoogleSignIn() {
     setError(null);
@@ -81,7 +108,6 @@ export function AccountPage() {
                 <GoogleIcon />
                 {pending ? "Signing in…" : "Continue with Google"}
               </button>
-              {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
             </div>
             <SignIn
               routing="hash"
@@ -104,9 +130,15 @@ export function AccountPage() {
           // directly by Clerk and the native inline social button works as-is.
           <SignIn routing="hash" fallbackRedirectUrl={window.location.href} />
         )}
+        {/* Surfaces either the device-auth error from handleGoogleSignIn, or
+            the "not enrolled" rejection (see the enrollment-check effect
+            above) after it signs the user back out and lands here. */}
+        {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     );
   }
+
+  if (checkingEnrollment) return <PageLoader label="Checking account" />;
 
   // Signed in via the device-token (Google) path -- no Clerk session exists
   // in this page's own JS context, so there's no `user` object to show.
