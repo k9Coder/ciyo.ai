@@ -196,7 +196,7 @@ describe('pushDecisionRequired', () => {
   it('sends decision:required to window webContents', () => {
     const mockSend = vi.fn()
     const mockWin = { webContents: { send: mockSend } } as unknown as import('electron').BrowserWindow
-    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [] }
+    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [], deadlineAt: 123, onTimeout: 'block' as const }
     pushDecisionRequired(mockWin, payload)
     expect(mockSend).toHaveBeenCalledWith('decision:required', payload)
   })

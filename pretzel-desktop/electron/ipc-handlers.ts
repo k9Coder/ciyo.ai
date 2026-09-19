@@ -143,7 +143,7 @@ export function setSystemProxyActive(active: boolean): void {
 /** Push a decision-required event to the decision window renderer. */
 export function pushDecisionRequired(
   win: BrowserWindow,
-  payload: { requestId: string; hostname: string; findings: unknown[] },
+  payload: { requestId: string; hostname: string; findings: unknown[]; deadlineAt: number; onTimeout: 'block' | 'allow' },
 ): void {
   win.webContents.send('decision:required', payload)
 }

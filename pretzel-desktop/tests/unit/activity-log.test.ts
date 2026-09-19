@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { recordActivity, getRecentActivity, _resetActivityForTest } from '../../electron/activity-log'
+import { recordActivity, getRecentActivity, setActivityOutcome, _resetActivityForTest } from '../../electron/activity-log'
 
 beforeEach(() => _resetActivityForTest())
 
@@ -30,5 +30,17 @@ describe('activity-log', () => {
     expect(recent).toHaveLength(20)
     expect(recent[0]!.hostname).toBe('site-24.com') // newest
     expect(recent[19]!.hostname).toBe('site-5.com')  // oldest kept
+  })
+
+  it('fills in the outcome for every finding of one held request, and only that request', () => {
+    recordActivity({ ...entry('chatgpt.com'), requestId: 'req-1' })
+    recordActivity({ ...entry('chatgpt.com'), requestId: 'req-1' })
+    recordActivity({ ...entry('claude.ai'), requestId: 'req-2' })
+
+    setActivityOutcome('req-1', 'timeout-blocked')
+
+    const byRequest = (id: string) => getRecentActivity().filter(e => e.requestId === id)
+    expect(byRequest('req-1').map(e => e.outcome)).toEqual(['timeout-blocked', 'timeout-blocked'])
+    expect(byRequest('req-2')[0]!.outcome).toBeUndefined()
   })
 })

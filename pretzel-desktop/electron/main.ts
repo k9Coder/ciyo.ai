@@ -16,7 +16,7 @@ initSentry()
 
 import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor } from 'electron'
 import path from 'path'
-import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
+import { proxy, PROXY_PORT, type ProxyDecisionEvent, type ProxyDecisionTimeoutEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
 import { ensureHostHardening } from './hardening'
 import { ensureProxyWatchdog } from './proxy-watchdog'
@@ -37,10 +37,10 @@ import {
 import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { isAutoUpdateSupported, initAutoUpdate, checkForAutoUpdateAsync } from './auto-update'
 import { loadSettings } from './settings'
-import { notifyDecision } from './decision-notify'
-import { recordActivity, getRecentActivity } from './activity-log'
+import { notifyDecision, notifyTimeout } from './decision-notify'
+import { recordActivity, getRecentActivity, setActivityOutcome } from './activity-log'
 import { reportEvent } from './report-event'
-import { showDecisionWindow, hideDecisionWindow } from './decision-window'
+import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
 import { fetchSession, buildAuthView, type SessionInfo } from './session'
@@ -324,10 +324,24 @@ async function startProxy(): Promise<void> {
         severity: finding.severity,
         action: event.result.highestAction === 'block' ? 'block' : 'warn',
         timestamp: Date.now(),
+        requestId: event.requestId,
       })
     }
     if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     void reportEvent(event)
+  })
+
+  // Nobody answered the prompt: the proxy already decided by policy (block
+  // rules are blocked, warn rules are sent). Make sure the user can see that
+  // it happened: the open prompt turns into a notice, an OS notification is
+  // raised even if they turned notifications off, and the tray activity list
+  // records the outcome.
+  proxy.on('decision-timeout', (event: ProxyDecisionTimeoutEvent) => {
+    showDecisionTimeout(event)
+    const settings = loadSettings(app.getPath('userData'))
+    notifyTimeout(event.result.highestAction === 'block' ? settings.notifyOnBlock : settings.notifyOnWarn, event)
+    setActivityOutcome(event.requestId, event.allowed ? 'timeout-allowed' : 'timeout-blocked')
+    if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
   })
 
   activateSystemProxy(PROXY_PORT)
@@ -413,6 +427,8 @@ app.whenReady().then(async () => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
       hideDecisionWindow()
+      setActivityOutcome(requestId, allow ? 'allowed' : 'blocked')
+      if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     },
     getAuthState: currentAuthView,
     onSignIn: () => { handleSignIn() },
@@ -441,6 +457,8 @@ app.whenReady().then(async () => {
       showDecisionWindow({
         requestId: `e2e-${Date.now()}`,
         hostname: 'chatgpt.com',
+        deadlineAt: Date.now() + 30_000,
+        onTimeout: 'block',
         // No real proxied request to release here — the e2e trigger only needs
         // the decision window to render for the qa-bridge to assert against.
         resolve: (allow: boolean) => {

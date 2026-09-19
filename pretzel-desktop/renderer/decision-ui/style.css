@@ -95,6 +95,14 @@ body { overflow: hidden; } /* the window itself never scrolls — only .findings
   overflow-y: auto;
 }
 
+.countdown {
+  margin: 0;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 .actions {
   display: flex;
   gap: 0.65rem;

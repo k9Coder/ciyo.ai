@@ -3,6 +3,10 @@ declare global {
     requestId: string
     hostname: string
     findings: Array<{ ruleId: string; ruleName?: string; severity: string; action?: string; matchedText?: string; snippet?: string }>
+    /** Epoch ms when the request is resolved automatically if unanswered. */
+    deadlineAt: number
+    /** What the automatic resolution will be. */
+    onTimeout: 'block' | 'allow'
   }
 
   interface StatusPayload {
@@ -32,6 +36,8 @@ declare global {
     severity:  string
     action:    'warn' | 'block'
     timestamp: number
+    requestId?: string
+    outcome?:  'blocked' | 'allowed' | 'timeout-blocked' | 'timeout-allowed'
   }
 
   type AutoUpdateEventPayload =
@@ -45,6 +51,7 @@ declare global {
   interface Window {
     pretzel: {
       onDecisionRequired: (cb: (p: DecisionPayload) => void) => void
+      onDecisionTimeout?: (cb: (p: { requestId: string; allowed: boolean }) => void) => void
       decisionReady?: () => void
       respondDecision: (requestId: string, allow: boolean) => void
       alwaysAllowRule: (ruleId: string) => void
