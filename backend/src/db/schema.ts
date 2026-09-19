@@ -390,6 +390,9 @@ export const deviceTokens = pgTable('device_tokens', {
   expiresAt:  timestamp('expires_at', { withTimezone: true }).notNull(),
   lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
   revokedAt:  timestamp('revoked_at', { withTimezone: true }),
+  // Set (together with revokedAt) when the user signs out from the app itself,
+  // as opposed to an admin revoke. Lets the console show "last signed out".
+  signedOutAt: timestamp('signed_out_at', { withTimezone: true }),
 })
 
 // ── Policy Templates (onboarding wizard) ─────────────────────────────────────

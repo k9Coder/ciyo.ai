@@ -1,7 +1,7 @@
 import { randomBytes, createHash } from 'node:crypto'
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { desktopAuthCodes, deviceTokens } from '../db/schema.js'
+import { desktopAuthCodes, deviceTokens, members, tenants } from '../db/schema.js'
 import { generateSecret, hashToken, formatDeviceToken } from '../auth/tokens.js'
 
 const CODE_TTL_MS = 5 * 60 * 1000                    // matches the desktop app's callback-server timeout
@@ -96,4 +96,47 @@ export async function exchangeDesktopAuthCode(opts: {
   }).returning({ id: deviceTokens.id })
 
   return { token: formatDeviceToken(deviceToken!.id, secret), tenantId: row.tenantId }
+}
+
+export interface DesktopSession {
+  email:         string
+  displayName:   string | null
+  tenantName:    string
+  signedInAt:    string
+  expiresAt:     string
+}
+
+// What the desktop tray shows as "signed in as ...", plus the token expiry it
+// uses to warn the user before the 90-day token lapses.
+export async function getDesktopSession(deviceTokenId: string): Promise<DesktopSession | null> {
+  const [row] = await db
+    .select({
+      email:       members.email,
+      displayName: members.displayName,
+      tenantName:  tenants.name,
+      createdAt:   deviceTokens.createdAt,
+      expiresAt:   deviceTokens.expiresAt,
+    })
+    .from(deviceTokens)
+    .innerJoin(members, eq(deviceTokens.memberId, members.id))
+    .innerJoin(tenants, eq(deviceTokens.tenantId, tenants.id))
+    .where(eq(deviceTokens.id, deviceTokenId))
+  if (!row) return null
+  return {
+    email:       row.email,
+    displayName: row.displayName ?? null,
+    tenantName:  row.tenantName,
+    signedInAt:  row.createdAt.toISOString(),
+    expiresAt:   row.expiresAt.toISOString(),
+  }
+}
+
+// User-initiated sign-out: revokes the token server-side (so a copied token
+// stops working) and stamps signedOutAt for console observability.
+// Idempotent: a repeat call keeps the first sign-out time.
+export async function signOutDesktopDevice(deviceTokenId: string): Promise<void> {
+  const now = new Date()
+  await db.update(deviceTokens)
+    .set({ revokedAt: now, signedOutAt: now })
+    .where(and(eq(deviceTokens.id, deviceTokenId), isNull(deviceTokens.signedOutAt)))
 }

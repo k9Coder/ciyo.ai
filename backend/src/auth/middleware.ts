@@ -190,6 +190,21 @@ export async function requireClerkAuth(req: FastifyRequest, reply: FastifyReply)
   return resolveClerkJwt(req, reply, auth.slice(7))
 }
 
+// Device-token-only auth for routes an installed app calls about its own
+// session (desktop /session, /sign-out). Deliberately rejects org tokens and
+// Clerk JWTs so the route can rely on the token id being a device token.
+export async function requireDeviceAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  const token = auth.slice(7)
+  if (!token.startsWith('pd_')) {
+    return reply.status(401).send({ error: 'Device token required' })
+  }
+  return resolveDeviceToken(req, reply, token)
+}
+
 export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const auth = req.headers.authorization
   if (!auth?.startsWith('Bearer ')) {

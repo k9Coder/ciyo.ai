@@ -1,6 +1,6 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, eq, max } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { members, users, memberTeams, type Member, type NewMember, type User } from '../db/schema.js'
+import { members, users, memberTeams, deviceTokens, type Member, type NewMember, type User } from '../db/schema.js'
 import { usersClient, tenantsClient, teamsClient } from '../http/internal-client.js'
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 import { getContext } from '../context/request-context.js'
@@ -16,6 +16,10 @@ async function assertDivisionOwnership(tenantId: string, adminDivisionId: string
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
+  // Desktop app observability: newest sign-in (token minted) and newest
+  // user-initiated sign-out. Null when the member never used the desktop app.
+  desktopLastSignInAt:  Date | null
+  desktopLastSignOutAt: Date | null
 }
 
 export async function listMembers(tenantId: string): Promise<MemberRow[]> {
@@ -24,8 +28,22 @@ export async function listMembers(tenantId: string): Promise<MemberRow[]> {
     .from(members)
     .leftJoin(users, eq(members.userId, users.id))
     .where(eq(members.tenantId, tenantId))
+
+  const desktopActivity = await db
+    .select({
+      memberId:   deviceTokens.memberId,
+      lastSignIn: max(deviceTokens.createdAt),
+      lastSignOut: max(deviceTokens.signedOutAt),
+    })
+    .from(deviceTokens)
+    .where(and(eq(deviceTokens.tenantId, tenantId), eq(deviceTokens.client, 'desktop')))
+    .groupBy(deviceTokens.memberId)
+  const activityByMember = new Map(desktopActivity.map(a => [a.memberId, a]))
+
   return rows.map(r => ({
     ...r.members,
+    desktopLastSignInAt:  activityByMember.get(r.members.id)?.lastSignIn ?? null,
+    desktopLastSignOutAt: activityByMember.get(r.members.id)?.lastSignOut ?? null,
     user: r.users
       ? { email: r.users.email, firstName: r.users.firstName, lastName: r.users.lastName, avatarUrl: r.users.avatarUrl }
       : null,
