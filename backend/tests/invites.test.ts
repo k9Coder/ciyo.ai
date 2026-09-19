@@ -21,7 +21,10 @@ vi.mock('@clerk/backend', () => ({
 
 beforeEach(async () => { await truncateAll() })
 
-describe('createInvite', () => {
+// Skipped, not deleted: token-invite-link flow retired in favor of
+// admin-add-by-email (POST /v1/members) + POST /v1/me/self-serve-org — see
+// backend/src/invites/router.ts.
+describe.skip('createInvite', () => {
   it('creates an invite and returns token + expiry', async () => {
     const { tenantId } = await buildTestTenant()
     const { token, expiresAt } = await createInvite(tenantId, null, { role: 'member' })
@@ -39,7 +42,7 @@ describe('createInvite', () => {
   })
 })
 
-describe('acceptInvite', () => {
+describe.skip('acceptInvite', () => {
   // Regression: a division_admin invite used to create a member with
   // adminDivisionId always null — there was no way to carry the division
   // through from invite creation to accept-time member insert.
@@ -215,7 +218,7 @@ describe('acceptInvite', () => {
   })
 })
 
-describe('getInvitePreview', () => {
+describe.skip('getInvitePreview', () => {
   it('returns valid preview for unused, non-expired invite', async () => {
     const { tenantId } = await buildTestTenant()
     const { token } = await createInvite(tenantId, null, { email: 'preview@example.com', role: 'super_admin' })
@@ -236,7 +239,7 @@ describe('getInvitePreview', () => {
   })
 })
 
-describe('POST /v1/invites', () => {
+describe.skip('POST /v1/invites', () => {
   let app: FastifyInstance
   let tenantId: string
   let adminToken: string

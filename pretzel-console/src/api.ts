@@ -181,6 +181,11 @@ export const api = {
   me: {
     memberships: () =>
       request<{ memberships: Membership[] }>('GET', '/v1/me/memberships', undefined, { skipTenant: true }),
+    // Console-only: provisions a personal org when the signed-in user has zero
+    // memberships (nobody pre-added them). Never called by extension/desktop —
+    // see backend/src/me/service.ts::selfServeProvisionOrg.
+    selfServeOrg: () =>
+      request<{ memberships: Membership[] }>('POST', '/v1/me/self-serve-org', undefined, { skipTenant: true }),
   },
   invites: {
     create: (opts: { email?: string; role?: Member['role']; divisionId?: string }) =>

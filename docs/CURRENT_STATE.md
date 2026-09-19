@@ -17,7 +17,7 @@ sources:
 - Pretzel intercepts prompts on ChatGPT, Claude, and Gemini.
 - Detection runs locally using pattern, entropy, keyword/dictionary, and score rules.
 - Pretzel Console manages organization structure, subjects/rules, destinations, sites, publishing, members, audit data, settings, and an AI-assisted policy editor.
-- The Fastify backend provides tenant-scoped APIs, policy compilation/resolution, Clerk auth, internal tokens, PayPal billing, scans/events, analytics, audit logs, invites, and assistant actions.
+- The Fastify backend provides tenant-scoped APIs, policy compilation/resolution, Clerk auth, internal tokens, PayPal billing, scans/events, analytics, audit logs, member enrollment (admin-add-by-email + console self-serve; token-invite-links disabled), and assistant actions.
 - mykka-web is the public marketing site.
 
 ## Runtime Model

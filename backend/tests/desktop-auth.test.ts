@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import supertest from 'supertest'
 import { createHash, randomBytes } from 'node:crypto'
 import { truncateAll, buildTestTenant, buildTestUser, buildTestMember } from './helpers/db.js'
+import { db } from '../src/db/client.js'
+import { tenants } from '../src/db/schema.js'
 import { startTestApp } from './helpers/setup.js'
 import { env } from '../src/env.js'
 import type { FastifyInstance } from 'fastify'
@@ -154,6 +156,29 @@ describe('desktop auth flow', () => {
         .post('/auth/desktop/authorize/complete')
         .send({ state: 'st1', code_challenge: challenge, redirect_uri: REDIRECT })
       expect(res.status).toBe(401)
+    })
+
+    // Regression: this is the change that makes desktop admin-add-only. The
+    // webhook no longer auto-provisions a personal org on every signup (see
+    // backend/src/webhooks/clerk.ts), so a Clerk user nobody added anywhere
+    // now genuinely has zero memberships — requireClerkAuth already rejects
+    // that here, no new gating code needed in desktop-auth itself.
+    it('rejects a Clerk caller with zero memberships (not admin-added anywhere)', async () => {
+      const OTHER_CLERK_USER_ID = 'user_test_desktop_unenrolled'
+      await buildTestUser(OTHER_CLERK_USER_ID, 'unenrolled@example.com')
+      mockVerifyToken.mockResolvedValueOnce({ sub: OTHER_CLERK_USER_ID })
+
+      const { challenge } = pkcePair()
+      const res = await supertest(app.server)
+        .post('/auth/desktop/authorize/complete')
+        .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+        .send({ state: 'st1', code_challenge: challenge, redirect_uri: REDIRECT })
+      expect(res.status).toBe(401)
+      expect(res.body.error).toMatch(/Not enrolled in any organisation/)
+
+      // No stray tenant should ever get created for this caller.
+      const tenantRows = await db.select().from(tenants)
+      expect(tenantRows).toHaveLength(1) // only the one buildTestTenant() made in beforeEach
     })
 
     it('token exchange rejects a code that was already redeemed', async () => {

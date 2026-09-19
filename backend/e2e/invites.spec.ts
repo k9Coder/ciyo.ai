@@ -125,7 +125,10 @@ async function deleteInviteByToken(token: string): Promise<void> {
   await sql`DELETE FROM invites WHERE token = ${token}`
 }
 
-test.describe('Invites API', () => {
+// Skipped, not deleted: token-invite-link flow retired in favor of
+// admin-add-by-email (POST /v1/members) + POST /v1/me/self-serve-org — see
+// backend/src/invites/router.ts.
+test.describe.skip('Invites API', () => {
   test.describe.configure({ mode: 'parallel' })
 
   // ── Create — auth rejections only (success path needs a Clerk JWT) ──────

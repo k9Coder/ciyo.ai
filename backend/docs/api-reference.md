@@ -86,6 +86,11 @@ Important constraints:
 
 ## Assistant, invites, and billing
 
+**Invites are disabled.** The token-invite-link endpoints below are retired
+in favor of admin-add-by-email (`POST /v1/members`) + `POST /v1/me/self-serve-org`
+(console-only self-serve org provisioning). Routes are unmounted in
+`backend/src/app.ts`; code kept in `backend/src/invites/`, not deleted.
+
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | POST | `/v1/assistant/chat` | Admin + assistant-enabled plan | Ask the configured LLM for proposed actions |
@@ -93,9 +98,10 @@ Important constraints:
 | POST | `/v1/assistant/messages/:messageId/revert` | Admin | Restore pre-apply subject snapshots |
 | GET | `/v1/assistant/sessions` | Admin | Latest 50 tenant sessions |
 | GET | `/v1/assistant/sessions/:id/messages` | Admin | Session messages and revert flags |
-| POST | `/v1/invites` | Admin | Create an invite link |
-| GET | `/v1/invites/:token` | Public | Preview an invite |
-| POST | `/v1/invites/:token/accept` | Clerk | Accept an invite |
+| ~~POST~~ | ~~`/v1/invites`~~ | ~~Admin~~ | **Disabled** — was: create an invite link |
+| ~~GET~~ | ~~`/v1/invites/:token`~~ | ~~Public~~ | **Disabled** — was: preview an invite |
+| ~~POST~~ | ~~`/v1/invites/:token/accept`~~ | ~~Clerk~~ | **Disabled** — was: accept an invite |
+| POST | `/v1/me/self-serve-org` | Clerk (any, even zero memberships) | Console-only: provision a personal org |
 | POST | `/v1/billing/free-signup` | Public | Create a free tenant and deployment tokens |
 | POST | `/v1/billing/paypal/checkout` | Public | Create a PayPal approval URL |
 | GET | `/v1/billing/status` | Admin | Usage, limits, provider, and feature flags |

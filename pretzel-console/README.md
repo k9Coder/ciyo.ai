@@ -48,7 +48,7 @@ Start from `.env.example`. Vite modes load `.env.staging` for `dev:staging`/`bui
 
 ## Access gates
 
-Public routes are `/login`, `/unauthorized`, `/onboarding/profile`, `/invite/:token`, and `/accessibility`.
+Public routes are `/login`, `/unauthorized`, `/onboarding/profile`, and `/accessibility`. (`/invite/:token` is disabled — the token-invite-link route is commented out in `src/App.tsx`; admin-add-by-email on the Members page is the only invite mechanism now.)
 
 Every application route requires:
 
