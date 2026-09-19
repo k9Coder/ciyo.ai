@@ -330,3 +330,52 @@
   background: var(--brand-primary);
   transition: width 200ms ease;
 }
+
+.account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+}
+.account-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.account-name {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-org {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.account-confirm-text {
+  font-size: 0.68rem;
+  color: var(--status-warn);
+}
+.link-btn-muted {
+  color: var(--text-muted);
+}
+.signout-note {
+  font-size: 0.7rem;
+  color: var(--status-warn);
+  margin: 0;
+  line-height: 1.4;
+}

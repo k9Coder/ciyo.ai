@@ -29,8 +29,11 @@ type UpdateState =
 function TrayUI() {
   const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [showSignIn, setShowSignIn] = useState(false)
+  const [auth, setAuth] = useState<AuthStatePayload | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
+  const [signOutNote, setSignOutNote] = useState<string | null>(null)
   const [showCancelHint, setShowCancelHint] = useState(false)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
   const [view, setView] = useState<View>('status')
@@ -65,6 +68,8 @@ function TrayUI() {
     window.pretzel.getProxyStatus().then((s) =>
       setStatus((prev) => ({ ...prev, proxyRunning: s.proxyRunning, systemProxyActive: s.systemProxyActive }))
     )
+    window.pretzel.getAuthState().then(setAuth)
+    window.pretzel.onAuthState(setAuth)
     window.pretzel.onAuthNag(() => setShowSignIn(true))
     window.pretzel.onAuthSuccess(() => {
       setShowSignIn(false)
@@ -122,6 +127,14 @@ function TrayUI() {
     window.pretzel.signIn()
   }
 
+  async function handleSignOut() {
+    setConfirmingSignOut(false)
+    const { recorded } = await window.pretzel.signOut()
+    setSignOutNote(
+      recorded ? null : 'Signed out on this device. Could not reach the server to record it, so your organisation will see it once you sign in again.',
+    )
+  }
+
   function handleCancelSignIn() {
     window.pretzel.cancelSignIn()
   }
@@ -143,10 +156,24 @@ function TrayUI() {
     )
   }
 
-  const policyLabel = status.policyAvailable ? 'Policy active' : 'No policy cached'
+  // The server can sign us out at any time (token expiry / admin revoke), so
+  // the sign-in box follows the live auth state, not just the launch-time nag.
+  const needsSignIn = showSignIn || auth?.authenticated === false
+  const sessionExpired = auth?.reason === 'expired'
+
+  const unreachable = !status.policyAvailable && status.syncIssue === 'unreachable'
+  const unreadable = !status.policyAvailable && status.syncIssue === 'invalid'
+  const policyLabel = status.policyAvailable
+    ? 'Policy active'
+    : unreachable ? "Can't reach server" : unreadable ? 'Policy unavailable' : 'No policy cached'
+  const policyPill = status.policyAvailable ? 'Active' : unreachable ? 'Retrying' : unreadable ? 'Error' : 'Waiting'
   const policyInfo = status.policyAvailable
     ? "Pretzel has your organisation's rules loaded and is checking traffic against them."
-    : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
+    : unreachable
+      ? "Pretzel couldn't reach your organisation's server. It keeps retrying automatically; until it connects, nothing is checked."
+      : unreadable
+        ? "The server sent a policy Pretzel couldn't read. It will try again every couple of minutes. Contact your admin if this continues."
+        : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
   const sysProxyLabel = status.systemProxyActive
     ? 'System proxy active'
     : 'System proxy inactive'
@@ -186,7 +213,7 @@ function TrayUI() {
           <span className="status-row-label">{policyLabel}</span>
           <span className={`pill ${status.policyAvailable ? 'pill-safe' : 'pill-muted'}`}>
             <span className={`dot ${status.policyAvailable ? 'dot-safe' : 'dot-warn'}`} />
-            {status.policyAvailable ? 'Active' : 'Waiting'}
+            {policyPill}
           </span>
           <InfoIcon title={policyInfo} />
         </div>
@@ -200,14 +227,51 @@ function TrayUI() {
         </div>
       </div>
 
+      {auth?.authenticated && auth.account && (
+        <div className="account-row">
+          <div className="account-text">
+            <span className="account-name">{auth.account.displayName ?? auth.account.email}</span>
+            <span className="account-org">
+              {auth.account.displayName ? `${auth.account.email} · ` : ''}{auth.account.tenantName}
+            </span>
+          </div>
+          {confirmingSignOut ? (
+            <div className="account-confirm">
+              <span className="account-confirm-text">Protection turns off.</span>
+              <button className="link-btn" onClick={handleSignOut}>Sign out</button>
+              <button className="link-btn link-btn-muted" onClick={() => setConfirmingSignOut(false)}>Cancel</button>
+            </div>
+          ) : (
+            <button className="link-btn" onClick={() => setConfirmingSignOut(true)}>Sign out</button>
+          )}
+        </div>
+      )}
+
       <ActivityFeed entries={activity} />
 
-      {showSignIn && (
+      {auth?.authenticated && auth.expiresInDays !== undefined && (
         <div className="nag-card fade-in">
-          <p className="nag-title">Protection is off until you sign in</p>
+          <p className="nag-title">Your sign-in expires soon</p>
           <p className="nag-body">
-            Nothing sent to ChatGPT, Claude, or Gemini is being checked right now — Pretzel has no rules loaded.
-            Signing in takes about 10 seconds and loads your organisation's policy.
+            Your sign-in expires in {auth.expiresInDays} day{auth.expiresInDays === 1 ? '' : 's'}. Sign in again now
+            so protection doesn't switch off.
+          </p>
+          {authError && <p className="nag-error">{authError}</p>}
+          <button className="btn btn-primary btn-block" onClick={handleSignIn} disabled={signingIn}>
+            {signingIn ? 'Opening browser…' : 'Sign in again'}
+          </button>
+        </div>
+      )}
+
+      {needsSignIn && signOutNote && <p className="signout-note">{signOutNote}</p>}
+
+      {needsSignIn && (
+        <div className="nag-card fade-in">
+          <p className="nag-title">{sessionExpired ? 'Your session expired' : 'Protection is off until you sign in'}</p>
+          <p className="nag-body">
+            {sessionExpired
+              ? "Your sign-in is no longer valid, so Pretzel has no rules loaded and nothing sent to ChatGPT, Claude, or Gemini is being checked. Sign in again to turn protection back on."
+              : "Nothing sent to ChatGPT, Claude, or Gemini is being checked right now — Pretzel has no rules loaded. Signing in takes about 10 seconds and loads your organisation's policy."}
           </p>
           {authError && <p className="nag-error">{authError}</p>}
           <button

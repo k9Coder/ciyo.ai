@@ -9,6 +9,7 @@ import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { loadSettings, saveSettings, SettingsPatchSchema, type Settings } from './settings'
 import { isAutoUpdateSupported, checkForAutoUpdateAsync, downloadUpdate, installUpdate } from './auto-update'
 import { getRecentActivity, type ActivityEntry } from './activity-log'
+import type { AuthViewState } from './session'
 
 const DecisionResponseSchema = z.object({
   requestId: z.string(),
@@ -19,22 +20,30 @@ type DecisionCallback = (requestId: string, allow: boolean) => void
 type SignInCallback = () => void
 type CancelSignInCallback = () => void
 type AlwaysAllowCallback = (ruleId: string) => void
+type AuthStateProvider = () => AuthViewState
+type SignOutCallback = () => Promise<{ recorded: boolean }>
 
 let onDecision: DecisionCallback | null = null
 let onSignIn: SignInCallback | null = null
 let onCancelSignIn: CancelSignInCallback | null = null
 let onAlwaysAllow: AlwaysAllowCallback | null = null
+let getAuthView: AuthStateProvider | null = null
+let onSignOut: SignOutCallback | null = null
 
 export function registerIpcHandlers(options: {
   onDecision: DecisionCallback
   onSignIn?: SignInCallback
   onCancelSignIn?: CancelSignInCallback
   onAlwaysAllow?: AlwaysAllowCallback
+  getAuthState?: AuthStateProvider
+  onSignOut?: SignOutCallback
 }): void {
   onDecision = options.onDecision
   onSignIn = options.onSignIn ?? null
   onCancelSignIn = options.onCancelSignIn ?? null
   onAlwaysAllow = options.onAlwaysAllow ?? null
+  getAuthView = options.getAuthState ?? null
+  onSignOut = options.onSignOut ?? null
 
   ipcMain.on('decision:respond', (_event, raw: unknown) => {
     const parsed = DecisionResponseSchema.safeParse(raw)
@@ -54,6 +63,12 @@ export function registerIpcHandlers(options: {
     if (typeof raw !== 'string' || !raw) return
     onAlwaysAllow?.(raw)
   })
+
+  // `recorded` is false when the server could not be told (offline); the app is
+  // signed out on this device either way.
+  ipcMain.handle('auth:sign-out', async (): Promise<{ recorded: boolean }> => (await onSignOut?.()) ?? { recorded: false })
+
+  ipcMain.handle('auth:get-state', (): AuthViewState => getAuthView?.() ?? { authenticated: false })
 
   ipcMain.handle('policy:get', (): Policy | null => {
     // Populated by main.ts after policy sync
@@ -107,6 +122,8 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('update:open-download')
   ipcMain.removeAllListeners('update:download')
   ipcMain.removeAllListeners('update:install')
+  ipcMain.removeHandler('auth:sign-out')
+  ipcMain.removeHandler('auth:get-state')
   ipcMain.removeHandler('policy:get')
   ipcMain.removeHandler('proxy:status')
   ipcMain.removeHandler('update:check')
@@ -135,15 +152,20 @@ export function setSystemProxyActive(active: boolean): void {
 /** Push a decision-required event to the decision window renderer. */
 export function pushDecisionRequired(
   win: BrowserWindow,
-  payload: { requestId: string; hostname: string; findings: unknown[] },
+  payload: { requestId: string; hostname: string; findings: unknown[]; deadlineAt: number; onTimeout: 'block' | 'allow' },
 ): void {
   win.webContents.send('decision:required', payload)
+}
+
+/** Push the current auth view (signed in/out, account, expiry) to the tray renderer. */
+export function pushAuthState(win: BrowserWindow, payload: AuthViewState): void {
+  win.webContents.send('auth:state', payload)
 }
 
 /** Push status update to tray window renderer. */
 export function pushStatusUpdate(
   win: BrowserWindow,
-  payload: { proxyRunning: boolean; policyAvailable: boolean; systemProxyActive?: boolean },
+  payload: { proxyRunning: boolean; policyAvailable: boolean; systemProxyActive?: boolean; syncIssue?: 'unreachable' | 'invalid' | null },
 ): void {
   win.webContents.send('status:update', payload)
 }

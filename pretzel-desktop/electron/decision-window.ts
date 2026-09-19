@@ -6,7 +6,7 @@
 import { BrowserWindow, screen, ipcMain } from 'electron'
 import path from 'path'
 import { pushDecisionRequired } from './ipc-handlers'
-import type { ProxyDecisionEvent } from './proxy'
+import type { ProxyDecisionEvent, ProxyDecisionTimeoutEvent } from './proxy'
 
 let decisionWin: BrowserWindow | null = null
 let lastEvent: ProxyDecisionEvent | null = null
@@ -17,6 +17,8 @@ function pushEvent(win: BrowserWindow, event: ProxyDecisionEvent): void {
     requestId: event.requestId,
     hostname: event.hostname,
     findings: event.result.findings,
+    deadlineAt: event.deadlineAt,
+    onTimeout: event.onTimeout,
   })
 }
 
@@ -104,4 +106,21 @@ export function closeDecisionWindow(): void {
   if (decisionWin && !decisionWin.isDestroyed()) {
     decisionWin.close()
   }
+}
+
+const TIMEOUT_RESULT_VISIBLE_MS = 4_000
+
+/**
+ * The prompt timed out and the proxy already resolved the request. Swap the
+ * open prompt for a short "blocked / sent automatically" notice, then hide it
+ * (previously the window just stayed open showing a prompt nothing was
+ * waiting on any more).
+ */
+export function showDecisionTimeout(event: ProxyDecisionTimeoutEvent): void {
+  if (!decisionWin || decisionWin.isDestroyed() || lastEvent?.requestId !== event.requestId) return
+  decisionWin.webContents.send('decision:timeout', { requestId: event.requestId, allowed: event.allowed })
+  setTimeout(() => {
+    // A newer decision may have replaced this one meanwhile — leave that alone.
+    if (lastEvent?.requestId === event.requestId) hideDecisionWindow()
+  }, TIMEOUT_RESULT_VISIBLE_MS)
 }

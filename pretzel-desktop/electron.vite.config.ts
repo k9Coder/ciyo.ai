@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin, loadEnv } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import { cspPlugin } from './renderer-csp'
 
 export default defineConfig(({ mode }) => {
   // Bake API URL + Clerk key into the main-process bundle: a packaged app has
@@ -59,7 +60,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-      plugins: [react()],
+      plugins: [react(), cspPlugin()],
     },
   }
 })

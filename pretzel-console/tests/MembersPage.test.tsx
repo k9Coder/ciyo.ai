@@ -27,6 +27,7 @@ const MEMBER = {
   id: 'm1', tenantId: 't1', email: 'alice@example.com', displayName: 'Alice',
   firstName: null, lastName: null, role: 'member' as const, adminDivisionId: null,
   clerkId: null, failMode: null, createdAt: new Date().toISOString(),
+  desktopLastSignInAt: null as string | null, desktopLastSignOutAt: null as string | null,
 }
 
 beforeEach(() => {
@@ -58,6 +59,31 @@ describe('MembersPage fail mode', () => {
     fireEvent.change(select, { target: { value: '' } })
 
     await waitFor(() => expect(api.members.update).toHaveBeenCalledWith('m1', { failMode: null }))
+  })
+})
+
+describe('MembersPage desktop sign-in / sign-out', () => {
+  it('shows a dash when the member never used the desktop app', async () => {
+    renderPage()
+    await screen.findByText('alice@example.com')
+    expect(screen.queryByText('Signed in')).not.toBeInTheDocument()
+    expect(screen.queryByText('Signed out')).not.toBeInTheDocument()
+  })
+
+  it('shows "Signed in" with the last sign-in time when they have not signed out since', async () => {
+    vi.mocked(api.members.list).mockResolvedValue([{
+      ...MEMBER, desktopLastSignInAt: '2026-09-19T10:00:00.000Z', desktopLastSignOutAt: '2026-09-18T10:00:00.000Z',
+    }])
+    renderPage()
+    expect(await screen.findByText('Signed in')).toBeInTheDocument()
+  })
+
+  it('shows "Signed out" when the newest event is a sign-out', async () => {
+    vi.mocked(api.members.list).mockResolvedValue([{
+      ...MEMBER, desktopLastSignInAt: '2026-09-18T10:00:00.000Z', desktopLastSignOutAt: '2026-09-19T10:00:00.000Z',
+    }])
+    renderPage()
+    expect(await screen.findByText('Signed out')).toBeInTheDocument()
   })
 })
 

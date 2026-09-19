@@ -1,0 +1,1 @@
+ALTER TABLE "device_tokens" ADD COLUMN "signed_out_at" timestamp with time zone;

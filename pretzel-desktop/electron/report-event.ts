@@ -28,7 +28,10 @@ export async function reportEvent(event: Pick<ProxyDecisionEvent, 'hostname' | '
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ruleId: finding.ruleId,
-          action: finding.severity === 'critical' || finding.severity === 'high' ? 'block' : 'warn',
+          // The rule's action, not its severity: severity says how bad a match is,
+          // action says what the policy does about it. (Deriving one from the other
+          // logged medium-severity block rules as warns in the admins' audit log.)
+          action: finding.action === 'block' ? 'block' : 'warn',
           siteUrl: `https://${event.hostname}/`,
           matchedTerm: finding.matchedText,
         }),

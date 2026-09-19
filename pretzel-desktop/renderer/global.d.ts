@@ -2,13 +2,25 @@ declare global {
   interface DecisionPayload {
     requestId: string
     hostname: string
-    findings: Array<{ ruleId: string; ruleName?: string; severity: string; matchedText?: string; snippet?: string }>
+    findings: Array<{ ruleId: string; ruleName?: string; severity: string; action?: string; matchedText?: string; snippet?: string }>
+    /** Epoch ms when the request is resolved automatically if unanswered. */
+    deadlineAt: number
+    /** What the automatic resolution will be. */
+    onTimeout: 'block' | 'allow'
   }
 
   interface StatusPayload {
     proxyRunning: boolean
     policyAvailable: boolean
     systemProxyActive?: boolean
+    syncIssue?: 'unreachable' | 'invalid' | null
+  }
+
+  interface AuthStatePayload {
+    authenticated: boolean
+    reason?: 'expired'
+    account?: { email: string; displayName: string | null; tenantName: string }
+    expiresInDays?: number
   }
 
   type NotifyLevel = 'off' | 'badge' | 'native' | 'native-sound'
@@ -24,6 +36,8 @@ declare global {
     severity:  string
     action:    'warn' | 'block'
     timestamp: number
+    requestId?: string
+    outcome?:  'blocked' | 'allowed' | 'timeout-blocked' | 'timeout-allowed'
   }
 
   type AutoUpdateEventPayload =
@@ -37,10 +51,14 @@ declare global {
   interface Window {
     pretzel: {
       onDecisionRequired: (cb: (p: DecisionPayload) => void) => void
+      onDecisionTimeout?: (cb: (p: { requestId: string; allowed: boolean }) => void) => void
       decisionReady?: () => void
       respondDecision: (requestId: string, allow: boolean) => void
       alwaysAllowRule: (ruleId: string) => void
       onStatusUpdate: (cb: (s: StatusPayload) => void) => void
+      getAuthState: () => Promise<AuthStatePayload>
+      signOut: () => Promise<{ recorded: boolean }>
+      onAuthState: (cb: (s: AuthStatePayload) => void) => void
       onAuthNag: (cb: () => void) => void
       onAuthSuccess: (cb: () => void) => void
       onAuthError: (cb: (msg: string) => void) => void

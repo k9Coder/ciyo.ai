@@ -21,7 +21,7 @@ const baseEvent = {
   hostname: 'chatgpt.com',
   result: {
     findings: [
-      { ruleId: 'rule-1', ruleName: 'AWS Key', severity: 'critical' as const, matchedText: 'AKIA...' },
+      { ruleId: 'rule-1', ruleName: 'AWS Key', severity: 'critical' as const, action: 'block' as const, matchedText: 'AKIA...' },
     ],
   },
 }
@@ -52,17 +52,24 @@ describe('reportEvent', () => {
     })
   })
 
-  it('maps non-critical/high severity to warn', async () => {
+  it('reports the rule action, not the severity', async () => {
+    // Regression: the action used to be derived from severity, so a medium-severity
+    // `block` rule was logged as a warn and a high-severity `warn` rule as a block.
+    // Found by /qa-desktop on 2026-09-19.
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     global.fetch = fetchMock as any
 
     await reportEvent({
       hostname: 'claude.ai',
-      result: { findings: [{ ruleId: 'r2', severity: 'medium', matchedText: 'x' }] },
+      result: { findings: [
+        { ruleId: 'r-block', severity: 'medium', action: 'block', matchedText: 'x' },
+        { ruleId: 'r-warn', severity: 'critical', action: 'warn', matchedText: 'y' },
+      ] },
     } as any)
 
-    const body = JSON.parse(fetchMock.mock.calls[0]![1].body)
-    expect(body.action).toBe('warn')
+    const bodies = fetchMock.mock.calls.map((c) => JSON.parse(c[1].body))
+    expect(bodies.find((b) => b.ruleId === 'r-block').action).toBe('block')
+    expect(bodies.find((b) => b.ruleId === 'r-warn').action).toBe('warn')
   })
 
   it('posts one event per finding when there are multiple', async () => {
@@ -71,7 +78,7 @@ describe('reportEvent', () => {
 
     await reportEvent({
       hostname: 'chatgpt.com',
-      result: { findings: [{ ruleId: 'r1', severity: 'high' }, { ruleId: 'r2', severity: 'low' }] },
+      result: { findings: [{ ruleId: 'r1', severity: 'high', action: 'block' }, { ruleId: 'r2', severity: 'low', action: 'warn' }] },
     } as any)
 
     expect(fetchMock).toHaveBeenCalledTimes(2)

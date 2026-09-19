@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/electron/renderer'
 import { Logo } from '../shared/Logo'
+import { isBlockingDecision, secondsLeft, countdownText, timeoutNotice } from './decision-kind'
 import './style.css'
 
 if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
@@ -10,13 +11,23 @@ if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
 
 function DecisionUI() {
   const [pending, setPending] = useState<DecisionPayload | null>(null)
+  const [timedOut, setTimedOut] = useState<{ requestId: string; allowed: boolean } | null>(null)
+  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
-    window.pretzel.onDecisionRequired((payload) => setPending(payload))
+    window.pretzel.onDecisionRequired((payload) => { setTimedOut(null); setPending(payload) })
+    window.pretzel.onDecisionTimeout?.((payload) => setTimedOut(payload))
     // Tell main the listener is live so it (re)sends any pending decision —
     // otherwise the first block races React mount and is dropped.
     window.pretzel.decisionReady?.()
   }, [])
+
+  // Tick once a second so the countdown line stays honest.
+  useEffect(() => {
+    if (!pending || timedOut) return
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [pending, timedOut])
 
   function respond(allow: boolean) {
     if (!pending) return
@@ -41,8 +52,31 @@ function DecisionUI() {
     return <div className="waiting">Waiting for policy decision…</div>
   }
 
-  const isBlock = pending.findings.some((f) => f.severity === 'critical')
+  const isBlock = isBlockingDecision(pending.findings)
   const severityClass = isBlock ? 'danger' : 'warn'
+
+  // Nobody answered: the request was already resolved by policy. Say so
+  // plainly — the window closes itself a few seconds later.
+  if (timedOut && timedOut.requestId === pending.requestId) {
+    const notice = timeoutNotice(timedOut.allowed)
+    return (
+      <div className="app fade-in">
+        <div className={`accent-bar ${timedOut.allowed ? 'warn' : 'danger'}`} />
+        <div className="body">
+          <div className="header">
+            <Logo size={26} />
+            <div className="header-text">
+              <p className={`title ${timedOut.allowed ? 'warn' : 'danger'}`}>{notice.title}</p>
+              <p className="subtitle">{notice.body}</p>
+            </div>
+          </div>
+          <p className="subtitle">
+            Request to <strong>{pending.hostname}</strong> · {pending.findings[0]?.ruleName ?? pending.findings[0]?.ruleId}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="app fade-in">
@@ -73,6 +107,8 @@ function DecisionUI() {
             )
           })}
         </div>
+
+        <p className="countdown">{countdownText(pending.onTimeout, secondsLeft(pending.deadlineAt, now))}</p>
 
         <div className="actions">
           <button className="btn btn-danger" onClick={() => respond(false)}>

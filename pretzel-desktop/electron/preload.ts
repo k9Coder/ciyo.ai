@@ -5,11 +5,16 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AutoUpdateEvent as AutoUpdateEventPayload } from './auto-update'
 import type { ActivityEntry as ActivityEntryPayload } from './activity-log'
+import type { AuthViewState } from './session'
 
 contextBridge.exposeInMainWorld('pretzel', {
   // Decision UI
-  onDecisionRequired: (cb: (payload: { requestId: string; hostname: string; findings: unknown[] }) => void) => {
+  onDecisionRequired: (cb: (payload: { requestId: string; hostname: string; findings: unknown[]; deadlineAt: number; onTimeout: 'block' | 'allow' }) => void) => {
     ipcRenderer.on('decision:required', (_event, payload) => cb(payload))
+  },
+  // The prompt timed out and the request was already resolved by policy.
+  onDecisionTimeout: (cb: (payload: { requestId: string; allowed: boolean }) => void) => {
+    ipcRenderer.on('decision:timeout', (_event, payload) => cb(payload))
   },
   // Signals that the decision renderer's listener is registered, so the main
   // process can (re)send a pending decision without racing React mount.
@@ -37,6 +42,11 @@ contextBridge.exposeInMainWorld('pretzel', {
   },
   onAuthError: (cb: (msg: string) => void) => {
     ipcRenderer.on('auth:error', (_event, msg: string) => cb(msg))
+  },
+  getAuthState: (): Promise<AuthViewState> => ipcRenderer.invoke('auth:get-state'),
+  signOut: (): Promise<{ recorded: boolean }> => ipcRenderer.invoke('auth:sign-out'),
+  onAuthState: (cb: (state: AuthViewState) => void) => {
+    ipcRenderer.on('auth:state', (_event, state) => cb(state))
   },
   signIn: () => {
     ipcRenderer.send('auth:sign-in')

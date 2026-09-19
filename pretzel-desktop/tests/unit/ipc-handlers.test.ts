@@ -196,7 +196,7 @@ describe('pushDecisionRequired', () => {
   it('sends decision:required to window webContents', () => {
     const mockSend = vi.fn()
     const mockWin = { webContents: { send: mockSend } } as unknown as import('electron').BrowserWindow
-    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [] }
+    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [], deadlineAt: 123, onTimeout: 'block' as const }
     pushDecisionRequired(mockWin, payload)
     expect(mockSend).toHaveBeenCalledWith('decision:required', payload)
   })
@@ -309,5 +309,29 @@ describe('pushStatusUpdate', () => {
     const mockWin = { webContents: { send: mockSend } } as unknown as import('electron').BrowserWindow
     pushStatusUpdate(mockWin, { proxyRunning: true, policyAvailable: false })
     expect(mockSend).toHaveBeenCalledWith('status:update', { proxyRunning: true, policyAvailable: false })
+  })
+})
+
+describe('auth:sign-out / auth:get-state handles', () => {
+  const handlerFor = (channel: string) =>
+    mockIpcMain.handle.mock.calls.find(([c]) => c === channel)?.[1] as (() => unknown) | undefined
+
+  it('sign-out returns what the app reported about recording it on the server', async () => {
+    const onSignOut = vi.fn().mockResolvedValue({ recorded: true })
+    registerIpcHandlers({ onDecision: vi.fn(), onSignOut })
+    expect(await handlerFor('auth:sign-out')!()).toEqual({ recorded: true })
+    expect(onSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('sign-out without a handler reports not recorded instead of throwing', async () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    expect(await handlerFor('auth:sign-out')!()).toEqual({ recorded: false })
+  })
+
+  it('get-state returns the live auth view, or signed out when none is provided', () => {
+    registerIpcHandlers({ onDecision: vi.fn(), getAuthState: () => ({ authenticated: true }) })
+    expect(handlerFor('auth:get-state')!()).toEqual({ authenticated: true })
+    registerIpcHandlers({ onDecision: vi.fn() })
+    expect(handlerFor('auth:get-state')!()).toEqual({ authenticated: false })
   })
 })

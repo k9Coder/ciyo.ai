@@ -3,6 +3,9 @@
  * Runs on startup and every SYNC_INTERVAL_MS.
  * On success: updates the proxy's active policy.
  * On failure: keeps last known policy (never clears it mid-session).
+ * If NO policy has loaded yet and the failure looks temporary (network error,
+ * timeout, 5xx), retries quickly instead of waiting a full interval — see
+ * retryDelayMs. The app starts at login, often before Wi-Fi is up.
  */
 import { PolicyDocSchema, bridgePolicy } from '@mykka/detect'
 import type { Policy, PolicyDoc } from '@mykka/detect'
@@ -10,53 +13,150 @@ import { loadToken, clearCredentials } from './auth'
 import { env } from './env'
 
 const SYNC_INTERVAL_MS = 2 * 60 * 1000 // 2 minutes — same as extension
+const FETCH_TIMEOUT_MS = 10_000
+
+/** Fast-retry schedule while no policy has loaded yet; the last value repeats. */
+const RETRY_DELAYS_MS = [5_000, 15_000, 30_000, 60_000]
+
+/** Delay before retry number `attempt` (0-based): 5s, 15s, 30s, then every 60s. */
+export function retryDelayMs(attempt: number): number {
+  return RETRY_DELAYS_MS[Math.min(attempt, RETRY_DELAYS_MS.length - 1)]!
+}
+
+/** What a failed sync looked like — only 'unreachable' is worth a fast retry. */
+export type SyncIssue = 'unreachable' | 'invalid'
+
+type FetchResult =
+  | { kind: 'ok'; doc: PolicyDoc }
+  | { kind: 'unauthorized' }
+  | { kind: 'transient' }   // network error, timeout, 5xx, 408, 429 — will likely pass by itself
+  | { kind: 'invalid' }     // other 4xx or an unreadable body — retrying fast won't help
+
+/**
+ * Classifies one policy fetch. Kept separate from doSync so the "do we need to
+ * retry?" decision is a pure function of the response, not of timers.
+ */
+export function classifyPolicyResponse(status: number | undefined): 'unauthorized' | 'transient' | 'invalid' | 'ok' {
+  if (status === 401) return 'unauthorized'
+  if (status !== undefined && (status >= 500 || status === 408 || status === 429)) return 'transient'
+  if (status !== undefined && status >= 400) return 'invalid'
+  return 'ok'
+}
 const PRETZEL_API_BASE = env.PRETZEL_API_URL
 
 type PolicyUpdateCallback = (policy: Policy) => void
 
 let syncTimer: ReturnType<typeof setInterval> | null = null
 let onPolicyUpdate: PolicyUpdateCallback | null = null
+let onUnauthorized: (() => void) | null = null
+let onSyncIssue: ((issue: SyncIssue | null) => void) | null = null
+let syncIssue: SyncIssue | null = null
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let retryAttempt = 0
 let lastKnownPolicy: Policy | null = null
 
 export function getLastKnownPolicy(): Policy | null {
   return lastKnownPolicy
 }
 
-async function fetchPolicyDoc(token: string): Promise<PolicyDoc | null | 'unauthorized'> {
-  const res = await fetch(`${PRETZEL_API_BASE}/v1/policy`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (res.status === 401) return 'unauthorized'
-  if (!res.ok) return null
-  const json = await res.json() as { policy?: unknown }
-  const parsed = PolicyDocSchema.safeParse(json.policy)
-  return parsed.success ? parsed.data : null
+async function fetchPolicyDoc(token: string): Promise<FetchResult> {
+  let res: Response
+  try {
+    res = await fetch(`${PRETZEL_API_BASE}/v1/policy`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+  } catch {
+    return { kind: 'transient' }
+  }
+  const verdict = classifyPolicyResponse(res.status)
+  if (verdict === 'unauthorized' || verdict === 'transient' || verdict === 'invalid') return { kind: verdict }
+  try {
+    const json = await res.json() as { policy?: unknown }
+    const parsed = PolicyDocSchema.safeParse(json.policy)
+    return parsed.success ? { kind: 'ok', doc: parsed.data } : { kind: 'invalid' }
+  } catch {
+    return { kind: 'invalid' }
+  }
+}
+
+function setSyncIssue(issue: SyncIssue | null): void {
+  if (issue === syncIssue) return
+  syncIssue = issue
+  onSyncIssue?.(issue)
+}
+
+function cancelRetry(): void {
+  if (retryTimer) clearTimeout(retryTimer)
+  retryTimer = null
+  retryAttempt = 0
+}
+
+// Only while no policy has ever loaded: once we have one the proxy keeps
+// enforcing it, and the regular 2-minute tick is enough to refresh it.
+function scheduleRetryIfNoPolicy(): void {
+  if (lastKnownPolicy || retryTimer) return
+  retryTimer = setTimeout(() => {
+    retryTimer = null
+    doSync().catch(console.error)
+  }, retryDelayMs(retryAttempt++))
 }
 
 async function doSync(): Promise<void> {
   const token = await loadToken()
   if (!token) return // not authenticated yet
 
-  const doc = await fetchPolicyDoc(token)
-  if (doc === 'unauthorized') {
-    // Device token expired or was revoked — clear it so isAuthenticated() goes
-    // false and the app re-prompts sign-in, instead of silently going stale.
-    await clearCredentials()
-    return
+  const result = await fetchPolicyDoc(token)
+  switch (result.kind) {
+    case 'unauthorized':
+      // Device token expired or was revoked — clear it so isAuthenticated() goes
+      // false, then tell the app so it can actually re-prompt sign-in (the
+      // tray UI and native menu only read auth state when told to).
+      cancelRetry()
+      setSyncIssue(null)
+      await clearCredentials()
+      onUnauthorized?.()
+      return
+    case 'transient':
+      setSyncIssue('unreachable')
+      scheduleRetryIfNoPolicy()
+      return
+    case 'invalid':
+      setSyncIssue('invalid')
+      return
+    case 'ok': {
+      cancelRetry()
+      setSyncIssue(null)
+      const policy = bridgePolicy(result.doc, [])
+      lastKnownPolicy = policy
+      onPolicyUpdate?.(policy)
+    }
   }
-  if (!doc) return
+}
 
-  const policy = bridgePolicy(doc, [])
-  lastKnownPolicy = policy
-  onPolicyUpdate?.(policy)
+/** Current failure state while no fresh policy is available (null = healthy). */
+export function getSyncIssue(): SyncIssue | null {
+  return syncIssue
+}
+
+/** Forget the loaded policy and any pending retry (sign-out / session lost). */
+export function resetPolicySync(): void {
+  lastKnownPolicy = null
+  cancelRetry()
+  setSyncIssue(null)
 }
 
 /**
  * Start background policy sync.
  * @param callback — called every time a fresh policy is fetched.
  */
-export function startPolicySync(callback: PolicyUpdateCallback): void {
+export function startPolicySync(
+  callback: PolicyUpdateCallback,
+  options?: { onUnauthorized?: () => void; onSyncIssue?: (issue: SyncIssue | null) => void },
+): void {
   onPolicyUpdate = callback
+  onUnauthorized = options?.onUnauthorized ?? null
+  onSyncIssue = options?.onSyncIssue ?? null
 
   // Sync immediately, then on interval
   doSync().catch(console.error)
@@ -71,6 +171,7 @@ export function stopPolicySync(): void {
     clearInterval(syncTimer)
     syncTimer = null
   }
+  cancelRetry()
 }
 
 /** Force an immediate re-sync (e.g. after sign-in). */

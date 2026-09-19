@@ -64,13 +64,18 @@ function showNag(trayWin: BrowserWindow): void {
  * If already authenticated: no-op.
  * If not: nag immediately then every 24h.
  */
-export function startNagging(trayWin: BrowserWindow, options?: { onSignInRequest?: () => void }): void {
+export function startNagging(
+  trayWin: BrowserWindow,
+  options?: { onSignInRequest?: () => void; skipImmediate?: boolean },
+): void {
   onSignInRequest = options?.onSignInRequest ?? null
 
   if (isAuthenticated()) return
 
-  // Nag immediately on first launch
-  showNag(trayWin)
+  // Nag immediately on first launch. Skipped after a deliberate sign-out: the
+  // user just chose this, so do not pop a notification at them straight away;
+  // the 24h reminder below still applies.
+  if (!options?.skipImmediate) showNag(trayWin)
 
   // Then repeat every 24h
   nagTimer = setInterval(() => {
