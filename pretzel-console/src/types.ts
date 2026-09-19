@@ -84,6 +84,9 @@ export interface Member {
   clerkId: string | null
   failMode: 'open' | 'closed' | null
   createdAt: string
+  /** Desktop app: newest sign-in / newest user sign-out. Null if never used the desktop app. */
+  desktopLastSignInAt: string | null
+  desktopLastSignOutAt: string | null
 }
 
 export interface DestinationGroup {

@@ -140,7 +140,7 @@ export function SettingsPage() {
             {/* Fail mode */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Extension fail mode</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Fail mode (extension &amp; desktop)</span>
                 <select
                   value={tenant.failMode}
                   disabled={updateFailMode.isPending}
@@ -156,9 +156,11 @@ export function SettingsPage() {
                 </select>
               </div>
               <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                Controls extension behaviour when policy cannot be fetched.{' '}
+                Controls what happens when a check cannot complete: the policy cannot be fetched, the check errors,
+                or (desktop) a warning prompt gets no answer in time.{' '}
                 <strong style={{ color: 'var(--text-primary)' }}>Fail open</strong> lets prompts through;{' '}
                 <strong style={{ color: 'var(--text-primary)' }}>fail closed</strong> blocks them.
+                Rules set to block are always blocked when a prompt goes unanswered.
               </p>
             </div>
           </>

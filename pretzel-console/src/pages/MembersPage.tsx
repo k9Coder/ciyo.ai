@@ -7,7 +7,7 @@ import { useMembers, useMemberActions } from '../hooks/useMembers'
 // (POST /v1/members) instead of generating a shareable /invite/{token} link.
 import { useDivisions } from '../hooks/useDivisions'
 import type { Member } from '../types'
-import { formatDate } from '../utils/date'
+import { formatDate, formatDateTime } from '../utils/date'
 
 const ROLE_LABEL: Record<Member['role'], string> = {
   super_admin:    'Super Admin',
@@ -25,6 +25,10 @@ const FAIL_MODE_INFO =
   'What happens when a check can\'t complete (app error, timeout, unreachable). ' +
   'Fail open = let it through. Fail closed = block it. ' +
   'Leave on "Org default" to inherit the organisation-wide setting.'
+
+const DESKTOP_INFO =
+  'Pretzel Desktop activity for this member: when they last signed in, and when they last signed out ' +
+  'from the app. "Signed out" means protection is off on their device until they sign in again.'
 
 const infoIconStyle: React.CSSProperties = {
   display: 'inline-block',
@@ -193,7 +197,7 @@ export function MembersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Email', 'Display Name', 'Role', 'Fail Mode', 'Joined', ''].map(h => (
+                {['Email', 'Display Name', 'Role', 'Fail Mode', 'Desktop', 'Joined', ''].map(h => (
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
                     color: 'var(--text-muted)', fontSize: 11, fontWeight: 600,
@@ -201,6 +205,7 @@ export function MembersPage() {
                   }}>
                     {h}
                     {h === 'Fail Mode' && <InfoIcon title={FAIL_MODE_INFO} />}
+                    {h === 'Desktop' && <InfoIcon title={DESKTOP_INFO} />}
                   </th>
                 ))}
               </tr>
@@ -291,6 +296,19 @@ export function MembersPage() {
                       <option value="open">Fail open</option>
                       <option value="closed">Fail closed</option>
                     </select>
+                  </td>
+                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
+                    {m.desktopLastSignInAt ? (
+                      <>
+                        <div>
+                          {m.desktopLastSignOutAt && new Date(m.desktopLastSignOutAt) >= new Date(m.desktopLastSignInAt)
+                            ? 'Signed out'
+                            : 'Signed in'}
+                        </div>
+                        <div>In: {formatDateTime(m.desktopLastSignInAt)}</div>
+                        <div>Out: {m.desktopLastSignOutAt ? formatDateTime(m.desktopLastSignOutAt) : '—'}</div>
+                      </>
+                    ) : '—'}
                   </td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
                     {formatDate(m.createdAt)}
