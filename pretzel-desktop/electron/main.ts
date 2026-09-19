@@ -14,9 +14,9 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { initSentry, Sentry } from './sentry'
 initSentry()
 
-import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell } from 'electron'
+import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor, dialog } from 'electron'
 import path from 'path'
-import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
+import { proxy, PROXY_PORT, type ProxyDecisionEvent, type ProxyDecisionTimeoutEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
 import { ensureHostHardening } from './hardening'
 import { ensureProxyWatchdog } from './proxy-watchdog'
@@ -32,18 +32,20 @@ import {
   pushUpdateAvailable,
   pushAutoUpdateStatus,
   pushActivityUpdate,
+  pushAuthState,
 } from './ipc-handlers'
 import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { isAutoUpdateSupported, initAutoUpdate, checkForAutoUpdateAsync } from './auto-update'
 import { loadSettings } from './settings'
-import { notifyDecision } from './decision-notify'
-import { recordActivity, getRecentActivity } from './activity-log'
+import { notifyDecision, notifyTimeout } from './decision-notify'
+import { recordActivity, getRecentActivity, setActivityOutcome } from './activity-log'
 import { reportEvent } from './report-event'
-import { showDecisionWindow, hideDecisionWindow } from './decision-window'
+import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
-import { isAuthenticated, signIn, cancelSignIn } from './auth'
+import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
+import { fetchSession, buildAuthView, reportSignOut, type SessionInfo } from './session'
 import { startNagging, stopNagging } from './nag'
-import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule } from './policy-sync'
+import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule, getLastKnownPolicy, resetPolicySync } from './policy-sync'
 import forge from 'node-forge'
 
 // Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
@@ -107,10 +109,9 @@ function rebuildTrayMenu(authenticated: boolean): void {
     { label: 'Pretzel Desktop', enabled: false },
     { type: 'separator' },
     { label: 'Open Status', click: () => showTrayWindow() },
-    ...(authenticated ? [] : [{
-      label: 'Sign in…',
-      click: () => handleSignIn(),
-    }] as Electron.MenuItemConstructorOptions[]),
+    ...(authenticated
+      ? [{ label: 'Sign out…', click: () => { void confirmAndSignOut() } }]
+      : [{ label: 'Sign in…', click: () => handleSignIn() }]) as Electron.MenuItemConstructorOptions[],
     { type: 'separator' as const },
     { label: 'Quit', click: () => app.quit() },
   ])
@@ -145,13 +146,119 @@ function pushStatus(status: TrayStatus): void {
   updateTrayVisual(status)
 }
 
+// Who is signed in + token expiry, from GET /auth/desktop/session. Null until
+// the first successful fetch (offline start) — the tray just omits the account
+// row and expiry warning until then.
+let sessionInfo: SessionInfo | null = null
+// True once the server has told us the token is dead (expired / revoked), as
+// opposed to the user never having signed in. Drives the "session expired"
+// copy in the tray.
+let sessionLost = false
+let expiryNotified = false
+const SESSION_REFRESH_MS = 6 * 60 * 60 * 1000
+
+function currentAuthView() {
+  return buildAuthView({ authenticated: isAuthenticated(), sessionLost, session: sessionInfo })
+}
+
+/** Tell the tray UI and native menu about the current auth state. */
+function pushAuth(): void {
+  rebuildTrayMenu(isAuthenticated())
+  if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+    pushAuthState(trayWin, currentAuthView())
+  }
+}
+
+async function refreshSession(): Promise<void> {
+  if (!isAuthenticated()) { sessionInfo = null; return }
+  const token = await loadToken()
+  if (!token) return
+  const result = await fetchSession(token)
+  if (result === 'unauthorized') { await handleSessionLost(); return }
+  if (!result) return // couldn't tell (offline / 5xx) — try again on the next tick
+  sessionInfo = result
+  pushAuth()
+
+  const days = currentAuthView().expiresInDays
+  if (days !== undefined && !expiryNotified) {
+    expiryNotified = true
+    if (Notification.isSupported()) {
+      const notif = new Notification({
+        title: 'Pretzel Desktop — sign in again soon',
+        body: `Your sign-in expires in ${days} day${days === 1 ? '' : 's'}. Sign in again to stay protected.`,
+        urgency: 'normal',
+      })
+      notif.on('click', () => showTrayWindow())
+      notif.show()
+    }
+  }
+}
+
+/**
+ * The server rejected our device token (90-day expiry or an admin revoke).
+ * Previously the credentials were cleared but nothing told the UI, so the tray
+ * sat on "Waiting" with no sign-in button until the next app restart. Drop the
+ * policy (protection really is off now), tell the tray, and start the nag so
+ * the user gets the OS notification + sign-in prompt right away.
+ */
+async function handleSessionLost(): Promise<void> {
+  if (sessionLost) return
+  sessionLost = true
+  await clearCredentials() // idempotent — policy-sync usually already did
+  sessionInfo = null
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
+  pushAuth()
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn })
+}
+
+/**
+ * User-initiated sign-out. Tells the server first (revokes this device token
+ * and stamps the sign-out time the console shows to admins), then forgets the
+ * credentials and policy locally. If the server cannot be reached the device is
+ * still signed out; `recorded: false` lets the tray say so.
+ */
+async function handleSignOut(): Promise<{ recorded: boolean }> {
+  const token = await loadToken()
+  const recorded = token ? await reportSignOut(token) : false
+  await clearCredentials()
+  sessionInfo = null
+  sessionLost = false // the user chose this; it is not an "expired" session
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
+  pushAuth()
+  // Remind again in 24h like any signed-out device, but not right now.
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn, skipImmediate: true })
+  return { recorded }
+}
+
+async function confirmAndSignOut(): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Sign out', 'Cancel'],
+    defaultId: 1,
+    cancelId: 1,
+    title: 'Sign out of Pretzel Desktop',
+    message: 'Sign out of Pretzel Desktop?',
+    detail: 'Protection turns off on this device until you sign in again. Your organisation can see when you sign out.',
+  })
+  if (response === 0) await handleSignOut()
+}
+
 async function handleSignIn(): Promise<void> {
   try {
     await signIn()
     stopNagging()
-    rebuildTrayMenu(true)
+    sessionLost = false
+    expiryNotified = false
     // Immediately fetch policy after auth
     await triggerSync()
+    await refreshSession()
+    pushAuth()
     trayWin?.webContents.send('auth:success')
   } catch (err) {
     // Log the raw error for debugging, but never surface it to the user —
@@ -251,10 +358,24 @@ async function startProxy(): Promise<void> {
         severity: finding.severity,
         action: event.result.highestAction === 'block' ? 'block' : 'warn',
         timestamp: Date.now(),
+        requestId: event.requestId,
       })
     }
     if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     void reportEvent(event)
+  })
+
+  // Nobody answered the prompt: the proxy already decided by policy (block
+  // rules are blocked, warn rules are sent). Make sure the user can see that
+  // it happened: the open prompt turns into a notice, an OS notification is
+  // raised even if they turned notifications off, and the tray activity list
+  // records the outcome.
+  proxy.on('decision-timeout', (event: ProxyDecisionTimeoutEvent) => {
+    showDecisionTimeout(event)
+    const settings = loadSettings(app.getPath('userData'))
+    notifyTimeout(event.result.highestAction === 'block' ? settings.notifyOnBlock : settings.notifyOnWarn, event)
+    setActivityOutcome(event.requestId, event.allowed ? 'timeout-allowed' : 'timeout-blocked')
+    if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
   })
 
   activateSystemProxy(PROXY_PORT)
@@ -340,7 +461,11 @@ app.whenReady().then(async () => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
       hideDecisionWindow()
+      setActivityOutcome(requestId, allow ? 'allowed' : 'blocked')
+      if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     },
+    getAuthState: currentAuthView,
+    onSignOut: handleSignOut,
     onSignIn: () => { handleSignIn() },
     onCancelSignIn: () => { cancelSignIn() },
     onAlwaysAllow: (ruleId) => {
@@ -367,6 +492,8 @@ app.whenReady().then(async () => {
       showDecisionWindow({
         requestId: `e2e-${Date.now()}`,
         hostname: 'chatgpt.com',
+        deadlineAt: Date.now() + 30_000,
+        onTimeout: 'block',
         // No real proxied request to release here — the e2e trigger only needs
         // the decision window to render for the qa-bridge to assert against.
         resolve: (allow: boolean) => {
@@ -397,8 +524,19 @@ app.whenReady().then(async () => {
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
-    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true })
+    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: null })
+  }, {
+    onUnauthorized: () => { void handleSessionLost() },
+    // Lets the tray say "Can't reach server — retrying" instead of a silent "Waiting".
+    onSyncIssue: (issue) => pushStatus({ ...lastTrayStatus, policyAvailable: getLastKnownPolicy() !== null, syncIssue: issue }),
   })
+
+  // Waking from sleep is the other common time the network is briefly down
+  // and a sync was missed — refresh right away instead of waiting for the tick.
+  powerMonitor.on('resume', () => { void triggerSync() })
+
+  void refreshSession()
+  setInterval(() => { void refreshSession() }, SESSION_REFRESH_MS)
 
   // Nag unauthenticated users every 24h until they sign in
   if (trayWin) {
@@ -419,7 +557,9 @@ app.whenReady().then(async () => {
 
   try {
     await startProxy()
-    pushStatus({ proxyRunning: true, policyAvailable: false, systemProxyActive: true })
+    // policyAvailable must reflect reality: the first policy sync starts before
+    // the proxy finishes starting, so it may already have landed.
+    pushStatus({ proxyRunning: true, policyAvailable: getLastKnownPolicy() !== null, systemProxyActive: true, syncIssue: null })
   } catch (err) {
     console.error('[pretzel-desktop] Proxy start failed:', err)
     pushStatus({ proxyRunning: false, policyAvailable: false, systemProxyActive: false })

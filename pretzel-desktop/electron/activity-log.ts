@@ -13,6 +13,13 @@ export interface ActivityEntry {
   severity:  string
   action:    'warn' | 'block'
   timestamp: number
+  /** Links the entry to its held request so the final outcome can be filled in. */
+  requestId?: string
+  /**
+   * How the request ended. Absent while the prompt is still open.
+   * `timeout-*` means nobody answered and Pretzel decided by policy.
+   */
+  outcome?:  'blocked' | 'allowed' | 'timeout-blocked' | 'timeout-allowed'
 }
 
 let entries: ActivityEntry[] = []
@@ -29,4 +36,9 @@ export function getRecentActivity(): ActivityEntry[] {
 /** Test-only: clear all recorded activity. */
 export function _resetActivityForTest(): void {
   entries = []
+}
+
+/** Fill in how a held request ended, for every entry recorded for it. */
+export function setActivityOutcome(requestId: string, outcome: NonNullable<ActivityEntry['outcome']>): void {
+  entries = entries.map((e) => (e.requestId === requestId ? { ...e, outcome } : e))
 }

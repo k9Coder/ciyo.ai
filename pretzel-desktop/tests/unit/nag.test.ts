@@ -129,3 +129,20 @@ describe('onSignInRequest callback', () => {
     expect(onSignInRequest).not.toHaveBeenCalled() // only fires on explicit user action
   })
 })
+
+describe('startNagging after a deliberate sign-out', () => {
+  it('does not nag straight away when skipImmediate is set', () => {
+    const win = makeMockWin()
+    startNagging(win, { skipImmediate: true })
+    expect(win.show).not.toHaveBeenCalled()
+    expect(mockWebContentsSend).not.toHaveBeenCalled()
+    expect(mockNotificationShow).not.toHaveBeenCalled()
+  })
+
+  it('still reminds after 24h', () => {
+    const win = makeMockWin()
+    startNagging(win, { skipImmediate: true })
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000)
+    expect(mockWebContentsSend).toHaveBeenCalledWith('auth:nag')
+  })
+})

@@ -99,6 +99,39 @@ export interface ProxyDecisionEvent {
   hostname: string
   result: DetectionResult
   resolve: (allow: boolean) => void
+  /** Epoch ms after which the request is resolved automatically (drives the countdown). */
+  deadlineAt: number
+  /** What happens if the user does not answer in time. */
+  onTimeout: 'block' | 'allow'
+}
+
+/** Emitted when a held request was resolved automatically because nobody answered. */
+export interface ProxyDecisionTimeoutEvent {
+  requestId: string
+  hostname: string
+  result: DetectionResult
+  allowed: boolean
+}
+
+/**
+ * What to do with a held request nobody answered. A `block` rule must never be
+ * waved through by walking away, whatever the failMode; a `warn` rule is sent
+ * unless the org chose fail-closed (the console describes failMode as "what
+ * happens when a check can't complete — app error, timeout, unreachable").
+ */
+export function decideOnTimeout(
+  highestAction: DetectionResult['highestAction'],
+  failMode: 'open' | 'closed',
+): 'block' | 'allow' {
+  if (highestAction === 'block') return 'block'
+  return failMode === 'closed' ? 'block' : 'allow'
+}
+
+/** Dev/QA-only override so the 30s wait doesn't have to be sat through. */
+function decisionTimeoutMs(): number {
+  const override = Number(process.env.PRETZEL_DECISION_TIMEOUT_MS)
+  if (process.env.PRETZEL_E2E === '1' && Number.isFinite(override) && override > 0) return override
+  return DECISION_TIMEOUT_MS
 }
 
 /**
@@ -197,7 +230,7 @@ export class PretzelProxy extends EventEmitter {
   private server: http.Server | null = null
   private ca: CACert | null = null
   private policy: Policy | null = null
-  private pending = new Map<string, (allow: boolean) => void>()
+  private pending = new Map<string, { resolve: (allow: boolean) => void; defaultAllow: boolean }>()
   // Pooled HTTP/2 client sessions, keyed by "host:port". We forward monitored
   // traffic to upstream over HTTP/2 (see forwardH2) so we don't downgrade the
   // client's HTTP/2 to HTTP/1.1 — that downgrade is what tripped chatgpt's edge
@@ -208,16 +241,16 @@ export class PretzelProxy extends EventEmitter {
     this.ca = ca
   }
 
-  setPolicy(policy: Policy): void {
+  setPolicy(policy: Policy | null): void {
     this.policy = policy
   }
 
   /** Resolve a held request from the decision UI. No-op if already settled/expired. */
   resolveDecision(requestId: string, allow: boolean): void {
-    const resolve = this.pending.get(requestId)
-    if (!resolve) return
+    const entry = this.pending.get(requestId)
+    if (!entry) return
     this.pending.delete(requestId)
-    resolve(allow)
+    entry.resolve(allow)
   }
 
   start(): Promise<void> {
@@ -233,7 +266,7 @@ export class PretzelProxy extends EventEmitter {
 
   stop(): Promise<void> {
     return new Promise((resolve) => {
-      for (const [id, r] of this.pending) { r(this.failOpen()); this.pending.delete(id) }
+      for (const [id, entry] of this.pending) { entry.resolve(entry.defaultAllow); this.pending.delete(id) }
       for (const session of this.h2Sessions.values()) {
         try { session.close() } catch { /* already gone */ }
       }
@@ -246,6 +279,10 @@ export class PretzelProxy extends EventEmitter {
 
   private failOpen(): boolean {
     return (this.policy?.failMode ?? 'open') === 'open'
+  }
+
+  private timeoutAction(result: DetectionResult): 'block' | 'allow' {
+    return decideOnTimeout(result.highestAction, this.failOpen() ? 'open' : 'closed')
   }
 
   private handleConnect(req: http.IncomingMessage, clientSocket: net.Socket, head: Buffer): void {
@@ -382,9 +419,14 @@ export class PretzelProxy extends EventEmitter {
           // traceable for free going forward.
           const ruleNames = result.findings.map(f => f.ruleName ?? f.ruleId).join(', ')
           console.log(`[pretzel-desktop] Policy match: ${method} ${hostname}${clientReq.url ?? ''} → ${ruleNames}`)
-          const allowed = await this.awaitDecision(hostname, result)
-          if (!allowed) {
-            this.sendBlocked(clientRes, hostname, body, 'Blocked by Pretzel Desktop policy')
+          const decision = await this.awaitDecision(hostname, result)
+          if (!decision.allow) {
+            this.sendBlocked(
+              clientRes, hostname, body,
+              decision.timedOut
+                ? 'Blocked by Pretzel Desktop policy — no response to the prompt in time'
+                : 'Blocked by Pretzel Desktop policy',
+            )
             return
           }
         }
@@ -625,23 +667,34 @@ export class PretzelProxy extends EventEmitter {
     upSocket.on('error', () => upstream.destroy())
   }
 
-  private awaitDecision(hostname: string, result: DetectionResult): Promise<boolean> {
+  private awaitDecision(hostname: string, result: DetectionResult): Promise<{ allow: boolean; timedOut: boolean }> {
     return new Promise((resolve) => {
       const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const timeoutMs = decisionTimeoutMs()
+      const onTimeout = this.timeoutAction(result)
       let settled = false
-      const settle = (allow: boolean) => {
+      const settle = (allow: boolean, timedOut = false) => {
         if (settled) return
         settled = true
         this.pending.delete(requestId)
         clearTimeout(timer)
-        resolve(allow)
+        resolve({ allow, timedOut })
+        if (timedOut) {
+          const timeoutEvent: ProxyDecisionTimeoutEvent = { requestId, hostname, result, allowed: allow }
+          this.emit('decision-timeout', timeoutEvent)
+        }
       }
 
-      this.pending.set(requestId, settle)
-      const event: ProxyDecisionEvent = { requestId, hostname, result, resolve: settle }
+      this.pending.set(requestId, { resolve: (allow) => settle(allow), defaultAllow: onTimeout === 'allow' })
+      const event: ProxyDecisionEvent = {
+        requestId, hostname, result,
+        resolve: (allow) => settle(allow),
+        deadlineAt: Date.now() + timeoutMs,
+        onTimeout,
+      }
       this.emit('decision-required', event)
 
-      const timer = setTimeout(() => settle(this.failOpen()), DECISION_TIMEOUT_MS)
+      const timer = setTimeout(() => settle(onTimeout === 'allow', true), timeoutMs)
     })
   }
 }

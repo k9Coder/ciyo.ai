@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
-import { requireClerkAuth } from '../auth/middleware.js'
-import { createDesktopAuthCode, exchangeDesktopAuthCode, isLoopbackRedirectUri, isValidCodeChallenge, DESKTOP_CLIENT_ID } from './service.js'
+import { requireClerkAuth, requireDeviceAuth } from '../auth/middleware.js'
+import { parseDeviceToken } from '../auth/tokens.js'
+import { createDesktopAuthCode, exchangeDesktopAuthCode, getDesktopSession, signOutDesktopDevice, isLoopbackRedirectUri, isValidCodeChallenge, DESKTOP_CLIENT_ID } from './service.js'
 import { env } from '../env.js'
 
 export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void> {
@@ -82,5 +83,23 @@ export async function desktopAuthRouter(fastify: FastifyInstance): Promise<void>
     })
     if ('error' in result) return reply.status(400).send({ error: result.error })
     return reply.send(result)
+  })
+
+  // Who is signed in on this device + when the token expires (tray account row
+  // and the pre-expiry "sign in again soon" warning).
+  fastify.get('/session', { preHandler: requireDeviceAuth }, async (req, reply) => {
+    const parsed = parseDeviceToken((req.headers.authorization ?? '').slice(7))
+    const session = parsed ? await getDesktopSession(parsed.deviceTokenId) : null
+    if (!session) return reply.status(401).send({ error: 'Invalid token' })
+    return reply.send(session)
+  })
+
+  // The user signed out from the desktop app: revoke this device token and
+  // record the time so admins can see it in the console.
+  fastify.post('/sign-out', { preHandler: requireDeviceAuth }, async (req, reply) => {
+    const parsed = parseDeviceToken((req.headers.authorization ?? '').slice(7))
+    if (!parsed) return reply.status(401).send({ error: 'Invalid token' })
+    await signOutDesktopDevice(parsed.deviceTokenId)
+    return reply.status(204).send()
   })
 }
