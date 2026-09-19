@@ -14,7 +14,7 @@ process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'E
 import { initSentry, Sentry } from './sentry'
 initSentry()
 
-import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor } from 'electron'
+import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor, dialog } from 'electron'
 import path from 'path'
 import { proxy, PROXY_PORT, type ProxyDecisionEvent, type ProxyDecisionTimeoutEvent } from './proxy'
 import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
@@ -43,7 +43,7 @@ import { reportEvent } from './report-event'
 import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
-import { fetchSession, buildAuthView, type SessionInfo } from './session'
+import { fetchSession, buildAuthView, reportSignOut, type SessionInfo } from './session'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule, getLastKnownPolicy, resetPolicySync } from './policy-sync'
 import forge from 'node-forge'
@@ -109,10 +109,9 @@ function rebuildTrayMenu(authenticated: boolean): void {
     { label: 'Pretzel Desktop', enabled: false },
     { type: 'separator' },
     { label: 'Open Status', click: () => showTrayWindow() },
-    ...(authenticated ? [] : [{
-      label: 'Sign in…',
-      click: () => handleSignIn(),
-    }] as Electron.MenuItemConstructorOptions[]),
+    ...(authenticated
+      ? [{ label: 'Sign out…', click: () => { void confirmAndSignOut() } }]
+      : [{ label: 'Sign in…', click: () => handleSignIn() }]) as Electron.MenuItemConstructorOptions[],
     { type: 'separator' as const },
     { label: 'Quit', click: () => app.quit() },
   ])
@@ -213,6 +212,41 @@ async function handleSessionLost(): Promise<void> {
   pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
   pushAuth()
   if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn })
+}
+
+/**
+ * User-initiated sign-out. Tells the server first (revokes this device token
+ * and stamps the sign-out time the console shows to admins), then forgets the
+ * credentials and policy locally. If the server cannot be reached the device is
+ * still signed out; `recorded: false` lets the tray say so.
+ */
+async function handleSignOut(): Promise<{ recorded: boolean }> {
+  const token = await loadToken()
+  const recorded = token ? await reportSignOut(token) : false
+  await clearCredentials()
+  sessionInfo = null
+  sessionLost = false // the user chose this; it is not an "expired" session
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
+  pushAuth()
+  // Remind again in 24h like any signed-out device, but not right now.
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn, skipImmediate: true })
+  return { recorded }
+}
+
+async function confirmAndSignOut(): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Sign out', 'Cancel'],
+    defaultId: 1,
+    cancelId: 1,
+    title: 'Sign out of Pretzel Desktop',
+    message: 'Sign out of Pretzel Desktop?',
+    detail: 'Protection turns off on this device until you sign in again. Your organisation can see when you sign out.',
+  })
+  if (response === 0) await handleSignOut()
 }
 
 async function handleSignIn(): Promise<void> {
@@ -431,6 +465,7 @@ app.whenReady().then(async () => {
       if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     },
     getAuthState: currentAuthView,
+    onSignOut: handleSignOut,
     onSignIn: () => { handleSignIn() },
     onCancelSignIn: () => { cancelSignIn() },
     onAlwaysAllow: (ruleId) => {

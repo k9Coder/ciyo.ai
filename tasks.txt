@@ -1,0 +1,7 @@
+[x] pretzel-desktop: add sign-out and signed-in account display to the tray window
+    - Show which account/tenant is signed in (email or org name) in the tray UI.
+    - Add a "Sign out" action (tray window + native tray menu) that clears the token and tenant
+      (auth.ts clearCredentials), then shows the sign-in box again without needing an app restart.
+    - Today the preload API has no signOut, and the tray only shows sign-in state, never identity.
+    - Found by /qa-desktop 2026-09-19. Related bug: after credentials are cleared at runtime (401 on policy sync),
+      the tray never re-shows the sign-in prompt until restart (nag only starts if signed-out at launch).

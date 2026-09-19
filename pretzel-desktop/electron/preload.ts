@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('pretzel', {
     ipcRenderer.on('auth:error', (_event, msg: string) => cb(msg))
   },
   getAuthState: (): Promise<AuthViewState> => ipcRenderer.invoke('auth:get-state'),
+  signOut: (): Promise<{ recorded: boolean }> => ipcRenderer.invoke('auth:sign-out'),
   onAuthState: (cb: (state: AuthViewState) => void) => {
     ipcRenderer.on('auth:state', (_event, state) => cb(state))
   },

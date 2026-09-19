@@ -57,6 +57,7 @@ declare global {
       alwaysAllowRule: (ruleId: string) => void
       onStatusUpdate: (cb: (s: StatusPayload) => void) => void
       getAuthState: () => Promise<AuthStatePayload>
+      signOut: () => Promise<{ recorded: boolean }>
       onAuthState: (cb: (s: AuthStatePayload) => void) => void
       onAuthNag: (cb: () => void) => void
       onAuthSuccess: (cb: () => void) => void

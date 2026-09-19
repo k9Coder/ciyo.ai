@@ -32,6 +32,8 @@ function TrayUI() {
   const [auth, setAuth] = useState<AuthStatePayload | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
+  const [signOutNote, setSignOutNote] = useState<string | null>(null)
   const [showCancelHint, setShowCancelHint] = useState(false)
   const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
   const [view, setView] = useState<View>('status')
@@ -123,6 +125,14 @@ function TrayUI() {
     setSigningIn(true)
     setAuthError(null)
     window.pretzel.signIn()
+  }
+
+  async function handleSignOut() {
+    setConfirmingSignOut(false)
+    const { recorded } = await window.pretzel.signOut()
+    setSignOutNote(
+      recorded ? null : 'Signed out on this device. Could not reach the server to record it, so your organisation will see it once you sign in again.',
+    )
   }
 
   function handleCancelSignIn() {
@@ -217,6 +227,26 @@ function TrayUI() {
         </div>
       </div>
 
+      {auth?.authenticated && auth.account && (
+        <div className="account-row">
+          <div className="account-text">
+            <span className="account-name">{auth.account.displayName ?? auth.account.email}</span>
+            <span className="account-org">
+              {auth.account.displayName ? `${auth.account.email} · ` : ''}{auth.account.tenantName}
+            </span>
+          </div>
+          {confirmingSignOut ? (
+            <div className="account-confirm">
+              <span className="account-confirm-text">Protection turns off.</span>
+              <button className="link-btn" onClick={handleSignOut}>Sign out</button>
+              <button className="link-btn link-btn-muted" onClick={() => setConfirmingSignOut(false)}>Cancel</button>
+            </div>
+          ) : (
+            <button className="link-btn" onClick={() => setConfirmingSignOut(true)}>Sign out</button>
+          )}
+        </div>
+      )}
+
       <ActivityFeed entries={activity} />
 
       {auth?.authenticated && auth.expiresInDays !== undefined && (
@@ -232,6 +262,8 @@ function TrayUI() {
           </button>
         </div>
       )}
+
+      {needsSignIn && signOutNote && <p className="signout-note">{signOutNote}</p>}
 
       {needsSignIn && (
         <div className="nag-card fade-in">
