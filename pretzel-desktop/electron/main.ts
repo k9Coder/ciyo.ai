@@ -32,6 +32,7 @@ import {
   pushUpdateAvailable,
   pushAutoUpdateStatus,
   pushActivityUpdate,
+  pushAuthState,
 } from './ipc-handlers'
 import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { isAutoUpdateSupported, initAutoUpdate, checkForAutoUpdateAsync } from './auto-update'
@@ -41,7 +42,8 @@ import { recordActivity, getRecentActivity } from './activity-log'
 import { reportEvent } from './report-event'
 import { showDecisionWindow, hideDecisionWindow } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
-import { isAuthenticated, signIn, cancelSignIn } from './auth'
+import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
+import { fetchSession, buildAuthView, type SessionInfo } from './session'
 import { startNagging, stopNagging } from './nag'
 import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule } from './policy-sync'
 import forge from 'node-forge'
@@ -145,13 +147,83 @@ function pushStatus(status: TrayStatus): void {
   updateTrayVisual(status)
 }
 
+// Who is signed in + token expiry, from GET /auth/desktop/session. Null until
+// the first successful fetch (offline start) — the tray just omits the account
+// row and expiry warning until then.
+let sessionInfo: SessionInfo | null = null
+// True once the server has told us the token is dead (expired / revoked), as
+// opposed to the user never having signed in. Drives the "session expired"
+// copy in the tray.
+let sessionLost = false
+let expiryNotified = false
+const SESSION_REFRESH_MS = 6 * 60 * 60 * 1000
+
+function currentAuthView() {
+  return buildAuthView({ authenticated: isAuthenticated(), sessionLost, session: sessionInfo })
+}
+
+/** Tell the tray UI and native menu about the current auth state. */
+function pushAuth(): void {
+  rebuildTrayMenu(isAuthenticated())
+  if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+    pushAuthState(trayWin, currentAuthView())
+  }
+}
+
+async function refreshSession(): Promise<void> {
+  if (!isAuthenticated()) { sessionInfo = null; return }
+  const token = await loadToken()
+  if (!token) return
+  const result = await fetchSession(token)
+  if (result === 'unauthorized') { await handleSessionLost(); return }
+  if (!result) return // couldn't tell (offline / 5xx) — try again on the next tick
+  sessionInfo = result
+  pushAuth()
+
+  const days = currentAuthView().expiresInDays
+  if (days !== undefined && !expiryNotified) {
+    expiryNotified = true
+    if (Notification.isSupported()) {
+      const notif = new Notification({
+        title: 'Pretzel Desktop — sign in again soon',
+        body: `Your sign-in expires in ${days} day${days === 1 ? '' : 's'}. Sign in again to stay protected.`,
+        urgency: 'normal',
+      })
+      notif.on('click', () => showTrayWindow())
+      notif.show()
+    }
+  }
+}
+
+/**
+ * The server rejected our device token (90-day expiry or an admin revoke).
+ * Previously the credentials were cleared but nothing told the UI, so the tray
+ * sat on "Waiting" with no sign-in button until the next app restart. Drop the
+ * policy (protection really is off now), tell the tray, and start the nag so
+ * the user gets the OS notification + sign-in prompt right away.
+ */
+async function handleSessionLost(): Promise<void> {
+  if (sessionLost) return
+  sessionLost = true
+  await clearCredentials() // idempotent — policy-sync usually already did
+  sessionInfo = null
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  pushStatus({ ...lastTrayStatus, policyAvailable: false })
+  pushAuth()
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn })
+}
+
 async function handleSignIn(): Promise<void> {
   try {
     await signIn()
     stopNagging()
-    rebuildTrayMenu(true)
+    sessionLost = false
+    expiryNotified = false
     // Immediately fetch policy after auth
     await triggerSync()
+    await refreshSession()
+    pushAuth()
     trayWin?.webContents.send('auth:success')
   } catch (err) {
     // Log the raw error for debugging, but never surface it to the user —
@@ -341,6 +413,7 @@ app.whenReady().then(async () => {
       proxy.resolveDecision(requestId, allow)
       hideDecisionWindow()
     },
+    getAuthState: currentAuthView,
     onSignIn: () => { handleSignIn() },
     onCancelSignIn: () => { cancelSignIn() },
     onAlwaysAllow: (ruleId) => {
@@ -398,7 +471,10 @@ app.whenReady().then(async () => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
     pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true })
-  })
+  }, { onUnauthorized: () => { void handleSessionLost() } })
+
+  void refreshSession()
+  setInterval(() => { void refreshSession() }, SESSION_REFRESH_MS)
 
   // Nag unauthenticated users every 24h until they sign in
   if (trayWin) {

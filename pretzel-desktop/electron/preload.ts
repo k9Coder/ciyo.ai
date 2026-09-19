@@ -5,6 +5,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AutoUpdateEvent as AutoUpdateEventPayload } from './auto-update'
 import type { ActivityEntry as ActivityEntryPayload } from './activity-log'
+import type { AuthViewState } from './session'
 
 contextBridge.exposeInMainWorld('pretzel', {
   // Decision UI
@@ -37,6 +38,10 @@ contextBridge.exposeInMainWorld('pretzel', {
   },
   onAuthError: (cb: (msg: string) => void) => {
     ipcRenderer.on('auth:error', (_event, msg: string) => cb(msg))
+  },
+  getAuthState: (): Promise<AuthViewState> => ipcRenderer.invoke('auth:get-state'),
+  onAuthState: (cb: (state: AuthViewState) => void) => {
+    ipcRenderer.on('auth:state', (_event, state) => cb(state))
   },
   signIn: () => {
     ipcRenderer.send('auth:sign-in')

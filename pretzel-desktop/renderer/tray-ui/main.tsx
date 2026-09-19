@@ -29,6 +29,7 @@ type UpdateState =
 function TrayUI() {
   const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [showSignIn, setShowSignIn] = useState(false)
+  const [auth, setAuth] = useState<AuthStatePayload | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [showCancelHint, setShowCancelHint] = useState(false)
@@ -65,6 +66,8 @@ function TrayUI() {
     window.pretzel.getProxyStatus().then((s) =>
       setStatus((prev) => ({ ...prev, proxyRunning: s.proxyRunning, systemProxyActive: s.systemProxyActive }))
     )
+    window.pretzel.getAuthState().then(setAuth)
+    window.pretzel.onAuthState(setAuth)
     window.pretzel.onAuthNag(() => setShowSignIn(true))
     window.pretzel.onAuthSuccess(() => {
       setShowSignIn(false)
@@ -143,6 +146,11 @@ function TrayUI() {
     )
   }
 
+  // The server can sign us out at any time (token expiry / admin revoke), so
+  // the sign-in box follows the live auth state, not just the launch-time nag.
+  const needsSignIn = showSignIn || auth?.authenticated === false
+  const sessionExpired = auth?.reason === 'expired'
+
   const policyLabel = status.policyAvailable ? 'Policy active' : 'No policy cached'
   const policyInfo = status.policyAvailable
     ? "Pretzel has your organisation's rules loaded and is checking traffic against them."
@@ -202,12 +210,27 @@ function TrayUI() {
 
       <ActivityFeed entries={activity} />
 
-      {showSignIn && (
+      {auth?.authenticated && auth.expiresInDays !== undefined && (
         <div className="nag-card fade-in">
-          <p className="nag-title">Protection is off until you sign in</p>
+          <p className="nag-title">Your sign-in expires soon</p>
           <p className="nag-body">
-            Nothing sent to ChatGPT, Claude, or Gemini is being checked right now — Pretzel has no rules loaded.
-            Signing in takes about 10 seconds and loads your organisation's policy.
+            Your sign-in expires in {auth.expiresInDays} day{auth.expiresInDays === 1 ? '' : 's'}. Sign in again now
+            so protection doesn't switch off.
+          </p>
+          {authError && <p className="nag-error">{authError}</p>}
+          <button className="btn btn-primary btn-block" onClick={handleSignIn} disabled={signingIn}>
+            {signingIn ? 'Opening browser…' : 'Sign in again'}
+          </button>
+        </div>
+      )}
+
+      {needsSignIn && (
+        <div className="nag-card fade-in">
+          <p className="nag-title">{sessionExpired ? 'Your session expired' : 'Protection is off until you sign in'}</p>
+          <p className="nag-body">
+            {sessionExpired
+              ? "Your sign-in is no longer valid, so Pretzel has no rules loaded and nothing sent to ChatGPT, Claude, or Gemini is being checked. Sign in again to turn protection back on."
+              : "Nothing sent to ChatGPT, Claude, or Gemini is being checked right now — Pretzel has no rules loaded. Signing in takes about 10 seconds and loads your organisation's policy."}
           </p>
           {authError && <p className="nag-error">{authError}</p>}
           <button

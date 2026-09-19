@@ -208,7 +208,7 @@ export class PretzelProxy extends EventEmitter {
     this.ca = ca
   }
 
-  setPolicy(policy: Policy): void {
+  setPolicy(policy: Policy | null): void {
     this.policy = policy
   }
 

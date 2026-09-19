@@ -16,6 +16,7 @@ type PolicyUpdateCallback = (policy: Policy) => void
 
 let syncTimer: ReturnType<typeof setInterval> | null = null
 let onPolicyUpdate: PolicyUpdateCallback | null = null
+let onUnauthorized: (() => void) | null = null
 let lastKnownPolicy: Policy | null = null
 
 export function getLastKnownPolicy(): Policy | null {
@@ -40,8 +41,10 @@ async function doSync(): Promise<void> {
   const doc = await fetchPolicyDoc(token)
   if (doc === 'unauthorized') {
     // Device token expired or was revoked — clear it so isAuthenticated() goes
-    // false and the app re-prompts sign-in, instead of silently going stale.
+    // false, then tell the app so it can actually re-prompt sign-in (the
+    // tray UI and native menu only read auth state when told to).
     await clearCredentials()
+    onUnauthorized?.()
     return
   }
   if (!doc) return
@@ -55,8 +58,9 @@ async function doSync(): Promise<void> {
  * Start background policy sync.
  * @param callback — called every time a fresh policy is fetched.
  */
-export function startPolicySync(callback: PolicyUpdateCallback): void {
+export function startPolicySync(callback: PolicyUpdateCallback, options?: { onUnauthorized?: () => void }): void {
   onPolicyUpdate = callback
+  onUnauthorized = options?.onUnauthorized ?? null
 
   // Sync immediately, then on interval
   doSync().catch(console.error)

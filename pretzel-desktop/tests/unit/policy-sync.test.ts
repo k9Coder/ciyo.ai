@@ -20,7 +20,7 @@ vi.mock('@mykka/detect', () => ({
   bridgePolicy: (doc: unknown) => doc,
 }))
 
-import { triggerSync, alwaysAllowRule } from '../../electron/policy-sync'
+import { triggerSync, alwaysAllowRule, startPolicySync, stopPolicySync } from '../../electron/policy-sync'
 
 const originalFetch = global.fetch
 
@@ -36,6 +36,17 @@ describe('policy-sync auth-expiry handling', () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 }) as any
     await triggerSync()
     expect(mockClearCredentials).toHaveBeenCalled()
+  })
+
+  it('tells the app when the token was rejected, so it can show the sign-in prompt', async () => {
+    // Regression: ISSUE-007 — credentials were cleared but nothing notified the
+    // tray, which sat on "Waiting" with no sign-in button until restart.
+    // Found by /qa-desktop on 2026-09-19.
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 }) as any
+    const onUnauthorized = vi.fn()
+    startPolicySync(vi.fn(), { onUnauthorized })
+    await vi.waitFor(() => expect(onUnauthorized).toHaveBeenCalledTimes(1))
+    stopPolicySync()
   })
 
   it('does not clear credentials on other failures (e.g. 5xx/network)', async () => {

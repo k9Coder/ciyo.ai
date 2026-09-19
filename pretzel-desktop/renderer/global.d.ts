@@ -11,6 +11,13 @@ declare global {
     systemProxyActive?: boolean
   }
 
+  interface AuthStatePayload {
+    authenticated: boolean
+    reason?: 'expired'
+    account?: { email: string; displayName: string | null; tenantName: string }
+    expiresInDays?: number
+  }
+
   type NotifyLevel = 'off' | 'badge' | 'native' | 'native-sound'
   interface SettingsPayload {
     hasSeenWalkthrough: boolean
@@ -41,6 +48,8 @@ declare global {
       respondDecision: (requestId: string, allow: boolean) => void
       alwaysAllowRule: (ruleId: string) => void
       onStatusUpdate: (cb: (s: StatusPayload) => void) => void
+      getAuthState: () => Promise<AuthStatePayload>
+      onAuthState: (cb: (s: AuthStatePayload) => void) => void
       onAuthNag: (cb: () => void) => void
       onAuthSuccess: (cb: () => void) => void
       onAuthError: (cb: (msg: string) => void) => void

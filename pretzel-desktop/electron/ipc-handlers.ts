@@ -9,6 +9,7 @@ import { checkForUpdate, DOWNLOAD_URL } from './version-check'
 import { loadSettings, saveSettings, SettingsPatchSchema, type Settings } from './settings'
 import { isAutoUpdateSupported, checkForAutoUpdateAsync, downloadUpdate, installUpdate } from './auto-update'
 import { getRecentActivity, type ActivityEntry } from './activity-log'
+import type { AuthViewState } from './session'
 
 const DecisionResponseSchema = z.object({
   requestId: z.string(),
@@ -19,22 +20,26 @@ type DecisionCallback = (requestId: string, allow: boolean) => void
 type SignInCallback = () => void
 type CancelSignInCallback = () => void
 type AlwaysAllowCallback = (ruleId: string) => void
+type AuthStateProvider = () => AuthViewState
 
 let onDecision: DecisionCallback | null = null
 let onSignIn: SignInCallback | null = null
 let onCancelSignIn: CancelSignInCallback | null = null
 let onAlwaysAllow: AlwaysAllowCallback | null = null
+let getAuthView: AuthStateProvider | null = null
 
 export function registerIpcHandlers(options: {
   onDecision: DecisionCallback
   onSignIn?: SignInCallback
   onCancelSignIn?: CancelSignInCallback
   onAlwaysAllow?: AlwaysAllowCallback
+  getAuthState?: AuthStateProvider
 }): void {
   onDecision = options.onDecision
   onSignIn = options.onSignIn ?? null
   onCancelSignIn = options.onCancelSignIn ?? null
   onAlwaysAllow = options.onAlwaysAllow ?? null
+  getAuthView = options.getAuthState ?? null
 
   ipcMain.on('decision:respond', (_event, raw: unknown) => {
     const parsed = DecisionResponseSchema.safeParse(raw)
@@ -54,6 +59,8 @@ export function registerIpcHandlers(options: {
     if (typeof raw !== 'string' || !raw) return
     onAlwaysAllow?.(raw)
   })
+
+  ipcMain.handle('auth:get-state', (): AuthViewState => getAuthView?.() ?? { authenticated: false })
 
   ipcMain.handle('policy:get', (): Policy | null => {
     // Populated by main.ts after policy sync
@@ -107,6 +114,7 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('update:open-download')
   ipcMain.removeAllListeners('update:download')
   ipcMain.removeAllListeners('update:install')
+  ipcMain.removeHandler('auth:get-state')
   ipcMain.removeHandler('policy:get')
   ipcMain.removeHandler('proxy:status')
   ipcMain.removeHandler('update:check')
@@ -138,6 +146,11 @@ export function pushDecisionRequired(
   payload: { requestId: string; hostname: string; findings: unknown[] },
 ): void {
   win.webContents.send('decision:required', payload)
+}
+
+/** Push the current auth view (signed in/out, account, expiry) to the tray renderer. */
+export function pushAuthState(win: BrowserWindow, payload: AuthViewState): void {
+  win.webContents.send('auth:state', payload)
 }
 
 /** Push status update to tray window renderer. */
