@@ -33,7 +33,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 |---|---|---|
 | `/login` | Public | Opens Clerk sign-in and honors a `redirect` query parameter. |
 | `/onboarding/profile` | Public route; page wires its own Clerk token | Lets a lone `super_admin` on a freshly auto-provisioned tenant apply or skip a recommended DLP policy template. `TenantBootstrap` redirects here automatically when needed. |
-| `/invite/:token` | Public | Previews and accepts a single invite token. |
+| ~~`/invite/:token`~~ | ~~Public~~ | **Disabled** — was: previews and accepts a single invite token. Route commented out in `App.tsx`; admin-add-by-email on `/members` replaces it. |
 | `/accessibility` | Public | Console accessibility statement. |
 | `/` | Protected | Redirects to `/dashboard`. |
 | `/dashboard` | Protected | Analytics summary, incidents, sites, subjects, and policy status. |
@@ -43,7 +43,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | `/sites` | Protected | CRUD for site domains and CSS selectors. |
 | `/publish` | Protected | Publish, inspect history, and roll back policy versions. |
 | `/settings` | Protected | Tenant name, billing status/portal, and token rotation. |
-| `/members` | Protected | Generate invites, change roles, and remove members. |
+| `/members` | Protected | Add members directly by email (`POST /v1/members`), change roles, and remove members. |
 | `/audit-log` | Protected | Filter and paginate warn/block audit events. Matches the backend's `/v1/audit-log` naming; `/audit` redirects here for old bookmarks. |
 | `/assistant` | Protected + Business feature | Chat, preview proposed actions, and apply assistant changes. |
 
@@ -63,7 +63,7 @@ page/component
 
 `lib/api.ts` defines the backend origin and defaults it to `http://localhost:3000`. The request helper adds JSON headers when a body exists, adds the Clerk bearer token when available, maps non-2xx responses to `AdminApiError`, and returns `undefined` for HTTP 204.
 
-The public API groups are subjects, rules, divisions, teams, members, destination groups, site configs, policy, tenant, audit log, analytics, assistant, invites, and billing.
+The public API groups are subjects, rules, divisions, teams, members, destination groups, site configs, policy, tenant, audit log, analytics, assistant, me (memberships + self-serve-org), and billing. (`api.invites.*` remains in `api.ts`, unreferenced — the token-invite-link endpoints it called are disabled server-side.)
 
 ## Gates and entitlements
 

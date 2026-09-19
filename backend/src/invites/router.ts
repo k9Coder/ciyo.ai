@@ -1,3 +1,7 @@
+// DISABLED — token-invite-link flow retired in favor of admin-add-by-email
+// (POST /v1/members, backend/src/members/) + POST /v1/me/self-serve-org
+// (backend/src/me/service.ts). Not mounted — see backend/src/app.ts. Kept in
+// the tree rather than deleted in case it's needed again.
 import type { FastifyInstance } from 'fastify'
 import { requireAdminTokenOrClerkAdmin, requireClerkUser } from '../auth/middleware.js'
 import { createInvite, getInvitePreview, acceptInvite } from './service.js'

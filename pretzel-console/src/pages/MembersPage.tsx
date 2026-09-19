@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
 import { PageHeader } from '../components/ui/PageHeader'
 import { InlineLoader } from '../components/ui/Spinner'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useMembers, useMemberActions } from '../hooks/useMembers'
+// Token-invite-link flow retired — MembersPage now adds members directly
+// (POST /v1/members) instead of generating a shareable /invite/{token} link.
 import { useDivisions } from '../hooks/useDivisions'
-import { api } from '../api'
 import type { Member } from '../types'
 import { formatDate } from '../utils/date'
 
@@ -47,54 +47,39 @@ function InfoIcon({ title }: { title: string }) {
 export function MembersPage() {
   const { data: members = [], isLoading } = useMembers()
   const { data: divisions = [] } = useDivisions()
-  const { update, remove } = useMemberActions()
+  const { create, update, remove } = useMemberActions()
 
-  const [showInvite, setShowInvite]           = useState(false)
-  const [inviteEmail, setInviteEmail]         = useState('')
-  const [inviteRole, setInviteRole]           = useState<Member['role']>('member')
-  const [inviteDivisionId, setInviteDivisionId] = useState('')
-  const [generatedUrl, setGeneratedUrl]       = useState<string | null>(null)
-  const [copied, setCopied]                   = useState(false)
+  const [showAdd, setShowAdd]                 = useState(false)
+  const [addEmail, setAddEmail]               = useState('')
+  const [addRole, setAddRole]                 = useState<Member['role']>('member')
+  const [addDivisionId, setAddDivisionId]     = useState('')
 
   const [editingId, setEditingId]             = useState<string | null>(null)
   const [editRole, setEditRole]               = useState<Member['role']>('member')
   const [editDivisionId, setEditDivisionId]   = useState('')
   const [confirmRemove, setConfirmRemove]     = useState<Member | null>(null)
 
-  const inviteNeedsDivision = inviteRole === 'division_admin' && !inviteDivisionId
-  const editNeedsDivision   = editRole === 'division_admin' && !editDivisionId
+  const addNeedsDivision  = addRole === 'division_admin' && !addDivisionId
+  const editNeedsDivision = editRole === 'division_admin' && !editDivisionId
 
-  const generateInvite = useMutation({
-    mutationFn: () => api.invites.create({
-      email:      inviteEmail.trim() || undefined,
-      role:       inviteRole,
-      divisionId: inviteRole === 'division_admin' ? inviteDivisionId : undefined,
-    }),
-    onSuccess: (data) => setGeneratedUrl(data.url),
-  })
-
-  function handleGenerate(e: React.FormEvent) {
+  function handleAdd(e: React.FormEvent) {
     e.preventDefault()
-    if (inviteNeedsDivision) return
-    setGeneratedUrl(null)
-    setCopied(false)
-    generateInvite.mutate()
+    if (addNeedsDivision || !addEmail.trim()) return
+    create.mutate(
+      {
+        email:           addEmail.trim(),
+        role:            addRole,
+        adminDivisionId: addRole === 'division_admin' ? addDivisionId : undefined,
+      },
+      { onSuccess: resetAdd }
+    )
   }
 
-  function copyLink() {
-    if (!generatedUrl) return
-    void navigator.clipboard.writeText(generatedUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  function resetInvite() {
-    setShowInvite(false)
-    setInviteEmail('')
-    setInviteRole('member')
-    setInviteDivisionId('')
-    setGeneratedUrl(null)
-    setCopied(false)
+  function resetAdd() {
+    setShowAdd(false)
+    setAddEmail('')
+    setAddRole('member')
+    setAddDivisionId('')
   }
 
   function startEdit(m: Member) {
@@ -121,115 +106,79 @@ export function MembersPage() {
         title="Members"
         action={
           <button
-            onClick={() => { setShowInvite(s => !s); setGeneratedUrl(null) }}
+            onClick={() => setShowAdd(s => !s)}
             style={{
               background: 'var(--brand-primary)', color: '#fff', border: 'none',
               borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             }}
           >
-            + Invite Member
+            + Add Member
           </button>
         }
       />
 
-      {showInvite && (
+      {showAdd && (
         <div style={{
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 10, padding: 16, marginBottom: 16,
         }}>
-          {!generatedUrl ? (
-            <form onSubmit={handleGenerate} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 200px' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Email (optional — leave blank for open link)</span>
-                <input
-                  type="email" value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                  placeholder="alice@lawfirm.com"
-                  style={inputStyle}
-                />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 150px' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Role</span>
+          <form onSubmit={handleAdd} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 200px' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Email</span>
+              <input
+                type="email" required value={addEmail}
+                onChange={e => setAddEmail(e.target.value)}
+                placeholder="alice@lawfirm.com"
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 150px' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Role</span>
+              <select
+                value={addRole}
+                onChange={e => setAddRole(e.target.value as Member['role'])}
+                style={inputStyle}
+              >
+                <option value="member">Member</option>
+                <option value="division_admin">Division Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </label>
+            {addRole === 'division_admin' && (
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 180px' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Division</span>
                 <select
-                  value={inviteRole}
-                  onChange={e => setInviteRole(e.target.value as Member['role'])}
+                  value={addDivisionId}
+                  onChange={e => setAddDivisionId(e.target.value)}
                   style={inputStyle}
                 >
-                  <option value="member">Member</option>
-                  <option value="division_admin">Division Admin</option>
-                  <option value="super_admin">Super Admin</option>
+                  <option value="">Select a division…</option>
+                  {divisions.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
                 </select>
               </label>
-              {inviteRole === 'division_admin' && (
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 180px' }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Division</span>
-                  <select
-                    value={inviteDivisionId}
-                    onChange={e => setInviteDivisionId(e.target.value)}
-                    style={inputStyle}
-                  >
-                    <option value="">Select a division…</option>
-                    {divisions.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              <button
-                type="submit" disabled={generateInvite.isPending || inviteNeedsDivision}
-                style={{
-                  background: 'var(--brand-primary)', color: '#fff', border: 'none',
-                  borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                }}
-              >
-                {generateInvite.isPending ? 'Generating…' : 'Generate link'}
-              </button>
-              <button
-                type="button" onClick={resetInvite}
-                style={{
-                  background: 'transparent', color: 'var(--text-muted)',
-                  border: '1px solid var(--border)', borderRadius: 6,
-                  padding: '7px 16px', fontSize: 13, cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-            </form>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Share this link — it expires in 72 hours and can be used once.
-              </span>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input
-                  readOnly value={generatedUrl}
-                  style={{ ...inputStyle, flex: 1, fontFamily: 'monospace', fontSize: 12 }}
-                  onClick={e => (e.target as HTMLInputElement).select()}
-                />
-                <button
-                  onClick={copyLink}
-                  style={{
-                    background: copied ? 'var(--status-success, #16a34a)' : 'var(--brand-primary)',
-                    color: '#fff', border: 'none', borderRadius: 6,
-                    padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {copied ? 'Copied!' : 'Copy link'}
-                </button>
-                <button
-                  onClick={resetInvite}
-                  style={{
-                    background: 'transparent', color: 'var(--text-muted)',
-                    border: '1px solid var(--border)', borderRadius: 6,
-                    padding: '7px 16px', fontSize: 13, cursor: 'pointer',
-                  }}
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+            <button
+              type="submit" disabled={create.isPending || addNeedsDivision || !addEmail.trim()}
+              style={{
+                background: 'var(--brand-primary)', color: '#fff', border: 'none',
+                borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              {create.isPending ? 'Adding…' : 'Add member'}
+            </button>
+            <button
+              type="button" onClick={resetAdd}
+              style={{
+                background: 'transparent', color: 'var(--text-muted)',
+                border: '1px solid var(--border)', borderRadius: 6,
+                padding: '7px 16px', fontSize: 13, cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </form>
         </div>
       )}
 
@@ -237,7 +186,7 @@ export function MembersPage() {
         {isLoading && <InlineLoader />}
         {!isLoading && members.length === 0 && (
           <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
-            No members yet. Click <strong>+ Invite Member</strong> to get started.
+            No members yet. Click <strong>+ Add Member</strong> to get started.
           </p>
         )}
         {members.length > 0 && (

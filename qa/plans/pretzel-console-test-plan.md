@@ -27,8 +27,8 @@ desktop app and extension will later fetch.
 | PC-04 Subjects CRUD | ✅ Pass | create via UI (qa-subject-…) + delete via UI (ConfirmDialog → DELETE 204) verified & cleaned up; edit path exercised via assistant |
 | PC-05 Rules CRUD | ✅ Pass | create/edit(warn↔block)/delete all verified (via assistant apply); rules UI present. Invalid-input validation not separately exercised |
 | PC-06 Publish policy version | ✅ Pass | published v1 then v2 (version increments; active policy reflects change; clients fetched it — see extension/desktop) |
-| PC-07 Generate invite link | ✅ Pass (after fix) | initially 500 (missing `invites.division_id` migration — applied); then 201, link matches `/invite/<64-hex>`, Copy link |
-| PC-08 Invite acceptance page | ✅ Pass (after fix) | invite page renders for token; accept was 401 (InvitePage didn't wire token — fixed `7fed38a`), now joins org |
+| PC-07 Generate invite link | ⚠️ Historical — flow retired | Token-invite-link disabled; see rewritten PC-07/PC-08 below (admin-add-by-email) |
+| PC-08 Invite acceptance page | ⚠️ Historical — flow retired | `/invite/:token` route disabled; see rewritten PC-07/PC-08 below |
 | PC-09 Audit events | ✅ Pass | events list reflects recent block/warn actions; All/Warned/Blocked filter pills work |
 | PC-10 Billing status + plan gate | ✅ Pass | `/v1/billing/status` resolves for admin (org token → 403 by design; admin JWT works) and drives the plan gate; business plan. No dedicated Billing nav page — status is consumed for gating |
 | PC-11 Assistant billing gate | ✅ Pass | free → "Business plan required" gate; business → assistant renders; chat returns real replies (needs valid GROQ key) |
@@ -103,24 +103,29 @@ desktop app and extension will later fetch.
 4. (Cross-service, optional) note the version so PD-04 / PX-07 can confirm clients pick it up.
 **Expected:** publish succeeds, a new version is recorded, and the active policy reflects the change.
 
-### PC-07 — Members: generate open invite link
+### PC-07 — Members: add a member directly by email
 **Priority:** high   **Timebox:** 2m   **Auth:** clerk-admin
-**Description:** an admin can create a shareable invite link (mirrors `journeys/console/member-invite.spec.ts`).
+**Description:** admin-add-by-email is the only invite mechanism now — the
+token-invite-link flow (generate link → click → sign in → accept) is
+retired. Mirrors `journeys/console/member-invite.spec.ts`.
 **Steps:**
 1. Go to `/members`.
-2. Click **Invite member**.
-3. In the form, click **Generate link**.
-4. Confirm a **Copy link** button appears and the readonly URL matches `/invite/<64-hex>`.
-**Expected:** a valid open-invite URL is generated. An unaccepted open invite creates no member row — nothing to clean up.
+2. Click **+ Add Member**.
+3. Fill email + role, click **Add member**.
+4. Confirm the new row appears in the members table immediately — no link, no copy step.
+5. Clean up: remove the member.
+**Expected:** the member row appears right away (`POST /v1/members` writes it directly, no accept step). Unlike the old open-invite-link flow, this writes real state immediately, so it must be cleaned up.
 
-### PC-08 — Invite acceptance lands on onboarding
-**Priority:** medium   **Timebox:** 2m   **Auth:** none → clerk
-**Description:** an invite link routes a new user into the join flow.
-**Preconditions:** a valid `/invite/<token>` from PC-07.
+### PC-08 — A pre-added email lands directly in the org on signup
+**Priority:** medium   **Timebox:** 3m   **Auth:** none → clerk
+**Description:** signing up with an email an admin already added enrolls
+straight into that org — no separate accept step, and no `/invite/:token`
+route exists anymore (commented out in `App.tsx`).
+**Preconditions:** an email added via PC-07, not yet signed up.
 **Steps:**
-1. In a fresh context, open the invite URL.
-2. Confirm the invite page renders (public route) and prompts to sign in / join.
-**Expected:** invite page renders for the token; expired/garbage tokens show an error, not a crash.
+1. In a fresh context, sign up via `/login` using the pre-added email.
+2. Confirm the signed-in session lands with that membership already present — not a freshly auto-provisioned personal org, and not stuck on `/onboarding/profile`.
+**Expected:** the webhook's pending-claim path (`backend/src/webhooks/clerk.ts`) links the new Clerk identity to the pre-added `members` row before `TenantBootstrap` ever calls `POST /v1/me/self-serve-org`, so no personal org gets created. A brand-new signup with *no* pre-added email should still self-serve into its own org (regression coverage for the opposite case).
 
 ### PC-09 — Audit events list
 **Priority:** medium   **Timebox:** 2m   **Auth:** clerk-admin

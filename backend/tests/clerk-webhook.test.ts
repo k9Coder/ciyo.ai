@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { tenants, members, users, invites } from '../src/db/schema.js'
+import { tenants, members, users, invites } from '../src/db/schema.js' // invites: only used by the now-skipped describe.skip block below
 import type { FastifyInstance } from 'fastify'
 
 vi.mock('svix', () => ({
@@ -30,7 +30,12 @@ function makeWebhookRequest(payload: object) {
 }
 
 describe('POST /webhooks/clerk — user.created', () => {
-  it('auto-provisions tenant + super_admin member when no pre-enrolled member exists', async () => {
+  // Regression: auto-provisioning moved out of the webhook into
+  // POST /me/self-serve-org (backend/src/me/service.ts), which only console
+  // calls. The webhook must now ONLY sync the users row and leave a
+  // no-pre-enrollment signup at zero memberships — see me.test.ts for
+  // self-serve-org's own provisioning coverage.
+  it('syncs the users row but does NOT auto-provision a tenant when no pre-enrolled member exists', async () => {
     const res = await makeWebhookRequest({
       type: 'user.created',
       data: {
@@ -49,15 +54,10 @@ describe('POST /webhooks/clerk — user.created', () => {
     expect(userRows[0]!.firstName).toBe('Alice')
 
     const memberRows = await db.select().from(members).where(eq(members.email, 'alice@newco.com'))
-    expect(memberRows).toHaveLength(1)
-    expect(memberRows[0]!.role).toBe('super_admin')
-    expect(memberRows[0]!.userId).toBe(userRows[0]!.id)
+    expect(memberRows).toHaveLength(0)
 
     const tenantRows = await db.select().from(tenants)
-    expect(tenantRows).toHaveLength(1)
-    expect(tenantRows[0]!.plan).toBe('free')
-    expect(tenantRows[0]!.paymentProvider).toBeNull()
-    expect(tenantRows[0]!.externalSubId).toBeNull()
+    expect(tenantRows).toHaveLength(0)
   })
 
   it('connects a pre-enrolled member instead of auto-provisioning a new tenant', async () => {
@@ -87,7 +87,10 @@ describe('POST /webhooks/clerk — user.created', () => {
     expect(tenantRows).toHaveLength(1)
   })
 
-  it('does not auto-provision a tenant when a pending email-scoped invite exists', async () => {
+  // Skipped, not deleted: token-invite-link flow retired (see
+  // backend/src/invites/router.ts). The `invites` table check this exercised
+  // no longer runs in the webhook.
+  it.skip('does not auto-provision a tenant when a pending email-scoped invite exists', async () => {
     const { tenantId } = await buildTestTenant()
     await db.insert(invites).values({
       tenantId,
@@ -121,7 +124,8 @@ describe('POST /webhooks/clerk — user.created', () => {
     expect(tenantRows).toHaveLength(1)
   })
 
-  it('still auto-provisions when the only invite is an expired/used open link', async () => {
+  // Skipped, not deleted: same reason as above.
+  it.skip('still auto-provisions when the only invite is an expired/used open link', async () => {
     const { tenantId } = await buildTestTenant()
     await db.insert(invites).values({
       tenantId,

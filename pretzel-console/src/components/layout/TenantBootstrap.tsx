@@ -1,6 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemberships } from '../../hooks/useMemberships'
 import { useTenant } from '../../hooks/useTenant'
+import { api } from '../../api'
 import {
   getSelectedTenantId, setSelectedTenantId, clearSelectedTenantId,
 } from '../../lib/tenant'
@@ -37,6 +40,7 @@ function FullPageLoader({ label }: { label: string }) {
  */
 export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   const { data: memberships, isLoading, isError, refetch, isRefetching } = useMemberships()
+  const qc = useQueryClient()
 
   // Only a lone super_admin can complete the onboarding wizard (the tenant
   // endpoint is admin-gated) — fetching it for anyone else would just draw a
@@ -44,6 +48,25 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   // itself via `enabled`, not a conditional hook call.
   const singleSuperAdmin = memberships?.length === 1 && memberships[0]!.role === 'super_admin'
   const { data: tenant, isLoading: tenantLoading, isError: tenantError } = useTenant(singleSuperAdmin)
+
+  // Console-only self-serve: a signed-up user who's genuinely enrolled
+  // nowhere gets a personal org provisioned automatically (see
+  // backend/src/me/service.ts::selfServeProvisionOrg) — the webhook no
+  // longer does this on every signup, so extension/desktop sign-ins never
+  // reach this component and never trigger it; only console does.
+  const selfServeOrg = useMutation({
+    mutationFn: api.me.selfServeOrg,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['memberships'] }),
+  })
+  const selfServeTriggered = useRef(false)
+  const zeroMemberships = !isLoading && !isError && (!memberships || memberships.length === 0)
+
+  useEffect(() => {
+    if (zeroMemberships && !selfServeTriggered.current) {
+      selfServeTriggered.current = true
+      selfServeOrg.mutate()
+    }
+  }, [zeroMemberships, selfServeOrg])
 
   if (isLoading) {
     return <FullPageLoader label="Loading organizations" />
@@ -58,10 +81,16 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
     return <ErrorState onRetry={() => void refetch()} retrying={isRefetching} />
   }
 
-  // Nowhere-enrolled (no error, genuinely zero memberships) — fall through to
-  // the app shell. Preserves the existing "not enrolled" experience.
+  // Nowhere-enrolled: provisioning a personal org just kicked off above (or
+  // is in flight). Its onSuccess invalidates the memberships query, which
+  // re-renders this component with the new membership once it lands — so
+  // just hold on a loader here rather than flashing the app shell first.
+  // A failure surfaces the same retry UI as a fetch error.
   if (!memberships || memberships.length === 0) {
-    return <>{children}</>
+    if (selfServeOrg.isError) {
+      return <ErrorState onRetry={() => selfServeOrg.mutate()} retrying={selfServeOrg.isPending} />
+    }
+    return <FullPageLoader label="Setting up your organization" />
   }
 
   const selected = getSelectedTenantId()

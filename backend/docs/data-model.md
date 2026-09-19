@@ -23,7 +23,7 @@ PostgreSQL schema is declared in `src/db/schema.ts`; generated migrations live i
 | `divisions` | Tenant organization unit | Unique `(tenant_id, slug)` |
 | `teams` | Division child unit | Unique `(division_id, slug)` |
 | `member_teams` | Member-to-team many-to-many mapping | Composite primary key |
-| `invites` | Expiring enrollment token | Globally unique token; optional email restriction |
+| `invites` | **Disabled** — expiring enrollment token, superseded by admin-add-by-email (`members`, nullable `user_id`) + `POST /v1/me/self-serve-org` | Table/rows untouched, endpoints unmounted (`backend/src/invites/`) |
 
 ## Policy authoring and publication
 

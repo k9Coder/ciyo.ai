@@ -1,3 +1,4 @@
+// DISABLED — token-invite-link flow retired, see invites/router.ts for why.
 import { randomBytes } from 'node:crypto'
 import { and, count, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'

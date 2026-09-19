@@ -38,7 +38,9 @@ beforeEach(() => {
   } as any)
 })
 
-describe('InvitePage accept', () => {
+// Skipped, not deleted: token-invite-link flow retired (route unmounted in
+// src/App.tsx) in favor of admin-add-by-email + POST /me/self-serve-org.
+describe.skip('InvitePage accept', () => {
   it('sets the selected tenant from the returned member row', async () => {
     vi.mocked(api.invites.accept).mockResolvedValue({ id: 'm1', tenantId: 'tenant_new' } as any)
     renderPage()
