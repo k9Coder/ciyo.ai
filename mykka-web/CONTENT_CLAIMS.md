@@ -1,7 +1,7 @@
 ---
 status: active
 owner: mykka.ai marketing and legal
-verified_at: 2026-06-13
+verified_at: 2026-09-20
 sources:
   - app/page.tsx
   - app/product/page.tsx
@@ -72,6 +72,25 @@ Do not publish a new quantitative, customer-count, certification, compliance, se
 | HIPAA-compliant wording, PCI-DSS implications, privilege-waiver statements, and other regulatory guidance | Solutions and blog | Counsel/compliance approval; avoid implying certification or guaranteed compliance. 2026-08-25: `lib/posts.ts` blog posts checked against the same standard. Fixed three posts that named specific "Pretzel [Industry] template" features and claimed shipped rule coverage that doesn't exist in code: the Healthcare post claimed "all five rule categories" pre-configured and "included on all plans" (real template covers 2 of 5: SSN + PHI keywords); the Legal post claimed "pre-configured with rules 1-3" (real template has SSN + privilege keywords only, no matter-number or client-name detection); the Fintech post claimed "The Pretzel Fintech template covers PAN detection, IBAN patterns, and a starter AML keyword set" — **no fintech template exists in the codebase at all** (verified against `backend/src/db/seeds/profession_templates.ts`), this was a fabricated feature claim. All three rewritten to state real template coverage vs. custom-rule-required, consistent with the `/solutions/[industry]` fix above. The Engineering post's claims were checked and left as-is — they match real baseline detection rules (entropy, AWS/GCP key patterns, DB connection strings) in `packages/detect/src/policy/defaults.ts`. 2026-08-20: `/solutions/healthcare`, `/solutions/legal`, `/solutions/fintech` copy rewritten to stop asserting default framework coverage ("blocks all 18 HIPAA-defined PHI identifiers," "PCI-DSS card patterns," "MNPI detection") — verified against `backend/src/db/seeds/profession_templates.ts` and `packages/detect/src/policy/defaults.ts` that only SSN detection + a handful of keywords (healthcare/legal) and Luhn-validated credit-card detection (fintech, baseline-wide) actually ship by default. Copy now states what ships as a starter template vs. what requires a custom rule (via Console UI or the AI assistant). Blog CTA text and blog post content were NOT touched in this pass — still contain HIPAA/PCI framing that should be checked against this same standard. |
 | Terms including billing, cancellation, SLAs, governing law, liability, and notice periods | Terms | Counsel approval and consistency with actual contracts/product behavior. |
 | Accessibility conformance and support statements | Accessibility page | Accessibility audit and operational owner approval. |
+
+## 2026-09-20 early-access cleanup
+
+Claims removed or corrected because repository evidence contradicted them or none existed. Owner confirmed SOC 2 is not in progress and no DPA exists.
+
+| Claim | Action | Evidence |
+|---|---|---|
+| SOC 2 Type II in progress | Removed everywhere (`app/security`, `app/privacy`, pricing metadata, `public/llms.txt`). Security page now states no third-party audit exists. | Owner confirmation. |
+| DPA available on request; Article 28 DPAs with all sub-processors; SCCs | Removed. Privacy policy now says there is no standard DPA. | Owner confirmation; no executed agreements known. |
+| EU data residency, AWS `eu-west-1` | Removed. Security and privacy pages state the database is Neon on AWS `us-east-1`. | Prod `DATABASE_URL` host is `us-east-1.aws.neon.tech`. |
+| Backend hosted on Fly.io | Corrected to Render. | `docs/CURRENT_STATE.md` deployment model. |
+| Audit-log excerpts deleted on a rolling 90-day window; audit retention by plan (30 days / 12 months) | Corrected. The 90-day purge covers `scans` and `enforcement_signals` only; `events` (which hold `matched_term`) have no automatic expiry. | `backend/src/scans/service.ts` `purgeExpired`. |
+| Full prompts never stored; matched excerpt disclosure | Kept the full-prompt claim (extension sends only `matchedText`, only for `rich` rules — `pretzel/src/events/dispatch.ts`). Made the excerpt disclosure explicit on security, pricing FAQ and `llms.txt`. | `dispatch.ts`, `backend/src/events/service.ts`. |
+| TLS 1.3, AES-256 | Softened to "HTTPS" and "encrypted by our database provider". Exact TLS version and cipher are set by Render/Vercel/Neon, not this repo. | Not code-backed. |
+| Response within 24 hours / fix within 7 days | Softened to "as quickly as we can". | No measured capability. |
+| "Customer-funded" in `llms.txt` | Replaced with "independent team", matching the About page fix. | Consistent with 2026-08-28 entry above. |
+| Pricing metadata/JSON-LD advertising $49/$15 and a 14-day trial | In pilot mode the pricing page metadata and JSON-LD now describe free early access. | `mykka-web/app/pricing/page.tsx`. |
+
+Still open: privacy policy lists Stripe as the payment processor while the backend bills via PayPal (Stripe routes are disabled); confirm `NEXT_PUBLIC_LOGROCKET_ID` is unset in prod or disclose LogRocket session replay as a sub-processor; governing-law and plan-based retention wording in Terms needs counsel.
 
 ## Immediate inconsistencies and risks
 

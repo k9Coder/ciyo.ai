@@ -73,7 +73,7 @@ export default function TermsPage() {
             <p>
               Our collection and use of data is governed by our{' '}
               <a href="/privacy" className="text-[#8fb3ff] hover:underline">Privacy Policy</a>,
-              which is incorporated into these Terms by reference. For enterprise customers, a Data Processing Agreement (DPA) is available on request at{' '}
+              which is incorporated into these Terms by reference. For questions about data handling, contact{' '}
               <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>

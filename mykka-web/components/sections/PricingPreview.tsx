@@ -12,19 +12,19 @@ export function PricingPreview() {
     return (
       <section className="border-t border-white/[0.05] px-6 py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pilot Program</p>
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Early Access</p>
           <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-white">
-            Pricing Coming Soon
+            Free During Early Access
           </h2>
           <p className="mx-auto mb-8 max-w-lg text-[15px] text-[#94a3b8]">
-            Pretzel is currently in a closed pilot. All features are available at no cost.
-            Pricing tiers will be announced before general availability.
+            Pretzel is in early access. All features are free while we learn from real teams.
+            Pricing will be announced with notice before anything changes.
           </p>
           <Link
             href={`${APP_URL}/onboarding`}
             className="inline-block rounded-xl bg-[#5b8cff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#3f6fe0]"
           >
-            Access the Console →
+            Get started free →
           </Link>
         </div>
       </section>
