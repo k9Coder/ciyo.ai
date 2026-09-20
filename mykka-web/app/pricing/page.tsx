@@ -1,17 +1,28 @@
 import type { Metadata } from 'next'
 import PricingClient from './PricingClient'
+import { IS_PILOT_MODE } from '@/lib/config'
 
-export const metadata: Metadata = {
-  title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
-  description: 'Transparent pricing for AI prompt data loss prevention. Free tier for individuals, $49/mo flat for small teams, $15/user/mo for the full enterprise feature set.',
-  alternates: { canonical: 'https://mykka.ai/pricing' },
-  openGraph: {
-    title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
-    description: 'Start free. Scale when you need it. No surprise invoices. SOC 2 in progress, GDPR-aligned.',
-  },
-}
+export const metadata: Metadata = IS_PILOT_MODE
+  ? {
+      title: 'Pricing — Pretzel AI DLP | Free during early access',
+      description: 'Pretzel is free during early access. All features are included, and pricing will be announced with notice before anything changes.',
+      alternates: { canonical: 'https://mykka.ai/pricing' },
+      openGraph: {
+        title: 'Pricing — Pretzel AI DLP | Free during early access',
+        description: 'All features free during early access. Pricing will be announced with notice before anything changes.',
+      },
+    }
+  : {
+      title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
+      description: 'Transparent pricing for AI prompt data loss prevention. Free tier for individuals, $49/mo flat for small teams, $15/user/mo for the full enterprise feature set.',
+      alternates: { canonical: 'https://mykka.ai/pricing' },
+      openGraph: {
+        title: 'Pricing — Pretzel AI DLP | Free to $15/user/mo',
+        description: 'Start free. Scale when you need it. No surprise invoices.',
+      },
+    }
 
-const jsonLd = {
+const paidJsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -57,7 +68,7 @@ const jsonLd = {
           name: 'Does Pretzel store the contents of AI prompts?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'No. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a brief excerpt may be retained for audit purposes. Full prompt text is never stored.',
+            text: 'The full text of a prompt is never stored. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a short excerpt is stored in the audit log.',
           },
         },
         {
@@ -80,6 +91,49 @@ const jsonLd = {
     },
   ],
 }
+
+const pilotJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Product',
+      name: 'Pretzel',
+      brand: { '@id': 'https://mykka.ai/#org' },
+      description: 'Browser-native AI DLP for teams.',
+      offers: {
+        '@type': 'Offer',
+        name: 'Early access',
+        price: '0',
+        priceCurrency: 'USD',
+        description: 'Free during early access',
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      url: 'https://mykka.ai/pricing',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How much does Pretzel AI DLP cost?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Pretzel is free during early access, with all features included. Pricing will be announced with notice before anything changes.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does Pretzel store the contents of AI prompts?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The full text of a prompt is never stored. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a short excerpt is stored in the audit log.',
+          },
+        },
+      ],
+    },
+  ],
+}
+
+const jsonLd = IS_PILOT_MODE ? pilotJsonLd : paidJsonLd
 
 export default function PricingPage() {
   return (
