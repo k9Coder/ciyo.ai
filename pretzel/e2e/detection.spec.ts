@@ -39,20 +39,20 @@ test.describe('Extension detection', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
 
-    // Block action: only "Edit prompt" is shown (no "Looks fine, send it")
-    await modal.getByRole('button', { name: 'Edit prompt' }).click()
+    // Block action: only "Edit myself" is shown (no "It's fine, send it")
+    await modal.getByRole('button', { name: 'Edit myself' }).click()
     await expect(page.locator('#output')).toHaveText('No message sent yet.')
 
     await context.close()
   })
 
-  test('warn modal — Looks fine, send it — sends the message', async () => {
+  test("warn modal — It's fine, send it — sends the message", async () => {
     const context = await launchWithExtension()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
     await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
 
-    // JWT token triggers a warn action (not block), enabling the "Looks fine, send it" button
+    // JWT token triggers a warn action (not block), enabling the "It's fine, send it" button
     const fakeJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.fake_sig_AABBCCDDEE'
     await page.locator('#prompt-textarea').fill(`Token: ${fakeJwt}`)
     await page.locator('#send-button').click()
@@ -60,8 +60,8 @@ test.describe('Extension detection', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
 
-    // Warn action: "Looks fine, send it" button is present — clicking sends immediately
-    await modal.getByRole('button', { name: 'Looks fine, send it' }).click()
+    // Warn action: "It's fine, send it" button is present — clicking sends immediately
+    await modal.getByRole('button', { name: "It's fine, send it" }).click()
 
     await expect(page.locator('#output')).toContainText('SENT:')
     await context.close()
@@ -78,7 +78,7 @@ test.describe('Extension detection', () => {
 
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
-    await modal.getByRole('button', { name: 'Edit prompt' }).click()
+    await modal.getByRole('button', { name: 'Edit myself' }).click()
 
     await context.close()
   })
@@ -94,7 +94,7 @@ test.describe('Extension detection', () => {
 
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 5_000 })
-    await modal.getByRole('button', { name: 'Edit prompt' }).click()
+    await modal.getByRole('button', { name: 'Edit myself' }).click()
 
     await context.close()
   })

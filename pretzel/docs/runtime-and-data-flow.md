@@ -7,6 +7,9 @@ sources:
   - pretzel/src/background/service-worker.ts
   - pretzel/src/content/content-script.ts
   - pretzel/src/content/overlay/WarningModal.tsx
+  - pretzel/src/content/overlay/Toast.tsx
+  - pretzel/src/content/overlay/StatusChip.tsx
+  - pretzel/src/content/redact.ts
   - pretzel/src/events/dispatch.ts
   - pretzel/src/scans/dispatch.ts
   - pretzel/src/audit/log.ts
@@ -27,7 +30,15 @@ User click or Enter
   -> adapter re-fires an approved send with a sentinel attribute
 ```
 
-For `log`, including no findings, the send proceeds immediately. `warn` opens a modal with **Edit prompt** and **Looks fine, send it**. `block` opens the modal without a send-anyway action. Escape is equivalent to **Edit prompt**.
+For `log`, including no findings, the send proceeds immediately. `warn` opens a modal with **Edit myself** and **It's fine, send it**. `block` opens a modal with **Remove details & send** and **Edit myself**, but no send-anyway action. Escape is equivalent to **Edit myself**.
+
+**Remove details & send** (block on typed prompts only; not offered for file uploads or network-level intercepts) replaces every flagged span in the composer with `[removed]`, reads the composer back, and only then lets the send through. If any matched text is still in the composer the send stays stopped. The audit log records the outcome as `redacted_and_sent` (in addition to the `cancelled` event a block writes when it fires). No second detection or scan-count request is made for the redacted text.
+
+The modal footnote states what IT receives, computed by the service worker (`GET_REPORTING_SUMMARY`) from the signed-in state and each rule's `reportLevel`: nothing (no footnote), rule and site, or rule, site and matched text (`rich`).
+
+After a redacted send a toast reads "Sent with N details removed" (**Show** lists the rule names). When enforcement degrades (see fail-open below) a toast reads "Pretzel couldn't check this one. It was sent without a check."
+
+A "Pretzel on" chip is pinned to the top-right of the composer. It reads "Pretzel paused" when the popup's per-site toggle has paused the host. It is decorative and takes no pointer events.
 
 The overlay uses a closed Shadow DOM. The host page cannot access its internals through `shadowHost.shadowRoot`.
 

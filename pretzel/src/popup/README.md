@@ -10,6 +10,6 @@ sources:
 
 # Popup
 
-The popup exposes sign-in state, current host status, and recent local audit events. Opening the signed-in popup persists a Clerk session token for the service worker.
+The popup exposes sign-in state, current host status, and recent local audit events, and the cached policy version with when it was last confirmed current (`cachedPolicyVersion`, `lastCheckedAt` in `chrome.storage.local`). Opening the signed-in popup persists a Clerk session token for the service worker.
 
 It does not currently expose manual policy sync or subscription-expired status.

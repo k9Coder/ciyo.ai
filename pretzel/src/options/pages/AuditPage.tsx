@@ -18,6 +18,7 @@ const DECISION_LABELS: Record<string, string> = {
   edited: "Edited",
   cancelled: "Cancelled",
   sent_with_reason: "Sent w/ reason",
+  redacted_and_sent: "Details removed, sent",
 };
 
 export function AuditPage() {

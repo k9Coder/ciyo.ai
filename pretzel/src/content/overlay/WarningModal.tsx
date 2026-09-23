@@ -1,60 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Finding, Action } from "@mykka/detect";
-import { buildSnippet } from "@mykka/detect";
+import { Logo } from "@/shared/Logo";
+import type { ReportingSummary } from "@/events/dispatch";
+import { HighlightLayer } from "./HighlightLayer";
 
 export type ModalDecision =
   | { type: "edit" }
+  | { type: "redact" }
   | { type: "send_anyway"; reason: string };
 
 interface Props {
   findings: Finding[];
   highestAction: Action;
   promptText: string;
+  /** Offer "Remove details & send". Only for prompt text we can rewrite in the composer. */
+  canRedact?: boolean;
+  /** What IT will receive for these findings; drives the footnote. */
+  reporting?: ReportingSummary;
   onDecision: (decision: ModalDecision) => void;
 }
 
-const BADGE_CLASS: Record<string, string> = {
-  low:      "mykka-badge mykka-badge-low",
-  medium:   "mykka-badge mykka-badge-medium",
-  high:     "mykka-badge mykka-badge-high",
-  critical: "mykka-badge mykka-badge-critical",
+const SEVERITY_LABEL: Record<string, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  critical: "Critical",
 };
 
-function MykkaLogo() {
-  const [isDark, setIsDark] = useState(() =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  const src = chrome.runtime.getURL(isDark ? "logo-dark.png" : "logo-light.png");
-  return <img src={src} alt="Pretzel" style={{ width: 20, height: 20, display: "block" }} />;
-}
-
-function FindingRow({ finding, promptText }: { finding: Finding; promptText: string }) {
-  const snippet = buildSnippet(promptText, finding.startOffset, finding.endOffset);
-  const badgeClass = BADGE_CLASS[finding.severity] ?? "mykka-badge mykka-badge-medium";
-  const parts = snippet.split(/\[|\]/);
-
-  return (
-    <li className="mykka-finding">
-      <div className="mykka-finding-header">
-        <span className={badgeClass}>{finding.severity}</span>
-        <span className="mykka-finding-name">{finding.ruleName}</span>
-      </div>
-      <p className="mykka-snippet">
-        {parts[0]}
-        {parts[1] && <mark>{parts[1]}</mark>}
-        {parts[2]}
-      </p>
-    </li>
-  );
-}
-
-export function WarningModal({ findings, highestAction, promptText, onDecision }: Props) {
+export function WarningModal({ findings, highestAction, promptText, canRedact = false, reporting = "none", onDecision }: Props) {
   const editBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => { editBtnRef.current?.focus(); }, []);
@@ -71,61 +44,75 @@ export function WarningModal({ findings, highestAction, promptText, onDecision }
 
   return (
     <div className="mykka-backdrop" role="dialog" aria-modal="true" aria-labelledby="mykka-modal-title">
-      <div className="mykka-modal">
+      <div className={`mykka-modal ${canSendAnyway ? "mykka-modal-warn" : "mykka-modal-block"}`}>
 
         {/* Header */}
         <div className="mykka-modal-header">
           <div className="mykka-brand-row">
-            <MykkaLogo />
-            <span className="mykka-brand-label">
-            <span style={{ color: "var(--text-primary)" }}>m</span>
-            <span style={{ color: "var(--brand)" }}>y</span>
-            <span style={{ color: "var(--text-primary)" }}>kka</span>
-          </span>
+            {canSendAnyway
+              ? <span className="mykka-status-dot" />
+              : <Logo size={16} />}
+            <span>{canSendAnyway ? "Pretzel · check before sending" : "Pretzel"}</span>
+            <span className="mykka-flex-spacer" />
+            <span className="mykka-pill">{canSendAnyway ? "Warning" : "Blocked"}</span>
           </div>
-          <div className="mykka-title-row">
-            <div className="mykka-warn-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </div>
-            <div>
-              <h2 id="mykka-modal-title" className="mykka-modal-title">
-                Sensitive content detected
-              </h2>
-              <p className="mykka-modal-subtitle">
-                {findings.length} issue{findings.length !== 1 ? "s" : ""} found before sending.
-              </p>
-            </div>
-          </div>
+          <h2 id="mykka-modal-title" className="mykka-modal-title">
+            Sensitive content detected
+          </h2>
+          <p className="mykka-modal-subtitle">
+            {canSendAnyway
+              ? "You can still send it. Make sure it's okay to share."
+              : canRedact
+                ? "Your policy does not allow sending this content. We can take the details out and send the rest."
+                : "Your policy does not allow sending this content."}
+          </p>
+        </div>
+
+        {/* Prompt with flagged spans highlighted */}
+        <div className="mykka-prompt-wrap">
+          <HighlightLayer findings={findings} promptText={promptText} />
         </div>
 
         {/* Findings */}
-        <ul className="mykka-modal-body" style={{ listStyle: "none", margin: 0, padding: "14px 20px" }}>
+        <ul className="mykka-findings">
           {findings.map((f, i) => (
-            <FindingRow key={`${f.ruleId}-${i}`} finding={f} promptText={promptText} />
+            <li key={`${f.ruleId}-${i}`} className="mykka-finding">
+              <span>{f.ruleName}</span>
+              <span>{SEVERITY_LABEL[f.severity] ?? f.severity}</span>
+            </li>
           ))}
         </ul>
 
         {/* Footer */}
         <div className="mykka-modal-footer">
           <div className="mykka-footer-actions">
-            {canSendAnyway && (
-              <button
-                className="mykka-btn-ghost"
-                onClick={() => onDecision({ type: "send_anyway", reason: "user acknowledged" })}
-              >
-                Looks fine, send it
+            {canRedact && !canSendAnyway && (
+              <button className="mykka-btn-primary" onClick={() => onDecision({ type: "redact" })}>
+                Remove details &amp; send
               </button>
             )}
-            <button ref={editBtnRef} className="mykka-btn-primary" onClick={() => onDecision({ type: "edit" })}>
-              Edit prompt
+            <button
+              ref={editBtnRef}
+              className={canRedact && !canSendAnyway ? "mykka-btn-secondary" : "mykka-btn-primary"}
+              onClick={() => onDecision({ type: "edit" })}
+            >
+              Edit myself
             </button>
+            {canSendAnyway && (
+              <button
+                className="mykka-btn-secondary"
+                onClick={() => onDecision({ type: "send_anyway", reason: "user acknowledged" })}
+              >
+                It's fine, send it
+              </button>
+            )}
           </div>
-          {!canSendAnyway && (
-            <p className="mykka-blocked-msg">Your policy does not allow sending this content.</p>
+          {reporting !== "none" && (
+            <p className="mykka-footnote">
+              {reporting === "rich"
+                ? "Your IT team is notified: the rule, the site and the matched text."
+                : "Your IT team is notified: the rule and the site, not the prompt."}
+            </p>
           )}
         </div>
 
