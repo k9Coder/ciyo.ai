@@ -1,6 +1,8 @@
 import { initSentry, Sentry } from "@/lib/sentry";
 import { getAdapter } from "./adapters/registry";
-import { showWarningModal } from "./overlay/overlay-root";
+import { showWarningModal, showToast, mountStatusChip } from "./overlay/overlay-root";
+import { redactPrompt, isRedacted } from "./redact";
+import type { ReportingSummary } from "@/events/dispatch";
 import { sendMessage } from "@/shared/messages";
 import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
@@ -8,10 +10,31 @@ import { logger } from "@/shared/logger";
 import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
 import type { EnforcementReason } from "@/shared/messages";
 
-/** Report degraded enforcement to the service worker (which debounces + POSTs). */
+/**
+ * Report degraded enforcement to the service worker (which debounces + POSTs)
+ * and tell the user this send went out unchecked.
+ */
 function reportDegraded(reason: EnforcementReason): void {
   void sendMessage({ type: "REPORT_DEGRADED", payload: { hostname: location.hostname, reason } }).catch(() => {});
+  void showToast({ kind: "unchecked" });
 }
+
+/** What IT will receive for these findings. Any failure just hides the footnote. */
+async function getReporting(result: DetectionResult): Promise<ReportingSummary> {
+  try {
+    const summary = await sendMessage<ReportingSummary | null>({
+      type: "GET_REPORTING_SUMMARY",
+      payload: { findings: result.findings },
+    });
+    return summary ?? "none";
+  } catch {
+    return "none";
+  }
+}
+
+/** Give the host's framework a beat to pick up a programmatic composer edit. */
+const COMPOSER_SETTLE_MS = 50;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 initSentry();
 
@@ -81,7 +104,7 @@ async function bootstrap() {
 
       const promptText = String(payload.text ?? "");
       const eventHostname = String(payload.hostname ?? hostname);
-      const decision = await showWarningModal(result, label);
+      const decision = await showWarningModal(result, label, { reporting: await getReporting(result) });
       const proceed = decision.type === "send_anyway";
       // Record the outcome — the network/file backstop must be visible in the
       // audit trail, not just the button-click path. A hard block that the user
@@ -153,7 +176,11 @@ async function bootstrap() {
         await writeAuditEvent(result, promptText, hostname, "cancelled");
       }
 
-      const decision = await showWarningModal(result, promptText);
+      const decision = await showWarningModal(result, promptText, {
+        // Only a hard block offers redaction; a warn already lets the user send as is.
+        canRedact: isBlock,
+        reporting: await getReporting(result),
+      });
 
       switch (decision.type) {
         case "edit":
@@ -162,6 +189,22 @@ async function bootstrap() {
           if (!isBlock) await writeAuditEvent(result, promptText, hostname, "edited");
           composer.focus();
           return { proceed: false };
+
+        case "redact": {
+          const redaction = redactPrompt(promptText, result.findings);
+          adapter.writePromptText(composer, redaction.text);
+          await sleep(COMPOSER_SETTLE_MS);
+          // Never send unless the details are really gone from the composer.
+          if (!isRedacted(adapter.readPromptText(composer), result.findings)) {
+            logger.warn("Redaction did not stick in the composer; keeping the send blocked.");
+            composer.focus();
+            return { proceed: false };
+          }
+          await writeAuditEvent(result, promptText, hostname, "redacted_and_sent");
+          if (typeof window !== "undefined") window.postMessage({ type: MSG_UNLOCK_FETCH }, "*");
+          void showToast({ kind: "redacted", count: redaction.removedCount, ruleNames: redaction.ruleNames });
+          return { proceed: true };
+        }
 
         case "send_anyway":
           await writeAuditEvent(result, promptText, hostname, "sent_with_reason", decision.reason);
@@ -172,6 +215,7 @@ async function bootstrap() {
     } catch (err) {
       logger.error("Send-intent handler error:", err);
       Sentry.captureException(err, { tags: { context: 'send-intent', hostname } });
+      void showToast({ kind: "unchecked" });
       return { proceed: true };
     }
   });
@@ -179,6 +223,10 @@ async function bootstrap() {
   // Mark extension as ready for E2E test synchronisation — set synchronously
   // after ALL listeners so tests can waitFor this before interacting with the page.
   document.documentElement.dataset.mykkaReady = '1';
+
+  // "Pretzel on" chip next to the composer — cosmetic, so it comes after the
+  // security listeners like the scan-limit banner below.
+  void mountStatusChip(() => adapter.findComposer(), hostname);
 
   // Cosmetic scan-limit banner — checked after all security listeners are registered
   // so service-worker startup latency cannot delay click interception.

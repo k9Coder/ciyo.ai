@@ -5,54 +5,71 @@
 #ps-react-root * { box-sizing: border-box; }
 
 /* ─── Theme tokens ───────────────────────────────────────────────────────────── */
+/* Light = direction 1b, dark = direction 1c (see pretzel/src/styles/tokens.css). */
+/* Fonts fall back to system fonts: web fonts declared in the extension cannot   */
+/* load inside a host page's shadow root without widening web_accessible_resources. */
 
 :host {
   /* light (default) */
-  --modal-bg:        #ffffff;
-  --modal-border:    #e5e7eb;
-  --text-primary:    #111827;
-  --text-secondary:  #374151;
-  --text-muted:      #9ca3af;
-  --finding-bg:      #f9fafb;
-  --finding-border:  #e5e7eb;
-  --snippet-text:    #6b7280;
-  --mark-bg:         rgba(253,224,71,0.7);
-  --mark-text:       #111827;
-  --btn-primary-bg:  #0ea5e9;
-  --btn-primary-fg:  #ffffff;
-  --btn-ghost-text:  #9ca3af;
-  --blocked-text:    #dc2626;
-  --backdrop:        rgba(0,0,0,0.45);
-  --brand:           #0ea5e9;
-  --brand-dim:       rgba(14,165,233,0.12);
-  --sev-low-bg:      rgba(59,130,246,0.10);  --sev-low-text:      #2563eb;
-  --sev-medium-bg:   rgba(245,158,11,0.12);  --sev-medium-text:   #b45309;
-  --sev-high-bg:     rgba(249,115,22,0.12);  --sev-high-text:     #c2410c;
-  --sev-critical-bg: rgba(239,68,68,0.12);   --sev-critical-text: #b91c1c;
+  --bg:            #f6f7f5;
+  --surface:       #ffffff;
+  --line:          #e8ebe9;
+  --text-primary:  #18201c;
+  --text-muted:    #5d635f;
+  --brand:         #1f6b4f;
+  --brand-soft:    #e3efe8;
+  --btn-bg:        #1f6b4f;
+  --btn-fg:        #ffffff;
+  --block:         #9a3b1f;
+  --warn:          #7a5a10;
+  --mark-bg:       #f5e3dc;
+  --mark-fg:       #9a3b1f;
+  --warn-mark-bg:  #f3ead4;
+  --warn-mark-fg:  #7a5a10;
+  --scrim:         rgba(24,32,28,.38);
+  --shadow:        0 24px 60px rgba(24,32,28,.22);
+  --r:             14px;
+  --r-sm:          10px;
+  --r-btn:         999px;
+  --font:          'Familjen Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:          'Geist Mono', ui-monospace, 'Cascadia Code', monospace;
+
+  --logo-bg:       #1f6b4f;
+  --logo-bd:       0px;
+  --logo-bar:      #f6f7f5;
+  --logo-mid:      #f6f7f5;
+  --logo-r:        6px;
 }
 
 :host([data-theme="dark"]) {
-  --modal-bg:        #10141f;
-  --modal-border:    rgba(255,255,255,0.07);
-  --text-primary:    #f0f4f8;
-  --text-secondary:  #cbd5e1;
-  --text-muted:      #64748b;
-  --finding-bg:      rgba(255,255,255,0.04);
-  --finding-border:  rgba(255,255,255,0.07);
-  --snippet-text:    #94a3b8;
-  --mark-bg:         rgba(91,140,255,0.18);
-  --mark-text:       #5b8cff;
-  --btn-primary-bg:  #5b8cff;
-  --btn-primary-fg:  #10141f;
-  --btn-ghost-text:  #64748b;
-  --blocked-text:    #f87171;
-  --backdrop:        rgba(0,0,0,0.72);
-  --brand:           #5b8cff;
-  --brand-dim:       rgba(91,140,255,0.10);
-  --sev-low-bg:      rgba(96,165,250,0.15);  --sev-low-text:      #60a5fa;
-  --sev-medium-bg:   rgba(251,191,36,0.15);  --sev-medium-text:   #fbbf24;
-  --sev-high-bg:     rgba(251,146,60,0.15);  --sev-high-text:     #fb923c;
-  --sev-critical-bg: rgba(248,113,113,0.15); --sev-critical-text: #f87171;
+  --bg:            #101113;
+  --surface:       #16181b;
+  --line:          #26292d;
+  --text-primary:  #e8e9ea;
+  --text-muted:    #9aa0a6;
+  --brand:         #7fd08a;
+  --brand-soft:    rgba(127,208,138,.12);
+  --btn-bg:        #e8e9ea;
+  --btn-fg:        #101113;
+  --block:         #f08a6c;
+  --warn:          #e2b155;
+  --mark-bg:       #f08a6c;
+  --mark-fg:       #101113;
+  --warn-mark-bg:  rgba(226,177,85,.14);
+  --warn-mark-fg:  #e2b155;
+  --scrim:         rgba(0,0,0,.6);
+  --shadow:        0 24px 60px rgba(0,0,0,.6);
+  --r:             6px;
+  --r-sm:          4px;
+  --r-btn:         4px;
+  --font:          'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:          'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+
+  --logo-bg:       transparent;
+  --logo-bd:       2px;
+  --logo-bar:      #e8e9ea;
+  --logo-mid:      #7fd08a;
+  --logo-r:        5px;
 }
 
 /* ─── Layout ─────────────────────────────────────────────────────────────────── */
@@ -64,144 +81,125 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--backdrop);
-  backdrop-filter: blur(3px);
+  background: var(--scrim);
 }
 
 .mykka-modal {
-  background: var(--modal-bg);
-  border: 1px solid var(--modal-border);
-  border-radius: 16px;
-  box-shadow: 0 32px 72px rgba(0,0,0,0.35);
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--r) + 4px);
+  box-shadow: var(--shadow);
   width: 100%;
   max-width: 468px;
   margin: 16px;
-  max-height: 80vh;
+  max-height: 90vh;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font);
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────────────── */
 
 .mykka-modal-header {
-  padding: 18px 20px 16px;
-  border-bottom: 1px solid var(--modal-border);
+  padding: 20px 22px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .mykka-brand-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.mykka-brand-label {
+  gap: 8px;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-}
-
-.mykka-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.mykka-warn-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--brand-dim);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1px;
-}
-
-.mykka-warn-icon svg { width: 16px; height: 16px; }
-
-.mykka-modal-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-
-.mykka-modal-subtitle {
-  margin: 3px 0 0;
-  font-size: 12px;
   color: var(--text-muted);
 }
 
-/* ─── Findings ───────────────────────────────────────────────────────────────── */
+.mykka-flex-spacer { flex: 1; }
 
-.mykka-modal-body {
-  padding: 14px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mykka-finding {
-  background: var(--finding-bg);
-  border: 1px solid var(--finding-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.mykka-finding-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mykka-badge {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 4px;
+.mykka-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
   flex-shrink: 0;
 }
-.mykka-badge-low      { background: var(--sev-low-bg);      color: var(--sev-low-text); }
-.mykka-badge-medium   { background: var(--sev-medium-bg);   color: var(--sev-medium-text); }
-.mykka-badge-high     { background: var(--sev-high-bg);     color: var(--sev-high-text); }
-.mykka-badge-critical { background: var(--sev-critical-bg); color: var(--sev-critical-text); }
 
-.mykka-finding-name {
-  font-size: 13px;
+.mykka-pill {
+  font-size: 12px;
   font-weight: 600;
+  line-height: 1.4;
+  padding: 1px 8px;
+  border: 1px solid currentColor;
+  border-radius: var(--r-btn);
+}
+.mykka-modal-block .mykka-pill { color: var(--block); }
+.mykka-modal-warn  .mykka-pill { color: var(--warn); }
+
+.mykka-modal-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
   color: var(--text-primary);
 }
 
-.mykka-snippet {
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
-  font-size: 11px;
-  color: var(--snippet-text);
-  word-break: break-all;
-  line-height: 1.6;
+.mykka-modal-subtitle {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-.mykka-snippet mark {
-  background: var(--mark-bg);
-  color: var(--mark-text);
+/* ─── Prompt + findings ──────────────────────────────────────────────────────── */
+
+.mykka-prompt-wrap { margin: 0 22px; }
+
+.mykka-prompt {
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+  font-size: 15px;
+  line-height: 1.65;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mykka-prompt mark {
+  font-family: var(--mono);
+  font-size: 13px;
   border-radius: 3px;
-  padding: 0 2px;
+  padding: 1px 4px;
   font-style: normal;
+}
+.mykka-modal-block .mykka-prompt mark { background: var(--mark-bg);      color: var(--mark-fg); }
+.mykka-modal-warn  .mykka-prompt mark { background: var(--warn-mark-bg); color: var(--warn-mark-fg); }
+
+.mykka-findings {
+  list-style: none;
+  margin: 10px 22px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.mykka-finding {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────────────── */
 
 .mykka-modal-footer {
-  padding: 12px 20px 16px;
-  border-top: 1px solid var(--modal-border);
+  padding: 16px 22px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -209,43 +207,148 @@
 
 .mykka-footer-actions {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
   gap: 8px;
 }
 
-.mykka-btn-primary {
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-fg);
+.mykka-btn-primary,
+.mykka-btn-secondary {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 15px;
   font-family: inherit;
+  border-radius: var(--r-btn);
+  cursor: pointer;
+  white-space: nowrap;
   transition: opacity 0.15s;
 }
-.mykka-btn-primary:hover { opacity: 0.82; }
-.mykka-btn-primary:focus { outline: 2px solid var(--brand); outline-offset: 2px; }
 
-.mykka-btn-ghost {
-  padding: 8px 14px;
-  font-size: 13px;
+.mykka-btn-primary {
   font-weight: 500;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--btn-ghost-text);
-  font-family: inherit;
-  transition: color 0.15s;
+  border: 1px solid transparent;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
 }
-.mykka-btn-ghost:hover { color: var(--text-secondary); }
-.mykka-btn-ghost:focus { outline: none; text-decoration: underline; }
+.mykka-btn-primary:hover { opacity: 0.88; }
 
-.mykka-blocked-msg {
-  font-size: 11px;
-  text-align: center;
-  color: var(--blocked-text);
+.mykka-btn-secondary {
+  font-weight: 400;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-primary);
 }
+.mykka-btn-secondary:hover { background: var(--bg); }
+
+.mykka-btn-primary:focus-visible,
+.mykka-btn-secondary:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.mykka-footnote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ─── Toasts ─────────────────────────────────────────────────────────────────── */
+
+.mykka-toast-stack {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 2147483645;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  font-family: var(--font);
+}
+
+.mykka-toast {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  box-shadow: var(--shadow);
+  padding: 10px 16px 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.mykka-toast b { font-weight: 600; }
+
+.mykka-toast-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mykka-toast-icon::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.mykka-toast-ok   .mykka-toast-icon { background: var(--brand-soft); }
+.mykka-toast-ok   .mykka-toast-icon::after { background: var(--brand); }
+.mykka-toast-warn .mykka-toast-icon { background: var(--warn-mark-bg); }
+.mykka-toast-warn .mykka-toast-icon::after { background: var(--warn); }
+
+.mykka-toast-action {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: var(--brand);
+  cursor: pointer;
+}
+.mykka-toast-action:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.mykka-toast-details {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  list-style: none;
+  margin: 0;
+}
+
+/* ─── "Pretzel on" chip ──────────────────────────────────────────────────────── */
+
+.mykka-chip {
+  position: fixed;
+  z-index: 2147483645;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  padding: 5px 10px;
+}
+.mykka-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.mykka-chip-paused .mykka-chip-dot { background: var(--warn); }

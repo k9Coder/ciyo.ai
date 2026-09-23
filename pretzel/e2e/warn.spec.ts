@@ -63,7 +63,7 @@ async function launchWithPolicy() {
 }
 
 test.describe('Warn vs block modal behaviour (seeded policy)', () => {
-  test('ACME_WARN rule shows "Looks fine, send it" button', async () => {
+  test("ACME_WARN rule shows 'It's fine, send it' button", async () => {
     const context = await launchWithPolicy()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
@@ -74,13 +74,13 @@ test.describe('Warn vs block modal behaviour (seeded policy)', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-    // Warn action — "Looks fine, send it" must be present
-    await expect(modal.getByRole('button', { name: 'Looks fine, send it' })).toBeVisible()
+    // Warn action — "It's fine, send it" must be present
+    await expect(modal.getByRole('button', { name: "It's fine, send it" })).toBeVisible()
 
     await context.close()
   })
 
-  test('ACME_SECRET block rule does NOT show "Looks fine, send it"', async () => {
+  test("ACME_SECRET block rule does NOT show 'It's fine, send it'", async () => {
     const context = await launchWithPolicy()
     const page    = await context.newPage()
     await page.goto(`${FIXTURES}/chatgpt-mock.html`)
@@ -91,9 +91,67 @@ test.describe('Warn vs block modal behaviour (seeded policy)', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-    // Block action — "Looks fine, send it" must NOT appear
-    await expect(modal.getByRole('button', { name: 'Looks fine, send it' })).not.toBeVisible()
+    // Block action — "It's fine, send it" must NOT appear
+    await expect(modal.getByRole('button', { name: "It's fine, send it" })).not.toBeVisible()
     await expect(modal.getByText('Your policy does not allow sending this content.')).toBeVisible()
+
+    await context.close()
+  })
+  test("block modal 'Remove details & send' sends the prompt without the secret, then shows a toast", async () => {
+    const context = await launchWithPolicy()
+    const page    = await context.newPage()
+    await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
+
+    await page.locator('#prompt-textarea').fill('Please use ACME_SECRET in the summary')
+    await page.locator('#send-button').click()
+
+    const host  = page.locator('#mykka-overlay-host')
+    const modal = host.locator('#ps-react-root')
+    await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
+    // Reporting is on (reportLevel "medium"), so the footnote says what IT sees.
+    await expect(modal.getByText('the rule and the site, not the prompt')).toBeVisible()
+
+    await modal.getByRole('button', { name: 'Remove details & send' }).click()
+
+    await expect(page.locator('#output')).toContainText('SENT: Please use [removed] in the summary', { timeout: 5_000 })
+    await expect(page.locator('#output')).not.toContainText('ACME_SECRET')
+
+    const toast = host.locator('#ps-toast-root')
+    await expect(toast.getByText('1 detail removed')).toBeVisible()
+    await toast.getByRole('button', { name: 'Show' }).click()
+    await expect(toast.getByText('ACME Confidential', { exact: false }).or(toast.getByRole('listitem'))).toBeVisible()
+
+    await context.close()
+  })
+
+  test("warn modal does not offer 'Remove details & send'", async () => {
+    const context = await launchWithPolicy()
+    const page    = await context.newPage()
+    await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+
+    await page.locator('#prompt-textarea').fill('Please review ACME_WARN data')
+    await page.locator('#send-button').click()
+
+    const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
+    await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
+    await expect(modal.getByRole('button', { name: 'Remove details & send' })).toHaveCount(0)
+
+    await context.close()
+  })
+
+  test("status chip shows 'Pretzel on', and 'Pretzel paused' when the site is paused", async () => {
+    const context = await launchWithPolicy()
+    const page    = await context.newPage()
+    await page.goto(`${FIXTURES}/chatgpt-mock.html`)
+    await page.locator('html[data-mykka-ready]').waitFor({ timeout: 5_000 })
+
+    const chip = page.locator('#mykka-overlay-host').locator('#ps-chip-root')
+    await expect(chip.getByText('Pretzel on')).toBeVisible({ timeout: 5_000 })
+
+    const background = context.serviceWorkers()[0]
+    await background.evaluate(() => chrome.storage.local.set({ promptshield_site_overrides: ['localhost'] }))
+    await expect(chip.getByText('Pretzel paused')).toBeVisible({ timeout: 5_000 })
 
     await context.close()
   })

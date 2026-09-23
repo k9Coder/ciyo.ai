@@ -1,16 +1,38 @@
-/* Dark mode — default */
+/* Dark mode — default. Direction 1c: near-black neutrals, mint accent, square-ish. */
 :root {
-  --brand-primary:     #5b8cff;
-  --bg-base:           #0b0e16;
-  --bg-surface:        #10141f;
-  --bg-surface-raised: #1b2233;
-  --border:            #242c40;
-  --text-primary:      #f5f7fa;
-  --text-secondary:    #9aa4bc;
-  --text-muted:        #5b6580;
-  --status-danger:     #ff6b7f;
-  --status-warn:       #ffb648;
-  --status-safe:       #3ddc97;
+  --brand-primary:     #7fd08a;
+  --bg-base:           #101113;
+  --bg-surface:        #16181b;
+  --bg-surface-raised: #202327;
+  --border:            #26292d;
+  --text-primary:      #e8e9ea;
+  --text-secondary:    #c2c6ca;
+  --text-muted:        #9aa0a6;
+  --status-danger:     #f08a6c;
+  --status-warn:       #e2b155;
+  --status-safe:       #7fd08a;
+
+  --fill:              #202327;
+  --fill-strong:       #2a2d31;
+  --brand-soft:        rgba(127,208,138,.12);
+  --btn-bg:            #e8e9ea;
+  --btn-fg:            #101113;
+  --block-fill:        rgba(240,138,108,.14);
+  --warn-fill:         rgba(226,177,85,.14);
+  --mark-bg:           #f08a6c;
+  --mark-fg:           #101113;
+  --r:                 6px;
+  --r-sm:              4px;
+  --r-btn:             4px;
+  --font:              'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:              'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+  --shadow:            0 24px 60px rgba(0,0,0,.6);
+
+  --logo-bg:           transparent;
+  --logo-bd:           2px;
+  --logo-bar:          #e8e9ea;
+  --logo-mid:          #7fd08a;
+  --logo-r:            5px;
 }
 
 /* Custom scrollbar — dark theme */
@@ -22,14 +44,14 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #5b8cff33 0%, #5b8cff22 100%);
+  background: linear-gradient(180deg, #7fd08a33 0%, #7fd08a22 100%);
   border-radius: 100px;
-  border: 1px solid #5b8cff22;
+  border: 1px solid #7fd08a22;
   transition: background 0.2s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #5b8cffaa 0%, #5b8cff66 100%);
-  border-color: #5b8cff55;
+  background: linear-gradient(180deg, #7fd08aaa 0%, #7fd08a66 100%);
+  border-color: #7fd08a55;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -38,32 +60,54 @@
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #5b8cff33 transparent;
+  scrollbar-color: #7fd08a33 transparent;
 }
 
-/* Light mode */
+/* Light mode. Direction 1b: deep green brand, warm neutrals, pill buttons. */
 [data-theme="light"] {
-  --brand-primary:     #3059d6;
-  --bg-base:           #f3f5fa;
+  --brand-primary:     #1f6b4f;
+  --bg-base:           #f6f7f5;
   --bg-surface:        #ffffff;
-  --bg-surface-raised: #f7f9fc;
-  --border:            #dee3ee;
-  --text-primary:      #0b0e16;
-  --text-secondary:    #4a5470;
-  --text-muted:        #8991aa;
-  --status-danger:     #c82a44;
-  --status-warn:       #9a6300;
-  --status-safe:       #0a7a4b;
+  --bg-surface-raised: #eef1ef;
+  --border:            #e8ebe9;
+  --text-primary:      #18201c;
+  --text-secondary:    #3d433f;
+  --text-muted:        #5d635f;
+  --status-danger:     #9a3b1f;
+  --status-warn:       #7a5a10;
+  --status-safe:       #1f6b4f;
+
+  --fill:              #eef1ef;
+  --fill-strong:       #e3e6e4;
+  --brand-soft:        #e3efe8;
+  --btn-bg:            #1f6b4f;
+  --btn-fg:            #ffffff;
+  --block-fill:        #f5e3dc;
+  --warn-fill:         #f3ead4;
+  --mark-bg:           #f5e3dc;
+  --mark-fg:           #9a3b1f;
+  --r:                 14px;
+  --r-sm:              10px;
+  --r-btn:             999px;
+  --font:              'Familjen Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:              'Geist Mono', ui-monospace, 'Cascadia Code', monospace;
+  --shadow:            0 24px 60px rgba(24,32,28,.22);
+
+  --logo-bg:           #1f6b4f;
+  --logo-bd:           0px;
+  --logo-bar:          #f6f7f5;
+  --logo-mid:          #f6f7f5;
+  --logo-r:            6px;
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #3059d633 0%, #3059d622 100%);
-  border-color: #3059d622;
+  background: linear-gradient(180deg, #1f6b4f33 0%, #1f6b4f22 100%);
+  border-color: #1f6b4f22;
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #3059d6aa 0%, #3059d666 100%);
-  border-color: #3059d655;
+  background: linear-gradient(180deg, #1f6b4faa 0%, #1f6b4f66 100%);
+  border-color: #1f6b4f55;
 }
 [data-theme="light"] * {
-  scrollbar-color: #3059d644 transparent;
+  scrollbar-color: #1f6b4f44 transparent;
 }

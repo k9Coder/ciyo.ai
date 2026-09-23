@@ -1,4 +1,4 @@
-import type { DetectionResult, InputType } from "@mykka/detect";
+import type { DetectionResult, Finding, InputType } from "@mykka/detect";
 import type { Policy } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 
@@ -17,6 +17,7 @@ export type Message =
   | { type: "GET_SUBSCRIPTION_STATUS"; payload?: never }
   | { type: "GET_SCAN_LIMIT_STATUS"; payload?: never }
   | { type: "REPORT_DEGRADED"; payload: { hostname: string; reason: EnforcementReason } }
+  | { type: "GET_REPORTING_SUMMARY"; payload: { findings: Finding[] } }
   | { type: "APPEND_AUDIT_EVENT"; payload: AuditEvent };
 
 /** Reasons the extension can report degraded enforcement (no prompt content). */

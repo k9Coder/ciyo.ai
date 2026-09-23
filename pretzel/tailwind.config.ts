@@ -18,7 +18,7 @@ export default {
         safe:            "var(--status-safe)",
       },
       fontFamily: {
-        sans: ["'Segoe UI'", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["var(--font)"],
       },
     },
   },
