@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { APP_URL, IS_PILOT_MODE } from '@/lib/config'
 import { env } from '@/lib/env'
+import { MykkaLogo } from './MykkaLogo'
+import { ThemeToggle } from './ThemeToggle'
 
 const NAV = [
   { href: '/product',   label: 'Product' },
@@ -18,21 +20,11 @@ export function Header() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0f0f13]/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-white">
-          <svg width="26" height="26" viewBox="0 0 56 56" fill="none" aria-label="mykka.ai logo">
-            <rect width="56" height="56" rx="14" fill="rgba(91,140,255,0.08)"/>
-            <circle cx="28" cy="28" r="13"
-                    fill="none" stroke="#5b8cff" strokeWidth="7"/>
-            <circle cx="37.19" cy="18.81" r="4.5" fill="#5b8cff"/>
-          </svg>
-          <span className="text-[15px] tracking-tight">
-            <span className="text-white font-bold">m</span>
-            <span className="text-[#5b8cff] font-bold">y</span>
-            <span className="text-white font-bold">kka</span>
-            <span className="text-[#94a3b8] font-normal text-[12px]">.ai</span>
-          </span>
+    <header className="sticky top-0 z-50 border-b border-line bg-bg">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-6 px-6 py-3.5">
+        <Link href="/" className="flex items-center gap-[9px] text-ink">
+          <MykkaLogo />
+          <span className="text-[19px] font-bold tracking-[-0.03em]">mykka</span>
           {env.NEXT_PUBLIC_ENV === 'staging' && (
             <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider bg-amber-500 text-white">
               STAGING
@@ -40,13 +32,13 @@ export function Header() {
           )}
         </Link>
 
-        <nav className="hidden gap-1 md:flex">
+        <nav className="hidden flex-1 gap-1 text-[15px] md:flex">
           {NAV.map(({ href, label }) => (
             <Link key={href} href={href}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] text-[#94a3b8] transition-colors hover:bg-white/[0.05] hover:text-white">
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-muted transition-colors hover:text-ink">
               {label}
               {IS_PILOT_MODE && href === '/pricing' && (
-                <span className="rounded px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider bg-[#5b8cff]/20 text-[#8fb3ff]">
+                <span className="rounded-btn bg-brand-soft px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wider text-brand">
                   Soon
                 </span>
               )}
@@ -54,14 +46,15 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2.5 md:ml-0">
+          <ThemeToggle />
           <Link href={APP_URL}
-            className="hidden text-[13px] text-[#94a3b8] hover:text-white md:block">
+            className="hidden whitespace-nowrap px-2 py-1.5 text-[15px] text-ink md:block">
             Sign in
           </Link>
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-lg bg-[#5b8cff] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#3f6fe0]">
-            Start Free
+            className="whitespace-nowrap rounded-btn bg-btn px-4 py-[9px] text-[15px] font-medium text-btn-fg transition-opacity hover:opacity-90">
+            Start free
           </Link>
           <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -70,15 +63,15 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#0f0f13] px-6 py-4 md:hidden">
+        <div className="border-t border-line bg-bg px-6 py-4 md:hidden">
           {NAV.map(({ href, label }) => (
             <Link key={href} href={href} onClick={() => setOpen(false)}
-              className="block py-2 text-[14px] text-[#94a3b8] hover:text-white">
+              className="block py-2 text-[15px] text-muted hover:text-ink">
               {label}
             </Link>
           ))}
           <Link href={APP_URL} onClick={() => setOpen(false)}
-            className="block py-2 text-[14px] text-[#94a3b8] hover:text-white">
+            className="block py-2 text-[15px] text-muted hover:text-ink">
             Sign in
           </Link>
         </div>

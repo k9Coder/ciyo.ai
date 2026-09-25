@@ -39,7 +39,7 @@ The `app/` directory owns public pages, route metadata, sitemap generation, robo
 
 ## Shared layout and navigation
 
-`layout.tsx` applies the Inter font, global metadata defaults, `Header`, and `Footer`. The header exposes Product, Pricing, Solutions, Security, Blog, sign-in, and onboarding links. The footer adds company, legal, documentation, and solution links.
+`layout.tsx` loads the theme fonts (Familjen Grotesk + Geist Mono for light, Public Sans + JetBrains Mono for dark), applies global metadata defaults, `ThemeScript`, `Header`, and `Footer`. Colors are design tokens in `globals.css` (same set as `pretzel-console`); light is the default and `data-theme="dark"` on `<html>` switches to dark, persisted in `localStorage` key `mykka-theme`. Use token classes (`bg-surface`, `text-muted`, `bg-btn`, `border-line`, …) instead of hard-coded hex. The header exposes Product, Pricing, Solutions, Security, Blog, sign-in, and onboarding links. The footer adds company, legal, documentation, and solution links.
 
 `lib/config.ts` is the canonical source for the app/console origin. It reads `NEXT_PUBLIC_APP_URL` and defaults to `https://app.mykka.ai`.
 

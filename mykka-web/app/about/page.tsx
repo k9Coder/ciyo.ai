@@ -34,16 +34,16 @@ export default function AboutPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-2xl">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">About</p>
-        <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-white">Built for the AI-era by people who lived the problem</h1>
-        <div className="space-y-4 text-[15px] leading-relaxed text-[#94a3b8]">
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-brand">About</p>
+        <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-ink">Built for the AI-era by people who lived the problem</h1>
+        <div className="space-y-4 text-[15px] leading-relaxed text-muted">
           <p>We watched teams at fast-growing companies adopt ChatGPT overnight — and watched their security teams scramble to catch up. Existing DLP tools weren&apos;t built for a world where every employee has a direct line to a public AI model.</p>
           <p>Pretzel started as a simple Chrome extension to block PII from leaving the browser. It&apos;s grown into a full policy platform that lets security teams configure, enforce, and audit AI usage across their entire organization.</p>
           <p>We&apos;re an independent team building the tool we wished existed.</p>
         </div>
-        <div className="mt-12 rounded-2xl border border-[#5b8cff]/20 bg-[#5b8cff]/[0.06] p-6">
-          <p className="text-[14px] font-semibold text-white">Want to talk?</p>
-          <p className="mt-1 text-[13px] text-[#94a3b8]">hello@mykka.ai — we read every email and reply to most of them.</p>
+        <div className="mt-12 rounded-2xl border border-brand bg-brand-soft p-6">
+          <p className="text-[14px] font-semibold text-ink">Want to talk?</p>
+          <p className="mt-1 text-[13px] text-muted">hello@mykka.ai — we read every email and reply to most of them.</p>
         </div>
       </div>
     </div>

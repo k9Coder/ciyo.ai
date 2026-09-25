@@ -111,15 +111,15 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
               key={d.id}
               style={{
                 background: 'var(--surface)',
-                border: `1px solid ${isDetected ? 'var(--accent)' : 'var(--border)'}`,
+                border: `1px solid ${isDetected ? 'var(--btn-bg)' : 'var(--border)'}`,
                 borderRadius: 16,
                 padding: 24,
                 position: 'relative',
-                boxShadow: isDetected ? '0 0 0 1px var(--accent)' : 'none',
+                boxShadow: isDetected ? '0 0 0 1px var(--btn-bg)' : 'none',
               }}
             >
               {isDetected && (
-                <div style={{ position: 'absolute', top: -10, left: 16, background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20 }}>
+                <div style={{ position: 'absolute', top: -10, left: 16, background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20 }}>
                   Recommended for you
                 </div>
               )}
@@ -136,8 +136,8 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
                   width: '100%',
                   textAlign: 'center',
                   padding: '10px 0',
-                  background: isDetected ? 'var(--accent)' : 'var(--surface2)',
-                  color: '#fff',
+                  background: isDetected ? 'var(--btn-bg)' : 'var(--surface2)',
+                  color: 'var(--btn-fg)',
                   borderRadius: 10,
                   fontWeight: 600,
                   fontSize: 14,
@@ -160,7 +160,7 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
                       borderRadius: 8,
                       padding: '8px 12px',
                       fontSize: 12,
-                      color: 'var(--accent2)',
+                      color: 'var(--brand)',
                       cursor: 'pointer',
                       userSelect: 'all',
                     }}
@@ -219,7 +219,7 @@ export function DownloadClient({ downloads: releaseDownloads }: { downloads: Dow
             ['3', 'Done', 'The tray icon turns green. Every request to a supported AI site — from any app on your machine — is now checked against your policy.'],
           ].map(([num, title, desc]) => (
             <div key={num} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {num}
               </div>
               <div>

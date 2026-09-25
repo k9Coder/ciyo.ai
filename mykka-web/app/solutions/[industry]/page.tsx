@@ -121,28 +121,28 @@ export default async function SolutionPage({ params }: { params: Promise<{ indus
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-4xl">
-        <Link href="/solutions" className="mb-8 inline-flex items-center gap-1.5 text-[13px] text-[#94a3b8] hover:text-white">
+        <Link href="/solutions" className="mb-8 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
           ← All solutions
         </Link>
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">{data.name}</p>
-        <h1 className="mb-5 text-5xl font-extrabold tracking-tight text-white">{data.headline}</h1>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-brand">{data.name}</p>
+        <h1 className="mb-5 text-5xl font-extrabold tracking-tight text-ink">{data.headline}</h1>
 
-        <div className="mb-12 rounded-2xl border border-[#5b8cff]/20 bg-[#5b8cff]/[0.06] p-6 text-center">
-          <span className="text-4xl font-extrabold text-white">{data.stat.num}</span>
-          <p className="mt-1 text-[13px] text-[#94a3b8]">{data.stat.label}</p>
-          <p className="mt-1.5 text-[11px] text-[#64748b]">Source: {data.stat.source}</p>
+        <div className="mb-12 rounded-2xl border border-brand bg-brand-soft p-6 text-center">
+          <span className="text-4xl font-extrabold text-ink">{data.stat.num}</span>
+          <p className="mt-1 text-[13px] text-muted">{data.stat.label}</p>
+          <p className="mt-1.5 text-[11px] text-muted">Source: {data.stat.source}</p>
         </div>
 
-        <h2 className="mb-3 text-xl font-bold text-white">The Problem</h2>
-        <p className="mb-10 text-[15px] leading-relaxed text-[#94a3b8]">{data.problem}</p>
+        <h2 className="mb-3 text-xl font-bold text-ink">The Problem</h2>
+        <p className="mb-10 text-[15px] leading-relaxed text-muted">{data.problem}</p>
 
-        <h2 className="mb-3 text-xl font-bold text-white">How Pretzel Helps</h2>
-        <p className="mb-6 text-[15px] leading-relaxed text-[#94a3b8]">{data.solution}</p>
+        <h2 className="mb-3 text-xl font-bold text-ink">How Pretzel Helps</h2>
+        <p className="mb-6 text-[15px] leading-relaxed text-muted">{data.solution}</p>
 
         <ul className="mb-12 space-y-3">
           {data.rules.map(r => (
-            <li key={r} className="flex items-center gap-3 text-[14px] text-[#94a3b8]">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-[#34d399]/10 text-[12px] text-[#34d399]" aria-hidden="true">✓</span>
+            <li key={r} className="flex items-center gap-3 text-[14px] text-muted">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-brand-soft text-[12px] text-brand" aria-hidden="true">✓</span>
               {r}
             </li>
           ))}
@@ -150,11 +150,11 @@ export default async function SolutionPage({ params }: { params: Promise<{ indus
 
         <div className="flex flex-wrap gap-3">
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-xl bg-[#5b8cff] px-7 py-3 text-[14px] font-bold text-white transition hover:bg-[#3f6fe0]">
+            className="rounded-xl bg-btn px-7 py-3 text-[14px] font-bold text-btn-fg transition hover:opacity-90">
             Start Free — Pre-built {data.name} Template Included
           </Link>
           <Link href={data.ctaHref}
-            className="rounded-xl border border-white/10 bg-white/5 px-7 py-3 text-[14px] font-semibold text-white transition hover:bg-white/10">
+            className="rounded-xl border border-line bg-fill px-7 py-3 text-[14px] font-semibold text-ink transition hover:bg-line">
             {data.cta} →
           </Link>
         </div>

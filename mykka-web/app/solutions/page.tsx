@@ -38,21 +38,21 @@ export default function SolutionsPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-4xl text-center">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Solutions</p>
-        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">AI DLP by Industry</h1>
-        <p className="mx-auto mb-6 max-w-lg text-[16px] text-[#94a3b8]">
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-brand">Solutions</p>
+        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-ink">AI DLP by Industry</h1>
+        <p className="mx-auto mb-6 max-w-lg text-[16px] text-muted">
           Every industry has different data to protect. Pretzel ships with starter templates for each — activate in one click, then configure exactly what to catch.
         </p>
-        <p className="mx-auto mb-16 max-w-2xl text-[14px] text-[#64748b]">
+        <p className="mx-auto mb-16 max-w-2xl text-[14px] text-muted">
           AI data loss prevention requirements differ significantly by regulatory environment. Healthcare teams need PHI detection. Legal teams need privilege protection. Financial services teams need card-data and MNPI controls. Engineering teams need entropy-based credential detection. Pretzel&apos;s policy engine covers all of these through custom keyword, pattern, and entropy rules — describe what you need to the Console AI assistant, or write the rules yourself, then scope them by team.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {INDUSTRIES.map(({ slug, name, icon, desc }) => (
             <Link key={slug} href={`/solutions/${slug}`}
-              className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-7 text-left transition hover:border-[#5b8cff]/30 hover:-translate-y-1">
+              className="rounded-2xl border border-line bg-surface p-7 text-left transition hover:border-brand hover:-translate-y-1">
               <span className="mb-3 block text-3xl">{icon}</span>
-              <h2 className="mb-2 text-[18px] font-bold text-white">{name}</h2>
-              <p className="text-[13px] text-[#94a3b8]">{desc}</p>
+              <h2 className="mb-2 text-[18px] font-bold text-ink">{name}</h2>
+              <p className="text-[13px] text-muted">{desc}</p>
             </Link>
           ))}
         </div>
