@@ -4,7 +4,7 @@ import { DISCORD_URL } from '@/lib/config'
 type FooterLink = readonly [label: string, href: string]
 
 const LINKS: Record<string, readonly FooterLink[]> = {
-  Product: [['Browser extension', '/product'], ['Desktop app', '/download'], ['Admin console', '/product'], ['Assistant', '/product']],
+  Product: [['Browser extension', '/product#extension'], ['Desktop app', '/product#desktop'], ['Admin console', '/product#console'], ['Assistant', '/product#assistant']],
   Solutions: [['Legal', '/solutions/legal'], ['Healthcare', '/solutions/healthcare'], ['Finance', '/solutions/fintech'], ['Engineering', '/solutions/engineering']],
   // About and Blog are not in the design's footer; they stay so those pages remain linked from every page.
   Company: [['Pricing', '/pricing'], ['Security', '/security'], ['About', '/about'], ['Blog', '/blog'], ['Contact', 'mailto:hello@mykka.ai']],

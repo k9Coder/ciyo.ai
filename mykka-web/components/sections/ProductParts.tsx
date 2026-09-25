@@ -3,10 +3,10 @@ import { AppWindow, LayoutDashboard, MessageSquareText, Monitor, type LucideIcon
 import { H2 } from './H2'
 
 const PARTS: Array<{ Icon: LucideIcon; who: string; name: string; d: string; href: string }> = [
-  { Icon: AppWindow, who: 'For employees', name: 'Browser extension', d: 'Checks prompts in ChatGPT, Claude and Gemini and offers a safe way to send.', href: '/product' },
-  { Icon: Monitor, who: 'For employees', name: 'Desktop app', d: 'Covers AI desktop apps. Lives in the tray and asks before anything risky is sent.', href: '/download' },
-  { Icon: LayoutDashboard, who: 'For IT', name: 'Admin console', d: 'Policies, people, activity and publishing, on one screen you check weekly.', href: '/product' },
-  { Icon: MessageSquareText, who: 'For IT', name: 'Assistant', d: 'Ask for a change in plain words. It adds divisions, rules and members, and shows the diff first.', href: '/product' },
+  { Icon: AppWindow, who: 'For employees', name: 'Browser extension', d: 'Checks prompts in ChatGPT, Claude and Gemini and offers a safe way to send.', href: '/product#extension' },
+  { Icon: Monitor, who: 'For employees', name: 'Desktop app', d: 'Covers AI desktop apps. Lives in the tray and asks before anything risky is sent.', href: '/product#desktop' },
+  { Icon: LayoutDashboard, who: 'For IT', name: 'Admin console', d: 'Policies, people, activity and publishing, on one screen you check weekly.', href: '/product#console' },
+  { Icon: MessageSquareText, who: 'For IT', name: 'Assistant', d: 'Ask for a change in plain words. It adds divisions, rules and members, and shows the diff first.', href: '/product#assistant' },
 ]
 
 export function ProductParts() {

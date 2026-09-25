@@ -17,6 +17,8 @@ sources:
   - components/sections/HowItWorks.tsx
   - components/sections/FactsStrip.tsx
   - components/sections/ProductParts.tsx
+  - components/sections/FAQ.tsx
+  - components/product/ProductMocks.tsx
   - components/sections/CTABanner.tsx
   - lib/hero-demo.ts
   - lib/cta.ts
@@ -115,7 +117,7 @@ Home page rebuilt from the mykka redesign (`Website.dc.html`). `FeatureGrid` and
 
 ## 2026-09-26 home page v2 (`Website.dc.html`)
 
-Home page rebuilt again from the updated design: scripted three-scenario demo, browser-and-desktop framing, "Four parts, one policy", industries list, Discord card, pilot CTAs, new header (Solutions menu) and footer. Removed from the home page: What it catches, Console preview (sample figures), Pricing preview, the FAQ accordion and the FAQPage JSON-LD (`faq-data.ts`), and the unused `VideoDemo`. The claims those carried are no longer published on `/`.
+Home page rebuilt again from the updated design: scripted three-scenario demo, browser-and-desktop framing, "Four parts, one policy", industries list, Discord card, pilot CTAs, new header (Solutions menu) and footer. Removed from the home page: What it catches, Console preview (sample figures), Pricing preview, the FAQ accordion and the FAQPage JSON-LD (`faq-data.ts`), and the unused `VideoDemo`. The FAQ moved: the security answers (prompt content, fail-open, encryption, SOC 2, data location) are now a visible accordion on `/security` (`components/sections/FAQ.tsx`), and "What is Pretzel" / "What is AI DLP" / browser vs network DLP joined the Q&A cards on `/product`. Visible text and FAQPage JSON-LD share one source on each page. The "installs in under a minute" sentence was dropped from the network-DLP answer (unsubstantiated). `/product` was rebuilt with sections `#extension`, `#desktop`, `#console`, `#assistant`; the old console screenshots (test data) were deleted.
 
 | Claim | Location | Status |
 |---|---|---|
@@ -127,7 +129,10 @@ Home page rebuilt again from the updated design: scripted three-scenario demo, b
 | Demo prompts, "Northwind Legal", "Dana", fake SSNs / card / key | `lib/hero-demo.ts` | Fictional demo content, labelled "demo". The AWS key is not a real credential shape (unit-tested). Outcomes are illustrative: each rule's action is admin-configured. |
 | "Publishing sends the policy to every device within minutes" | `HowItWorks.tsx` | Extension: two-minute policy poll (`pretzel/src/background/README.md`). Desktop app sync interval not re-verified here. Delivery to every device is not proven. Time-sensitive. |
 | "Start from a preset for your industry, or ask the assistant" | `HowItWorks.tsx` | Templates are code-backed only for accountant, developer, legal, healthcare (see the starter-kit row above); no fintech template. |
-| Discord community invite `https://discord.gg/mykka` | `lib/config.ts` | Taken from the design; not verified in this repo. Owner to confirm the invite is live and permanent. |
+| Discord community invite `https://discord.gg/9NeFB5pA9` | `lib/config.ts` | Supplied by the owner 2026-09-26. Confirm the invite does not expire. |
+| "A small app for Windows and Mac… shows one clear status (protected or off)", "Covers the AI apps outside the browser" | `/product#desktop` | Tray status and block/warn window are code-backed (`pretzel-desktop`). Which desktop apps are covered is not evidenced (see the `isMonitoredHost` row above). |
+| "Deploy from the Chrome Web Store or push it with Chrome Enterprise" | `/product#extension` | External evidence required (Chrome Enterprise deployment not verified in this repo); same as the how-it-works row. |
+| Admin overview panel (27 / 64 / 4,812, 38 of 45, attention list) and assistant diff example | `components/product/ProductMocks.tsx` | Illustrative sample data, the console panel is labelled "Sample data". Assistant flow (proposal shown as diff, Apply / Discard, nothing live until publish) is code-backed in the console assistant and publish pages. |
 
 ## Immediate inconsistencies and risks
 
