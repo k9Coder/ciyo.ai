@@ -56,12 +56,12 @@ async function mockAuditLog(page: Page, forcedLimit?: number) {
   })
 }
 
-test.describe('Audit Log', () => {
+test.describe('Activity', () => {
   test('page loads and renders event rows', async ({ page }) => {
     await mockAuditLog(page)
     await page.goto('/audit-log')
 
-    await expect(page.getByRole('heading', { name: /audit log/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /activity/i })).toBeVisible()
 
     const rows = page.locator('tbody tr')
     await expect(rows.first()).toBeVisible()

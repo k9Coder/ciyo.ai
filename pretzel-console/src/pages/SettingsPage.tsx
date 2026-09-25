@@ -38,36 +38,36 @@ export function SettingsPage() {
   }
 
   const sectionStyle: React.CSSProperties = {
-    background: 'var(--bg-surface)', border: '1px solid var(--border)',
-    borderRadius: 12, padding: 24, maxWidth: 560,
+    background: 'var(--surface)', border: '1px solid var(--line)',
+    borderRadius: 'var(--r)', padding: 24, maxWidth: 560,
     display: 'flex', flexDirection: 'column', gap: 16,
   }
 
   const rowStyle: React.CSSProperties = {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13,
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15,
   }
 
   const inputStyle: React.CSSProperties = {
-    border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px',
-    fontSize: 13, background: 'var(--bg-base)', color: 'var(--text-primary)',
+    border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '5px 10px',
+    fontSize: 15, background: 'var(--bg)', color: 'var(--ink)',
   }
 
   return (
-    <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ padding: '32px 36px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <PageHeader title="Settings" />
 
       {/* Organisation */}
       <div style={sectionStyle}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Organisation</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>Organisation</h2>
 
         {isLoading && <InlineLoader />}
-        {isError   && <p style={{ fontSize: 13, color: 'var(--status-danger)', margin: 0 }}>Could not load tenant info.</p>}
+        {isError   && <p style={{ fontSize: 15, color: 'var(--block)', margin: 0 }}>Could not load tenant info.</p>}
 
         {tenant && (
           <>
             {/* Name (editable) */}
             <div style={rowStyle}>
-              <span style={{ color: 'var(--text-secondary)' }}>Name</span>
+              <span style={{ color: 'var(--muted)' }}>Name</span>
               {editingName ? (
                 <form onSubmit={saveName} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input
@@ -77,8 +77,8 @@ export function SettingsPage() {
                   <button
                     type="submit" disabled={updateName.isPending}
                     style={{
-                      background: 'var(--brand-primary)', color: '#fff', border: 'none',
-                      borderRadius: 6, padding: '5px 12px', fontSize: 13, cursor: 'pointer',
+                      background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+                      borderRadius: 'var(--r-btn)', padding: '5px 12px', fontSize: 15, cursor: 'pointer',
                     }}
                   >
                     {updateName.isPending ? 'Saving…' : 'Save'}
@@ -86,9 +86,9 @@ export function SettingsPage() {
                   <button
                     type="button" onClick={() => setEditingName(false)}
                     style={{
-                      background: 'transparent', border: '1px solid var(--border)',
-                      color: 'var(--text-muted)', borderRadius: 6,
-                      padding: '5px 12px', fontSize: 13, cursor: 'pointer',
+                      background: 'transparent', border: '1px solid var(--line)',
+                      color: 'var(--muted)', borderRadius: 'var(--r-btn)',
+                      padding: '5px 12px', fontSize: 15, cursor: 'pointer',
                     }}
                   >
                     Cancel
@@ -96,12 +96,12 @@ export function SettingsPage() {
                 </form>
               ) : (
                 <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{tenant.name}</span>
+                  <span style={{ color: 'var(--ink)', fontWeight: 500 }}>{tenant.name}</span>
                   <button
                     onClick={startEditName}
                     style={{
-                      background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-                      padding: '3px 10px', fontSize: 12, cursor: 'pointer', color: 'var(--text-secondary)',
+                      background: 'none', border: '1px solid var(--line)', borderRadius: 'var(--r-btn)',
+                      padding: '3px 10px', fontSize: 14, cursor: 'pointer', color: 'var(--muted)',
                     }}
                   >
                     Edit
@@ -115,9 +115,9 @@ export function SettingsPage() {
               ['Plan', tenant.plan,  false],
             ] as [string, string, boolean][]).map(([label, value, mono]) => (
               <div key={label} style={rowStyle}>
-                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                <span style={{ color: 'var(--muted)' }}>{label}</span>
                 <span style={{
-                  color: 'var(--text-primary)', fontWeight: 500, textTransform: 'capitalize',
+                  color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize',
                   fontFamily: mono ? 'monospace' : undefined,
                 }}>
                   {value}
@@ -127,10 +127,10 @@ export function SettingsPage() {
 
             {/* Subscription status */}
             <div style={rowStyle}>
-              <span style={{ color: 'var(--text-secondary)' }}>Subscription status</span>
+              <span style={{ color: 'var(--muted)' }}>Subscription status</span>
               <span style={{
-                color: tenant.subscriptionStatus === 'active'   ? 'var(--status-safe)'   :
-                       tenant.subscriptionStatus === 'past_due' ? 'var(--status-warn)'   : 'var(--status-danger)',
+                color: tenant.subscriptionStatus === 'active'   ? 'var(--brand)'   :
+                       tenant.subscriptionStatus === 'past_due' ? 'var(--warn)'   : 'var(--block)',
                 fontWeight: 600, textTransform: 'capitalize',
               }}>
                 {tenant.subscriptionStatus.replace('_', ' ')}
@@ -140,14 +140,14 @@ export function SettingsPage() {
             {/* Fail mode */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Fail mode (extension &amp; desktop)</span>
+                <span style={{ color: 'var(--muted)', fontSize: 15 }}>Fail mode (extension &amp; desktop)</span>
                 <select
                   value={tenant.failMode}
                   disabled={updateFailMode.isPending}
                   onChange={e => updateFailMode.mutate(e.target.value as 'open' | 'closed')}
                   style={{
-                    border: '1px solid var(--border)', borderRadius: 6, padding: '4px 8px',
-                    fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                    border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '4px 8px',
+                    fontSize: 14, background: 'var(--bg)', color: 'var(--ink)',
                     cursor: 'pointer',
                   }}
                 >
@@ -155,11 +155,11 @@ export function SettingsPage() {
                   <option value="closed">Fail closed (block on error)</option>
                 </select>
               </div>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
                 Controls what happens when a check cannot complete: the policy cannot be fetched, the check errors,
                 or (desktop) a warning prompt gets no answer in time.{' '}
-                <strong style={{ color: 'var(--text-primary)' }}>Fail open</strong> lets prompts through;{' '}
-                <strong style={{ color: 'var(--text-primary)' }}>fail closed</strong> blocks them.
+                <strong style={{ color: 'var(--ink)' }}>Fail open</strong> lets prompts through;{' '}
+                <strong style={{ color: 'var(--ink)' }}>fail closed</strong> blocks them.
                 Rules set to block are always blocked when a prompt goes unanswered.
               </p>
             </div>
@@ -171,36 +171,34 @@ export function SettingsPage() {
       {billing && billing.plan === 'pilot' && (
         <div style={sectionStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Pilot Program</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>Pilot Program</h2>
             <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase',
-              color: '#10b981', background: 'color-mix(in srgb, #10b981 12%, transparent)',
-              border: '1px solid color-mix(in srgb, #10b981 30%, transparent)',
-              borderRadius: 4, padding: '2px 6px',
+              fontSize: 13, fontWeight: 500,
+              color: 'var(--brand)', background: 'var(--brand-soft)',
+              borderRadius: 'var(--r-btn)', padding: '3px 10px',
             }}>Active</span>
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px' }}>
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 12px' }}>
             All Pretzel features are available at no cost during the pilot period.
           </p>
           <div style={rowStyle}>
-            <span style={{ color: 'var(--text-secondary)' }}>Seats</span>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+            <span style={{ color: 'var(--muted)' }}>Seats</span>
+            <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
               {billing.seatCount} / {billing.seatLimit === -1 ? '∞' : billing.seatLimit}
             </span>
           </div>
           <div style={rowStyle}>
-            <span style={{ color: 'var(--text-secondary)' }}>AI prompts today</span>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+            <span style={{ color: 'var(--muted)' }}>AI prompts today</span>
+            <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
               {billing.assistantLimits.promptsUsedToday} / {billing.assistantLimits.promptsPerDay === -1 ? '∞' : billing.assistantLimits.promptsPerDay}
             </span>
           </div>
           <div style={{
-            marginTop: 12, padding: '10px 12px', borderRadius: 6,
-            background: 'color-mix(in srgb, #10b981 6%, var(--bg-surface-raised))',
-            border: '1px solid color-mix(in srgb, #10b981 15%, transparent)',
-            fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5,
+            marginTop: 12, padding: '10px 12px', borderRadius: 'var(--r-sm)',
+            background: 'var(--brand-soft)',
+            fontSize: 14, color: 'var(--muted)', lineHeight: 1.5,
           }}>
-            When the pilot ends, this account moves to the <strong style={{ color: 'var(--text-primary)' }}>Free plan</strong> automatically.{' '}
+            When the pilot ends, this account moves to the <strong style={{ color: 'var(--ink)' }}>Free plan</strong> automatically.{' '}
             No credit card required — ever — unless you choose to upgrade.
           </div>
         </div>
@@ -209,21 +207,21 @@ export function SettingsPage() {
       {/* Billing */}
       {billing && billing.plan !== 'pilot' && (
         <div style={sectionStyle}>
-          <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Billing</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>Billing</h2>
 
           {/* Plan + status */}
           <div style={rowStyle}>
-            <span style={{ color: 'var(--text-secondary)' }}>Plan</span>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600, textTransform: 'capitalize' }}>
+            <span style={{ color: 'var(--muted)' }}>Plan</span>
+            <span style={{ color: 'var(--ink)', fontWeight: 600, textTransform: 'capitalize' }}>
               {billing.plan}
             </span>
           </div>
           <div style={rowStyle}>
-            <span style={{ color: 'var(--text-secondary)' }}>Status</span>
+            <span style={{ color: 'var(--muted)' }}>Status</span>
             <span style={{
               fontWeight: 600, textTransform: 'capitalize',
-              color: billing.subscriptionStatus === 'active'   ? 'var(--status-safe)'   :
-                     billing.subscriptionStatus === 'past_due' ? 'var(--status-warn)'   : 'var(--status-danger)',
+              color: billing.subscriptionStatus === 'active'   ? 'var(--brand)'   :
+                     billing.subscriptionStatus === 'past_due' ? 'var(--warn)'   : 'var(--block)',
             }}>
               {billing.subscriptionStatus.replace('_', ' ')}
             </span>
@@ -232,12 +230,12 @@ export function SettingsPage() {
           {/* Trial countdown */}
           {billing.trialEndsAt && new Date(billing.trialEndsAt) > new Date() && (
             <div style={{
-              background: 'color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface-raised))',
-              border: '1px solid color-mix(in srgb, var(--brand-primary) 20%, transparent)',
-              borderRadius: 8, padding: '8px 12px', fontSize: 12,
+              background: 'color-mix(in srgb, var(--brand) 8%, var(--fill))',
+              border: '1px solid color-mix(in srgb, var(--brand) 20%, transparent)',
+              borderRadius: 'var(--r-sm)', padding: '8px 12px', fontSize: 14,
             }}>
-              <span style={{ color: 'var(--brand-primary)', fontWeight: 600 }}>Trial active</span>
-              <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>
+              <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Trial active</span>
+              <span style={{ color: 'var(--muted)', marginLeft: 8 }}>
                 Ends {new Date(billing.trialEndsAt).toLocaleDateString()}
               </span>
             </div>
@@ -246,8 +244,8 @@ export function SettingsPage() {
           {/* Seat usage */}
           <div>
             <div style={{ ...rowStyle, marginBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Seats used</span>
-              <span style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 500 }}>
+              <span style={{ color: 'var(--muted)', fontSize: 14 }}>Seats used</span>
+              <span style={{ color: 'var(--ink)', fontSize: 14, fontWeight: 500 }}>
                 {billing.seatCount} / {billing.seatLimit === -1 ? '∞' : billing.seatLimit}
               </span>
             </div>
@@ -256,21 +254,21 @@ export function SettingsPage() {
           {/* Scan usage */}
           <div>
             <div style={{ ...rowStyle, marginBottom: 6 }}>
-              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Scans this month</span>
+              <span style={{ color: 'var(--muted)', fontSize: 14 }}>Scans this month</span>
               <span style={{
-                color: billing.scanBlocked ? 'var(--status-danger)' : 'var(--text-primary)',
-                fontSize: 12, fontWeight: 500,
+                color: billing.scanBlocked ? 'var(--block)' : 'var(--ink)',
+                fontSize: 14, fontWeight: 500,
               }}>
                 {billing.monthlyScans.toLocaleString()} / {billing.scanLimit === -1 ? '∞' : billing.scanLimit.toLocaleString()}
               </span>
             </div>
             {billing.scanLimit > 0 && (
-              <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: 6, background: 'var(--line)', borderRadius: 'var(--r-sm)', overflow: 'hidden' }}>
                 <div style={{
-                  height: '100%', borderRadius: 3, transition: 'width 0.3s',
+                  height: '100%', borderRadius: 'var(--r-sm)', transition: 'width 0.3s',
                   width: `${Math.min(100, Math.round((billing.monthlyScans / billing.scanLimit) * 100))}%`,
-                  background: billing.scanBlocked ? 'var(--status-danger)' :
-                               billing.monthlyScans / billing.scanLimit >= 0.8 ? '#f59e0b' : 'var(--status-safe)',
+                  background: billing.scanBlocked ? 'var(--block)' :
+                               billing.monthlyScans / billing.scanLimit >= 0.8 ? 'var(--warn)' : 'var(--brand)',
                 }} />
               </div>
             )}
@@ -282,11 +280,11 @@ export function SettingsPage() {
               onClick={() => openPortal.mutate(window.location.href)}
               disabled={openPortal.isPending}
               style={{
-                padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                color: 'var(--brand-primary)',
-                background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
-                borderRadius: 7, alignSelf: 'flex-start',
+                padding: '8px 16px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                color: 'var(--brand)',
+                background: 'color-mix(in srgb, var(--brand) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
+                borderRadius: 'var(--r-btn)', alignSelf: 'flex-start',
               }}
             >
               {openPortal.isPending ? 'Redirecting…' : 'Manage subscription →'}
@@ -298,11 +296,11 @@ export function SettingsPage() {
               target="_blank"
               rel="noreferrer"
               style={{
-                padding: '8px 16px', fontSize: 13, fontWeight: 600,
-                color: 'var(--brand-primary)',
-                background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
-                borderRadius: 7, alignSelf: 'flex-start', textDecoration: 'none',
+                padding: '8px 16px', fontSize: 15, fontWeight: 600,
+                color: 'var(--brand)',
+                background: 'color-mix(in srgb, var(--brand) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--brand) 30%, transparent)',
+                borderRadius: 'var(--r-sm)', alignSelf: 'flex-start', textDecoration: 'none',
               }}
             >
               Upgrade plan →
@@ -313,8 +311,8 @@ export function SettingsPage() {
 
       {/* API Tokens */}
       <div style={sectionStyle}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>API Tokens</h2>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>API Tokens</h2>
+        <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
           Rotating a token immediately invalidates the current one.
           Copy the new token when shown — it will not be displayed again.
         </p>
@@ -339,8 +337,8 @@ export function SettingsPage() {
 
       {/* Desktop Agent */}
       <div style={sectionStyle}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Desktop Agent</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>Desktop Agent</h2>
+        <p style={{ fontSize: 15, color: 'var(--muted)', margin: 0 }}>
           Pretzel Desktop monitors all apps system-wide — not just the browser. Intercepts Chrome, Edge, Safari, and native AI tools via a local HTTPS proxy.
         </p>
 
@@ -348,17 +346,17 @@ export function SettingsPage() {
           {/* macOS */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🍎 macOS</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Apple Silicon + Intel · macOS 12+</div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>🍎 macOS</div>
+              <div style={{ fontSize: 14, color: 'var(--muted)' }}>Apple Silicon + Intel · macOS 12+</div>
             </div>
             <a
               href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
-                background: 'var(--brand-primary)', color: '#fff',
-                border: 'none', borderRadius: 8, padding: '6px 16px',
-                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+                background: 'var(--btn-bg)', color: 'var(--btn-fg)',
+                border: 'none', borderRadius: 'var(--r-sm)', padding: '6px 16px',
+                fontSize: 15, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
               }}
             >
               Download .dmg
@@ -368,17 +366,17 @@ export function SettingsPage() {
           {/* Windows */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🪟 Windows</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Windows 10 / 11 (64-bit)</div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>🪟 Windows</div>
+              <div style={{ fontSize: 14, color: 'var(--muted)' }}>Windows 10 / 11 (64-bit)</div>
             </div>
             <a
               href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
-                background: 'var(--brand-primary)', color: '#fff',
-                border: 'none', borderRadius: 8, padding: '6px 16px',
-                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+                background: 'var(--btn-bg)', color: 'var(--btn-fg)',
+                border: 'none', borderRadius: 'var(--r-sm)', padding: '6px 16px',
+                fontSize: 15, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
               }}
             >
               Download .exe
@@ -388,17 +386,17 @@ export function SettingsPage() {
           {/* Linux */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>🐧 Linux</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>AppImage (x64)</div>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>🐧 Linux</div>
+              <div style={{ fontSize: 14, color: 'var(--muted)' }}>AppImage (x64)</div>
             </div>
             <a
               href="https://mykka.ai/download"
               target="_blank"
               rel="noreferrer"
               style={{
-                background: 'var(--bg-surface-raised)', color: 'var(--text-primary)',
-                border: '1px solid var(--border)', borderRadius: 8, padding: '6px 16px',
-                fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+                background: 'var(--fill)', color: 'var(--ink)',
+                border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '6px 16px',
+                fontSize: 15, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
               }}
             >
               Download .AppImage
@@ -406,24 +404,24 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Quick install</div>
+        <div style={{ borderTop: '1px solid var(--line)', paddingTop: 12 }}>
+          <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 8 }}>Quick install</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>macOS (Homebrew)</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 3 }}>macOS (Homebrew)</div>
               <code style={{
-                display: 'block', background: 'var(--bg-base)', border: '1px solid var(--border)',
-                borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'var(--brand-secondary)',
+                display: 'block', background: 'var(--bg)', border: '1px solid var(--line)',
+                borderRadius: 'var(--r-sm)', padding: '6px 10px', fontSize: 14, color: 'var(--brand-secondary)',
                 userSelect: 'all', cursor: 'text',
               }}>
                 brew install --cask pretzel-desktop
               </code>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>Windows (winget)</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 3 }}>Windows (winget)</div>
               <code style={{
-                display: 'block', background: 'var(--bg-base)', border: '1px solid var(--border)',
-                borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'var(--brand-secondary)',
+                display: 'block', background: 'var(--bg)', border: '1px solid var(--line)',
+                borderRadius: 'var(--r-sm)', padding: '6px 10px', fontSize: 14, color: 'var(--brand-secondary)',
                 userSelect: 'all', cursor: 'text',
               }}>
                 winget install mykka.PretzelDesktop
@@ -436,7 +434,7 @@ export function SettingsPage() {
           href="https://mykka.ai/download"
           target="_blank"
           rel="noreferrer"
-          style={{ fontSize: 13, color: 'var(--brand-primary)', textDecoration: 'none', alignSelf: 'flex-start' }}
+          style={{ fontSize: 15, color: 'var(--brand)', textDecoration: 'none', alignSelf: 'flex-start' }}
         >
           View all platforms and release notes →
         </a>
@@ -453,19 +451,19 @@ function TokenCard({
 }) {
   return (
     <div style={{
-      background: 'var(--bg-base)', border: '1px solid var(--border)',
-      borderRadius: 8, padding: 14, display: 'flex', flexDirection: 'column', gap: 8,
+      background: 'var(--bg)', border: '1px solid var(--line)',
+      borderRadius: 'var(--r-sm)', padding: 14, display: 'flex', flexDirection: 'column', gap: 8,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{description}</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{title}</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>{description}</div>
         </div>
         <button
           onClick={onRotate} disabled={isPending}
           style={{
-            background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, cursor: 'pointer', color: 'var(--text-secondary)',
+            background: 'none', border: '1px solid var(--line)', borderRadius: 'var(--r-btn)',
+            padding: '5px 12px', fontSize: 14, cursor: 'pointer', color: 'var(--muted)',
             opacity: isPending ? 0.5 : 1,
           }}
         >
@@ -489,26 +487,26 @@ function NewTokenBanner({ token, onDismiss }: { token: string; onDismiss: () => 
 
   return (
     <div style={{
-      background: 'rgba(0,180,80,0.08)', border: '1px solid rgba(0,180,80,0.25)',
-      borderRadius: 6, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8,
+      background: 'var(--brand-soft)',
+      borderRadius: 'var(--r-sm)', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8,
     }}>
-      <p style={{ margin: 0, fontSize: 11, color: 'var(--status-safe)', fontWeight: 600 }}>
+      <p style={{ margin: 0, fontSize: 13, color: 'var(--brand)', fontWeight: 600 }}>
         New token generated. Copy it now — it will not be shown again.
       </p>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <code style={{
-          flex: 1, fontFamily: 'monospace', fontSize: 11, wordBreak: 'break-all',
-          color: 'var(--text-primary)', background: 'var(--bg-surface)',
-          padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)',
+          flex: 1, fontFamily: 'var(--mono)', fontSize: 13, wordBreak: 'break-all',
+          color: 'var(--ink)', background: 'var(--surface)',
+          padding: '4px 8px', borderRadius: 'var(--r-sm)', border: '1px solid var(--line)',
         }}>
           {token}
         </code>
         <button
           onClick={copy}
           style={{
-            background: copied ? 'var(--status-safe)' : 'var(--brand-primary)',
-            color: '#fff', border: 'none', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, cursor: 'pointer', flexShrink: 0,
+            background: 'var(--btn-bg)',
+            color: 'var(--btn-fg)', border: 'none', borderRadius: 'var(--r-btn)',
+            padding: '5px 12px', fontSize: 14, cursor: 'pointer', flexShrink: 0,
             transition: 'background 0.15s',
           }}
         >
@@ -517,9 +515,9 @@ function NewTokenBanner({ token, onDismiss }: { token: string; onDismiss: () => 
         <button
           onClick={onDismiss}
           style={{
-            background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-            padding: '5px 10px', fontSize: 12, cursor: 'pointer',
-            color: 'var(--text-muted)', flexShrink: 0,
+            background: 'none', border: '1px solid var(--line)', borderRadius: 'var(--r-btn)',
+            padding: '5px 10px', fontSize: 14, cursor: 'pointer',
+            color: 'var(--muted)', flexShrink: 0,
           }}
         >
           Dismiss

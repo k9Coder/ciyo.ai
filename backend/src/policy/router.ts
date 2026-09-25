@@ -10,6 +10,7 @@ import { db } from '../db/client.js'
 import { policies } from '../db/schema.js'
 import { getVersionOnly, getLatestPolicy, publishPolicy, getHistory, rollback } from './service.js'
 import { compilePolicy, type PolicyDoc } from './compiler.js'
+import { diffPolicy } from './diff.js'
 import { resolveMemberPolicy } from './resolver.js'
 import { policyBus, policyUpdatedEvent } from '../events/policy-bus.js'
 import { addException, removeException, getExceptionSummary } from './exceptions.js'
@@ -93,6 +94,22 @@ export async function policyRouter(fastify: FastifyInstance): Promise<void> {
     const policy = await compilePolicy(req.tenant.id)
     const version = await publishPolicy(req.tenant.id, policy)
     return { version }
+  })
+
+  // What publishing right now would change: the live subjects/rules/site-configs
+  // (the draft) diffed against the latest published snapshot. Read-only.
+  fastify.get('/policy/draft', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {
+    const [latest, next] = await Promise.all([
+      getLatestPolicy(req.tenant.id),
+      compilePolicy(req.tenant.id),
+    ])
+    const changes = diffPolicy(latest ? (latest.policyJson as PolicyDoc) : null, next)
+    return {
+      liveVersion: latest?.version ?? null,
+      nextVersion: (latest?.version ?? 0) + 1,
+      count:       changes.length,
+      changes,
+    }
   })
 
   fastify.get('/policy/history', { preHandler: requireAdminTokenOrClerkAdmin }, async (req) => {

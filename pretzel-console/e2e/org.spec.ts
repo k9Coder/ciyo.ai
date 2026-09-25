@@ -7,7 +7,7 @@ test.describe('Org — divisions and teams', () => {
   test('page loads and shows seeded division', async ({ page }) => {
     await page.goto('/org')
 
-    await expect(page.getByRole('heading', { name: /org/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /people/i })).toBeVisible()
     await expect(page.getByText('E2E Division')).toBeVisible()
   })
 

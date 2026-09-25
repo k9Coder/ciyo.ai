@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PeopleTabs } from '../components/ui/PeopleTabs'
 import { InlineLoader } from '../components/ui/Spinner'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useMembers, useMemberActions } from '../hooks/useMembers'
@@ -16,9 +17,9 @@ const ROLE_LABEL: Record<Member['role'], string> = {
 }
 
 const ROLE_COLOR: Record<Member['role'], string> = {
-  super_admin:    'var(--status-danger)',
-  division_admin: 'var(--status-warn)',
-  member:         'var(--text-muted)',
+  super_admin:    'var(--brand)',
+  division_admin: 'var(--warn)',
+  member:         'var(--muted)',
 }
 
 const FAIL_MODE_INFO =
@@ -37,9 +38,9 @@ const infoIconStyle: React.CSSProperties = {
   height: 14,
   lineHeight: '14px',
   borderRadius: '50%',
-  border: '1px solid var(--text-muted)',
-  color: 'var(--text-muted)',
-  fontSize: 10,
+  border: '1px solid var(--muted)',
+  color: 'var(--muted)',
+  fontSize: 12,
   textAlign: 'center',
   cursor: 'default',
 }
@@ -100,35 +101,36 @@ export function MembersPage() {
   }
 
   const inputStyle: React.CSSProperties = {
-    border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px',
-    fontSize: 13, background: 'var(--bg-base)', color: 'var(--text-primary)', width: '100%',
+    border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '6px 10px',
+    fontSize: 15, background: 'var(--bg)', color: 'var(--ink)', width: '100%',
   }
 
   return (
-    <div style={{ padding: '16px 24px' }}>
+    <div style={{ padding: '32px 36px 40px' }}>
       <PageHeader
-        title="Members"
+        title="People"
         action={
           <button
             onClick={() => setShowAdd(s => !s)}
             style={{
-              background: 'var(--brand-primary)', color: '#fff', border: 'none',
-              borderRadius: 8, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+              borderRadius: 'var(--r-btn)', padding: '7px 16px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
             }}
           >
             + Add Member
           </button>
         }
       />
+      <PeopleTabs />
 
       {showAdd && (
         <div style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 10, padding: 16, marginBottom: 16,
+          background: 'var(--surface)', border: '1px solid var(--line)',
+          borderRadius: 'var(--r)', padding: 16, marginBottom: 16,
         }}>
           <form onSubmit={handleAdd} style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 200px' }}>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Email</span>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Email</span>
               <input
                 type="email" required value={addEmail}
                 onChange={e => setAddEmail(e.target.value)}
@@ -137,7 +139,7 @@ export function MembersPage() {
               />
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 150px' }}>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Role</span>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Role</span>
               <select
                 value={addRole}
                 onChange={e => setAddRole(e.target.value as Member['role'])}
@@ -150,7 +152,7 @@ export function MembersPage() {
             </label>
             {addRole === 'division_admin' && (
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '0 0 180px' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Division</span>
+                <span style={{ fontSize: 13, color: 'var(--muted)' }}>Division</span>
                 <select
                   value={addDivisionId}
                   onChange={e => setAddDivisionId(e.target.value)}
@@ -166,8 +168,8 @@ export function MembersPage() {
             <button
               type="submit" disabled={create.isPending || addNeedsDivision || !addEmail.trim()}
               style={{
-                background: 'var(--brand-primary)', color: '#fff', border: 'none',
-                borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+                borderRadius: 'var(--r-btn)', padding: '7px 16px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
               }}
             >
               {create.isPending ? 'Adding…' : 'Add member'}
@@ -175,9 +177,9 @@ export function MembersPage() {
             <button
               type="button" onClick={resetAdd}
               style={{
-                background: 'transparent', color: 'var(--text-muted)',
-                border: '1px solid var(--border)', borderRadius: 6,
-                padding: '7px 16px', fontSize: 13, cursor: 'pointer',
+                background: 'transparent', color: 'var(--muted)',
+                border: '1px solid var(--line)', borderRadius: 'var(--r-btn)',
+                padding: '7px 16px', fontSize: 15, cursor: 'pointer',
               }}
             >
               Cancel
@@ -186,22 +188,21 @@ export function MembersPage() {
         </div>
       )}
 
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r)', overflow: 'hidden' }}>
         {isLoading && <InlineLoader />}
         {!isLoading && members.length === 0 && (
-          <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
+          <p style={{ padding: 24, color: 'var(--muted)', fontSize: 15, margin: 0 }}>
             No members yet. Click <strong>+ Add Member</strong> to get started.
           </p>
         )}
         {members.length > 0 && (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr style={{ borderBottom: '1px solid var(--line)' }}>
                 {['Email', 'Display Name', 'Role', 'Fail Mode', 'Desktop', 'Joined', ''].map(h => (
                   <th key={h} style={{
-                    padding: '10px 16px', textAlign: 'left',
-                    color: 'var(--text-muted)', fontSize: 11, fontWeight: 600,
-                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                    padding: '12px 16px', textAlign: 'left',
+                    color: 'var(--muted)', fontSize: 13, fontWeight: 400,
                   }}>
                     {h}
                     {h === 'Fail Mode' && <InfoIcon title={FAIL_MODE_INFO} />}
@@ -212,9 +213,9 @@ export function MembersPage() {
             </thead>
             <tbody>
               {members.map(m => (
-                <tr key={m.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-primary)' }}>{m.email}</td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{m.displayName ?? '—'}</td>
+                <tr key={m.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                  <td style={{ padding: '12px 16px', color: 'var(--ink)' }}>{m.email}</td>
+                  <td style={{ padding: '12px 16px', color: 'var(--muted)' }}>{m.displayName ?? '—'}</td>
                   <td style={{ padding: '12px 16px' }}>
                     {editingId === m.id ? (
                       <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -223,8 +224,8 @@ export function MembersPage() {
                           value={editRole}
                           onChange={e => setEditRole(e.target.value as Member['role'])}
                           style={{
-                            border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px',
-                            fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                            border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '3px 8px',
+                            fontSize: 14, background: 'var(--bg)', color: 'var(--ink)',
                           }}
                         >
                           <option value="member">Member</option>
@@ -237,8 +238,8 @@ export function MembersPage() {
                             value={editDivisionId}
                             onChange={e => setEditDivisionId(e.target.value)}
                             style={{
-                              border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px',
-                              fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                              border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '3px 8px',
+                              fontSize: 14, background: 'var(--bg)', color: 'var(--ink)',
                             }}
                           >
                             <option value="">Select a division…</option>
@@ -250,23 +251,23 @@ export function MembersPage() {
                         <button
                           onClick={() => saveEdit(m.id)} disabled={update.isPending || editNeedsDivision}
                           style={{
-                            background: 'var(--brand-primary)', color: '#fff', border: 'none',
-                            borderRadius: 4, padding: '3px 8px', fontSize: 12, cursor: 'pointer',
+                            background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+                            borderRadius: 'var(--r-btn)', padding: '3px 8px', fontSize: 14, cursor: 'pointer',
                           }}
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          style={{ background: 'transparent', border: 'none', fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)' }}
+                          style={{ background: 'transparent', border: 'none', fontSize: 14, cursor: 'pointer', color: 'var(--muted)' }}
                         >
                           Cancel
                         </button>
                       </span>
                     ) : (
                       <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
-                        background: 'var(--bg-surface-raised)', color: ROLE_COLOR[m.role],
+                        fontSize: 13, fontWeight: 500, padding: '3px 10px', borderRadius: 'var(--r-btn)',
+                        background: 'var(--fill)', color: ROLE_COLOR[m.role],
                       }}>
                         {ROLE_LABEL[m.role]}
                         {m.role === 'division_admin' && (
@@ -288,8 +289,8 @@ export function MembersPage() {
                         update.mutate({ id: m.id, data: { failMode: value === '' ? null : (value as 'open' | 'closed') } })
                       }}
                       style={{
-                        border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px',
-                        fontSize: 12, background: 'var(--bg-base)', color: 'var(--text-primary)',
+                        border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '3px 8px',
+                        fontSize: 14, background: 'var(--bg)', color: 'var(--ink)',
                       }}
                     >
                       <option value="">Org default</option>
@@ -297,7 +298,7 @@ export function MembersPage() {
                       <option value="closed">Fail closed</option>
                     </select>
                   </td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
+                  <td style={{ padding: '12px 16px', color: 'var(--muted)', fontSize: 14 }}>
                     {m.desktopLastSignInAt ? (
                       <>
                         <div>
@@ -310,7 +311,7 @@ export function MembersPage() {
                       </>
                     ) : '—'}
                   </td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 12 }}>
+                  <td style={{ padding: '12px 16px', color: 'var(--muted)', fontSize: 14 }}>
                     {formatDate(m.createdAt)}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
@@ -319,9 +320,9 @@ export function MembersPage() {
                         <button
                           onClick={() => startEdit(m)}
                           style={{
-                            background: 'none', border: '1px solid var(--border)',
-                            borderRadius: 6, padding: '4px 10px', fontSize: 12,
-                            cursor: 'pointer', color: 'var(--text-secondary)',
+                            background: 'var(--fill)', border: 'none', whiteSpace: 'nowrap',
+                            borderRadius: 'var(--r-btn)', padding: '6px 12px', fontSize: 14,
+                            cursor: 'pointer', color: 'var(--ink)',
                           }}
                         >
                           Edit role
@@ -330,9 +331,9 @@ export function MembersPage() {
                       <button
                         onClick={() => setConfirmRemove(m)}
                         style={{
-                          background: 'none', border: '1px solid var(--status-danger)',
-                          borderRadius: 6, padding: '4px 10px', fontSize: 12,
-                          cursor: 'pointer', color: 'var(--status-danger)',
+                          background: 'var(--block-fill)', border: 'none', whiteSpace: 'nowrap',
+                          borderRadius: 'var(--r-btn)', padding: '6px 12px', fontSize: 14,
+                          cursor: 'pointer', color: 'var(--block)',
                         }}
                       >
                         Remove

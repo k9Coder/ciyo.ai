@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { PageLoader } from '../components/ui/Spinner'
+import { PretzelLogo } from '../components/layout/PretzelLogo'
 import { useWireAuthToken } from '../hooks/useWireAuthToken'
 
 const PROFESSIONS = [
@@ -113,25 +114,19 @@ export function OnboardingProfilePage() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-base)', padding: '24px 16px',
+      background: 'var(--bg)', padding: '24px 16px',
     }}>
       <div style={{ width: '100%', maxWidth: 520 }}>
 
         {/* Header */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <div style={{
-              width: 40, height: 40, background: 'var(--brand-primary)',
-              borderRadius: 10, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 20,
-            }}>
-              🥨
-            </div>
+            <PretzelLogo size={40} />
             <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
                 Set up your DLP policy
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+              <div style={{ fontSize: 15, color: 'var(--muted)', marginTop: 2 }}>
                 Takes 30 seconds. You can change this later.
               </div>
             </div>
@@ -143,8 +138,8 @@ export function OnboardingProfilePage() {
               <div key={s} style={{
                 height: 3, flex: 1, borderRadius: 2,
                 background: i <= ['profession', 'followup', 'confirm'].indexOf(step)
-                  ? 'var(--brand-primary)'
-                  : 'var(--border)',
+                  ? 'var(--brand)'
+                  : 'var(--line)',
                 transition: 'background 0.2s',
               }} />
             ))}
@@ -152,17 +147,17 @@ export function OnboardingProfilePage() {
         </div>
 
         <div style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: 24,
+          background: 'var(--surface)', border: '1px solid var(--line)',
+          borderRadius: 'var(--r)', padding: 24,
         }}>
 
           {/* Step 1: Profession */}
           {step === 'profession' && (
             <>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>
                 What best describes your work?
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>
+              <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 18 }}>
                 We'll recommend a DLP policy based on your answer.
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -172,17 +167,17 @@ export function OnboardingProfilePage() {
                     onClick={() => handleProfessionSelect(p.slug)}
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                      padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)',
-                      background: 'var(--bg-base)', cursor: 'pointer', textAlign: 'left',
+                      padding: '12px 14px', borderRadius: 'var(--r-sm)', border: '1px solid var(--line)',
+                      background: 'var(--bg)', cursor: 'pointer', textAlign: 'left',
                       transition: 'border-color 0.15s',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand-primary)')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--line)')}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>
                       {p.label}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>
                       {p.description}
                     </div>
                   </button>
@@ -198,16 +193,16 @@ export function OnboardingProfilePage() {
                 onClick={() => setStep('profession')}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', fontSize: 12, padding: 0, marginBottom: 16,
+                  color: 'var(--muted)', fontSize: 14, padding: 0, marginBottom: 16,
                   display: 'flex', alignItems: 'center', gap: 4,
                 }}
               >
                 ← Back
               </button>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>
                 {followUpConfig.question}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>
+              <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 18 }}>
                 This helps us pick the right set of DLP rules for you.
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -216,13 +211,13 @@ export function OnboardingProfilePage() {
                     key={opt.slug}
                     onClick={() => handleFollowUpSelect(opt.slug)}
                     style={{
-                      padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)',
-                      background: 'var(--bg-base)', cursor: 'pointer', textAlign: 'left',
-                      fontSize: 13, color: 'var(--text-primary)', fontWeight: 500,
+                      padding: '12px 14px', borderRadius: 'var(--r-sm)', border: '1px solid var(--line)',
+                      background: 'var(--bg)', cursor: 'pointer', textAlign: 'left',
+                      fontSize: 15, color: 'var(--ink)', fontWeight: 500,
                       transition: 'border-color 0.15s',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand-primary)')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--line)')}
                   >
                     {opt.label}
                   </button>
@@ -238,7 +233,7 @@ export function OnboardingProfilePage() {
                 onClick={() => setStep(isOther ? 'profession' : 'followup')}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', fontSize: 12, padding: 0, marginBottom: 16,
+                  color: 'var(--muted)', fontSize: 14, padding: 0, marginBottom: 16,
                   display: 'flex', alignItems: 'center', gap: 4,
                 }}
               >
@@ -247,21 +242,21 @@ export function OnboardingProfilePage() {
 
               {isOther ? (
                 <>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
                     We don't have a template for your profession yet
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 15, color: 'var(--muted)', marginBottom: 24, lineHeight: 1.5 }}>
                     You can configure your DLP policy manually from the{' '}
-                    <strong style={{ color: 'var(--text-primary)' }}>Policies</strong> page after setup.
+                    <strong style={{ color: 'var(--ink)' }}>Policies</strong> page after setup.
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button
                       onClick={handleSkip}
                       disabled={busy}
                       style={{
-                        flex: 1, padding: '10px 0', borderRadius: 8, border: 'none',
-                        background: 'var(--brand-primary)', color: '#fff',
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                        flex: 1, padding: '10px 0', borderRadius: 'var(--r-btn)', border: 'none',
+                        background: 'var(--btn-bg)', color: 'var(--btn-fg)',
+                        fontSize: 15, fontWeight: 600, cursor: 'pointer',
                         opacity: busy ? 0.6 : 1,
                       }}
                     >
@@ -271,22 +266,22 @@ export function OnboardingProfilePage() {
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
                     We found a recommended policy for you
                   </div>
                   <div style={{
-                    background: 'var(--bg-base)', border: '1px solid var(--border)',
-                    borderRadius: 8, padding: '14px 16px', marginBottom: 20,
+                    background: 'var(--bg)', border: '1px solid var(--line)',
+                    borderRadius: 'var(--r-sm)', padding: '14px 16px', marginBottom: 20,
                   }}>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                    <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
                       Recommended policy
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>
                       {PROFESSIONS.find(p => p.slug === profession)?.label} — {
                         FOLLOW_UP[profession]?.options.find(o => o.slug === followUpAnswer)?.label ?? followUpAnswer
                       }
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>
                       A set of DLP rules tailored for your work type will be applied to your account.
                       You can review and edit them anytime in the Policies section.
                     </div>
@@ -294,14 +289,14 @@ export function OnboardingProfilePage() {
 
                   {apiError && (
                     <div style={{
-                      background: '#fee2e2', border: '1px solid #fca5a5',
-                      borderRadius: 6, padding: '10px 12px', marginBottom: 16,
-                      fontSize: 12, color: '#b91c1c',
+                      background: 'var(--block-fill)',
+                      borderRadius: 'var(--r-sm)', padding: '10px 12px', marginBottom: 16,
+                      fontSize: 14, color: 'var(--block)',
                     }}>
                       {apiError}{' '}
                       <button
                         onClick={handleAccept}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b91c1c', fontWeight: 600, padding: 0 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--block)', fontWeight: 600, padding: 0 }}
                       >
                         Try again
                       </button>
@@ -319,9 +314,9 @@ export function OnboardingProfilePage() {
                       onClick={handleSkip}
                       disabled={busy}
                       style={{
-                        flex: 1, padding: '10px 0', borderRadius: 8,
-                        border: '1px solid var(--border)', background: 'transparent',
-                        color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer',
+                        flex: 1, padding: '10px 0', borderRadius: 'var(--r-btn)',
+                        border: '1px solid var(--line)', background: 'transparent',
+                        color: 'var(--muted)', fontSize: 15, cursor: 'pointer',
                         opacity: busy ? 0.6 : 1,
                       }}
                     >
@@ -331,9 +326,9 @@ export function OnboardingProfilePage() {
                       onClick={handleAccept}
                       disabled={busy}
                       style={{
-                        flex: 2, padding: '10px 0', borderRadius: 8, border: 'none',
-                        background: 'var(--brand-primary)', color: '#fff',
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                        flex: 2, padding: '10px 0', borderRadius: 'var(--r-btn)', border: 'none',
+                        background: 'var(--btn-bg)', color: 'var(--btn-fg)',
+                        fontSize: 15, fontWeight: 600, cursor: 'pointer',
                         opacity: busy ? 0.6 : 1,
                       }}
                     >

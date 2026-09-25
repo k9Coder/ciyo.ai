@@ -53,7 +53,7 @@ describe('MillerColumns', () => {
     }]
     render(<MillerColumns columns={c} />)
     const textEl = screen.getByText('Legal')
-    expect(textEl).toHaveStyle({ color: 'var(--brand-primary)' })
+    expect(textEl).toHaveStyle({ color: 'var(--brand)' })
   })
 
   it('renders edit/delete buttons in the DOM for keyboard accessibility', () => {

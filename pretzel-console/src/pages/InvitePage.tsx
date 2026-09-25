@@ -36,22 +36,22 @@ export function InvitePage() {
 
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg-base, #0f1117)',
+    background: 'var(--bg)',
   }
   const cardStyle: React.CSSProperties = {
-    background: 'var(--bg-surface, #1a1d27)', border: '1px solid var(--border, #2a2d3a)',
-    borderRadius: 16, padding: '40px 48px', maxWidth: 440, width: '100%',
+    background: 'var(--surface)', border: '1px solid var(--line)',
+    borderRadius: 'var(--r)', padding: '40px 48px', maxWidth: 440, width: '100%',
     display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center',
   }
   const titleStyle: React.CSSProperties = {
-    fontSize: 22, fontWeight: 700, color: 'var(--text-primary, #e8eaf0)', margin: 0,
+    fontSize: 22, fontWeight: 700, color: 'var(--ink)', margin: 0,
   }
   const subtitleStyle: React.CSSProperties = {
-    fontSize: 14, color: 'var(--text-muted, #6b7280)', margin: 0,
+    fontSize: 15, color: 'var(--muted)', margin: 0,
   }
   const btnStyle: React.CSSProperties = {
-    background: 'var(--brand-primary, #6c47ff)', color: '#fff', border: 'none',
-    borderRadius: 8, padding: '10px 24px', fontSize: 14, fontWeight: 600,
+    background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+    borderRadius: 'var(--r-sm)', padding: '10px 24px', fontSize: 15, fontWeight: 600,
     cursor: 'pointer', width: '100%',
   }
 
@@ -108,14 +108,14 @@ export function InvitePage() {
         <h1 style={titleStyle}>You're invited to join</h1>
         <p style={{ ...titleStyle, fontSize: 26 }}>{preview.tenantName}</p>
         <p style={subtitleStyle}>
-          Role: <strong style={{ color: 'var(--text-primary, #e8eaf0)' }}>{roleLabel}</strong>
+          Role: <strong style={{ color: 'var(--ink)' }}>{roleLabel}</strong>
         </p>
-        <p style={{ ...subtitleStyle, fontSize: 11 }}>
+        <p style={{ ...subtitleStyle, fontSize: 13 }}>
           Expires {new Date(preview.expiresAt).toLocaleDateString()}
         </p>
 
         {error && (
-          <p style={{ color: 'var(--status-danger, #ef4444)', fontSize: 13, margin: 0 }}>{error}</p>
+          <p style={{ color: 'var(--block)', fontSize: 15, margin: 0 }}>{error}</p>
         )}
 
         {isSignedIn ? (
