@@ -13,6 +13,7 @@ import {
   subjects, rules, policies,
   destinationGroups, siteConfigs, events, scans,
   chatSessions, chatMessages, invites, enforcementSignals,
+  memberRuleExceptions, deviceTokens, desktopAuthCodes, extensionAuthCodes, subjectVersions,
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
@@ -26,9 +27,14 @@ async function main() {
   await db.delete(invites)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
+  await db.delete(memberRuleExceptions)
   await db.delete(events)
   await db.delete(scans)
+  await db.delete(deviceTokens)
+  await db.delete(desktopAuthCodes)
+  await db.delete(extensionAuthCodes)
   await db.delete(memberTeams)
+  await db.delete(subjectVersions)
   await db.delete(rules)
   await db.delete(subjects)
   await db.delete(destinationGroups)

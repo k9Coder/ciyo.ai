@@ -6,6 +6,7 @@ import { db } from '../db/client.js'
 import { members, users, tenants, deviceTokens } from '../db/schema.js'
 import type { Tenant } from '../db/schema.js'
 import { env } from '../env.js'
+import { getOrProvisionUserByClerkId } from '../users/jit.js'
 
 const _tenantCache = new Map<string, { data: Tenant; expiresAt: number }>()
 
@@ -113,7 +114,9 @@ export async function resolveClerkJwt(
     return reply.status(401).send({ error: 'Invalid Clerk token' })
   }
 
-  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  // The Clerk webhook can lag a fresh sign-up; provision just-in-time instead of
+  // making a brand-new user sign in twice.
+  const user = await getOrProvisionUserByClerkId(clerkUserId)
   if (!user) {
     return reply.status(401).send({ error: 'User not found — sign up first' })
   }
@@ -169,7 +172,7 @@ export async function requireClerkUser(req: FastifyRequest, reply: FastifyReply)
     return reply.status(401).send({ error: 'Invalid Clerk token' })
   }
 
-  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  const user = await getOrProvisionUserByClerkId(clerkUserId)
   if (!user) {
     return reply.status(401).send({ error: 'User not found — sign up first' })
   }

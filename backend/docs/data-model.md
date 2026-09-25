@@ -49,7 +49,7 @@ PostgreSQL schema is declared in `src/db/schema.ts`; generated migrations live i
 
 - Most foreign keys do not declare cascading deletion. Services explicitly clean up some joins, but callers must inspect dependencies before deleting parent rows.
 - Subject versions cascade on subject deletion; their assistant-message link becomes null when a message is deleted.
-- Members can exist before signup with `user_id=null`; the Clerk `user.created` webhook claims matching rows by email.
+- Members can exist before signup with `user_id=null`; the Clerk `user.created` webhook (or, if it lags, the just-in-time provisioning in `users/jit.ts`) claims matching rows by email, case-insensitively.
 - Scan rows accumulate indefinitely. The current code notes the need for scheduled retention and member-erasure handling.
 
 ## Schema changes

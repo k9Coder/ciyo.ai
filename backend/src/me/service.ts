@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { tenants, members, type Member, type User } from '../db/schema.js'
 import { generateSecret, hashToken } from '../auth/tokens.js'
@@ -24,7 +24,7 @@ export async function selfServeProvisionOrg(user: User): Promise<Member[]> {
 
   const [pending] = await db.select({ id: members.id })
     .from(members)
-    .where(and(eq(members.email, user.email), isNull(members.userId)))
+    .where(and(sql`lower(${members.email}) = ${user.email.trim().toLowerCase()}`, isNull(members.userId)))
     .limit(1)
 
   if (pending) {
