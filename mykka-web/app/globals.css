@@ -1,23 +1,107 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens — mykka redesign (same set as pretzel-console/src/styles/tokens.css).
+ * Light = direction 1b: Familjen Grotesk / Geist Mono, deep green brand, pill buttons. Default.
+ * Dark  = direction 1c: Public Sans / JetBrains Mono, near-black neutrals, mint accent, square-ish.
+ * Theme is chosen by data-theme on <html>; see components/layout/ThemeScript.tsx.
+ */
 :root {
-  --bg:       #0b0e16;
-  --surface:  #10141f;
-  --surface2: #1b2233;
-  --border:   #242c40;
-  --accent:   #5b8cff;
-  --accent2:  #8fb3ff;
-  --green:    #3ddc97;
-  --text:     #f5f7fa;
-  --muted:    #9aa4bc;
-  --dim:      #5b6580;
+  --bg:         #f6f7f5;
+  --surface:    #ffffff;
+  --fill:       #eef1ef;
+  --fill2:      #e3e6e4;
+  --line:       #e8ebe9;
+  --ink:        #18201c;
+  --muted:      #5d635f;
+  --brand:      #1f6b4f;
+  --brand-soft: #e3efe8;
+  --btn-bg:     #1f6b4f;
+  --btn-fg:     #ffffff;
+  --block:      #9a3b1f;
+  --block-fill: #f5e3dc;
+  --warn:       #7a5a10;
+  --warn-fill:  #f3ead4;
+  --mark-bg:    #f5e3dc;
+  --mark-fg:    #9a3b1f;
+
+  --r:     14px;
+  --r-sm:  10px;
+  --r-btn: 999px;
+
+  --font: var(--font-familjen), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, 'Courier New', monospace;
+
+  --logo-bg:  #1f6b4f;
+  --logo-bd:  0px;
+  --logo-bar: #f6f7f5;
+  --logo-mid: #f6f7f5;
+  --logo-r:   6px;
+
+  --shadow: 0 20px 50px rgba(24, 32, 28, 0.12);
+
+  /* Legacy aliases used by app/download/DownloadClient.tsx */
+  --border:   var(--line);
+  --surface2: var(--fill);
+  --green:    var(--brand);
+  --dim:      var(--muted);
+}
+
+[data-theme="dark"] {
+  --bg:         #101113;
+  --surface:    #16181b;
+  --fill:       #202327;
+  --fill2:      #2a2d31;
+  --line:       #26292d;
+  --ink:        #e8e9ea;
+  --muted:      #9aa0a6;
+  --brand:      #7fd08a;
+  --brand-soft: rgba(127, 208, 138, 0.12);
+  --btn-bg:     #e8e9ea;
+  --btn-fg:     #101113;
+  --block:      #f08a6c;
+  --block-fill: rgba(240, 138, 108, 0.14);
+  --warn:       #e2b155;
+  --warn-fill:  rgba(226, 177, 85, 0.14);
+  --mark-bg:    #f08a6c;
+  --mark-fg:    #101113;
+
+  --r:     6px;
+  --r-sm:  4px;
+  --r-btn: 4px;
+
+  --font: var(--font-public), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: var(--font-jetbrains), ui-monospace, 'Courier New', monospace;
+
+  --logo-bg:  transparent;
+  --logo-bd:  2px;
+  --logo-bar: #e8e9ea;
+  --logo-mid: #7fd08a;
+  --logo-r:   5px;
+
+  --shadow: none;
 }
 
 @theme inline {
-  --color-accent:  var(--accent);
-  --color-accent2: var(--accent2);
-  --color-green:   var(--green);
-  --font-sans: var(--font-inter);
+  --color-bg:         var(--bg);
+  --color-surface:    var(--surface);
+  --color-fill:       var(--fill);
+  --color-line:       var(--line);
+  --color-ink:        var(--ink);
+  --color-muted:      var(--muted);
+  --color-brand:      var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-btn:        var(--btn-bg);
+  --color-btn-fg:     var(--btn-fg);
+  --color-block:      var(--block);
+  --color-block-fill: var(--block-fill);
+  --color-warn:       var(--warn);
+  --color-warn-fill:  var(--warn-fill);
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
+  --radius-token: var(--r);
+  --radius-token-sm: var(--r-sm);
+  --radius-btn: var(--r-btn);
 }
 
 * { box-sizing: border-box; }
@@ -26,6 +110,8 @@ html { scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s;
 }

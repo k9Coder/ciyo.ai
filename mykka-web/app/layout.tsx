@@ -1,12 +1,17 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Familjen_Grotesk, Geist_Mono, JetBrains_Mono, Public_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { ThemeScript } from '@/components/layout/ThemeScript'
 import { LogRocketInit } from '@/components/LogRocketInit'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+// Light theme = Familjen Grotesk + Geist Mono, dark theme = Public Sans + JetBrains Mono.
+const familjen = Familjen_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-familjen' })
+const geistMono = Geist_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-geist-mono' })
+const publicSans = Public_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-public' })
+const jetbrains = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains' })
 
 export const metadata: Metadata = {
   title: { default: 'Pretzel by mykka.ai — AI Prompt Data Loss Prevention', template: '%s | Pretzel' },
@@ -24,7 +29,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html
+      lang="en"
+      className={`${familjen.variable} ${geistMono.variable} ${publicSans.variable} ${jetbrains.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <LogRocketInit />
         <Header />

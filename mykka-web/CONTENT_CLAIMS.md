@@ -14,7 +14,10 @@ sources:
   - app/about/page.tsx
   - components/sections/Hero.tsx
   - components/sections/HowItWorks.tsx
-  - components/sections/FeatureGrid.tsx
+  - components/sections/WhatItCatches.tsx
+  - components/sections/ConsolePreview.tsx
+  - components/sections/FAQ.tsx
+  - components/sections/faq-data.ts
   - components/sections/PricingPreview.tsx
   - lib/posts.ts
 ---
@@ -91,6 +94,22 @@ Claims removed or corrected because repository evidence contradicted them or non
 | Pricing metadata/JSON-LD advertising $49/$15 and a 14-day trial | In pilot mode the pricing page metadata and JSON-LD now describe free early access. | `mykka-web/app/pricing/page.tsx`. |
 
 Still open: privacy policy lists Stripe as the payment processor while the backend bills via PayPal (Stripe routes are disabled); confirm `NEXT_PUBLIC_LOGROCKET_ID` is unset in prod or disclose LogRocket session replay as a sub-processor; governing-law and plan-based retention wording in Terms needs counsel.
+
+## 2026-09-25 web redesign (home page)
+
+Home page rebuilt from the mykka redesign (`Website.dc.html`). `FeatureGrid` and `AEOAnswers` were removed; the FAQ accordion (`faq-data.ts`) now feeds both the visible FAQ and the FAQPage JSON-LD. Removed with them: "Works on All AI Sites" (Perplexity / any internal tool) and "30 seconds"/"30 minutes" install/setup claims on the home page (other pages still carry them).
+
+| Claim | Location | Status |
+|---|---|---|
+| "Publishing sends the policy to every browser within minutes" | `HowItWorks.tsx` | Code-backed for the two-minute policy update alarm (`pretzel/src/background/README.md`); delivery to every browser is not proven. Time-sensitive. |
+| "Fails open… console shows a 'protection degraded' alert" | `faq-data.ts` | Code-backed: `pretzel/src/content/content-script.ts` (fail open), `pretzel-console/src/components/layout/EnforcementBanner.tsx`. |
+| "Detection runs on the device / inside the browser" | Hero, FAQ | Code-backed (`packages/detect`). Matched excerpts can reach the console for `rich` rules; FAQ answer states report levels. |
+| "The admin sees the rule, site and time, not the full prompt" | `HeroDemo.tsx` | Consistent with the 2026-09-20 full-prompt entry; excerpt disclosure depends on report level. |
+| Detection types and Blocks/Warns examples (patterns, entropy, keyword lists) | `WhatItCatches.tsx` | Code-backed detectors (`packages/detect`); example outcomes are illustrative, each rule's action is admin-configured. |
+| Console preview figures (27 / 64 / 4,812, 38 of 45, attention items) | `ConsolePreview.tsx` | Illustrative sample data, labelled "Sample data". Not real usage. |
+| "Northwind Legal", John Doe demo | `HeroDemo.tsx` | Fictional demo content. |
+| "Chrome Enterprise push", "people sign in with their work account" | `HowItWorks.tsx` | External evidence required (Chrome Enterprise deployment is not verified in this repo). |
+| "Free for 3 people" / "Free during early access" | `FactsStrip.tsx`, `PricingPreview.tsx` | Follows `IS_PILOT_MODE`; same limits as the existing Solo tier. |
 
 ## Immediate inconsistencies and risks
 
