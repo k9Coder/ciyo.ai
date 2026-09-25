@@ -44,6 +44,7 @@ export function useApplyActions() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subjects'] })
       qc.invalidateQueries({ queryKey: ['rules'] })
+      qc.invalidateQueries({ queryKey: ['policy-draft'] })
       qc.invalidateQueries({ queryKey: ['assistant-messages'] })
     },
   })
@@ -56,6 +57,7 @@ export function useRevertMessage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subjects'] })
       qc.invalidateQueries({ queryKey: ['rules'] })
+      qc.invalidateQueries({ queryKey: ['policy-draft'] })
       qc.invalidateQueries({ queryKey: ['assistant-messages'] })
     },
   })

@@ -11,13 +11,13 @@ import { useRules, useRuleMutations } from '../hooks/useRules'
 import type { Subject, Rule } from '../types'
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
-  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
-  color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box',
+  width: '100%', padding: '8px 12px', fontSize: 15, borderRadius: 'var(--r-sm)',
+  border: '1px solid var(--line)', background: 'var(--fill)',
+  color: 'var(--ink)', outline: 'none', boxSizing: 'border-box',
 }
-const monoInputStyle: React.CSSProperties = { ...inputStyle, fontFamily: 'monospace' }
+const monoInputStyle: React.CSSProperties = { ...inputStyle, fontFamily: 'var(--mono)' }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+  display: 'block', fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginBottom: 4,
 }
 const selectStyle: React.CSSProperties = {
   ...inputStyle, cursor: 'pointer',
@@ -34,13 +34,13 @@ function SubjectForm({
     <>
       <label style={{ display: 'block' }}>
         <span style={labelStyle}>Name</span>
-        <input style={{ ...inputStyle, ...(error ? { borderColor: 'var(--status-danger)' } : null) }}
+        <input style={{ ...inputStyle, ...(error ? { borderColor: 'var(--block)' } : null) }}
           value={value.name}
           onChange={e => onChange({ ...value, name: e.target.value })}
           placeholder="e.g. Litigation Docs" autoFocus required
           aria-invalid={!!error} />
         {error && (
-          <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: 'var(--status-danger)' }}>{error}</span>
+          <span style={{ display: 'block', marginTop: 4, fontSize: 14, color: 'var(--block)' }}>{error}</span>
         )}
       </label>
       <label style={{ display: 'block' }}>
@@ -199,15 +199,15 @@ function RulesPanel({ subject }: { subject: Subject }) {
     }
   }
 
-  if (isLoading) return <div style={{ padding: 24, fontSize: 13, color: 'var(--text-muted)' }}>Loading rules…</div>
+  if (isLoading) return <div style={{ padding: 24, fontSize: 15, color: 'var(--muted)' }}>Loading rules…</div>
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>
           Rules — {subject.name}
         </h2>
-        <button onClick={openNew} style={{ fontSize: 13, fontWeight: 500, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <button onClick={openNew} style={{ fontSize: 15, fontWeight: 500, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer' }}>
           + Add rule
         </button>
       </div>
@@ -221,18 +221,18 @@ function RulesPanel({ subject }: { subject: Subject }) {
               key={rule.id}
               className="group"
               style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-                       padding: 12, background: 'var(--bg-surface-raised)', border: '1px solid var(--border)', borderRadius: 8 }}
+                       padding: 12, background: 'var(--fill)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <Badge variant={rule.kind}>{rule.kind}</Badge>
                 <Badge variant={rule.action}>{rule.action}</Badge>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                <span style={{ fontSize: 14, color: 'var(--muted)', fontFamily: 'var(--mono)' }}>
                   {rule.kind === 'keyword' ? rule.keywords?.join(', ') : rule.pattern ?? '—'}
                 </span>
               </div>
               <div className="hidden group-hover:flex" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8, flexShrink: 0 }}>
-                <button onClick={() => openEdit(rule)} style={{ fontSize: 12, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
-                <button onClick={() => setDeleting(rule)} style={{ fontSize: 12, color: 'var(--status-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                <button onClick={() => openEdit(rule)} style={{ fontSize: 14, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                <button onClick={() => setDeleting(rule)} style={{ fontSize: 14, color: 'var(--block)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
               </div>
             </div>
           ))}
@@ -301,9 +301,9 @@ export function SubjectsPage() {
   const left = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 16px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Subjects</span>
-        <button onClick={openNew} style={{ fontSize: 12, fontWeight: 500, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>+ New</button>
+                    padding: '10px 16px', borderBottom: '1px solid var(--line)' }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>Subjects</span>
+        <button onClick={openNew} style={{ fontSize: 14, fontWeight: 500, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer' }}>+ New</button>
       </div>
       {isLoading ? (
         <InlineLoader />
@@ -324,27 +324,27 @@ export function SubjectsPage() {
               style={{
                 width: '100%', textAlign: 'left', padding: '10px 16px',
                 borderTop: 'none', borderRight: 'none',
-                borderBottom: '1px solid var(--border)',
-                borderLeft: selected?.id === s.id ? '2px solid var(--brand-primary)' : '2px solid transparent',
+                borderBottom: '1px solid var(--line)',
+                borderLeft: selected?.id === s.id ? '2px solid var(--brand)' : '2px solid transparent',
                 cursor: 'pointer', display: 'block',
-                background: selected?.id === s.id ? 'var(--bg-surface-raised)' : 'transparent',
+                background: selected?.id === s.id ? 'var(--fill)' : 'transparent',
               }}
               className="group"
             >
-              <div style={{ fontSize: 13, fontWeight: selected?.id === s.id ? 600 : 400,
-                            color: selected?.id === s.id ? 'var(--brand-primary)' : 'var(--text-primary)',
+              <div style={{ fontSize: 15, fontWeight: selected?.id === s.id ? 600 : 400,
+                            color: selected?.id === s.id ? 'var(--brand)' : 'var(--ink)',
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {s.name}
               </div>
               {s.description && (
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 13, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {s.description}
                 </div>
               )}
               <div className="hidden group-hover:flex" style={{ display: 'flex', gap: 8, marginTop: 2 }}>
                 <button
                   onClick={e => { e.stopPropagation(); openEdit(s) }}
-                  style={{ fontSize: 11, color: 'var(--brand-primary)', cursor: 'pointer',
+                  style={{ fontSize: 13, color: 'var(--brand)', cursor: 'pointer',
                            background: 'none', border: 'none', padding: 0 }}
                   aria-label={`Edit subject ${s.name}`}
                 >
@@ -352,7 +352,7 @@ export function SubjectsPage() {
                 </button>
                 <button
                   onClick={e => { e.stopPropagation(); setDeleting(s) }}
-                  style={{ fontSize: 11, color: 'var(--status-danger)', cursor: 'pointer',
+                  style={{ fontSize: 13, color: 'var(--block)', cursor: 'pointer',
                            background: 'none', border: 'none', padding: 0 }}
                   aria-label={`Delete subject ${s.name}`}
                 >
@@ -371,14 +371,14 @@ export function SubjectsPage() {
     : <EmptyState title="Select a subject" description="Choose a subject on the left to view and manage its rules." />
 
   return (
-    <div style={{ padding: '16px 24px' }}>
-      <PageHeader title="Subjects & Rules" action={
-        <button onClick={openNew} style={{ padding: '7px 16px', fontSize: 13, fontWeight: 600, color: 'var(--bg-base)',
-                                           background: 'var(--brand-primary)', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+    <div style={{ padding: '32px 36px 40px' }}>
+      <PageHeader title="Policies" action={
+        <button onClick={openNew} style={{ padding: '7px 16px', fontSize: 15, fontWeight: 600, color: 'var(--btn-fg)',
+                                           background: 'var(--btn-bg)', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer' }}>
           + New subject
         </button>
       } />
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r)',
                     overflow: 'hidden', height: 'calc(100vh - 232px)' }}>
         <SplitPane left={left} right={right} />
       </div>

@@ -1,6 +1,6 @@
 import type {
   Subject, Rule, Division, Team, Member,
-  DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, TenantInfo,
+  DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, PolicyDraft, TenantInfo,
   AnalyticsSummary, AnalyticsDailyEntry, AnalyticsIncident,
   AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
   AuditLogPage,
@@ -131,6 +131,7 @@ export const api = {
     get: () => request<PolicyInfo>('GET', '/v1/policy'),
     publish: () => request<{ version: number }>('POST', '/v1/policy/publish', {}),
     history: () => request<PolicyHistoryEntry[]>('GET', '/v1/policy/history'),
+    draft: () => request<PolicyDraft>('GET', '/v1/policy/draft'),
     rollback: (version: number) => request<{ version: number }>('POST', `/v1/policy/rollback/${version}`),
     // Admin-only view of per-member "always allow" exceptions (set from a
     // decision popup in pretzel-desktop) — not silent: this is how an admin

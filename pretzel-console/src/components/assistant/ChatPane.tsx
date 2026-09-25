@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { ChatMessage, ChatSession } from '../../types'
-import { MessageBubble } from './MessageBubble'
+import { MessageBubble, AssistantAvatar } from './MessageBubble'
 import { ChatInput } from './ChatInput'
 import { SessionTabs } from './SessionTabs'
 
@@ -19,12 +19,11 @@ interface ChatPaneProps {
 
 function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div style={{
+    <div role="alert" style={{
       display: 'flex', alignItems: 'center', gap: 10,
-      background: 'color-mix(in srgb, var(--status-danger, #ef4444) 12%, transparent)',
-      border: '1px solid color-mix(in srgb, var(--status-danger, #ef4444) 40%, transparent)',
-      borderRadius: 10, padding: '10px 14px',
-      fontSize: 12, color: 'var(--status-danger, #ef4444)',
+      background: 'var(--block-fill)',
+      borderRadius: 'var(--r)', padding: '12px 16px',
+      fontSize: 15, color: 'var(--block)',
     }}>
       <span style={{ flex: 1 }}>{message}</span>
       {onRetry && (
@@ -32,8 +31,8 @@ function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => vo
           type="button"
           onClick={onRetry}
           style={{
-            background: 'none', border: '1px solid currentColor', borderRadius: 6,
-            color: 'inherit', fontSize: 12, fontWeight: 600, padding: '4px 10px', cursor: 'pointer',
+            background: 'var(--surface)', border: 'none', borderRadius: 'var(--r-btn)',
+            color: 'var(--block)', fontSize: 14, fontWeight: 500, padding: '6px 14px', cursor: 'pointer',
           }}
         >
           Retry
@@ -45,30 +44,16 @@ function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => vo
 
 function TypingIndicator() {
   return (
-    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+      <AssistantAvatar size={30} />
       <div style={{
-        width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-        background: 'var(--brand-primary)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 0 14px color-mix(in srgb, var(--brand-primary) 45%, transparent)',
-      }}>
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <path d="M8 1L9.5 6.5L15 8L9.5 9.5L8 15L6.5 9.5L1 8L6.5 6.5Z" fill="white"/>
-        </svg>
-      </div>
-      <div style={{
-        background: 'var(--bg-surface-raised)', border: '1px solid var(--border)',
-        borderRadius: '4px 16px 16px 16px',
-        padding: '12px 18px',
-        display: 'flex', gap: 5, alignItems: 'center',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+        background: 'var(--fill)', borderRadius: '4px var(--r) var(--r) var(--r)',
+        padding: '14px 16px', display: 'flex', gap: 5, alignItems: 'center',
       }}>
         {[0, 1, 2].map(i => (
           <span key={i} style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: 'var(--brand-primary)',
-            display: 'block',
-            animation: `pretzel-dot-bounce 1.3s ease-in-out ${i * 0.18}s infinite`,
+            width: 6, height: 6, borderRadius: '50%', background: 'var(--muted)', display: 'block',
+            animation: `pretzel-dot-pulse 1.2s ease-in-out ${i * 0.18}s infinite`,
           }} />
         ))}
       </div>
@@ -76,42 +61,52 @@ function TypingIndicator() {
   )
 }
 
+const CAPABILITIES = [
+  { t: 'Policies & rules', d: 'Create, edit or delete what Pretzel looks for.' },
+  { t: 'Divisions & teams', d: 'Add or remove the groups people belong to.' },
+  { t: 'People', d: 'Add members and move them between teams.' },
+  { t: 'Nothing is silent', d: 'Every change is a card you apply or undo.' },
+]
+
+const SUGGESTIONS = [
+  'Block all prompts containing API keys',
+  'Warn when finance team sends revenue data',
+  'Delete all rules on the HR subject',
+]
+
 function EmptyState() {
   return (
     <div style={{
-      flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      gap: 14, padding: 40, textAlign: 'center',
+      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 20, padding: 32, textAlign: 'center',
     }}>
-      <div style={{
-        width: 60, height: 60, borderRadius: '50%',
-        background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
-        border: '1.5px solid color-mix(in srgb, var(--brand-primary) 28%, transparent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="28" height="28" viewBox="0 0 16 16" fill="none">
-          <path d="M8 1L9.5 6.5L15 8L9.5 9.5L8 15L6.5 9.5L1 8L6.5 6.5Z" fill="var(--brand-primary)"/>
-        </svg>
-      </div>
-      <div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+      <div style={{ marginTop: 'auto' }}>
+        <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--ink)', marginBottom: 8 }}>
           How can I help you today?
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 300 }}>
+        <div style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.55, maxWidth: 380 }}>
           Describe a policy change in plain English — I'll propose the exact rules and subjects to create, update, or delete.
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', maxWidth: 320, marginTop: 4 }}>
-        {[
-          'Block all prompts containing API keys',
-          'Warn when finance team sends revenue data',
-          'Delete all rules on the HR subject',
-        ].map(hint => (
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+        gap: 6, width: '100%', maxWidth: 480, textAlign: 'left',
+      }}>
+        {CAPABILITIES.map(c => (
+          <div key={c.t} style={{
+            border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '10px 12px',
+            display: 'flex', flexDirection: 'column', gap: 3,
+          }}>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>{c.t}</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.4 }}>{c.d}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', maxWidth: 380, marginBottom: 'auto' }}>
+        {SUGGESTIONS.map(hint => (
           <div key={hint} style={{
-            padding: '8px 14px', borderRadius: 10,
-            border: '1px solid var(--border)',
-            background: 'var(--bg-surface-raised)',
-            fontSize: 11, color: 'var(--text-muted)',
+            padding: '8px 14px', borderRadius: 'var(--r-btn)',
+            border: '1px solid var(--line)', fontSize: 14, color: 'var(--muted)',
             textAlign: 'left', cursor: 'default',
           }}>
             "{hint}"
@@ -129,53 +124,41 @@ export function ChatPane({
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' })
   }, [messages.length, isSending])
 
   const isEmpty = messages.length === 0 && !isSending
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', minWidth: 0 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--line)', minWidth: 0 }}>
       <style>{`
         @keyframes pretzel-msg-in {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes pretzel-dot-bounce {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
-          30%            { transform: translateY(-6px); opacity: 1; }
+        @keyframes pretzel-dot-pulse {
+          0%, 80%, 100% { opacity: 0.25; }
+          40%           { opacity: 1; }
         }
       `}</style>
 
       {/* Header */}
       <div style={{
-        padding: '14px 20px', borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-surface)',
-        display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+        padding: '16px 24px', borderBottom: '1px solid var(--line)',
+        display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-          background: 'var(--brand-primary)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 10px color-mix(in srgb, var(--brand-primary) 38%, transparent)',
-        }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1L9.5 6.5L15 8L9.5 9.5L8 15L6.5 9.5L1 8L6.5 6.5Z" fill="white"/>
-          </svg>
-        </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>AI Assistant</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>Pretzel AI</div>
-        </div>
-        <div style={{
-          marginLeft: 'auto',
-          fontSize: 9, fontWeight: 700, letterSpacing: '0.6px',
-          color: '#4ade80',
-          background: 'rgba(74,222,128,0.08)',
-          border: '1px solid rgba(74,222,128,0.22)',
-          borderRadius: 20, padding: '3px 9px',
-        }}>
-          ONLINE
+        <AssistantAvatar size={34} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+            Pretzel Assistant
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 500, padding: '2px 7px',
+              borderRadius: 'var(--r-btn)', background: 'var(--brand-soft)', color: 'var(--brand)',
+            }}>AI</span>
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+            Can create, edit and delete policies, rules, teams and people
+          </div>
         </div>
       </div>
 
@@ -189,9 +172,8 @@ export function ChatPane({
       {/* Messages */}
       <div style={{
         flex: 1, overflow: 'auto',
-        padding: isEmpty ? 0 : '20px 20px 8px',
-        display: 'flex', flexDirection: 'column', gap: 14,
-        background: 'var(--bg-base)',
+        padding: isEmpty ? 0 : '24px 24px 8px',
+        display: 'flex', flexDirection: 'column', gap: 22,
       }}>
         {isEmpty
           ? <EmptyState />

@@ -9,7 +9,10 @@ export function useTenant(enabled = true) {
 export function useTenantMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['tenant'] })
+  const inv = () => {
+    qc.invalidateQueries({ queryKey: ['tenant'] })
+    qc.invalidateQueries({ queryKey: ['policy-draft'] }) // fail mode is part of the policy
+  }
 
   const updateName = useMutation({
     mutationFn: (name: string) => api.tenant.update(name),

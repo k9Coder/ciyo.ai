@@ -42,61 +42,42 @@ export function FirstTimeWelcomeBanner() {
       role="region"
       aria-label="Welcome announcement"
       style={{
-        margin: '16px 24px 0',
-        background: 'linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 12%, var(--bg-surface-raised)), var(--bg-surface-raised))',
-        border: '1px solid color-mix(in srgb, var(--brand-primary) 35%, var(--border))',
-        borderRadius: 12,
+        margin: '16px 28px 0',
+        background: 'var(--brand-soft)',
+        borderRadius: 'var(--r)',
         padding: '16px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        flexWrap: 'wrap',
         gap: 16,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: 'color-mix(in srgb, var(--brand-primary) 20%, transparent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 20,
-            flexShrink: 0,
-          }}
-        >
-          🎉
+      <div>
+        <div style={{ color: 'var(--ink)', fontSize: 17, fontWeight: 600, lineHeight: 1.3 }}>
+          Welcome to {orgName}, {firstName}!
         </div>
-        <div>
-          <div style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700, lineHeight: 1.3 }}>
-            Welcome to {orgName}, {firstName}!
-          </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4, lineHeight: 1.45, maxWidth: 640 }}>
-            Your administrator account is ready. To enable prompt protection on your own browser, you can now sign in to the Pretzel extension.
-          </div>
+        <div style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4, lineHeight: 1.45, maxWidth: 640 }}>
+          Your administrator account is ready. To enable prompt protection on your own browser, you can now sign in to the Pretzel extension.
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <button
-          type="button"
-          onClick={handleDismiss}
-          style={{
-            background: 'var(--brand-primary)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '8px 16px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Got it
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={handleDismiss}
+        style={{
+          background: 'var(--btn-bg)',
+          color: 'var(--btn-fg)',
+          border: 'none',
+          borderRadius: 'var(--r-btn)',
+          padding: '9px 18px',
+          fontSize: 14,
+          fontWeight: 500,
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        Got it
+      </button>
     </div>
   )
 }

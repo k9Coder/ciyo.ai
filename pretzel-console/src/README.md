@@ -11,7 +11,10 @@ sources:
   - components/layout/RequireAuth.tsx
   - components/layout/TenantBootstrap.tsx
   - components/layout/AppLayout.tsx
+  - styles/tokens.css
+  - styles/fonts.css
   - components/billing/PlanGate.tsx
+  - hooks/usePolicy.ts
   - hooks/usePolicyRealtime.ts
   - hooks/useWireAuthToken.ts
   - hooks/useMemberships.ts
@@ -27,6 +30,17 @@ sources:
 
 The query client retries queries once, treats results as fresh for 30 seconds, and disables refetch on window focus and mount. `AppLayout` subscribes to policy-update events and invalidates policy queries through the realtime hook.
 
+## Visual design
+
+The look follows the mykka redesign (Claude Design handoff, `Console.dc.html`). Dark theme (default) is direction 1c: Public Sans / JetBrains Mono, near-black neutrals, mint accent, 4-6px radii. Light theme (`[data-theme="light"]`) is direction 1b: Familjen Grotesk / Geist Mono, deep-green brand, pill buttons, 14px radii.
+
+- `styles/tokens.css` defines the short tokens (`--bg`, `--surface`, `--fill`, `--line`, `--ink`, `--muted`, `--brand`, `--btn-bg`/`--btn-fg`, `--block`, `--warn`, `--r`, `--r-sm`, `--r-btn`, `--font`, `--mono`, `--logo-*`). The legacy names (`--brand-primary`, `--bg-*`, `--text-*`, `--status-*`) remain as aliases; prefer the short names in new code.
+- Fonts are self-hosted through `@fontsource/*` (`styles/fonts.css`) because the nginx CSP only allows `'self'` for fonts and styles.
+- Filled buttons use `--btn-bg`/`--btn-fg` (not `--brand` with white text) so contrast holds in both themes.
+- `AppLayout` provides the inset main card, resizable sidebar (190-380px, width kept in `localStorage` key `pretzel-sidebar-width`, double-click the handle to reset), the Ask bar (opens `/assistant`, also Cmd/Ctrl+K) and the Light/Dark pill.
+
+Policy content edits are a draft until published: clients read only published snapshots. `usePolicyDraft` (query key `policy-draft`) feeds the sidebar "N changes not live" card and the Publish page change list. Every mutation that edits rules, subjects, site configs, fail mode or applies/reverts assistant changes invalidates that key, as do publish, rollback and the realtime policy event.
+
 ## Route reference
 
 | Route | Access | Purpose |
@@ -41,7 +55,7 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | `/org` | Protected | CRUD for divisions and teams, plus team membership. |
 | `/destinations` | Protected | CRUD for destination groups and domains. |
 | `/sites` | Protected | CRUD for site domains and CSS selectors. |
-| `/publish` | Protected | Publish, inspect history, and roll back policy versions. |
+| `/publish` | Protected | Review unpublished changes (`GET /v1/policy/draft`), publish them, inspect history, and roll back policy versions. |
 | `/settings` | Protected | Tenant name, billing status/portal, and token rotation. |
 | `/members` | Protected | Add members directly by email (`POST /v1/members`), change roles, and remove members. |
 | `/audit-log` | Protected | Filter and paginate warn/block audit events. Matches the backend's `/v1/audit-log` naming; `/audit` redirects here for old bookmarks. |

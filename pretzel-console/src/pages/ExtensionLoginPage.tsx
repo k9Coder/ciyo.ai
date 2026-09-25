@@ -51,10 +51,10 @@ export function ExtensionLoginPage() {
   }, [isLoaded, isSignedIn, state, codeChallenge, redirectUri, getToken, openSignIn])
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base, #0f1117)' }}>
-      <div style={{ textAlign: 'center', color: 'var(--text-primary, #e8eaf0)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <div style={{ textAlign: 'center', color: 'var(--ink)' }}>
         {error ? (
-          <p style={{ color: 'var(--status-danger, #ef4444)' }}>{error}</p>
+          <p style={{ color: 'var(--block)' }}>{error}</p>
         ) : completed ? (
           <p>Signed in — you can close this tab and return to the extension.</p>
         ) : (

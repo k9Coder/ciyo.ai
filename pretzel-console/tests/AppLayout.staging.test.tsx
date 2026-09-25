@@ -7,6 +7,7 @@ vi.mock('@clerk/react', () => ({
   UserButton: () => null,
 }))
 vi.mock('../src/hooks/usePolicyRealtime', () => ({ usePolicyRealtime: vi.fn() }))
+vi.mock('../src/hooks/usePolicy', () => ({ usePolicy: vi.fn(() => ({ data: undefined })), usePolicyDraft: vi.fn(() => ({ data: undefined })) }))
 vi.mock('../src/hooks/useTenant', () => ({ useTenant: vi.fn(() => ({ data: undefined })) }))
 vi.mock('../src/hooks/useMemberships', () => ({
   useMemberships: vi.fn(() => ({ data: undefined })),

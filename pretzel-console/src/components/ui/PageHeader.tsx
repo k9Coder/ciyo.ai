@@ -5,8 +5,8 @@ interface Props {
 
 export function PageHeader({ title, action }: Props) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{title}</h1>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+      <h1 style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0 }}>{title}</h1>
       {action}
     </div>
   )

@@ -13,6 +13,15 @@ export function usePolicy() {
   return useQuery({ queryKey: ['policy'], queryFn: fetchPolicy, staleTime: 60_000, refetchOnMount: false })
 }
 
+/**
+ * Changes made since the live snapshot ("not live yet"). Cheap to compute and it must be
+ * fresh when the admin looks, so it refetches on mount and is invalidated by every mutation
+ * that edits policy content (rules, subjects, site configs, fail mode, assistant apply).
+ */
+export function usePolicyDraft() {
+  return useQuery({ queryKey: ['policy-draft'], queryFn: api.policy.draft, staleTime: 10_000, refetchOnMount: 'always' })
+}
+
 export function usePolicyHistory() {
   return useQuery({ queryKey: ['policy-history'], queryFn: api.policy.history, staleTime: 60_000, refetchOnMount: false })
 }
@@ -24,6 +33,7 @@ export function usePolicyMutations() {
   const publish = useMutation({
     mutationFn: api.policy.publish,
     onSuccess: ({ version }) => {
+      qc.invalidateQueries({ queryKey: ['policy-draft'] })
       qc.invalidateQueries({ queryKey: ['policy'] })
       qc.invalidateQueries({ queryKey: ['policy-history'] })
       toast(`Policy published (v${version})`)
@@ -33,6 +43,7 @@ export function usePolicyMutations() {
   const rollback = useMutation({
     mutationFn: api.policy.rollback,
     onSuccess: ({ version }) => {
+      qc.invalidateQueries({ queryKey: ['policy-draft'] })
       qc.invalidateQueries({ queryKey: ['policy'] })
       qc.invalidateQueries({ queryKey: ['policy-history'] })
       toast(`Rolled back to v${version}`)

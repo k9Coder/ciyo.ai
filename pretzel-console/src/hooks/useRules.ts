@@ -13,7 +13,10 @@ export function useRules(subjectId: string | null) {
 export function useRuleMutations(subjectId: string | null) {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['rules', subjectId] })
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['rules', subjectId] })
+    qc.invalidateQueries({ queryKey: ['policy-draft'] })
+  }
 
   const create = useMutation({
     mutationFn: (data: Parameters<typeof api.rules.create>[1]) => api.rules.create(subjectId!, data),

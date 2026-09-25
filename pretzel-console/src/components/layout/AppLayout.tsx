@@ -1,13 +1,14 @@
-import { NavLink, Outlet, Link } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useUser, UserButton } from '@clerk/react'
 import { ToastContainer } from '../ui/ToastContainer'
 import { getTheme, setTheme } from '../../utils/theme'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { UpgradeBanner, PilotBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
 import { EnforcementBanner } from './EnforcementBanner'
 import { FirstTimeWelcomeBanner } from './FirstTimeWelcomeBanner'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
+import { usePolicy, usePolicyDraft } from '../../hooks/usePolicy'
 import { useTenant } from '../../hooks/useTenant'
 import { useMemberships, useActiveOrg } from '../../hooks/useMemberships'
 import { getSelectedTenantId, setSelectedTenantId } from '../../lib/tenant'
@@ -30,66 +31,113 @@ function OnboardingBadge() {
     <Link
       to="/onboarding/profile"
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: 8,
-        margin: '6px 8px', padding: '10px 12px',
-        background: 'color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface-raised))',
-        border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, var(--border))',
-        borderRadius: 8, textDecoration: 'none', flexShrink: 0,
+        display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0,
+        padding: '12px 14px', background: 'var(--brand-soft)',
+        borderRadius: 'var(--r-sm)', textDecoration: 'none',
       }}
     >
-      <span style={{ fontSize: 14, lineHeight: 1, marginTop: 1 }}>⚡</span>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand-primary)', lineHeight: 1.2 }}>
-          Complete setup
-        </div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.3 }}>
-          Apply a recommended DLP policy
-        </div>
-      </div>
+      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Complete setup</span>
+      <span style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.35 }}>
+        Apply a recommended DLP policy
+      </span>
     </Link>
   )
 }
 
+// Labels follow the design. People covers both /members and /org (Members / Teams tabs).
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', icon: '▦', ai: false, dividerAbove: false },
-  { to: '/subjects', label: 'Policies', icon: '⊡', ai: false, dividerAbove: false },
-  { to: '/org', label: 'Teams', icon: '⊞', ai: false, dividerAbove: false },
-  { to: '/members', label: 'Members', icon: '◎', ai: false, dividerAbove: false },
-  { to: '/audit-log', label: 'Audit Log', icon: '≡', ai: false, dividerAbove: false },
-  { to: '/assistant', label: 'AI Assistant', icon: null, ai: true, dividerAbove: true },
-  { to: '/settings', label: 'Settings', icon: '⚙', ai: false, dividerAbove: false },
+  { to: '/dashboard', label: 'Overview', ai: false, also: [] as string[] },
+  { to: '/audit-log', label: 'Activity', ai: false, also: [] as string[] },
+  { to: '/subjects', label: 'Policies', ai: false, also: [] as string[] },
+  { to: '/members', label: 'People', ai: false, also: ['/org'] },
+  { to: '/assistant', label: 'Assistant', ai: true, also: [] as string[] },
+  { to: '/settings', label: 'Settings', ai: false, also: [] as string[] },
 ]
 
-function SparkleIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
-      <path
-        d="M8 1 L9.2 6.2 L14 8 L9.2 9.8 L8 15 L6.8 9.8 L2 8 L6.8 6.2 Z"
-        fill={color}
-      />
-    </svg>
-  )
+const SIDE_MIN = 190
+const SIDE_MAX = 380
+const SIDE_DEFAULT = 236
+const SIDE_KEY = 'pretzel-sidebar-width'
+
+function clampSide(w: number): number {
+  return Math.min(SIDE_MAX, Math.max(SIDE_MIN, Math.round(w)))
+}
+
+function readSideWidth(): number {
+  try {
+    const saved = Number(localStorage.getItem(SIDE_KEY))
+    return Number.isFinite(saved) && saved > 0 ? clampSide(saved) : SIDE_DEFAULT
+  } catch {
+    return SIDE_DEFAULT
+  }
+}
+
+/** Resizable sidebar width (190–380px). Double-click the handle to reset. */
+function useSidebarWidth() {
+  const [width, setWidth] = useState<number>(() => readSideWidth())
+  const [dragging, setDragging] = useState(false)
+  const start = useRef<{ x: number; w: number } | null>(null)
+
+  useEffect(() => {
+    if (!dragging) return
+    function onMove(e: MouseEvent) {
+      if (!start.current) return
+      setWidth(clampSide(start.current.w + (e.clientX - start.current.x)))
+    }
+    function onUp() {
+      setDragging(false)
+      start.current = null
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [dragging])
+
+  useEffect(() => {
+    if (dragging) return
+    try { localStorage.setItem(SIDE_KEY, String(width)) } catch { /* storage unavailable */ }
+  }, [width, dragging])
+
+  return {
+    width,
+    dragging,
+    startResize: (e: React.MouseEvent) => {
+      e.preventDefault()
+      start.current = { x: e.clientX, w: width }
+      setDragging(true)
+    },
+    resetResize: () => setWidth(SIDE_DEFAULT),
+  }
 }
 
 function ThemeToggle() {
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => getTheme())
-  function toggle() {
-    const next = theme === 'dark' ? 'light' : 'dark'
+  function choose(next: 'dark' | 'light') {
+    if (next === theme) return
     setTheme(next)
     setThemeState(next)
   }
+  const pill = (active: boolean): React.CSSProperties => ({
+    padding: '5px 11px', borderRadius: 'var(--r-btn)', border: 'none', cursor: 'pointer',
+    fontFamily: 'var(--font)', fontSize: 13, color: 'var(--ink)',
+    background: active ? (theme === 'dark' ? 'var(--fill2)' : 'var(--surface)') : 'transparent',
+  })
   return (
-    <button
-      onClick={toggle}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-      style={{
-        background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-        color: 'var(--text-muted)', fontSize: 14, lineHeight: 1,
-      }}
+    <div
+      role="group"
+      aria-label="Theme"
+      style={{ display: 'flex', background: 'var(--fill)', borderRadius: 'var(--r-btn)', padding: 3, flexShrink: 0 }}
     >
-      {/* aria-hidden so the emoji character name is not read by screen readers */}
-      <span aria-hidden="true">{theme === 'dark' ? '☀' : '🌙'}</span>
-    </button>
+      <button type="button" onClick={() => choose('light')} aria-pressed={theme === 'light'} aria-label="Switch to light theme" style={pill(theme === 'light')}>
+        Light
+      </button>
+      <button type="button" onClick={() => choose('dark')} aria-pressed={theme === 'dark'} aria-label="Switch to dark theme" style={pill(theme === 'dark')}>
+        Dark
+      </button>
+    </div>
   )
 }
 
@@ -109,9 +157,9 @@ function OrgSwitcher() {
       value={selected}
       onChange={onChange}
       style={{
-        background: 'var(--bg-surface-raised)', color: 'var(--text-primary)',
-        border: '1px solid var(--border)', borderRadius: 6,
-        padding: '5px 8px', fontSize: 12, cursor: 'pointer', maxWidth: 200,
+        background: 'var(--fill)', color: 'var(--ink)',
+        border: 'none', borderRadius: 'var(--r-btn)',
+        padding: '7px 12px', fontSize: 13, cursor: 'pointer', maxWidth: 200,
       }}
     >
       {memberships.map(m => (
@@ -121,9 +169,95 @@ function OrgSwitcher() {
   )
 }
 
+/** "Ask Pretzel to change a rule…" bar. Opens the Assistant; also bound to ⌘K / Ctrl+K. */
+function AskBar() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        navigate('/assistant')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [navigate])
+
+  const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform)
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('/assistant')}
+      style={{
+        flex: 1, maxWidth: 520, background: 'var(--fill)', border: 'none',
+        borderRadius: 'var(--r-btn)', padding: '10px 18px', fontFamily: 'var(--font)',
+        fontSize: 15, color: 'var(--muted)', textAlign: 'left', cursor: 'pointer',
+        display: 'flex', justifyContent: 'space-between', gap: 12,
+        whiteSpace: 'nowrap', overflow: 'hidden',
+      }}
+    >
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Ask Pretzel to change a rule…</span>
+      <span aria-hidden="true" style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{isMac ? '⌘K' : 'Ctrl K'}</span>
+    </button>
+  )
+}
+
+function PublishStatus() {
+  const { data: policy } = usePolicy()
+  const { data: draft } = usePolicyDraft()
+  if (!policy) return null
+
+  if (draft && draft.count > 0) {
+    return (
+      <div style={{
+        background: 'var(--warn-fill)', borderRadius: 'var(--r-sm)', padding: 14,
+        display: 'flex', flexDirection: 'column', gap: 9, flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 15, fontWeight: 600 }}>
+          {draft.count} change{draft.count === 1 ? '' : 's'} not live
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.4, color: 'var(--muted)' }}>
+          People still get policy v{policy.version} until you publish.
+        </div>
+        <Link
+          to="/publish"
+          style={{
+            background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontSize: 14, fontWeight: 500,
+            padding: 9, borderRadius: 'var(--r-btn)', textAlign: 'center', textDecoration: 'none',
+          }}
+        >
+          Review &amp; publish
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      to="/publish"
+      style={{
+        background: 'var(--brand-soft)', borderRadius: 'var(--r-sm)', padding: '12px 14px',
+        display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--ink)',
+        textDecoration: 'none', flexShrink: 0,
+      }}
+    >
+      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--brand)', flexShrink: 0 }} />
+      Policy v{policy.version} is live everywhere
+    </Link>
+  )
+}
+
+function initials(name: string | null | undefined): string {
+  if (!name) return '?'
+  const parts = name.trim().split(/[\s@.]+/).filter(Boolean)
+  return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[1][0] : '')).toUpperCase() || '?'
+}
+
 export function AppLayout() {
+  const { pathname } = useLocation()
   const activeOrg = useActiveOrg()
   const { user } = useUser()
+  const side = useSidebarWidth()
   usePolicyRealtime()
 
   useEffect(() => {
@@ -134,168 +268,136 @@ export function AppLayout() {
     })
   }, [user?.id])
 
+  const displayName = user?.fullName ?? user?.primaryEmailAddress?.emailAddress
+
   return (
     <div style={{
-      display: 'flex', height: '100vh', background: 'var(--bg-base)',
-      fontFamily: "'Segoe UI', system-ui, sans-serif", overflow: 'hidden'
+      display: 'flex', height: '100vh', minHeight: 640, background: 'var(--bg)',
+      color: 'var(--ink)', fontFamily: 'var(--font)', overflow: 'hidden',
+      userSelect: side.dragging ? 'none' : undefined,
+      cursor: side.dragging ? 'col-resize' : undefined,
     }}>
 
       {/* Sidebar */}
       <aside style={{
-        width: 210, flexShrink: 0, background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column',
+        width: side.width, flexShrink: 0, boxSizing: 'border-box', padding: '18px 12px',
+        display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto',
       }}>
         {/* Logo */}
         <Link to="/dashboard" style={{
-          height: 84, padding: '0 16px', borderBottom: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
-          textDecoration: 'none', cursor: 'pointer', boxSizing: 'border-box'
+          display: 'flex', alignItems: 'center', gap: 10, padding: '0 8px',
+          textDecoration: 'none', color: 'var(--ink)', flexShrink: 0,
         }}>
-          <PretzelLogo size={48} />
-          <div style={{ lineHeight: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-primary)' }}>
-              Pretzel
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, letterSpacing: '0.3px' }}>
-              by mykka.ai
-            </div>
-            {env.VITE_APP_ENV === 'staging' && (
-              <div style={{
-                display: 'inline-block', marginTop: 5,
-                background: '#f59e0b', color: '#fff',
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
-                padding: '2px 6px', borderRadius: 4,
-              }}>
-                STAGING
-              </div>
-            )}
-          </div>
+          <PretzelLogo size={26} />
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em' }}>mykka</span>
+          {env.VITE_APP_ENV === 'staging' && (
+            <span style={{
+              background: 'var(--warn-fill)', color: 'var(--warn)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.8px',
+              padding: '2px 7px', borderRadius: 'var(--r-btn)',
+            }}>
+              STAGING
+            </span>
+          )}
         </Link>
 
-        {/* Org badge */}
+        {/* Org card */}
         {activeOrg && (
           <div style={{
-            margin: '10px 10px 4px', background: 'var(--bg-surface-raised)',
-            borderRadius: 8, padding: '8px 12px', border: '1px solid var(--border)',
+            background: 'var(--surface)', border: '1px solid var(--line)',
+            borderRadius: 'var(--r-sm)', padding: '11px 13px', flexShrink: 0,
           }}>
-            <div style={{
-              color: 'var(--text-muted)', fontSize: 9,
-              letterSpacing: '1.5px', textTransform: 'uppercase'
-            }}>
-              Organization
-            </div>
-            <div style={{
-              color: 'var(--text-primary)', fontSize: 12,
-              fontWeight: 600, marginTop: 3
-            }}>
-              {activeOrg.tenantName}
-            </div>
+            <div style={{ fontSize: 15, fontWeight: 500, overflowWrap: 'anywhere' }}>{activeOrg.tenantName}</div>
+            <PilotBanner />
           </div>
         )}
 
-        <PilotBanner />
         <UpgradeBanner />
         <OnboardingBadge />
 
         {/* Nav */}
-        <nav aria-label="Main navigation" style={{ padding: 8, flex: 1 }}>
-          {NAV.map(({ to, label, icon, ai, dividerAbove }) => (
-            <div key={to}>
-              {dividerAbove && (
-                <div style={{ margin: '6px 4px 8px', borderTop: '1px solid var(--border)' }} />
-              )}
-              <NavLink to={to} style={({ isActive }) => ({
-                display: 'flex', alignItems: 'center', gap: 9,
-                padding: '8px 12px', borderRadius: 6, marginBottom: 2,
-                textDecoration: 'none', fontSize: 12, transition: 'all 0.1s',
-                background: isActive
-                  ? (ai ? 'linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 15%, var(--bg-surface-raised)))' : 'var(--bg-surface-raised)')
-                  : (ai ? 'color-mix(in srgb, var(--brand-primary) 6%, transparent)' : 'transparent'),
-                color: isActive
-                  ? 'var(--brand-primary)'
-                  : (ai ? 'var(--brand-primary)' : 'var(--text-muted)'),
-                fontWeight: isActive ? 600 : (ai ? 500 : 400),
-                border: isActive
-                  ? '1px solid var(--border)'
-                  : (ai ? '1px solid color-mix(in srgb, var(--brand-primary) 20%, transparent)' : '1px solid transparent'),
-                opacity: isActive ? 1 : (ai ? 0.85 : 1),
-              })}>
-                {ai
-                  ? <SparkleIcon size={13} color="var(--brand-primary)" />
-                  : <span aria-hidden="true" style={{ fontSize: 13 }}>{icon}</span>
-                }
-                {label}
-                {ai && (
-                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
-                    <PlanBadge />
-                  </span>
-                )}
+        <nav aria-label="Main navigation" style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+          {NAV.map(({ to, label, ai, also }) => {
+            const active = [to, ...also].some(p => pathname === p || pathname.startsWith(p + '/'))
+            return (
+              <NavLink key={to} to={to} aria-current={active ? 'page' : undefined} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                padding: '10px 12px', borderRadius: 'var(--r-sm)', textDecoration: 'none',
+                fontSize: 16, color: 'var(--ink)',
+                background: active ? 'var(--surface)' : 'transparent',
+                boxShadow: active ? 'inset 0 0 0 1px var(--line)' : 'none',
+                fontWeight: active ? 600 : 400,
+              }}>
+                <span>{label}</span>
+                {ai && <PlanBadge />}
               </NavLink>
-            </div>
-          ))}
+            )
+          })}
         </nav>
 
+        <PublishStatus />
+
         {/* User */}
-        <div style={{
-          padding: '12px 16px', borderTop: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <UserButton />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 8px', flexShrink: 0 }}>
+          <UserButton fallback={
+            <span aria-hidden="true" style={{
+              width: 30, height: 30, borderRadius: '50%', background: 'var(--fill2)',
+              fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{initials(displayName)}</span>
+          } />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              color: 'var(--text-primary)', fontSize: 11,
-              fontWeight: 600, overflow: 'hidden',
-              textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              fontSize: 14, fontWeight: 500, overflow: 'hidden',
+              textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-              {user?.fullName ?? user?.primaryEmailAddress?.emailAddress}
+              {displayName}
             </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 9 }}>{ROLE_LABEL[activeOrg?.role ?? 'member']}</div>
+            <div style={{ color: 'var(--muted)', fontSize: 12 }}>{ROLE_LABEL[activeOrg?.role ?? 'member']}</div>
           </div>
+        </div>
+        <div style={{ display: 'flex', gap: 14, padding: '0 8px', flexShrink: 0, fontSize: 12 }}>
+          <Link to="/accessibility" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Accessibility</Link>
+          <a href="https://mykka.ai" target="_blank" rel="noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>mykka.ai</a>
         </div>
       </aside>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+      {/* Resize handle */}
+      <div
+        onMouseDown={side.startResize}
+        onDoubleClick={side.resetResize}
+        title="Drag to resize · double-click to reset"
+        style={{
+          width: 10, flexShrink: 0, cursor: 'col-resize', display: 'flex',
+          justifyContent: 'center', userSelect: 'none', marginLeft: -10, zIndex: 1,
+        }}
+      >
+        <div style={{ width: side.dragging ? 2 : 0, height: '100%', background: 'var(--brand)' }} />
+      </div>
+
+      {/* Main card */}
+      <main style={{
+        flex: 1, minWidth: 0, margin: '10px 10px 10px 0', background: 'var(--surface)',
+        border: '1px solid var(--line)', borderRadius: 'var(--r)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
         {/* Top bar */}
         <div style={{
-          height: 84, padding: '0 24px', borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-surface)', display: 'flex',
-          justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexShrink: 0,
-          boxSizing: 'border-box',
+          height: 62, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12,
+          padding: '0 28px', borderBottom: '1px solid var(--line)',
         }}>
+          <AskBar />
+          <div style={{ flex: 1 }} />
           <OrgSwitcher />
           <ThemeToggle />
         </div>
 
         {/* Page content */}
-        <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-base)' }}>
+        <div style={{ flex: 1, overflow: 'auto' }}>
           <FirstTimeWelcomeBanner />
           <EnforcementBanner />
           <Outlet />
         </div>
-
-        {/* Footer */}
-        <div style={{
-          height: 54.5, flexShrink: 0, borderTop: '1px solid var(--border)',
-          background: 'var(--bg-surface)', display: 'flex',
-          alignItems: 'center', justifyContent: 'space-between', padding: '0 24px',
-        }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>Pretzel</span>
-            <span style={{ marginLeft: 6 }}>© {new Date().getFullYear()} · DLP for the AI era</span>
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Link to="/accessibility"
-              style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-              Accessibility
-            </Link>
-            <a href="https://mykka.ai" target="_blank" rel="noreferrer"
-              style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none' }}>
-              mykka.ai
-            </a>
-          </div>
-        </div>
-      </div>
+      </main>
 
       <ToastContainer />
     </div>
