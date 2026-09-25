@@ -5,6 +5,7 @@ import {
   events, scans, memberTeams, rules, subjects,
   destinationGroups, siteConfigs, members, teams, divisions, policies, tenants,
   chatMessages, chatSessions, invites, enforcementSignals,
+  memberRuleExceptions, deviceTokens, desktopAuthCodes, extensionAuthCodes, subjectVersions,
 } from '../db/schema.js'
 
 async function main() {
@@ -13,9 +14,14 @@ async function main() {
   await db.delete(invites)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
+  await db.delete(memberRuleExceptions)
   await db.delete(events)
   await db.delete(scans)
+  await db.delete(deviceTokens)
+  await db.delete(desktopAuthCodes)
+  await db.delete(extensionAuthCodes)
   await db.delete(memberTeams)
+  await db.delete(subjectVersions)
   await db.delete(rules)
   await db.delete(subjects)
   await db.delete(destinationGroups)

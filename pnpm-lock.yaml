@@ -240,6 +240,9 @@ importers:
         specifier: ^4.5.4
         version: 4.5.7(@types/react@18.3.31)(react@18.3.1)
     devDependencies:
+      '@clerk/testing':
+        specifier: ^1.14.8
+        version: 1.14.8(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@crxjs/vite-plugin':
         specifier: ^2.0.0-beta.26
         version: 2.7.1(vite@5.4.21(@types/node@22.20.0)(lightningcss@1.32.0)(terser@5.51.2))
@@ -705,6 +708,7 @@ packages:
   '@clerk/types@4.101.25':
     resolution: {integrity: sha512-gPxm3hlBkP7B9EfKyp3/UDonNOjg7Z0UvqfrMj5u8gA8nyzvC1UFYtSTTmTfgSY82+5Yo38YV0DYu9vNf6t9CQ==}
     engines: {node: '>=18.17.0'}
+    deprecated: 'This package is no longer supported. Please import types from @clerk/shared/types instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3'
 
   '@clerk/ui@1.30.8':
     resolution: {integrity: sha512-ddPxYuwjrsXHLmZ/4oetZNxfKt9+ti0RqUpTqfov4Tfd/CJyG5rr1L72CSb94CJ+8u4Oq9ArZKag/CUu5QJBjw==}

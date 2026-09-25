@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth, useUser, useClerk, SignIn, SignOutButton } from "@clerk/chrome-extension";
+import { useAuth, useUser, useClerk, SignIn, SignUp, SignOutButton } from "@clerk/chrome-extension";
 import { PageLoader } from "../components/loading";
 import { usePersistSessionToken } from "@/shared/usePersistSessionToken";
 import { useExtensionAuth } from "@/shared/useExtensionAuth";
@@ -18,6 +18,65 @@ function GoogleIcon() {
   );
 }
 
+// Where Clerk sends the person after signing in OR signing up inside this page. Without an explicit
+// target it falls back to "/" under chrome-extension://<id>/, which has no resource behind it: the
+// tab lands on Chrome's ERR_FILE_NOT_FOUND page and the person has to reopen the options page.
+// The hash is dropped so the redirect doesn't land back inside Clerk's hash-routed form.
+function returnUrl(): string {
+  return window.location.href.split("#")[0]!;
+}
+
+// Sign-up is rendered IN this page. The sign-in card's own "Sign up" link can't be redirected: it sends
+// the tab to Clerk's hosted Account Portal, which redirects back to a chrome-extension:// URL that
+// Chrome blocks (not a web-accessible resource), so a new user ends on an error page and has to start
+// over. We hide that link and switch between Clerk's <SignIn> and <SignUp> with our own toggle instead.
+const HIDE_CLERK_FOOTER_LINK = { footerAction: "hidden" };
+
+// Same card look for both forms; the Google button (when shown) sits above it in the same panel.
+const CLERK_CARD_APPEARANCE = {
+  elements: {
+    ...HIDE_CLERK_FOOTER_LINK,
+    rootBox: { width: "100%" },
+    cardBox: { width: "100%", boxShadow: "none", border: "none" },
+    card: { width: "100%", boxShadow: "none", border: "none", borderRadius: 0 },
+    // Native inline social sign-in hits the same chrome-extension:// redirect rejection noted above.
+    socialButtonsBlockButton: "hidden",
+    dividerRow: "hidden",
+  },
+};
+const PLAIN_CARD_APPEARANCE = { elements: HIDE_CLERK_FOOTER_LINK };
+
+function AuthModeToggle({ signingUp, onToggle }: { signingUp: boolean; onToggle: () => void }) {
+  return (
+    <p className="pb-4 text-center text-sm text-gray-500">
+      {signingUp ? "Already have an account? " : "New here? "}
+      <button type="button" onClick={onToggle} className="font-medium text-gray-900 underline">
+        {signingUp ? "Sign in" : "Create an account"}
+      </button>
+    </p>
+  );
+}
+
+// signOut() reloads this page (afterSignOutUrl), which would wipe an in-memory error message: a
+// not-enrolled person would be signed out with no explanation. Carry it across the reload.
+const SIGN_IN_ERROR_KEY = "pretzel_signin_error";
+
+function readCarriedError(): string | null {
+  try {
+    return sessionStorage.getItem(SIGN_IN_ERROR_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function carryError(message: string): void {
+  try {
+    sessionStorage.setItem(SIGN_IN_ERROR_KEY, message);
+  } catch {
+    /* storage unavailable: the message is simply not carried */
+  }
+}
+
 export function AccountPage() {
   // Combined state (Clerk session OR a stored device token) decides whether
   // to show the sign-in view at all; Clerk's own useAuth/useUser below is
@@ -28,13 +87,19 @@ export function AccountPage() {
   const { user } = useUser();
   const { signOut } = useClerk();
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(readCarriedError);
   const [checkingEnrollment, setCheckingEnrollment] = useState(false);
+  const [signingUp, setSigningUp] = useState(false);
 
   // Persist the Clerk JWT so background policy sync is authenticated when the
   // user signs in here rather than through the popup. No-op for a
   // device-token session (isSignedIn is false from Clerk's own perspective).
   usePersistSessionToken();
+
+  // Shown once: drop the carried message so a later visit doesn't repeat it.
+  useEffect(() => {
+    try { sessionStorage.removeItem(SIGN_IN_ERROR_KEY); } catch { /* ignore */ }
+  }, []);
 
   // The device-token (Google) sign-in path is already rejected server-side —
   // /auth/extension/authorize/complete 401s a zero-membership caller before a
@@ -52,7 +117,9 @@ export function AccountPage() {
       const memberships = await fetchMemberships(token);
       if (cancelled) return;
       if (memberships !== null && memberships.length === 0) {
-        setError("No account found for this email — ask your admin to add you.");
+        const message = "No account found for this email — ask your admin to add you.";
+        setError(message);
+        carryError(message);
         await signOut();
       }
       setCheckingEnrollment(false);
@@ -109,26 +176,44 @@ export function AccountPage() {
                 {pending ? "Signing in…" : "Continue with Google"}
               </button>
             </div>
-            <SignIn
-              routing="hash"
-              fallbackRedirectUrl={window.location.href}
-              appearance={{
-                elements: {
-                  rootBox: { width: "100%" },
-                  cardBox: { width: "100%", boxShadow: "none", border: "none" },
-                  card: { width: "100%", boxShadow: "none", border: "none", borderRadius: 0 },
-                  // Native inline social sign-in hits the same
-                  // chrome-extension:// redirect rejection noted above.
-                  socialButtonsBlockButton: "hidden",
-                  dividerRow: "hidden",
-                },
-              }}
-            />
+            {signingUp ? (
+              <SignUp
+                routing="hash"
+                fallbackRedirectUrl={returnUrl()}
+                signInFallbackRedirectUrl={returnUrl()}
+                appearance={CLERK_CARD_APPEARANCE}
+              />
+            ) : (
+              <SignIn
+                routing="hash"
+                fallbackRedirectUrl={returnUrl()}
+                signUpFallbackRedirectUrl={returnUrl()}
+                appearance={CLERK_CARD_APPEARANCE}
+              />
+            )}
+            <AuthModeToggle signingUp={signingUp} onToggle={() => setSigningUp((v) => !v)} />
           </div>
         ) : (
           // Dev/test key: no sync host, the extension origin is trusted
           // directly by Clerk and the native inline social button works as-is.
-          <SignIn routing="hash" fallbackRedirectUrl={window.location.href} />
+          <div className="w-full max-w-[400px]">
+            {signingUp ? (
+              <SignUp
+                routing="hash"
+                fallbackRedirectUrl={returnUrl()}
+                signInFallbackRedirectUrl={returnUrl()}
+                appearance={PLAIN_CARD_APPEARANCE}
+              />
+            ) : (
+              <SignIn
+                routing="hash"
+                fallbackRedirectUrl={returnUrl()}
+                signUpFallbackRedirectUrl={returnUrl()}
+                appearance={PLAIN_CARD_APPEARANCE}
+              />
+            )}
+            <AuthModeToggle signingUp={signingUp} onToggle={() => setSigningUp((v) => !v)} />
+          </div>
         )}
         {/* Surfaces either the device-auth error from handleGoogleSignIn, or
             the "not enrolled" rejection (see the enrollment-check effect
