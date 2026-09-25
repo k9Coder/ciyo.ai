@@ -1,7 +1,7 @@
 ---
 status: active
 owner: mykka.ai marketing and legal
-verified_at: 2026-09-20
+verified_at: 2026-09-26
 sources:
   - app/page.tsx
   - app/product/page.tsx
@@ -13,12 +13,14 @@ sources:
   - app/accessibility/page.tsx
   - app/about/page.tsx
   - components/sections/Hero.tsx
+  - components/sections/HeroDemo.tsx
   - components/sections/HowItWorks.tsx
-  - components/sections/WhatItCatches.tsx
-  - components/sections/ConsolePreview.tsx
-  - components/sections/FAQ.tsx
-  - components/sections/faq-data.ts
-  - components/sections/PricingPreview.tsx
+  - components/sections/FactsStrip.tsx
+  - components/sections/ProductParts.tsx
+  - components/sections/CTABanner.tsx
+  - lib/hero-demo.ts
+  - lib/cta.ts
+  - lib/config.ts
   - lib/posts.ts
 ---
 
@@ -110,6 +112,22 @@ Home page rebuilt from the mykka redesign (`Website.dc.html`). `FeatureGrid` and
 | "Northwind Legal", John Doe demo | `HeroDemo.tsx` | Fictional demo content. |
 | "Chrome Enterprise push", "people sign in with their work account" | `HowItWorks.tsx` | External evidence required (Chrome Enterprise deployment is not verified in this repo). |
 | "Free for 3 people" / "Free during early access" | `FactsStrip.tsx`, `PricingPreview.tsx` | Follows `IS_PILOT_MODE`; same limits as the existing Solo tier. |
+
+## 2026-09-26 home page v2 (`Website.dc.html`)
+
+Home page rebuilt again from the updated design: scripted three-scenario demo, browser-and-desktop framing, "Four parts, one policy", industries list, Discord card, pilot CTAs, new header (Solutions menu) and footer. Removed from the home page: What it catches, Console preview (sample figures), Pricing preview, the FAQ accordion and the FAQPage JSON-LD (`faq-data.ts`), and the unused `VideoDemo`. The claims those carried are no longer published on `/`.
+
+| Claim | Location | Status |
+|---|---|---|
+| "Pilot: free, up to 50 people, no cap on scans" | `lib/cta.ts` (`PILOT_TERMS`), `Hero.tsx`, `CTABanner.tsx` | Code-backed: `pilot` plan in `backend/src/billing/limits.ts` (`maxSeats: 50`, `monthlyScans: -1`). The design says "no limits on people or scans"; that is not true of the backend, so the site states the real cap. Product owner to decide whether to lift the seat cap or keep this wording. Time-sensitive. |
+| "Free for teams up to 3 users" (non-pilot metadata/JSON-LD) | `app/page.tsx` | Unchanged; only when `NEXT_PUBLIC_PILOT_MODE` is not `true`. |
+| "Chrome extension and a Windows / Mac app" | `FactsStrip.tsx`, JSON-LD `operatingSystem` | Code-backed: `pretzel-desktop/build/electron-builder.yml` builds mac and win (and linux; the design lists only Windows / Mac). |
+| "Admins see the rule and site, not the text" | `FactsStrip.tsx` | Same limits as the 2026-09-20 full-prompt entry: matched excerpts can reach the console for `rich` rules; the Security page states the report levels. Shortened from the design line, verify wording. |
+| "Covers AI desktop apps. Lives in the tray and asks before anything risky is sent." | `ProductParts.tsx` | Code-backed for the tray and the decision window (`pretzel-desktop`); which desktop apps are covered is not evidenced here (the proxy watches ChatGPT, Claude and Gemini hosts, see `isMonitoredHost` in `pretzel-desktop/electron/proxy.ts`). Wording is the design's; external evidence required for "AI desktop apps". |
+| Demo prompts, "Northwind Legal", "Dana", fake SSNs / card / key | `lib/hero-demo.ts` | Fictional demo content, labelled "demo". The AWS key is not a real credential shape (unit-tested). Outcomes are illustrative: each rule's action is admin-configured. |
+| "Publishing sends the policy to every device within minutes" | `HowItWorks.tsx` | Extension: two-minute policy poll (`pretzel/src/background/README.md`). Desktop app sync interval not re-verified here. Delivery to every device is not proven. Time-sensitive. |
+| "Start from a preset for your industry, or ask the assistant" | `HowItWorks.tsx` | Templates are code-backed only for accountant, developer, legal, healthcare (see the starter-kit row above); no fintech template. |
+| Discord community invite `https://discord.gg/mykka` | `lib/config.ts` | Taken from the design; not verified in this repo. Owner to confirm the invite is live and permanent. |
 
 ## Immediate inconsistencies and risks
 

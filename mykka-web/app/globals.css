@@ -39,6 +39,7 @@
   --logo-r:   6px;
 
   --shadow: 0 20px 50px rgba(24, 32, 28, 0.12);
+  --scrim:  rgba(24, 32, 28, 0.32);
 
   /* Legacy aliases used by app/download/DownloadClient.tsx */
   --border:   var(--line);
@@ -79,7 +80,8 @@
   --logo-mid: #7fd08a;
   --logo-r:   5px;
 
-  --shadow: none;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --scrim:  rgba(0, 0, 0, 0.55);
 }
 
 @theme inline {
@@ -114,4 +116,10 @@ body {
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s;
+}
+
+/* Blinking text caret in the home-page demo (components/sections/HeroDemo.tsx). */
+@keyframes caret { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .demo-caret { animation: caret 1s steps(1) infinite; }
 }

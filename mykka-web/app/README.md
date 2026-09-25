@@ -22,7 +22,7 @@ The `app/` directory owns public pages, route metadata, sitemap generation, robo
 
 | Route | Source | Notes |
 |---|---|---|
-| `/` | `page.tsx` | Homepage sections and primary onboarding CTA. |
+| `/` | `page.tsx` | Homepage sections (hero demo, facts, how it works, four parts, industries, Discord, CTA). Primary CTA comes from `lib/cta.ts`: "Join the pilot" (`/pricing`) when `NEXT_PUBLIC_PILOT_MODE=true`, otherwise onboarding. |
 | `/product` | `product/page.tsx` | Product narrative; screenshot panels are placeholders. |
 | `/pricing` | `pricing/page.tsx`, `pricing/PricingClient.tsx` | Client-side monthly/annual price toggle and plan claims. |
 | `/solutions` | `solutions/page.tsx` | Links to four supported industry slugs. |

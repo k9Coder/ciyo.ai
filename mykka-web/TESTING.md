@@ -18,7 +18,7 @@ Runs `vitest run` (single pass, no watch mode).
 
 ## Test layers
 
-- **Unit tests** (`lib/*.test.ts`, `app/**/*.test.ts`): pure logic and data-shape invariants — e.g. `lib/posts.test.ts` (sort order, slug uniqueness), `app/download/getDownloads.test.ts` (blob-list parsing, error fallback), `lib/env.test.ts` (env var defaults).
+- **Unit tests** (`lib/*.test.ts`, `app/**/*.test.ts`): pure logic and data-shape invariants — e.g. `lib/posts.test.ts` (sort order, slug uniqueness), `app/download/getDownloads.test.ts` (blob-list parsing, error fallback), `lib/env.test.ts` (env var defaults), `lib/hero-demo.test.ts` (home-page demo scenarios and redaction).
 - **Integration/component tests**: none yet. Use `@testing-library/react` + jsdom when added (see Framework note above about re-enabling the plugin).
 - **E2E**: out of scope for mykka-web's own suite — cross-service E2E lives in `e2e/` at the repo root (see root `AGENTS.md`).
 
