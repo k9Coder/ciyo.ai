@@ -1,14 +1,11 @@
-import { H2 } from './H2'
-import { FAQ_ITEMS } from './faq-data'
-
 // Native <details> keeps every answer in the DOM for crawlers and needs no client JS.
 // Sharing a `name` makes the group exclusive (one open at a time) in browsers that support it.
-export function FAQ() {
+export function FAQ({ title, items }: { title: string; items: { question: string; answer: string }[] }) {
   return (
-    <section id="faq" className="mx-auto grid max-w-[1200px] gap-12 px-6 py-24 lg:grid-cols-2">
-      <H2>Questions IT asks us</H2>
+    <section id="faq" className="mt-16">
+      <h2 className="mb-2 text-[clamp(26px,3vw,34px)] font-semibold leading-[1.1] tracking-[-0.03em] text-ink">{title}</h2>
       <div className="flex flex-col">
-        {FAQ_ITEMS.map(({ question, answer }, i) => (
+        {items.map(({ question, answer }, i) => (
           <details key={question} name="faq" open={i === 0} className="group border-b border-line">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[18px] font-medium marker:hidden [&::-webkit-details-marker]:hidden">
               <span>{question}</span>

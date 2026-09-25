@@ -1,9 +1,9 @@
 import { H2 } from './H2'
 
 const STEPS = [
-  { n: '01', t: 'Install the extension', d: 'Add Pretzel from the Chrome Web Store, or push it with Chrome Enterprise. People sign in with their work account.' },
-  { n: '02', t: 'Choose what to protect', d: 'Pick presets such as client personal data, credentials or financial data, or describe a rule in plain words and review it before it goes live.' },
-  { n: '03', t: 'Publish, then check in', d: 'Publishing sends the policy to every browser within minutes. The overview shows coverage, catches and anything that needs you.' },
+  { n: '01', t: 'Install', d: 'Add the Chrome extension or push it with Chrome Enterprise. For desktop AI apps, install Pretzel Desktop. People sign in with their work account.' },
+  { n: '02', t: 'Choose what to protect', d: 'Start from a preset for your industry, or ask the assistant in plain words. Review every change before it goes live.' },
+  { n: '03', t: 'Publish, then check in', d: 'Publishing sends the policy to every device within minutes. The overview shows coverage, catches and anything that needs you.' },
 ]
 
 export function HowItWorks() {

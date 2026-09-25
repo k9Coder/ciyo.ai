@@ -1,45 +1,25 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Metadata } from 'next'
-import { APP_URL } from '@/lib/config'
+import { AppWindow, LayoutDashboard, MessageSquareText, Monitor, type LucideIcon } from 'lucide-react'
+import { IS_PILOT_MODE } from '@/lib/config'
+import { primaryCta } from '@/lib/cta'
+import { AssistantMock, ConsoleMock, DesktopMock, ExtensionMock } from '@/components/product/ProductMocks'
 
 export const metadata: Metadata = {
-  title: 'How Pretzel Works — Browser-Native AI DLP',
-  description: 'Pretzel intercepts AI prompts before submission, blocking PII, credentials, and sensitive data from reaching ChatGPT, Claude, and Gemini. No network changes. Centrally managed policies.',
+  title: 'How Pretzel Works — Browser and Desktop AI DLP',
+  description: 'Pretzel checks AI prompts before they are sent, in the browser and in a desktop app, blocking PII, credentials, and sensitive data from reaching ChatGPT, Claude, and Gemini. One policy, managed in one console.',
   alternates: { canonical: 'https://mykka.ai/product' },
   openGraph: {
-    title: 'How Pretzel Works — Browser-Native AI DLP',
-    description: 'Pretzel sits in the browser and scans every AI prompt before it is sent. Sensitive data is blocked at the point of input — before it reaches the AI provider.',
+    title: 'How Pretzel Works — Browser and Desktop AI DLP',
+    description: 'Two apps your team installs, one console you run. Sensitive data is stopped at the point of input, before it reaches the AI provider.',
   },
 }
 
-const SECTIONS: Array<{ tag: string; headline: string; body: string; image?: string }> = [
-  {
-    tag: 'Browser Extension',
-    headline: 'Intercepts prompts before they\'re sent',
-    body: `Pretzel sits silently in your browser and scans every prompt the moment you type it. When a keyword, pattern, or high-entropy string (like an API key) is detected, Pretzel shows an inline warning — or blocks the send button entirely.
-
-It works on ChatGPT, Claude, Gemini, Perplexity, and any other AI site you configure. No proxy required. No network changes. Just a Chrome extension and a policy.`,
-  },
-  {
-    tag: 'Pretzel Console',
-    headline: 'Manage policies for your whole company',
-    body: `The Pretzel Console is where your security team configures what gets blocked. Create subjects (like "Customer PII" or "Source Code"), attach rules (keywords, regex, entropy detection), and scope them to the whole org, a division, or a specific team.
-
-One click publishes your new policy to every employee's browser. No MDM required for updates.`,
-    image: '/images/product/console-dashboard.png',
-  },
-  {
-    tag: 'AI Policy Assistant',
-    headline: 'Manage security in plain English',
-    body: `The hardest part of DLP is knowing what to block. Describe it in plain English and the Pretzel AI assistant proposes the exact rule.
-
-"Block any prompt from the Finance team that contains a credit card number." The assistant proposes the rule — subject, pattern, and scope — for you to review and approve. It never applies a change on its own.`,
-    image: '/images/product/console-assistant.png',
-  },
-]
-
 const AEO_QA = [
+  {
+    question: 'What is Pretzel?',
+    answer: 'Pretzel is a browser extension and a desktop app that prevent employees from accidentally sending sensitive data to AI tools like ChatGPT, Claude, and Gemini. It checks every AI prompt before it is submitted — scanning the text for personally identifiable information (PII), source code, API keys, credentials, and other sensitive content your organization needs to protect. When Pretzel detects a policy violation, it stops the prompt and shows the user exactly what was caught. Unlike traditional data loss prevention solutions that operate at the network level, Pretzel stops leaks at the source, before any data is transmitted. Security administrators manage protection policies through Pretzel Console, a centralized dashboard where teams define custom detection rules, publish policy updates across the organization, and review an audit log of blocked and flagged events.',
+  },
   {
     question: 'How does Pretzel detect sensitive data in AI prompts?',
     answer: 'Pretzel uses four detection methods running locally in the browser. Pattern matching catches known formats: Social Security numbers, credit card numbers, IBAN codes, email addresses, and phone numbers. Entropy detection identifies API keys, tokens, and passwords by their statistical randomness — catching credentials even if they are not in your keyword list. Keyword and dictionary rules block custom terms your organization defines: client names, internal project codenames, and regulated terms. Score-based rules combine multiple signals to flag prompts that are borderline individually but sensitive in combination. All detection runs before the prompt is submitted — no prompt text is sent to mykka.ai servers.',
@@ -52,6 +32,14 @@ const AEO_QA = [
     question: 'What AI tools does Pretzel work with?',
     answer: 'Pretzel works on ChatGPT (chat.openai.com), Claude (claude.ai), and Gemini (gemini.google.com) out of the box. The extension can also be configured to work on additional AI sites using a custom CSS selector for the prompt input field and send button — this makes it compatible with internal AI tools and any other browser-based AI chat interface. Each additional site is configured through the Pretzel Console and requires a domain allowance in the browser extension manifest. Enterprise customers can request additional site support.',
   },
+  {
+    question: 'What is AI DLP (AI Data Loss Prevention)?',
+    answer: 'AI DLP — Artificial Intelligence Data Loss Prevention — is a category of security software designed to prevent employees from sharing sensitive organizational data with AI tools and large language models. As tools like ChatGPT, Claude, and Gemini became standard in the workplace, organizations face a new class of data leakage risk: employees pasting customer PII, source code, financial records, legal documents, and credentials into AI chat interfaces. Traditional DLP solutions were built for email, file transfers, and removable media — they cannot intercept browser-based AI prompt submissions. AI DLP tools close this gap by monitoring and blocking sensitive content at the point of input, before a prompt reaches the AI provider\'s servers. Policy-based AI DLP platforms allow security administrators to define what constitutes sensitive data, enforce different rules for different teams, and maintain audit trails for regulatory compliance.',
+  },
+  {
+    question: 'How is browser-native AI DLP different from network DLP?',
+    answer: 'Browser-native AI DLP operates inside the web browser, intercepting prompts before they are submitted — before any data leaves the user\'s device. Network-level DLP tools sit between the corporate network and the internet, inspecting traffic after it has already been sent from the browser. Network DLP cannot inspect encrypted HTTPS traffic without complex TLS inspection setups, which are difficult to maintain and can break modern web applications. Browser-native DLP like Pretzel operates at the point of input, reading the prompt text exactly as the user typed it — before encryption occurs. It also requires no network configuration changes, no proxy setup, and no IT infrastructure modifications for the browser extension. Administrators configure and publish policies centrally through the Pretzel Console.',
+  },
 ]
 
 const jsonLd = {
@@ -63,8 +51,8 @@ const jsonLd = {
       name: 'Pretzel',
       applicationCategory: 'SecurityApplication',
       applicationSubCategory: 'Data Loss Prevention',
-      operatingSystem: 'Chrome',
-      description: 'Browser extension that prevents employees from sending sensitive data to AI tools. Intercepts prompts before submission using pattern, entropy, keyword, and score-based detection.',
+      operatingSystem: 'Chrome, Windows, macOS',
+      description: 'Chrome extension and desktop app that prevent employees from sending sensitive data to AI tools. Checks prompts before submission using pattern, entropy, keyword, and score-based detection.',
       url: 'https://mykka.ai/product',
     },
     {
@@ -78,116 +66,117 @@ const jsonLd = {
   ],
 }
 
-function BrowserExtensionMockup() {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-(--shadow)"
-      aria-label="Pretzel extension blocking a sensitive prompt in ChatGPT">
-      <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
-        <span className="size-3 rounded-full bg-[#ff5f57]" aria-hidden="true" />
-        <span className="size-3 rounded-full bg-[#febc2e]" aria-hidden="true" />
-        <span className="size-3 rounded-full bg-[#28c840]" aria-hidden="true" />
-        <div className="ml-3 flex-1 rounded-md bg-fill px-3 py-1 text-left text-[11px] text-muted">
-          chat.openai.com
-        </div>
-      </div>
-      <div className="px-6 py-8">
-        <div className="mb-4 rounded-xl border border-block bg-block-fill p-4 text-left">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-block" aria-hidden="true">⚠</span>
-            <span className="text-[13px] font-bold text-block">Pretzel blocked this prompt</span>
-          </div>
-          <p className="mb-3 text-[12px] text-muted">
-            Sensitive content detected before submission to ChatGPT:
-          </p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 rounded-md bg-fill px-3 py-1.5 text-[11px]">
-              <span className="font-mono text-warn">AWS access key</span>
-              <span className="text-muted">→</span>
-              <span className="rounded bg-block-fill px-1.5 py-0.5 font-mono text-block">AKIA••••••••••••••••</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-md bg-fill px-3 py-1.5 text-[11px]">
-              <span className="font-mono text-warn">Customer email</span>
-              <span className="text-muted">→</span>
-              <span className="rounded bg-block-fill px-1.5 py-0.5 font-mono text-block">j.doe@••••.com</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-4 py-3">
-          <div className="flex-1 text-left text-[12px] text-muted line-through">
-            Debug why this fails: AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE, contact j.doe@acme.com…
-          </div>
-          <div className="ml-4 flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-brand" aria-hidden="true" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-brand">Blocked</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+const JUMPS: Array<{ Icon: LucideIcon; href: string; label: string }> = [
+  { Icon: AppWindow, href: '#extension', label: 'Extension' },
+  { Icon: Monitor, href: '#desktop', label: 'Desktop' },
+  { Icon: LayoutDashboard, href: '#console', label: 'Console' },
+  { Icon: MessageSquareText, href: '#assistant', label: 'Assistant' },
+]
+
+const H2_CLASS = 'm-0 text-[clamp(28px,3.4vw,40px)] font-semibold leading-[1.1] tracking-[-0.03em]'
+const KICKER = 'font-mono text-[13px] text-muted'
+const ROW_SPLIT = 'mx-auto grid max-w-[1200px] items-center gap-14 px-6 md:grid-cols-2'
 
 export default function ProductPage() {
+  const cta = primaryCta()
   return (
-    <div className="px-6 py-24">
+    <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mx-auto max-w-5xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-brand">Product</p>
-        <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-ink">
-          How Pretzel Protects Your Team
+
+      <section className="mx-auto flex max-w-[1200px] flex-col gap-[18px] px-6 pb-10 pt-[72px]">
+        <div className={KICKER}>Product</div>
+        <h1 className="m-0 max-w-[900px] text-balance text-[clamp(38px,5vw,60px)] font-semibold leading-[1.04] tracking-[-0.035em]">
+          Two apps your team installs. One console you run.
         </h1>
-        <p className="mx-auto mb-8 max-w-xl text-center text-[16px] text-muted">
-          Three surfaces, one mission: make sure sensitive data never reaches an AI it shouldn&apos;t.
+        <p className="m-0 max-w-[640px] text-[19px] leading-[1.5] text-muted">
+          Employees get the browser extension and, if they use AI desktop apps, Pretzel Desktop. IT sets one policy in the console, and both apps follow it.
         </p>
-        <div className="mb-20 text-center">
-          <Link href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-btn px-7 py-3 text-[15px] font-bold text-btn-fg transition hover:opacity-90">
-            Start Free — No Credit Card
-          </Link>
-        </div>
+        <nav aria-label="On this page" className="mt-2 flex flex-wrap gap-2">
+          {JUMPS.map(({ Icon, href, label }) => (
+            <a key={href} href={href}
+              className="flex items-center gap-2 rounded-btn border border-line px-3.5 py-2 text-[15px] text-ink transition-colors hover:border-ink">
+              <Icon size={18} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />{label}
+            </a>
+          ))}
+        </nav>
+      </section>
 
-        {SECTIONS.map(({ tag, headline, body, image }, i) => (
-          <div key={tag} className={`mb-24 flex flex-col gap-12 md:flex-row ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
-            <div className="flex-1">
-              <span className="mb-4 inline-block rounded-full border border-brand bg-brand-soft px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand">{tag}</span>
-              <h2 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink">{headline}</h2>
-              {body.split('\n\n').map((para, j) => (
-                <p key={j} className="mb-4 text-[15px] leading-relaxed text-muted">{para}</p>
-              ))}
-            </div>
-            <div className="flex-1 self-center">
-              {image ? (
-                <div className="relative overflow-hidden rounded-2xl border border-line bg-surface shadow-(--shadow)" style={{ aspectRatio: '8/5' }}>
-                  <Image src={image} alt={`${tag} in the Pretzel Console`} fill sizes="(min-width: 768px) 40vw, 90vw" className="object-cover object-top" />
-                </div>
-              ) : (
-                <BrowserExtensionMockup />
-              )}
-            </div>
+      <section id="extension" className={`${ROW_SPLIT} scroll-mt-20 py-14`}>
+        <div className="flex flex-col gap-4">
+          <span className={KICKER}>01 · Browser extension</span>
+          <h2 className={H2_CLASS}>Stops the prompt before it&apos;s sent, then offers a safe way to send it.</h2>
+          <div className="flex flex-col border-t border-line">
+            <div className="border-b border-line py-3 text-[16px] leading-[1.5]"><b className="font-semibold">Block</b> <span className="text-muted">for data that must never leave. One click removes it and sends the rest.</span></div>
+            <div className="border-b border-line py-3 text-[16px] leading-[1.5]"><b className="font-semibold">Warn</b> <span className="text-muted">for things that need a second look. The person decides.</span></div>
+            <div className="border-b border-line py-3 text-[16px] leading-[1.5]"><b className="font-semibold">Deploy</b> <span className="text-muted">from the Chrome Web Store or push it with Chrome Enterprise.</span></div>
           </div>
-        ))}
-
-        <section className="mb-20 border-t border-line pt-20">
-          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-brand">How It Works</p>
-          <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-ink">
-            Common Questions
-          </h2>
-          <div className="space-y-6">
-            {AEO_QA.map(({ question, answer }) => (
-              <div key={question} className="rounded-2xl border border-line bg-surface p-8">
-                <h3 className="mb-4 text-[18px] font-bold text-ink">{question}</h3>
-                <p className="text-[15px] leading-relaxed text-muted">{answer}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="text-center">
-          <Link href={`${APP_URL}/onboarding`}
-            className="rounded-xl bg-btn px-8 py-3 text-[15px] font-bold text-btn-fg transition hover:opacity-90">
-            Start Free — No Credit Card
-          </Link>
         </div>
-      </div>
+        <ExtensionMock />
+      </section>
+
+      <section id="desktop" className={`${ROW_SPLIT} scroll-mt-20 py-14`}>
+        <div className="flex flex-col gap-4 md:order-2">
+          <span className={KICKER}>02 · Pretzel Desktop</span>
+          <h2 className={H2_CLASS}>Covers the AI apps outside the browser.</h2>
+          <p className="m-0 text-[17px] leading-[1.55] text-muted">
+            A small app for Windows and Mac. It sits in the tray, shows one clear status (protected or off), and opens the same block and warn window when a rule matches.
+          </p>
+          <div className="flex flex-wrap gap-[18px] text-[15px]">
+            <span className="flex items-center gap-[7px]"><span className="size-2 rounded-full bg-brand" />Protected</span>
+            <span className="flex items-center gap-[7px]"><span className="size-2 rounded-full bg-warn" />Rules not loaded</span>
+            <span className="flex items-center gap-[7px]"><span className="size-2 rounded-full bg-block" />Protection off</span>
+          </div>
+          <Link href="/download" className="self-start text-[16px] text-ink underline underline-offset-4">Download Pretzel Desktop</Link>
+        </div>
+        <div className="md:order-1"><DesktopMock /></div>
+      </section>
+
+      <section id="console" className="scroll-mt-16 border-y border-line bg-surface">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 py-[88px]">
+          <div className="flex max-w-[680px] flex-col gap-3.5">
+            <span className={KICKER}>03 · Admin console</span>
+            <h2 className={H2_CLASS}>One screen tells you if everyone is covered.</h2>
+            <p className="m-0 text-[17px] leading-[1.55] text-muted">
+              Policies, people, activity and publishing. The overview shows coverage, what was caught this week and anything that isn&apos;t live yet.
+            </p>
+          </div>
+          <ConsoleMock />
+        </div>
+      </section>
+
+      <section id="assistant" className={`${ROW_SPLIT} scroll-mt-20 py-[88px]`}>
+        <div className="flex flex-col gap-4">
+          <span className={KICKER}>04 · Assistant</span>
+          <h2 className={H2_CLASS}>Ask for a change. Review it. Apply it.</h2>
+          <p className="m-0 text-[17px] leading-[1.55] text-muted">
+            The assistant can add divisions and teams, write rules and invite people. Every change shows as a diff first, and nothing goes live until you publish.
+          </p>
+        </div>
+        <AssistantMock />
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-6 pb-20">
+        <p className="mb-3 text-center font-mono text-[13px] text-muted">How it works</p>
+        <h2 className="mb-10 text-center text-[clamp(28px,3.4vw,40px)] font-semibold tracking-[-0.03em]">Common questions</h2>
+        <div className="mx-auto flex max-w-3xl flex-col gap-4">
+          {AEO_QA.map(({ question, answer }) => (
+            <div key={question} className="rounded-token border border-line bg-surface p-7">
+              <h3 className="mb-3 text-[18px] font-semibold text-ink">{question}</h3>
+              <p className="m-0 text-[15px] leading-relaxed text-muted">{answer}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-6 pb-24">
+        <div className="flex flex-wrap items-center justify-between gap-7 rounded-[calc(var(--r)+6px)] bg-fill p-12">
+          <h2 className="m-0 max-w-[600px] text-[clamp(26px,3vw,36px)] font-semibold leading-[1.1] tracking-[-0.03em]">{IS_PILOT_MODE ? 'Try all four in the pilot.' : 'Try all four.'}</h2>
+          <div className="flex flex-wrap gap-2.5">
+            <Link href={cta.href} className="whitespace-nowrap rounded-btn bg-btn px-[22px] py-[13px] text-[16px] font-medium text-btn-fg transition-opacity hover:opacity-90">{cta.label}</Link>
+            <Link href="/security" className="whitespace-nowrap rounded-btn bg-surface px-[22px] py-[13px] text-[16px] text-ink">Security</Link>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

@@ -1,14 +1,16 @@
 import Link from 'next/link'
-import { APP_URL } from '@/lib/config'
+import { IS_PILOT_MODE } from '@/lib/config'
+import { primaryCta, PILOT_TERMS } from '@/lib/cta'
 import { HeroDemo } from './HeroDemo'
 
 export function Hero() {
+  const cta = primaryCta()
   return (
-    <section id="top" className="mx-auto grid max-w-[1200px] items-center gap-14 px-6 pb-[72px] pt-20 lg:grid-cols-2">
+    <section id="top" className="mx-auto grid max-w-[1200px] items-center gap-14 px-6 pb-16 pt-[72px] lg:grid-cols-2">
       <div className="flex flex-col gap-[22px]">
         <div className="flex items-center gap-2 font-mono text-[13px] text-brand">
           <span className="size-[7px] rounded-full bg-brand" />
-          Chrome extension for ChatGPT, Claude and Gemini
+          For ChatGPT, Claude and Gemini · browser and desktop
         </div>
         <h1 className="m-0 text-balance text-[clamp(40px,5.4vw,64px)] font-semibold leading-[1.02] tracking-[-0.035em]">
           Let your team use AI. Keep client data out of it.
@@ -18,16 +20,18 @@ export function Hero() {
           It offers to remove them, so people can keep working. Detection runs on the device.
         </p>
         <div className="flex flex-wrap gap-2.5">
-          <Link href={`${APP_URL}/onboarding`}
+          <Link href={cta.href}
             className="whitespace-nowrap rounded-btn bg-btn px-[22px] py-[13px] text-[16px] font-medium text-btn-fg transition-opacity hover:opacity-90">
-            Start free
+            {cta.label}
           </Link>
-          <Link href="#how"
+          <Link href="/product"
             className="whitespace-nowrap rounded-btn bg-fill px-[22px] py-[13px] text-[16px] text-ink">
-            How it works
+            See the product
           </Link>
         </div>
-        <div className="text-[14px] text-muted">No proxy or network changes. No credit card.</div>
+        <div className="text-[14px] text-muted">
+          {IS_PILOT_MODE ? `Pilot: free, ${PILOT_TERMS}.` : 'No proxy or network changes. No credit card.'}
+        </div>
       </div>
 
       <HeroDemo />
