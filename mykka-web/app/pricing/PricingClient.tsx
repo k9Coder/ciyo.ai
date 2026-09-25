@@ -41,18 +41,18 @@ export default function PricingClient() {
     return (
       <div className="px-6 py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Early Access</p>
-          <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-brand">Early Access</p>
+          <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-ink">
             Free During Early Access
           </h1>
-          <p className="mx-auto mb-8 max-w-lg text-[16px] text-[#94a3b8]">
+          <p className="mx-auto mb-8 max-w-lg text-[16px] text-muted">
             Pretzel is in early access. All features are free while we learn from real teams.
             Pricing will be announced with notice before anything changes.
             Early access accounts include up to 50 members per organisation.
           </p>
           <Link
             href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-[#5b8cff] px-8 py-3 text-[14px] font-bold text-white hover:bg-[#3f6fe0]"
+            className="inline-block rounded-xl bg-btn px-8 py-3 text-[14px] font-bold text-btn-fg hover:opacity-90"
           >
             Get started free →
           </Link>
@@ -64,23 +64,23 @@ export default function PricingClient() {
   return (
     <div className="px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Pricing</p>
-        <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-white">
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-brand">Pricing</p>
+        <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-ink">
           Transparent Pricing
         </h1>
-        <p className="mx-auto mb-8 max-w-lg text-center text-[16px] text-[#94a3b8]">
+        <p className="mx-auto mb-8 max-w-lg text-center text-[16px] text-muted">
           Start free. Scale when you need it. No surprise invoices.
         </p>
 
         <div className="mb-12 flex items-center justify-center gap-3">
-          <span className={`text-[13px] font-semibold ${!annual ? 'text-white' : 'text-[#64748b]'}`}>Monthly</span>
+          <span className={`text-[13px] font-semibold ${!annual ? 'text-ink' : 'text-muted'}`}>Monthly</span>
           <button onClick={() => setAnnual(!annual)}
-            className={`relative h-6 w-11 rounded-full transition-colors ${annual ? 'bg-[#5b8cff]' : 'bg-white/10'}`}
+            className={`relative h-6 w-11 rounded-full transition-colors ${annual ? 'bg-btn' : 'bg-fill'}`}
             aria-label="Toggle annual pricing">
-            <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${annual ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            <span className={`absolute top-0.5 size-5 rounded-full bg-surface shadow transition-transform ${annual ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
-          <span className={`text-[13px] font-semibold ${annual ? 'text-white' : 'text-[#64748b]'}`}>
-            Annual <span className="text-[#34d399]">— save 2 months</span>
+          <span className={`text-[13px] font-semibold ${annual ? 'text-ink' : 'text-muted'}`}>
+            Annual <span className="text-brand">— save 2 months</span>
           </span>
         </div>
 
@@ -88,21 +88,21 @@ export default function PricingClient() {
           {TIERS.map(({ name, monthly, annual: annualPrice, per, desc, cta, href, featured, features, missing }) => {
             const price = annual ? annualPrice : monthly
             return (
-              <div key={name} className={`relative flex flex-col rounded-2xl border p-6 ${featured ? 'border-[#5b8cff] bg-gradient-to-b from-[#5b8cff]/10 to-[#17171e]' : 'border-white/[0.07] bg-[#17171e]'}`}>
-                {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#5b8cff] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most Popular</span>}
-                <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-[#94a3b8]">{name}</p>
+              <div key={name} className={`relative flex flex-col rounded-2xl border p-6 ${featured ? 'border-brand bg-brand-soft' : 'border-line bg-surface'}`}>
+                {featured && <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-btn px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-btn-fg">Most Popular</span>}
+                <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">{name}</p>
                 <div className="mb-2">
                   {price === null
-                    ? <p className="text-3xl font-extrabold text-white">Custom</p>
-                    : <p className="text-3xl font-extrabold text-white">{price === 0 ? 'Free' : `$${price}`}<span className="text-[12px] font-normal text-[#94a3b8]"> {per}</span></p>
+                    ? <p className="text-3xl font-extrabold text-ink">Custom</p>
+                    : <p className="text-3xl font-extrabold text-ink">{price === 0 ? 'Free' : `$${price}`}<span className="text-[12px] font-normal text-muted"> {per}</span></p>
                   }
                 </div>
-                <p className="mb-5 text-[12px] text-[#64748b]">{desc}</p>
+                <p className="mb-5 text-[12px] text-muted">{desc}</p>
                 <ul className="mb-5 flex-1 space-y-2">
-                  {features.map(f => <li key={f} className="flex gap-2 text-[12px] text-[#94a3b8]"><span className="shrink-0 text-[#34d399]">✓</span>{f}</li>)}
-                  {missing.map(f => <li key={f} className="flex gap-2 text-[12px] text-[#4b5563]"><span className="shrink-0">–</span>{f}</li>)}
+                  {features.map(f => <li key={f} className="flex gap-2 text-[12px] text-muted"><span className="shrink-0 text-brand">✓</span>{f}</li>)}
+                  {missing.map(f => <li key={f} className="flex gap-2 text-[12px] text-muted"><span className="shrink-0">–</span>{f}</li>)}
                 </ul>
-                <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-[#5b8cff] text-white hover:bg-[#3f6fe0]' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'}`}>
+                <Link href={href} className={`block rounded-xl py-2.5 text-center text-[13px] font-bold transition ${featured ? 'bg-btn text-btn-fg hover:opacity-90' : 'border border-line bg-fill text-ink hover:bg-line'}`}>
                   {cta}
                 </Link>
               </div>
@@ -111,7 +111,7 @@ export default function PricingClient() {
         </div>
 
         <div className="mt-20">
-          <h2 className="mb-8 text-center text-2xl font-bold text-white">Frequently asked questions</h2>
+          <h2 className="mb-8 text-center text-2xl font-bold text-ink">Frequently asked questions</h2>
           {[
             ['What counts as a scan?', 'Every time the Pretzel extension evaluates a prompt against your policy rules counts as one scan. Scans are counted when a prompt is submitted, not when the page loads.'],
             ['Can I change plans at any time?', 'Yes. Upgrade instantly from the Console Settings page. Downgrade takes effect at the next billing cycle.'],
@@ -119,9 +119,9 @@ export default function PricingClient() {
             ['Do you store the contents of prompts?', 'Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a brief excerpt of the matched text may be retained for audit purposes. Full prompt text is never stored.'],
             ['Is there a free trial on paid tiers?', '14-day free trial on Business. No credit card required to start.'],
           ].map(([q, a]) => (
-            <details key={q} className="mb-3 rounded-xl border border-white/[0.07] bg-[#17171e] p-5">
-              <summary className="cursor-pointer text-[14px] font-semibold text-white">{q}</summary>
-              <p className="mt-3 text-[13px] text-[#94a3b8]">{a}</p>
+            <details key={q} className="mb-3 rounded-xl border border-line bg-surface p-5">
+              <summary className="cursor-pointer text-[14px] font-semibold text-ink">{q}</summary>
+              <p className="mt-3 text-[13px] text-muted">{a}</p>
             </details>
           ))}
         </div>

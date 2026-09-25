@@ -88,17 +88,17 @@ export default function SecurityPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Security &amp; Trust</p>
-        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-white">How We Handle Your Data</h1>
-        <p className="mb-16 text-[16px] text-[#94a3b8]">CISOs ask hard questions. Here are honest answers.</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-brand">Security &amp; Trust</p>
+        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-ink">How We Handle Your Data</h1>
+        <p className="mb-16 text-[16px] text-muted">CISOs ask hard questions. Here are honest answers.</p>
         <div className="space-y-4">
           {POINTS.map(({ icon, title, body }) => (
-            <div key={title} className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-7">
+            <div key={title} className="rounded-2xl border border-line bg-surface p-7">
               <div className="mb-3 flex items-center gap-3">
                 <span className="text-2xl" aria-hidden="true">{icon}</span>
-                <h2 className="text-[17px] font-bold text-white">{title}</h2>
+                <h2 className="text-[17px] font-bold text-ink">{title}</h2>
               </div>
-              <p className="text-[14px] leading-relaxed text-[#94a3b8]">{body}</p>
+              <p className="text-[14px] leading-relaxed text-muted">{body}</p>
             </div>
           ))}
         </div>

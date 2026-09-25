@@ -1,4 +1,20 @@
-const QA_BLOCKS = [
+// Single source for the visible FAQ accordion and the FAQPage JSON-LD in app/page.tsx,
+// so structured data always matches what is on the page.
+export const FAQ_ITEMS: { question: string; answer: string }[] = [
+  {
+    question: 'Does prompt text leave the device?',
+    answer:
+      'No. Detection runs inside the browser before the prompt is submitted. What the admin sees depends on each rule\'s report level: none, action and site only, who triggered it, or the matched term.',
+  },
+  {
+    question: 'Which AI tools are covered?',
+    answer: 'ChatGPT, Claude and Gemini today. Sites are enabled per organization in the console.',
+  },
+  {
+    question: 'What happens if the extension fails?',
+    answer:
+      'It fails open so work isn\'t blocked, and the console shows a "protection degraded" alert with the site and reason.',
+  },
   {
     question: 'What is Pretzel?',
     answer:
@@ -15,30 +31,3 @@ const QA_BLOCKS = [
       'Browser-native AI DLP operates inside the web browser, intercepting prompts before they are submitted — before any data leaves the user\'s device. Network-level DLP tools sit between the corporate network and the internet, inspecting traffic after it has already been sent from the browser. This architectural difference has significant security implications. Network DLP cannot inspect encrypted HTTPS traffic without complex TLS inspection setups, which are difficult to maintain and can break modern web applications. Browser-native DLP like Pretzel operates at the point of input, reading the full unencrypted prompt text exactly as the user typed it — before encryption occurs. It also requires no network configuration changes, no proxy setup, and no IT infrastructure modifications. Employees install the extension in under a minute, and administrators configure and publish policies centrally through the Pretzel Console.',
   },
 ]
-
-export function AEOAnswers() {
-  return (
-    <section className="border-t border-white/[0.05] px-6 py-24">
-      <div className="mx-auto max-w-4xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">
-          AI DLP Explained
-        </p>
-        <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-white">
-          What is AI Data Loss Prevention?
-        </h2>
-
-        <div className="space-y-6">
-          {QA_BLOCKS.map(({ question, answer }) => (
-            <div
-              key={question}
-              className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-8"
-            >
-              <h3 className="mb-4 text-[18px] font-bold text-white">{question}</h3>
-              <p className="text-[15px] leading-relaxed text-[#94a3b8]">{answer}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}

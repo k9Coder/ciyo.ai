@@ -80,45 +80,45 @@ const jsonLd = {
 
 function BrowserExtensionMockup() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d10] shadow-2xl shadow-black/50"
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-(--shadow)"
       aria-label="Pretzel extension blocking a sensitive prompt in ChatGPT">
-      <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#111115] px-4 py-3">
+      <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
         <span className="size-3 rounded-full bg-[#ff5f57]" aria-hidden="true" />
         <span className="size-3 rounded-full bg-[#febc2e]" aria-hidden="true" />
         <span className="size-3 rounded-full bg-[#28c840]" aria-hidden="true" />
-        <div className="ml-3 flex-1 rounded-md bg-white/[0.05] px-3 py-1 text-left text-[11px] text-[#64748b]">
+        <div className="ml-3 flex-1 rounded-md bg-fill px-3 py-1 text-left text-[11px] text-muted">
           chat.openai.com
         </div>
       </div>
       <div className="px-6 py-8">
-        <div className="mb-4 rounded-xl border border-[#ff4d4d]/30 bg-[#ff4d4d]/[0.06] p-4 text-left">
+        <div className="mb-4 rounded-xl border border-block bg-block-fill p-4 text-left">
           <div className="mb-2 flex items-center gap-2">
-            <span className="text-[#ff4d4d]" aria-hidden="true">⚠</span>
-            <span className="text-[13px] font-bold text-[#ff4d4d]">Pretzel blocked this prompt</span>
+            <span className="text-block" aria-hidden="true">⚠</span>
+            <span className="text-[13px] font-bold text-block">Pretzel blocked this prompt</span>
           </div>
-          <p className="mb-3 text-[12px] text-[#94a3b8]">
+          <p className="mb-3 text-[12px] text-muted">
             Sensitive content detected before submission to ChatGPT:
           </p>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-1.5 text-[11px]">
-              <span className="font-mono text-[#ff9f40]">AWS access key</span>
-              <span className="text-[#64748b]">→</span>
-              <span className="rounded bg-[#ff4d4d]/20 px-1.5 py-0.5 font-mono text-[#ff4d4d]">AKIA••••••••••••••••</span>
+            <div className="flex items-center gap-2 rounded-md bg-fill px-3 py-1.5 text-[11px]">
+              <span className="font-mono text-warn">AWS access key</span>
+              <span className="text-muted">→</span>
+              <span className="rounded bg-block-fill px-1.5 py-0.5 font-mono text-block">AKIA••••••••••••••••</span>
             </div>
-            <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-1.5 text-[11px]">
-              <span className="font-mono text-[#ff9f40]">Customer email</span>
-              <span className="text-[#64748b]">→</span>
-              <span className="rounded bg-[#ff4d4d]/20 px-1.5 py-0.5 font-mono text-[#ff4d4d]">j.doe@••••.com</span>
+            <div className="flex items-center gap-2 rounded-md bg-fill px-3 py-1.5 text-[11px]">
+              <span className="font-mono text-warn">Customer email</span>
+              <span className="text-muted">→</span>
+              <span className="rounded bg-block-fill px-1.5 py-0.5 font-mono text-block">j.doe@••••.com</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-[#17171e] px-4 py-3">
-          <div className="flex-1 text-left text-[12px] text-[#4b5563] line-through">
+        <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-4 py-3">
+          <div className="flex-1 text-left text-[12px] text-muted line-through">
             Debug why this fails: AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE, contact j.doe@acme.com…
           </div>
           <div className="ml-4 flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-[#5b8cff]" aria-hidden="true" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#5b8cff]">Blocked</span>
+            <span className="size-2 rounded-full bg-brand" aria-hidden="true" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-brand">Blocked</span>
           </div>
         </div>
       </div>
@@ -131,16 +131,16 @@ export default function ProductPage() {
     <div className="px-6 py-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-5xl">
-        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">Product</p>
-        <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-white">
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-brand">Product</p>
+        <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-ink">
           How Pretzel Protects Your Team
         </h1>
-        <p className="mx-auto mb-8 max-w-xl text-center text-[16px] text-[#94a3b8]">
+        <p className="mx-auto mb-8 max-w-xl text-center text-[16px] text-muted">
           Three surfaces, one mission: make sure sensitive data never reaches an AI it shouldn&apos;t.
         </p>
         <div className="mb-20 text-center">
           <Link href={`${APP_URL}/onboarding`}
-            className="inline-block rounded-xl bg-[#5b8cff] px-7 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#5b8cff]/25 transition hover:bg-[#3f6fe0] hover:shadow-[#5b8cff]/40">
+            className="inline-block rounded-xl bg-btn px-7 py-3 text-[15px] font-bold text-btn-fg transition hover:opacity-90">
             Start Free — No Credit Card
           </Link>
         </div>
@@ -148,15 +148,15 @@ export default function ProductPage() {
         {SECTIONS.map(({ tag, headline, body, image }, i) => (
           <div key={tag} className={`mb-24 flex flex-col gap-12 md:flex-row ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
             <div className="flex-1">
-              <span className="mb-4 inline-block rounded-full border border-[#5b8cff]/30 bg-[#5b8cff]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#8fb3ff]">{tag}</span>
-              <h2 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-white">{headline}</h2>
+              <span className="mb-4 inline-block rounded-full border border-brand bg-brand-soft px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand">{tag}</span>
+              <h2 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-ink">{headline}</h2>
               {body.split('\n\n').map((para, j) => (
-                <p key={j} className="mb-4 text-[15px] leading-relaxed text-[#94a3b8]">{para}</p>
+                <p key={j} className="mb-4 text-[15px] leading-relaxed text-muted">{para}</p>
               ))}
             </div>
             <div className="flex-1 self-center">
               {image ? (
-                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#17171e] shadow-2xl shadow-black/50" style={{ aspectRatio: '8/5' }}>
+                <div className="relative overflow-hidden rounded-2xl border border-line bg-surface shadow-(--shadow)" style={{ aspectRatio: '8/5' }}>
                   <Image src={image} alt={`${tag} in the Pretzel Console`} fill sizes="(min-width: 768px) 40vw, 90vw" className="object-cover object-top" />
                 </div>
               ) : (
@@ -166,16 +166,16 @@ export default function ProductPage() {
           </div>
         ))}
 
-        <section className="mb-20 border-t border-white/[0.05] pt-20">
-          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-[#5b8cff]">How It Works</p>
-          <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-white">
+        <section className="mb-20 border-t border-line pt-20">
+          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-brand">How It Works</p>
+          <h2 className="mb-14 text-center text-4xl font-extrabold tracking-tight text-ink">
             Common Questions
           </h2>
           <div className="space-y-6">
             {AEO_QA.map(({ question, answer }) => (
-              <div key={question} className="rounded-2xl border border-white/[0.07] bg-[#17171e] p-8">
-                <h3 className="mb-4 text-[18px] font-bold text-white">{question}</h3>
-                <p className="text-[15px] leading-relaxed text-[#94a3b8]">{answer}</p>
+              <div key={question} className="rounded-2xl border border-line bg-surface p-8">
+                <h3 className="mb-4 text-[18px] font-bold text-ink">{question}</h3>
+                <p className="text-[15px] leading-relaxed text-muted">{answer}</p>
               </div>
             ))}
           </div>
@@ -183,7 +183,7 @@ export default function ProductPage() {
 
         <div className="text-center">
           <Link href={`${APP_URL}/onboarding`}
-            className="rounded-xl bg-[#5b8cff] px-8 py-3 text-[15px] font-bold text-white shadow-lg shadow-[#5b8cff]/25 transition hover:bg-[#3f6fe0]">
+            className="rounded-xl bg-btn px-8 py-3 text-[15px] font-bold text-btn-fg transition hover:opacity-90">
             Start Free — No Credit Card
           </Link>
         </div>
