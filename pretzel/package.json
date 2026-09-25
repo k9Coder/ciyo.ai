@@ -33,6 +33,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@clerk/testing": "^1.14.8",
     "@crxjs/vite-plugin": "^2.0.0-beta.26",
     "@playwright/test": "^1.47.0",
     "@types/chrome": "^0.0.268",
