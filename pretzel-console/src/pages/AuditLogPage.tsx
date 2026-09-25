@@ -13,35 +13,35 @@ function RuleExceptionsPanel() {
 
   return (
     <div style={{
-      background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
-      overflow: 'hidden', marginBottom: 16,
+      background: 'var(--warn-fill)', borderRadius: 'var(--r)',
+      overflow: 'hidden',
     }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+      <div style={{ padding: '14px 18px 6px' }}>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>
           Always-allowed rules
         </p>
-        <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+        <p style={{ margin: '2px 0 0', fontSize: 14, color: 'var(--muted)' }}>
           Rules individual members have muted for themselves from a desktop decision popup.
         </p>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
         <tbody>
           {exceptions.map(e => (
-            <tr key={e.ruleId} style={{ borderBottom: '1px solid var(--border)' }}>
-              <td style={{ padding: '10px 16px', color: 'var(--text-primary)' }}>
-                {e.ruleMessage ?? <span style={{ color: 'var(--text-muted)' }}>(no message set)</span>}
+            <tr key={e.ruleId} style={{ borderTop: '1px solid var(--line)' }}>
+              <td style={{ padding: '10px 18px', color: 'var(--ink)' }}>
+                {e.ruleMessage ?? <span style={{ color: 'var(--muted)' }}>(no message set)</span>}
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+              <td style={{ padding: '10px 18px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                 <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
-                  background: 'rgba(245,158,11,0.12)', color: 'var(--status-warn)',
+                  fontSize: 13, fontWeight: 500, padding: '3px 10px', borderRadius: 'var(--r-btn)',
+                  background: 'var(--surface)', color: 'var(--warn)',
                 }}>
                   {e.memberCount} member{e.memberCount === 1 ? '' : 's'}
                 </span>
               </td>
               <td
                 style={{
-                  padding: '10px 16px', color: 'var(--text-muted)', fontSize: 12,
+                  padding: '10px 18px', color: 'var(--muted)', fontSize: 13,
                   maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}
                 title={e.memberEmails.join(', ')}
@@ -74,21 +74,27 @@ export function AuditLogPage() {
   const entries = data?.pages.flatMap(p => p.entries) ?? []
 
   const pillStyle = (active: boolean): React.CSSProperties => ({
-    padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: active ? 600 : 400,
-    border: active ? '1px solid var(--brand-primary)' : '1px solid var(--border)',
-    background: active ? 'var(--brand-dim, rgba(0,212,255,0.08))' : 'transparent',
-    color: active ? 'var(--brand-primary)' : 'var(--text-muted)',
+    padding: '6px 14px', border: 'none', borderRadius: 'var(--r-btn)',
+    fontFamily: 'var(--font)', fontSize: 14, color: 'var(--ink)', whiteSpace: 'nowrap',
+    background: active ? 'var(--surface)' : 'transparent',
+    boxShadow: active ? 'inset 0 0 0 1px var(--line)' : 'none',
+    fontWeight: active ? 600 : 400,
     cursor: 'pointer',
   })
 
   return (
-    <div style={{ padding: '16px 24px' }}>
-      <PageHeader title="Audit Log" />
+    <div style={{ padding: '32px 36px 40px', display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 1240 }}>
+      <div>
+        <PageHeader title="Activity" />
+        <p style={{ margin: '-14px 0 0', fontSize: 15, color: 'var(--muted)' }}>
+          Every prompt Pretzel warned about or blocked. What is recorded depends on each rule's report setting.
+        </p>
+      </div>
 
       <RuleExceptionsPanel />
 
       {/* Filter bar */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      <div role="group" aria-label="Filter by action" style={{ display: 'flex', gap: 2, background: 'var(--fill)', borderRadius: 'var(--r-btn)', padding: 3, alignSelf: 'flex-start' }}>
         {(['all', 'warn', 'block'] as ActionFilter[]).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={pillStyle(filter === f)}>
             {ACTION_FILTER_LABELS[f]}
@@ -96,22 +102,21 @@ export function AuditLogPage() {
         ))}
       </div>
 
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'auto', overflowY: 'hidden' }}>
         {isLoading && <InlineLoader />}
         {!isLoading && entries.length === 0 && (
-          <p style={{ padding: 24, color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
+          <p style={{ padding: '24px 0', color: 'var(--muted)', fontSize: 15, margin: 0 }}>
             No events recorded yet.
           </p>
         )}
         {entries.length > 0 && (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <table style={{ width: '100%', minWidth: 820, borderCollapse: 'collapse', fontSize: 15 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr style={{ borderBottom: '1px solid var(--ink)' }}>
                 {['Time', 'Member', 'Subject', 'Action', 'Site', 'Matched'].map(h => (
                   <th key={h} style={{
-                    padding: '10px 16px', textAlign: 'left',
-                    color: 'var(--text-muted)', fontSize: 11, fontWeight: 600,
-                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                    padding: '10px 14px 10px 0', textAlign: 'left',
+                    color: 'var(--muted)', fontSize: 13, fontWeight: 400,
                   }}>
                     {h}
                   </th>
@@ -120,32 +125,32 @@ export function AuditLogPage() {
             </thead>
             <tbody>
               {entries.map(e => (
-                <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '10px 16px', color: 'var(--text-muted)', fontSize: 11, whiteSpace: 'nowrap' }}>
+                <tr key={e.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                  <td style={{ padding: '12px 14px 12px 0', color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 13, whiteSpace: 'nowrap' }}>
                     {formatDateTime(e.occurredAt)}
                   </td>
-                  <td style={{ padding: '10px 16px', color: 'var(--text-secondary)' }}>
-                    {e.memberEmail ?? <span style={{ color: 'var(--text-muted)' }}>anonymous</span>}
+                  <td style={{ padding: '12px 14px 12px 0', color: 'var(--ink)' }}>
+                    {e.memberEmail ?? <span style={{ color: 'var(--muted)' }}>anonymous</span>}
                   </td>
-                  <td style={{ padding: '10px 16px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                  <td style={{ padding: '12px 14px 12px 0', color: 'var(--ink)' }}>
                     {e.subjectName}
                   </td>
-                  <td style={{ padding: '10px 16px' }}>
+                  <td style={{ padding: '12px 14px 12px 0' }}>
                     <span
                       data-testid="event-action"
                       style={{
-                        fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, textTransform: 'uppercase',
-                        background: e.action === 'block' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
-                        color:      e.action === 'block' ? 'var(--status-danger)'  : 'var(--status-warn)',
+                        fontSize: 13, fontWeight: 500, padding: '3px 10px', borderRadius: 'var(--r-btn)', textTransform: 'capitalize',
+                        background: e.action === 'block' ? 'var(--block-fill)' : 'var(--warn-fill)',
+                        color:      e.action === 'block' ? 'var(--block)'  : 'var(--warn)',
                       }}
                     >
                       {e.action}
                     </span>
                   </td>
-                  <td style={{ padding: '10px 16px', color: 'var(--text-secondary)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '12px 14px 12px 0', color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: 13, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {(() => { try { return new URL(e.siteUrl).hostname } catch { return e.siteUrl } })()}
                   </td>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>
+                  <td style={{ padding: '12px 0', fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--muted)' }}>
                     {e.matchedTerm ?? '—'}
                   </td>
                 </tr>
@@ -155,13 +160,13 @@ export function AuditLogPage() {
         )}
 
         {hasNextPage && (
-          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
+          <div style={{ paddingTop: 16 }}>
             <button
               onClick={() => void fetchNextPage()}
               disabled={isFetchingNextPage}
               style={{
-                background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-                padding: '6px 16px', fontSize: 13, cursor: 'pointer', color: 'var(--text-secondary)',
+                background: 'var(--fill)', border: 'none', borderRadius: 'var(--r-btn)',
+                padding: '9px 16px', fontSize: 14, cursor: 'pointer', color: 'var(--ink)',
               }}
             >
               {isFetchingNextPage ? <Spinner size="sm" /> : 'Load more'}

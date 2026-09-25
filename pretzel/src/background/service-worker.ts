@@ -1,7 +1,7 @@
 import { initSentry, Sentry } from "@/lib/sentry";
 import { detectPrompt, DEFAULT_POLICY } from "@mykka/detect";
 import { loadPolicy } from "@/policy/loader";
-import { dispatchEvents } from "@/events/dispatch";
+import { dispatchEvents, getReportingSummary } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
@@ -136,6 +136,10 @@ async function handleMessage(message: Message): Promise<unknown> {
       const { hostname, reason } = message.payload;
       void reportDegraded(hostname, reason);
       return { ok: true };
+    }
+
+    case "GET_REPORTING_SUMMARY": {
+      return getReportingSummary(message.payload.findings);
     }
 
     case "APPEND_AUDIT_EVENT": {

@@ -1,43 +1,88 @@
-import { useClerk } from '@clerk/react'
+import { useClerk, useUser } from '@clerk/react'
 
 /**
  * Shown when a signed-in user reaches the console but isn't an admin of the
  * active org (role `member`). The console is an admin surface — members use the
  * desktop app / extension — so instead of dropping them into an app shell where
- * every admin call 403s, we send them here with a clear explanation and a way out.
+ * every admin call 403s, we welcome them and explain that their extension is active.
  */
 export function UnauthorizedPage() {
   const { signOut } = useClerk()
+  const { user } = useUser()
+
+  function handleClose() {
+    window.close()
+  }
+
+  const name = user?.firstName || user?.fullName
 
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-base, #0f1117)', padding: '24px 16px',
+      background: 'var(--bg)', padding: '24px 16px',
     }}>
       <div style={{
-        background: 'var(--bg-surface, #1a1d27)', border: '1px solid var(--border, #2a2d3a)',
-        borderRadius: 16, padding: '40px 48px', maxWidth: 440, width: '100%',
-        display: 'flex', flexDirection: 'column', gap: 14, textAlign: 'center',
+        background: 'var(--surface)', border: '1px solid var(--line)',
+        borderRadius: 'var(--r)', padding: '40px 48px', maxWidth: 460, width: '100%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center',
       }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #e8eaf0)', margin: 0 }}>
-          You don't have admin access
-        </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-muted, #6b7280)', margin: 0, lineHeight: 1.55 }}>
-          The Pretzel Console is for organization admins. Your account is a member of
-          this organization, so there's nothing to manage here — protection runs in the
-          Pretzel desktop app and browser extension. Ask an admin if you need console access.
+        <div style={{
+          width: 56, height: 56, borderRadius: 'var(--r)',
+          background: 'color-mix(in srgb, var(--brand) 15%, transparent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 28,
+        }}>
+          🎉
+        </div>
+
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+            You're all set{name ? `, ${name}` : ''}!
+          </h1>
+          <div style={{
+            display: 'inline-block', marginTop: 8,
+            background: 'var(--brand-soft)',
+            color: 'var(--brand)', fontSize: 13, fontWeight: 500,
+            padding: '3px 10px', borderRadius: 'var(--r-btn)',
+          }}>
+            Organization Member
+          </div>
+        </div>
+
+        <p style={{ fontSize: 15, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+          Your account is connected. Protection runs automatically in your Pretzel browser extension and desktop app — you don't need to configure anything here.
         </p>
-        <button
-          type="button"
-          onClick={() => void signOut({ redirectUrl: '/login' })}
-          style={{
-            marginTop: 6, background: 'var(--brand-primary, #6366f1)', color: '#fff', border: 'none',
-            borderRadius: 8, padding: '10px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          Sign out
-        </button>
+
+        <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5, opacity: 0.8 }}>
+          The Pretzel Console is for organization administrators to manage DLP policies and compliance settings.
+        </p>
+
+        <div style={{ width: '100%', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={handleClose}
+            style={{
+              width: '100%', background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+              borderRadius: 'var(--r-btn)', padding: '12px 16px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+          >
+            Close tab & return to browser
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void signOut({ redirectUrl: '/login' })}
+            style={{
+              background: 'none', border: 'none', color: 'var(--muted)',
+              fontSize: 14, cursor: 'pointer', textDecoration: 'underline', padding: 4,
+            }}
+          >
+            Sign in with a different account
+          </button>
+        </div>
       </div>
     </div>
   )
 }
+

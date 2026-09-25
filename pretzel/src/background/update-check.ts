@@ -5,6 +5,8 @@ export async function checkForUpdates(): Promise<void> {
   const remoteTs = await lastUpdatesChecker.getLastUpdatedAt()
   if (remoteTs === null) return
 
+  await chrome.storage.local.set({ lastCheckedAt: Date.now() })
+
   const stored  = await chrome.storage.local.get('syncedAt') as { syncedAt?: number }
   const localTs = stored.syncedAt ?? 0
 

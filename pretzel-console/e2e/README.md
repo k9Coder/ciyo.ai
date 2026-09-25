@@ -45,7 +45,7 @@ pnpm test:e2e --grep "assistant"
 
 | Spec | Main coverage |
 |---|---|
-| `dashboard.spec.ts` | Metrics load and unauthenticated redirect. |
+| `dashboard.spec.ts` | Overview metrics load and unauthenticated redirect. |
 | `subjects.spec.ts` | Subject and rule create/edit validation flows. |
 | `org.spec.ts` | Divisions, teams, and team-member columns. |
 | `members.spec.ts` | Open/specific invites and role changes. |
@@ -53,7 +53,7 @@ pnpm test:e2e --grep "assistant"
 | `sites.spec.ts` | Site selector edit and site creation. |
 | `publish.spec.ts` | Publish, history, and rollback. |
 | `settings.spec.ts` | Tenant name and token-rotation confirmations. |
-| `audit.spec.ts` | Event rows, filters, and pagination. |
+| `audit.spec.ts` | Activity (audit log) event rows, filters, and pagination. |
 | `billing.spec.ts` | Settings billing UI, upgrade banner, and assistant plan gate. |
 | `assistant.spec.ts` | Chat, proposals, discard/apply, and sessions with assistant APIs mocked. |
 

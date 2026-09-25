@@ -20,9 +20,12 @@ function LiveRegion({ variant, toasts }: { variant: Toast['variant']; toasts: To
       {filtered.map(t => (
         <div
           key={t.id}
-          className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white ${
-            variant === 'success' ? 'bg-green-600' : 'bg-red-600'
-          }`}
+          style={{
+            background: variant === 'success' ? 'var(--brand)' : 'var(--block)',
+            color: variant === 'success' ? 'var(--btn-fg)' : 'var(--block-fg)',
+            borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow)',
+            padding: '12px 16px', fontSize: 14, fontWeight: 500, maxWidth: 380,
+          }}
         >
           {t.message}
         </div>

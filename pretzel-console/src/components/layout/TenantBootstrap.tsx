@@ -26,7 +26,7 @@ function isAdminRole(role: string): boolean {
 
 function FullPageLoader({ label }: { label: string }) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <PageLoader label={label} />
     </div>
   )
@@ -131,17 +131,17 @@ function ErrorState({ onRetry, retrying }: { onRetry: () => void; retrying: bool
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-base, #0f1117)',
+      background: 'var(--bg)',
     }}>
       <div style={{
-        background: 'var(--bg-surface, #1a1d27)', border: '1px solid var(--border, #2a2d3a)',
-        borderRadius: 16, padding: '40px 48px', maxWidth: 420, width: '100%',
+        background: 'var(--surface)', border: '1px solid var(--line)',
+        borderRadius: 'var(--r)', padding: '40px 48px', maxWidth: 420, width: '100%',
         display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'center',
       }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #e8eaf0)', margin: 0 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
           Couldn't load your account
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-muted, #6b7280)', margin: 0 }}>
+        <p style={{ fontSize: 15, color: 'var(--muted)', margin: 0 }}>
           This can happen right after signup while your organization is still being set up.
         </p>
         <button
@@ -149,8 +149,8 @@ function ErrorState({ onRetry, retrying }: { onRetry: () => void; retrying: bool
           onClick={onRetry}
           disabled={retrying}
           style={{
-            background: 'var(--brand-primary, #6366f1)', color: '#fff', border: 'none',
-            borderRadius: 8, padding: '10px 16px', fontSize: 14, fontWeight: 600,
+            background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',
+            borderRadius: 'var(--r-btn)', padding: '10px 16px', fontSize: 15, fontWeight: 600,
             cursor: retrying ? 'default' : 'pointer', opacity: retrying ? 0.7 : 1,
           }}
         >
@@ -164,22 +164,22 @@ function ErrorState({ onRetry, retrying }: { onRetry: () => void; retrying: bool
 function OrgPicker({ memberships }: { memberships: Membership[] }) {
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg-base, #0f1117)',
+    background: 'var(--bg)',
   }
   const cardStyle: React.CSSProperties = {
-    background: 'var(--bg-surface, #1a1d27)', border: '1px solid var(--border, #2a2d3a)',
-    borderRadius: 16, padding: '40px 48px', maxWidth: 440, width: '100%',
+    background: 'var(--surface)', border: '1px solid var(--line)',
+    borderRadius: 'var(--r)', padding: '40px 48px', maxWidth: 440, width: '100%',
     display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center',
   }
   const titleStyle: React.CSSProperties = {
-    fontSize: 22, fontWeight: 700, color: 'var(--text-primary, #e8eaf0)', margin: 0,
+    fontSize: 22, fontWeight: 700, color: 'var(--ink)', margin: 0,
   }
   const subtitleStyle: React.CSSProperties = {
-    fontSize: 14, color: 'var(--text-muted, #6b7280)', margin: 0,
+    fontSize: 15, color: 'var(--muted)', margin: 0,
   }
   const optionStyle: React.CSSProperties = {
-    background: 'var(--bg-surface-raised, #232735)', border: '1px solid var(--border, #2a2d3a)',
-    borderRadius: 8, padding: '14px 16px', cursor: 'pointer', width: '100%',
+    background: 'var(--fill)', border: '1px solid var(--line)',
+    borderRadius: 'var(--r-sm)', padding: '14px 16px', cursor: 'pointer', width: '100%',
     display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'left',
   }
 
@@ -196,10 +196,10 @@ function OrgPicker({ memberships }: { memberships: Membership[] }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {memberships.map(m => (
             <button key={m.tenantId} type="button" style={optionStyle} onClick={() => choose(m.tenantId)}>
-              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary, #e8eaf0)' }}>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
                 {m.tenantName}
               </span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted, #6b7280)' }}>
+              <span style={{ fontSize: 14, color: 'var(--muted)' }}>
                 {roleLabel(m.role)}
               </span>
             </button>

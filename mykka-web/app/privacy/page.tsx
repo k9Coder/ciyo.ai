@@ -79,7 +79,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">4. Third-Party Processors (Sub-processors)</h2>
             <p className="mb-4">
-              We share data with the following sub-processors as necessary to deliver the Service. All sub-processors are engaged under data processing agreements consistent with GDPR Article 28:
+              We share data with the following sub-processors as necessary to deliver the Service:
             </p>
             <div className="overflow-hidden rounded-xl border border-white/[0.07]">
               <table className="w-full text-[13px]">
@@ -95,6 +95,26 @@ export default function PrivacyPage() {
                     <td className="px-4 py-3 font-medium text-white">Clerk</td>
                     <td className="px-4 py-3">Identity and authentication</td>
                     <td className="px-4 py-3">Name, email address</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3 font-medium text-white">Neon</td>
+                    <td className="px-4 py-3">Database hosting (AWS us-east-1, United States)</td>
+                    <td className="px-4 py-3">All data stored by the Service, including account, member, policy, and audit-log data</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3 font-medium text-white">Render</td>
+                    <td className="px-4 py-3">Backend and console hosting</td>
+                    <td className="px-4 py-3">Data passing through the API, including scan events</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3 font-medium text-white">Vercel</td>
+                    <td className="px-4 py-3">Marketing website hosting</td>
+                    <td className="px-4 py-3">Website request data (IP address, page views)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3 font-medium text-white">Sentry</td>
+                    <td className="px-4 py-3">Application error monitoring</td>
+                    <td className="px-4 py-3">Error reports and diagnostic data</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 font-medium text-white">Stripe</td>
@@ -120,7 +140,7 @@ export default function PrivacyPage() {
               </table>
             </div>
             <p className="mt-4">
-              Enterprise customers may request a full sub-processor addendum as part of their DPA. Contact{' '}
+              We do not currently have a standard Data Processing Agreement. If your organisation needs one, contact{' '}
               <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>.
             </p>
           </section>
@@ -132,7 +152,8 @@ export default function PrivacyPage() {
               Specific retention periods:
             </p>
             <ul className="space-y-2">
-              <li>— <strong className="text-white">Scan event records</strong> (audit log): retained for the period covered by your subscription plan (30 days on Solo, 30 days on Starter, 12 months on Business, configurable on Enterprise). Records are deleted or anonymised at the end of this window.</li>
+              <li>— <strong className="text-white">Scan counts and enforcement signals</strong>: deleted automatically after 90 days.</li>
+              <li>— <strong className="text-white">Audit-log events</strong> (including any matched excerpts): retained while your organisation account is active. During early access there is no automatic expiry; we delete them on request.</li>
               <li>— <strong className="text-white">Account and member data</strong>: retained for the lifetime of your account. Deleted within 30 days of account closure.</li>
               <li>— <strong className="text-white">AI assistant conversation history</strong>: retained for 90 days, then deleted.</li>
               <li>— <strong className="text-white">Billing records</strong>: retained for 7 years to comply with accounting regulations.</li>
@@ -162,14 +183,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">7. Data Transfers</h2>
             <p>
-              mykka.ai infrastructure is hosted via third-party sub-processors including Fly.io (backend compute), Neon (database), and Vercel (frontend delivery), which operate primarily in the United States. Some additional sub-processors (Clerk, Anthropic, OpenAI, Groq) also process data in the United States. Where international transfers occur, we rely on Standard Contractual Clauses (SCCs) or other approved transfer mechanisms under GDPR Chapter V.
+              mykka.ai infrastructure is hosted via third-party sub-processors including Render (backend compute), Neon (database, AWS us-east-1), and Vercel (frontend delivery), which operate primarily in the United States. Some additional sub-processors (Clerk, Anthropic, OpenAI, Groq) also process data in the United States. We do not currently offer EU data residency.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">8. Security</h2>
             <p>
-              All data in transit is protected by TLS 1.3. Data at rest is encrypted with AES-256. Organisation tokens are hashed with bcrypt. We are working toward SOC 2 Type II certification. For our full security posture, see our{' '}
+              Data in transit is protected by HTTPS, and data at rest is encrypted by our database provider. Organisation and admin tokens are stored only as bcrypt hashes. We have not completed a third-party security audit such as SOC 2. For more detail, see our{' '}
               <a href="/security" className="text-[#8fb3ff] hover:underline">Security &amp; Trust page</a>.
             </p>
           </section>
@@ -192,7 +213,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-[20px] font-bold text-white">11. Contact Us</h2>
             <p>
-              For privacy questions, data subject requests, or to request our Data Processing Agreement (DPA), contact:{' '}
+              For privacy questions or data subject requests, contact:{' '}
               <a href="mailto:privacy@mykka.ai" className="text-[#8fb3ff] hover:underline">privacy@mykka.ai</a>
             </p>
           </section>

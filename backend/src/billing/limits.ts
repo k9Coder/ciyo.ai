@@ -48,7 +48,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     advancedAnalytics:      true,
   },
   pilot: {
-    maxSeats:               3,
+    maxSeats:               50,
     monthlyScans:           -1,
     allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score'],
     assistantEnabled:       true,

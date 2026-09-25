@@ -6,14 +6,21 @@ sources:
   - ../src/policy/compiler.ts
   - ../src/policy/resolver.ts
   - ../src/policy/router.ts
+  - ../src/policy/diff.ts
   - ../src/policy/service.ts
   - ../tests/policy-compiler.test.ts
   - ../tests/policy-resolver.test.ts
+  - ../tests/policy-diff.test.ts
+  - ../tests/policy-draft-route.test.ts
 ---
 
 # Policy contract
 
 Policies are immutable, versioned snapshots compiled from active authoring records. Publishing inserts the next tenant policy version and emits an in-process tenant-specific update event for connected SSE clients.
+
+## Draft vs. live
+
+The live subjects, rules, site configs and tenant fail mode are the draft: clients only read published snapshots, so an edit is not live until `POST /v1/policy/publish`. `GET /v1/policy/draft` (admin) compiles the current state and diffs it against the latest snapshot (`src/policy/diff.ts`), returning `{ liveVersion, nextVersion, count, changes[] }`. Each change has `kind` (`added`, `changed`, `removed`), `entity` (`subject`, `rule`, `siteConfig`, `failMode`), `id`, `title` and `detail`. Rules inside an added or removed subject are folded into that subject's line. Fields missing from older snapshots are compared as their defaults. Member, team and division edits are not part of the diff because member policy resolution reads them live. Rollback republishes an old snapshot without restoring the authoring tables, so the draft then shows the newer edits as unpublished.
 
 ## Compiled snapshot
 

@@ -24,6 +24,9 @@ export async function syncPolicy(): Promise<void> {
       return
     }
     const { version: contentVersion } = await versionRes.json() as { version: number }
+    // Distinct from syncedAt (compared against the server's timestamp in
+    // update-check): this one is purely "when did we last confirm we're current".
+    await chrome.storage.local.set({ lastCheckedAt: Date.now() })
     const cached = await getCachedVersion()
     if (cached === contentVersion) return
 

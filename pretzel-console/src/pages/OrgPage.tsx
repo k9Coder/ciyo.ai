@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
+import { PeopleTabs } from '../components/ui/PeopleTabs'
 import { MillerColumns } from '../components/ui/MillerColumns'
 import { EntityModal } from '../components/ui/EntityModal'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -8,12 +9,12 @@ import { useTeams, useTeamMembers, useTeamMutations } from '../hooks/useTeams'
 import { useTeamMemberMutations } from '../hooks/useMembers'
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
-  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
-  color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box',
+  width: '100%', padding: '8px 12px', fontSize: 15, borderRadius: 'var(--r-sm)',
+  border: '1px solid var(--line)', background: 'var(--fill)',
+  color: 'var(--ink)', outline: 'none', boxSizing: 'border-box',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+  display: 'block', fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginBottom: 4,
 }
 
 function NameForm({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -168,11 +169,12 @@ export function OrgPage() {
     confirm.type === 'member'   ? `Remove "${confirm.label}" from this team?` : ''
 
   return (
-    <div style={{ padding: '16px 24px' }}>
-      <PageHeader title="Org Structure" />
+    <div style={{ padding: '32px 36px 40px' }}>
+      <PageHeader title="People" />
+      <PeopleTabs />
       <div style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)',
-        borderRadius: 12, overflow: 'hidden', height: 'calc(100vh - 232px)',
+        background: 'var(--surface)', border: '1px solid var(--line)',
+        borderRadius: 'var(--r)', overflow: 'hidden', height: 'calc(100vh - 232px)',
       }}>
         <MillerColumns columns={columns} />
       </div>

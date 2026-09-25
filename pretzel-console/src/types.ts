@@ -117,6 +117,25 @@ export interface PolicyInfo {
   warning?: string
 }
 
+export type DraftChangeKind   = 'added' | 'changed' | 'removed'
+export type DraftChangeEntity = 'subject' | 'rule' | 'siteConfig' | 'failMode'
+
+export interface DraftChange {
+  kind:   DraftChangeKind
+  entity: DraftChangeEntity
+  id:     string
+  title:  string
+  detail: string
+}
+
+/** Unpublished changes: live authoring state diffed against the latest published snapshot. */
+export interface PolicyDraft {
+  liveVersion: number | null
+  nextVersion: number
+  count:       number
+  changes:     DraftChange[]
+}
+
 export interface PolicyHistoryEntry {
   id: string
   version: number

@@ -54,6 +54,8 @@ vi.stubGlobal('crypto', { randomUUID: vi.fn().mockReturnValue('test-uuid') })
 const mockShowWarningModal = vi.fn()
 vi.mock('@/content/overlay/overlay-root', () => ({
   showWarningModal: (...args: unknown[]) => mockShowWarningModal(...args),
+  showToast: vi.fn(),
+  mountStatusChip: vi.fn(),
 }))
 
 const mockSendMessage = vi.fn()

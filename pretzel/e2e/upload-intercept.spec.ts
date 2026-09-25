@@ -59,12 +59,12 @@ test.describe('File upload fetch interception', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-    // Block action: "Edit prompt" only, no "Looks fine, send it"
-    await expect(modal.getByRole('button', { name: 'Edit prompt' })).toBeVisible()
-    await expect(modal.getByRole('button', { name: 'Looks fine, send it' })).not.toBeVisible()
+    // Block action: "Edit myself" only, no "It's fine, send it"
+    await expect(modal.getByRole('button', { name: 'Edit myself' })).toBeVisible()
+    await expect(modal.getByRole('button', { name: "It's fine, send it" })).not.toBeVisible()
 
     // Dismiss and confirm upload was aborted (output unchanged from initial state)
-    await modal.getByRole('button', { name: 'Edit prompt' }).click()
+    await modal.getByRole('button', { name: 'Edit myself' }).click()
     await expect(page.locator('#output')).toContainText('BLOCKED:')
 
     await context.close()
@@ -113,11 +113,11 @@ test.describe('File upload fetch interception', () => {
     const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
     await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-    // Warn action: "Looks fine, send it" IS available
-    await expect(modal.getByRole('button', { name: 'Looks fine, send it' })).toBeVisible()
+    // Warn action: "It's fine, send it" IS available
+    await expect(modal.getByRole('button', { name: "It's fine, send it" })).toBeVisible()
 
     // Click through — upload should proceed
-    await modal.getByRole('button', { name: 'Looks fine, send it' }).click()
+    await modal.getByRole('button', { name: "It's fine, send it" }).click()
     await expect(page.locator('#output')).toContainText('UPLOADED:', { timeout: 5_000 })
 
     await context.close()

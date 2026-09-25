@@ -52,8 +52,8 @@ describe('PlanLimits — new fields exist on all plans', () => {
 describe('pilot plan limits', () => {
   const pilot = PLAN_LIMITS['pilot']
 
-  it('has 3 seats', () => {
-    expect(pilot.maxSeats).toBe(3)
+  it('has 50 seats', () => {
+    expect(pilot.maxSeats).toBe(50)
   })
   it('has unlimited monthly scans', () => {
     expect(pilot.monthlyScans).toBe(-1)
@@ -93,15 +93,15 @@ describe('limit helpers work with pilot', () => {
     expect(isOverScanLimit('pilot', 1_000_000)).toBe(false)
   })
   it('isOverSeatLimit returns false for pilot under cap', () => {
-    expect(isOverSeatLimit('pilot', 2)).toBe(false)
+    expect(isOverSeatLimit('pilot', 49)).toBe(false)
   })
   it('isOverSeatLimit returns true for pilot at cap', () => {
-    expect(isOverSeatLimit('pilot', 3)).toBe(true)
+    expect(isOverSeatLimit('pilot', 50)).toBe(true)
   })
   it('getScanLimit returns -1 for pilot', () => {
     expect(getScanLimit('pilot')).toBe(-1)
   })
-  it('getSeatLimit returns 3 for pilot', () => {
-    expect(getSeatLimit('pilot')).toBe(3)
+  it('getSeatLimit returns 50 for pilot', () => {
+    expect(getSeatLimit('pilot')).toBe(50)
   })
 })

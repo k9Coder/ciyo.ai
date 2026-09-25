@@ -24,6 +24,7 @@ export function usePolicyRealtime(): void {
       () => {
         qc.invalidateQueries({ queryKey: ['policy'] })
         qc.invalidateQueries({ queryKey: ['policy-history'] })
+        qc.invalidateQueries({ queryKey: ['policy-draft'] })
         qc.invalidateQueries({ queryKey: ['subjects'] })
       },
       () => toast('Live updates unavailable — refresh the page to retry.', 'error')

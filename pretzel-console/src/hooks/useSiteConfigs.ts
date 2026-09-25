@@ -9,7 +9,10 @@ export function useSiteConfigs() {
 export function useSiteConfigMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['site-configs'] })
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['site-configs'] })
+    qc.invalidateQueries({ queryKey: ['policy-draft'] })
+  }
 
   const create = useMutation({
     mutationFn: api.siteConfigs.create,

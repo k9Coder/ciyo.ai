@@ -8,12 +8,12 @@ import { useDestinationGroups, useDestinationGroupMutations } from '../hooks/use
 import type { DestinationGroup } from '../types'
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
-  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
-  color: 'var(--text-primary)', outline: 'none', boxSizing: 'border-box',
+  width: '100%', padding: '8px 12px', fontSize: 15, borderRadius: 'var(--r-sm)',
+  border: '1px solid var(--line)', background: 'var(--fill)',
+  color: 'var(--ink)', outline: 'none', boxSizing: 'border-box',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+  display: 'block', fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginBottom: 4,
 }
 
 const blank = { name: '', domains: '' }
@@ -29,7 +29,7 @@ function GroupForm({ value, onChange }: { value: typeof blank; onChange: (v: typ
       <label style={{ display: 'block' }}>
         <span style={labelStyle}>Domains (one per line)</span>
         <textarea
-          style={{ ...inputStyle, fontFamily: 'monospace', resize: 'vertical' }}
+          style={{ ...inputStyle, fontFamily: 'var(--mono)', resize: 'vertical' }}
           rows={4}
           value={value.domains}
           onChange={e => onChange({ ...value, domains: e.target.value })}
@@ -65,14 +65,14 @@ export function DestinationsPage() {
   }
 
   return (
-    <div style={{ padding: '16px 24px' }}>
+    <div style={{ padding: '32px 36px 40px' }}>
       <PageHeader
         title="Destination Groups"
         action={
           <button
             onClick={openNew}
-            style={{ padding: '7px 16px', fontSize: 13, fontWeight: 600, color: 'var(--bg-base)',
-                     background: 'var(--brand-primary)', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+            style={{ padding: '7px 16px', fontSize: 15, fontWeight: 600, color: 'var(--btn-fg)',
+                     background: 'var(--btn-bg)', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer' }}
           >
             + New group
           </button>
@@ -92,17 +92,17 @@ export function DestinationsPage() {
           {groups.map(g => (
             <div key={g.id} style={{
               display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-              padding: 16, background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+              padding: 16, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r)',
             }}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{g.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{g.name}</div>
+                <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 2 }}>
                   {g.domains.join(', ') || 'No domains'}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginLeft: 16 }}>
-                <button onClick={() => openEdit(g)} style={{ fontSize: 13, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
-                <button onClick={() => setDeleting(g)} style={{ fontSize: 13, color: 'var(--status-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                <button onClick={() => openEdit(g)} style={{ fontSize: 15, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                <button onClick={() => setDeleting(g)} style={{ fontSize: 15, color: 'var(--block)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
               </div>
             </div>
           ))}
