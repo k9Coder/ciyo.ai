@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { UpgradeBanner, PilotBanner, PlanBadge } from '../billing/UpgradeBanner'
 import { PretzelLogo } from './PretzelLogo'
 import { EnforcementBanner } from './EnforcementBanner'
+import { FirstTimeWelcomeBanner } from './FirstTimeWelcomeBanner'
 import { usePolicyRealtime } from '../../hooks/usePolicyRealtime'
 import { useTenant } from '../../hooks/useTenant'
 import { useMemberships, useActiveOrg } from '../../hooks/useMemberships'
@@ -268,6 +269,7 @@ export function AppLayout() {
 
         {/* Page content */}
         <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-base)' }}>
+          <FirstTimeWelcomeBanner />
           <EnforcementBanner />
           <Outlet />
         </div>

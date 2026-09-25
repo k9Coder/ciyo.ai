@@ -5,6 +5,7 @@ verified_at: 2026-06-13
 sources:
   - ../src/app.ts
   - ../src/policy/router.ts
+  - ../src/policy/diff.ts
   - ../src/assistant/router.ts
   - ../src/billing/router.ts
   - ../src/platform/router.ts
@@ -46,6 +47,7 @@ Auth labels:
 | GET | `/v1/policy/last-updates` | Org + active subscription | Latest publish time as epoch milliseconds |
 | GET | `/v1/events?token=<clerk-jwt>` | Clerk query token | SSE policy-update notifications and 25-second heartbeats |
 | POST | `/v1/policy/publish` | Admin | Compile and publish a new immutable policy version |
+| GET | `/v1/policy/draft` | Admin | Unpublished changes: live subjects/rules/site configs/fail mode diffed against the latest snapshot (`liveVersion`, `nextVersion`, `count`, `changes[]`) |
 | GET | `/v1/policy/history` | Admin | Published versions, newest first |
 | POST | `/v1/policy/rollback/:version` | Admin | Republish an old snapshot as a new version |
 
