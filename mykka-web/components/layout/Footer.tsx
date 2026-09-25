@@ -1,10 +1,14 @@
 import Link from 'next/link'
+import { DISCORD_URL } from '@/lib/config'
 
-const LINKS = {
-  Product:   [['Product', '/product'], ['Pricing', '/pricing']] as const,
-  Solutions: [['Healthcare', '/solutions/healthcare'], ['Legal', '/solutions/legal'], ['Fintech', '/solutions/fintech'], ['Engineering', '/solutions/engineering']] as const,
-  Company:   [['About', '/about'], ['Blog', '/blog'], ['Security', '/security']] as const,
-  Docs:      [['Getting Started', 'https://docs.mykka.ai'], ['API Reference', 'https://docs.mykka.ai/api'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise']] as const,
+type FooterLink = readonly [label: string, href: string]
+
+const LINKS: Record<string, readonly FooterLink[]> = {
+  Product: [['Browser extension', '/product#extension'], ['Desktop app', '/product#desktop'], ['Admin console', '/product#console'], ['Assistant', '/product#assistant']],
+  Solutions: [['Legal', '/solutions/legal'], ['Healthcare', '/solutions/healthcare'], ['Finance', '/solutions/fintech'], ['Engineering', '/solutions/engineering']],
+  // About and Blog are not in the design's footer; they stay so those pages remain linked from every page.
+  Company: [['Pricing', '/pricing'], ['Security', '/security'], ['About', '/about'], ['Blog', '/blog'], ['Contact', 'mailto:hello@mykka.ai']],
+  Docs: [['Getting started', 'https://docs.mykka.ai'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise'], ['Desktop install', '/download']],
 }
 
 export function Footer() {
@@ -12,15 +16,22 @@ export function Footer() {
     <footer className="border-t border-line">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-9 px-6 pb-9 pt-12">
         <div className="grid grid-cols-2 gap-7 md:grid-cols-4">
-          {(Object.entries(LINKS) as [string, readonly (readonly [string, string])[]][]).map(([group, items]) => (
+          {Object.entries(LINKS).map(([group, items]) => (
             <div key={group} className="flex flex-col gap-[9px]">
-              <p className="text-[14px] font-semibold text-ink">{group}</p>
+              <p className="m-0 text-[14px] font-semibold text-ink">{group}</p>
               {items.map(([label, href]) => (
-                <Link key={href} href={href}
+                <Link key={`${label}-${href}`} href={href}
                   className="text-[14px] text-muted transition-colors hover:text-ink">
                   {label}
                 </Link>
               ))}
+              {group === 'Company' && (
+                <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[14px] text-ink">
+                  <span className="size-[7px] rounded-full bg-[#5865F2]" aria-hidden="true" />
+                  Discord community ↗
+                </a>
+              )}
             </div>
           ))}
         </div>

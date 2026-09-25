@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { FAQ } from '@/components/sections/FAQ'
 
 export const metadata: Metadata = {
   title: 'AI DLP Security Architecture — How Pretzel Handles Your Data',
@@ -43,44 +44,39 @@ const POINTS = [
   },
 ]
 
+// Single source for the visible FAQ and the FAQPage JSON-LD, so structured data matches the page.
+const FAQ_ITEMS: { question: string; answer: string }[] = [
+  {
+    question: 'Does Pretzel store or transmit the content of AI prompts?',
+    answer: 'The full text of a prompt is never transmitted to or stored on mykka.ai servers; detection runs locally on the device. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a short excerpt of the matched text is also stored in the organisation’s audit log. What the admin sees depends on each rule’s report level: none, action and site only, who triggered it, or the matched term.',
+  },
+  {
+    question: 'What happens if the extension fails?',
+    answer: 'It fails open so work isn’t blocked, and the console shows a “protection degraded” alert with the site and reason.',
+  },
+  {
+    question: 'What encryption does Pretzel use?',
+    answer: 'API traffic between the extension and the mykka.ai backend uses HTTPS. Data at rest is encrypted by the database provider. Organization and admin tokens are stored only as bcrypt hashes.',
+  },
+  {
+    question: 'Is Pretzel SOC 2 certified?',
+    answer: 'No. Pretzel is in early access and has not completed a third-party audit such as SOC 2.',
+  },
+  {
+    question: 'Where is Pretzel data stored?',
+    answer: 'The database is hosted on Neon on AWS us-east-1 in the United States. EU data residency is not currently offered.',
+  },
+]
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   url: 'https://mykka.ai/security',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Does Pretzel store or transmit the content of AI prompts?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'The full text of a prompt is never transmitted to or stored on mykka.ai servers; detection runs locally in the browser extension. Pretzel records which rule fired, which AI site, and which member triggered the event. For rules configured to report matched content, a short excerpt of the matched text is also stored in the organisation’s audit log.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'What encryption does Pretzel use?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'API traffic between the extension and the mykka.ai backend uses HTTPS. Data at rest is encrypted by the database provider. Organization and admin tokens are stored only as bcrypt hashes.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Is Pretzel SOC 2 certified?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'No. Pretzel is in early access and has not completed a third-party audit such as SOC 2.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Where is Pretzel data stored?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'The database is hosted on Neon on AWS us-east-1 in the United States. EU data residency is not currently offered.',
-      },
-    },
-  ],
+  mainEntity: FAQ_ITEMS.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
 }
 
 export default function SecurityPage() {
@@ -102,6 +98,7 @@ export default function SecurityPage() {
             </div>
           ))}
         </div>
+        <FAQ title="Questions IT asks us" items={FAQ_ITEMS} />
       </div>
     </div>
   )

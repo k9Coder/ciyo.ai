@@ -1,23 +1,31 @@
 import type { Metadata } from 'next'
+import { IS_PILOT_MODE } from '@/lib/config'
 import { Hero } from '@/components/sections/Hero'
 import { FactsStrip } from '@/components/sections/FactsStrip'
 import { HowItWorks } from '@/components/sections/HowItWorks'
-import { WhatItCatches } from '@/components/sections/WhatItCatches'
-import { ConsolePreview } from '@/components/sections/ConsolePreview'
-import { PricingPreview } from '@/components/sections/PricingPreview'
-import { FAQ } from '@/components/sections/FAQ'
-import { FAQ_ITEMS } from '@/components/sections/faq-data'
+import { ProductParts } from '@/components/sections/ProductParts'
+import { TeamsStrip } from '@/components/sections/TeamsStrip'
+import { DiscordCard } from '@/components/sections/DiscordCard'
 import { CTABanner } from '@/components/sections/CTABanner'
 
 export const metadata: Metadata = {
   title: 'Pretzel by mykka.ai — AI Data Loss Prevention for Enterprise',
-  description: 'Pretzel is a Chrome extension that prevents employees from sending sensitive data — PII, credentials, source code — to AI tools like ChatGPT, Claude, and Gemini. Browser-native AI DLP that intercepts prompts before submission. Free for teams up to 3 users.',
+  description: IS_PILOT_MODE
+    ? 'Pretzel checks every prompt to ChatGPT, Claude and Gemini before it is sent, and catches personal data, passwords and code. Chrome extension and desktop app, with detection on the device. Free during the pilot.'
+    : 'Pretzel checks every prompt to ChatGPT, Claude and Gemini before it is sent, and catches personal data, passwords and code. Chrome extension and desktop app, with detection on the device. Free for teams up to 3 users.',
   alternates: { canonical: 'https://mykka.ai/' },
   openGraph: {
-    title: 'Pretzel — Browser-Native AI DLP by mykka.ai',
-    description: 'Stop your team from leaking secrets to AI. Pretzel intercepts every prompt before it\'s sent — blocking PII, credentials, and source code automatically. No network changes required.',
+    title: 'Pretzel — AI Data Loss Prevention by mykka.ai',
+    description: 'Let your team use AI. Keep client data out of it. Pretzel checks every prompt before it\'s sent and offers to remove personal data, passwords and code. No network changes required.',
   },
 }
+
+const offers = IS_PILOT_MODE
+  ? [{ '@type': 'Offer', name: 'Pilot', price: '0', priceCurrency: 'USD', description: 'Free during the pilot' }]
+  : [
+      { '@type': 'Offer', name: 'Solo', price: '0', priceCurrency: 'USD', description: 'Free for teams up to 3 users' },
+      { '@type': 'Offer', name: 'Business', price: '15', priceCurrency: 'USD', description: 'Per user per month, unlimited users' },
+    ]
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -28,7 +36,7 @@ const jsonLd = {
       name: 'mykka.ai',
       url: 'https://mykka.ai',
       logo: { '@type': 'ImageObject', url: 'https://mykka.ai/images/logo.png', width: 512, height: 512 },
-      description: 'mykka.ai builds Pretzel, a browser-native AI data loss prevention platform that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
+      description: 'mykka.ai builds Pretzel, an AI data loss prevention platform that prevents employees from sending sensitive data to AI tools like ChatGPT, Claude, and Gemini.',
       foundingDate: '2024',
       sameAs: [
         'https://www.linkedin.com/company/mykka-ai',
@@ -42,37 +50,12 @@ const jsonLd = {
       alternateName: 'Pretzel by mykka.ai',
       applicationCategory: 'SecurityApplication',
       applicationSubCategory: 'Data Loss Prevention',
-      operatingSystem: 'Chrome',
-      browserRequirements: 'Requires Google Chrome',
-      description: 'Pretzel is a Chrome browser extension that prevents employees from sending sensitive organizational data — PII, credentials, source code, API keys — to AI tools like ChatGPT, Claude, and Gemini. Detection runs locally in the browser before any prompt is submitted. Security administrators configure and publish policies through Pretzel Console.',
+      operatingSystem: 'Chrome, Windows, macOS',
+      description: 'Pretzel is a Chrome extension and desktop app that prevents employees from sending sensitive organizational data — PII, credentials, source code, API keys — to AI tools like ChatGPT, Claude, and Gemini. Detection runs on the device before any prompt is submitted. Security administrators configure and publish policies through Pretzel Console.',
       url: 'https://mykka.ai/product',
       downloadUrl: 'https://mykka.ai/download',
-      offers: [
-        {
-          '@type': 'Offer',
-          name: 'Solo',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'Free for teams up to 3 users',
-        },
-        {
-          '@type': 'Offer',
-          name: 'Business',
-          price: '15',
-          priceCurrency: 'USD',
-          description: 'Per user per month, unlimited users',
-        },
-      ],
+      offers,
       publisher: { '@id': 'https://mykka.ai/#org' },
-    },
-    {
-      '@type': 'FAQPage',
-      '@id': 'https://mykka.ai/#faq',
-      mainEntity: FAQ_ITEMS.map(({ question, answer }) => ({
-        '@type': 'Question',
-        name: question,
-        acceptedAnswer: { '@type': 'Answer', text: answer },
-      })),
     },
   ],
 }
@@ -87,10 +70,9 @@ export default function HomePage() {
       <Hero />
       <FactsStrip />
       <HowItWorks />
-      <WhatItCatches />
-      <ConsolePreview />
-      <PricingPreview />
-      <FAQ />
+      <ProductParts />
+      <TeamsStrip />
+      <DiscordCard />
       <CTABanner />
     </>
   )

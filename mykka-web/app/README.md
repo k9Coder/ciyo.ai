@@ -22,12 +22,12 @@ The `app/` directory owns public pages, route metadata, sitemap generation, robo
 
 | Route | Source | Notes |
 |---|---|---|
-| `/` | `page.tsx` | Homepage sections and primary onboarding CTA. |
-| `/product` | `product/page.tsx` | Product narrative; screenshot panels are placeholders. |
+| `/` | `page.tsx` | Homepage sections (hero demo, facts, how it works, four parts, industries, Discord, CTA). Primary CTA comes from `lib/cta.ts`: "Join the pilot" (`/pricing`) when `NEXT_PUBLIC_PILOT_MODE=true`, otherwise onboarding. |
+| `/product` | `product/page.tsx`, `../components/product/ProductMocks.tsx` | Four anchored sections (`#extension`, `#desktop`, `#console`, `#assistant`) with illustrative mock-ups, plus the Q&A cards and their FAQPage JSON-LD. |
 | `/pricing` | `pricing/page.tsx`, `pricing/PricingClient.tsx` | Client-side monthly/annual price toggle and plan claims. |
 | `/solutions` | `solutions/page.tsx` | Links to four supported industry slugs. |
 | `/solutions/[industry]` | `solutions/[industry]/page.tsx` | Static params: `healthcare`, `legal`, `fintech`, `engineering`; unknown slugs return 404. |
-| `/security` | `security/page.tsx` | Security, compliance, data handling, and response-time claims. |
+| `/security` | `security/page.tsx`, `../components/sections/FAQ.tsx` | Security, compliance, data handling, and response-time claims; visible FAQ accordion and matching FAQPage JSON-LD. |
 | `/about` | `about/page.tsx` | Company narrative and contact. |
 | `/blog` | `blog/page.tsx` | Lists posts from `lib/posts.ts`, newest first. |
 | `/blog/[slug]` | `blog/[slug]/page.tsx` | Static params from `lib/posts.ts`; unknown slugs return 404. |

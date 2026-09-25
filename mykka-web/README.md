@@ -74,7 +74,7 @@ Manually verify changed routes and outbound links, especially dynamic solution/b
 ## Known issues
 
 - No automated tests exist.
-- Product-page screenshots are placeholder panels.
+- Product-page panels are illustrative HTML mock-ups with sample data, not real screenshots.
 - `NEXT_PUBLIC_API_BASE` is configured in environment/deploy paths but is unused by the current site source.
 - Marketing claims include externally verifiable assertions that code cannot substantiate; see [CONTENT_CLAIMS.md](CONTENT_CLAIMS.md).
 
