@@ -26,6 +26,7 @@ They are meant to be run two ways:
 | [pretzel-console-test-plan.md](pretzel-console-test-plan.md) | Admin console (web SPA) | Browser + Clerk admin auth | 20 min |
 | [pretzel-desktop-test-plan.md](pretzel-desktop-test-plan.md) | Desktop app (Electron) | App + real sign-in | 20 min |
 | [pretzel-extension-test-plan.md](pretzel-extension-test-plan.md) | Chrome extension (MV3) | Loaded extension + real AI hosts | 25 min |
+| [signup-flows-test-plan.md](signup-flows-test-plan.md) | New-user sign-up (console + extension) | Browser + loaded extension, signed out | 30 min |
 
 All four ultimately exercise the **backend** (policy, auth, billing, audit), so
 the backend needs no separate browser plan — a failure in any surface plan that

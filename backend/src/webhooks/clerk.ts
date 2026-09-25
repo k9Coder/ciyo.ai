@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 import { Webhook } from 'svix'
 import { db } from '../db/client.js'
 import { members } from '../db/schema.js'
@@ -38,7 +38,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
     switch (event.type) {
       case 'user.created': {
         const { id, first_name, last_name, image_url, email_addresses } = event.data
-        const email = email_addresses[0]?.email_address ?? ''
+        const email = (email_addresses[0]?.email_address ?? '').trim().toLowerCase()
         if (!email) break
 
         const user = (await usersClient.post('/', {
@@ -65,7 +65,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
         // see backend/src/invites/ and backend/src/app.ts.
         const pending = await db.select({ id: members.id })
           .from(members)
-          .where(and(eq(members.email, email), isNull(members.userId)))
+          .where(and(sql`lower(${members.email}) = ${email}`, isNull(members.userId)))
 
         if (pending.length > 0) {
           await usersClient.post('/claim-pending', { email, userId: user.id })

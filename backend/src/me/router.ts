@@ -6,6 +6,7 @@ import { members, users, tenants } from '../db/schema.js'
 import { env } from '../env.js'
 import { requireClerkUser } from '../auth/middleware.js'
 import { selfServeProvisionOrg } from './service.js'
+import { getOrProvisionUserByClerkId } from '../users/jit.js'
 
 export async function meRouter(fastify: FastifyInstance): Promise<void> {
   // Console-only: provisions a personal org for a signed-up-but-unenrolled
@@ -36,7 +37,7 @@ export async function meRouter(fastify: FastifyInstance): Promise<void> {
       return reply.status(401).send({ error: 'Invalid Clerk token' })
     }
 
-    const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+    const user = await getOrProvisionUserByClerkId(clerkUserId)
     if (!user) return reply.status(401).send({ error: 'User not found — sign up first' })
 
     // Deterministic order: real (invited) orgs before auto-provisioned personal tenants,

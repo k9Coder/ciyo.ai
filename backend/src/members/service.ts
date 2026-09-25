@@ -85,12 +85,14 @@ export async function createMember(
     }
   }
 
-  const existingUser = await usersClient.get<User>('/by-email', { params: { email: data.email } })
+  const email = data.email.trim().toLowerCase()
+  const existingUser = await usersClient.get<User>('/by-email', { params: { email } })
     .then(r => r.data)
     .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
   const [row] = await db.insert(members).values({
     tenantId,
     ...data,
+    email,
     userId: existingUser?.id ?? null,
   }).returning()
   return row!
@@ -177,12 +179,13 @@ export async function importMembers(
 ): Promise<Member[]> {
   if (rows.length === 0) return []
   const toInsert = await Promise.all(rows.map(async r => {
-    const existingUser = await usersClient.get<User>('/by-email', { params: { email: r.email } })
+    const email = r.email.trim().toLowerCase()
+    const existingUser = await usersClient.get<User>('/by-email', { params: { email } })
       .then(r => r.data)
       .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
     return {
       tenantId,
-      email:       r.email,
+      email,
       displayName: r.displayName ?? null,
       role:        'member' as const,
       userId:      existingUser?.id ?? null,
