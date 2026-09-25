@@ -33,6 +33,8 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Testing](operations/testing.md)
 - [Deployment](operations/deployment.md)
 - [Release process](operations/release-process.md)
+- [Desktop real-machine validation](operations/desktop-validation.md)
+- [Desktop QA report and pilot-readiness (Sept 2026)](operations/desktop-qa-report-2026-09.md)
 - [Environments & secrets](ENVIRONMENT_AND_SECRETS.md)
 
 ## Brand
