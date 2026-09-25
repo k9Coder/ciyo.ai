@@ -7,6 +7,8 @@ config({ path: path.join(__dirname, process.env.QA_ENV_FILE ?? '.env.qa.staging'
 const schema = z.object({
   QA_CONSOLE_URL: z.string().url().optional(),
   QA_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  // Optional: enables the new-user sign-up journey (bot-protection bypass + cleanup of its Clerk user).
+  QA_CLERK_SECRET_KEY: z.string().min(1).optional(),
   QA_CLERK_USER_EMAIL: z.string().min(1).optional(),
   QA_CLERK_USER_PASSWORD: z.string().min(1).optional(),
   CI: z.string().optional(),

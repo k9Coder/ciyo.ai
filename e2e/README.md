@@ -55,6 +55,10 @@ you do not need to start the fixture server separately when using this config.
 - `pretzel/dist` exists before running `extension` or `cross-service`.
 - The admin app is already running at `E2E_ADMIN_URL` or
   `http://localhost:5173` before running `admin`.
+- The sign-up specs (`pretzel-console/e2e/signup-flows.spec.ts`, `pretzel/e2e/signup-flows.spec.ts`) create real Clerk
+  test users, so they need `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY`. Set the optional
+  `E2E_CLERK_WEBHOOK_SECRET` (the backend's `CLERK_WEBHOOK_SECRET`) to also exercise a late/duplicate
+  `user.created` webhook; without it that one test is skipped.
 - Admin authentication additionally needs `CLERK_PUBLISHABLE_KEY` and
   `E2E_CLERK_USER_PASSWORD`. Global setup requires `E2E_CLERK_ORG_ID`,
   `E2E_CLERK_USER_ID`, and `E2E_CLERK_USER_EMAIL`.

@@ -4,31 +4,35 @@ import { adminHeaders } from './helpers/admin-headers.js'
 const BACKEND = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000'
 
 test.describe('Members', () => {
-  test('can generate an invite link for a specific email', async ({ page }) => {
+  // Token invite links are retired: an admin pre-adds an email, and the person joins by signing up with it
+  // (see signup-flows.spec.ts for that half). This is the admin's half.
+  test('admin can add a member by email and remove them again', async ({ page }) => {
+    const email = `e2e-added-${Date.now()}@example.com`
     await page.goto('/members')
 
-    await page.getByRole('button', { name: /invite member/i }).click()
+    await page.getByRole('button', { name: /add member/i }).click()
+    await page.locator('form').getByPlaceholder('alice@lawfirm.com').fill(email)
+    await page.locator('form').getByRole('button', { name: /^add member$/i }).click()
 
-    await page.getByPlaceholder(/alice@/i).fill('e2e-invited@example.com')
-    await page.locator('form').getByRole('button', { name: /generate link/i }).click()
+    const row = page.locator('tr', { hasText: email })
+    await expect(row).toBeVisible({ timeout: 15_000 })
+    await expect(row.getByText('Member', { exact: true })).toBeVisible()
 
-    // URL input with the invite link appears
-    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 15_000 })
-    const urlInput = page.locator('input[readonly]')
-    await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
-    // No member row yet — invite must be accepted first
+    await row.getByRole('button', { name: /remove/i }).click()
+    await page.getByRole('button', { name: /^delete$/i }).click()
+    await expect(row).toHaveCount(0)
   })
 
-  test('can generate an open invite link with no email', async ({ page }) => {
-    await page.goto('/members')
-    await page.getByRole('button', { name: /invite member/i }).click()
-
-    // Leave email blank — open link (anyone with it can join)
-    await page.locator('form').getByRole('button', { name: /generate link/i }).click()
-
-    await expect(page.getByRole('button', { name: /copy link/i })).toBeVisible({ timeout: 15_000 })
-    const urlInput = page.locator('input[readonly]')
-    await expect(urlInput).toHaveValue(/\/invite\/[a-f0-9]{64}/)
+  test('emails are stored lowercase, so the letter case an admin types never blocks sign-up', async () => {
+    const api = await playwrightRequest.newContext()
+    const res = await api.post(`${BACKEND}/v1/members`, {
+      headers: adminHeaders(),
+      data: { email: `E2E-Mixed-${Date.now()}@Example.COM`, role: 'member' },
+    })
+    const member = await res.json() as { id: string; email: string }
+    expect(member.email).toBe(member.email.toLowerCase())
+    await api.delete(`${BACKEND}/v1/members/${member.id}`, { headers: adminHeaders() })
+    await api.dispose()
   })
 
   test('can change a member role', async ({ page }) => {

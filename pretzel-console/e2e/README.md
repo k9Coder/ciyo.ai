@@ -16,6 +16,8 @@ sources:
   - audit.spec.ts
   - billing.spec.ts
   - assistant.spec.ts
+  - signup-flows.spec.ts
+  - helpers/signup.ts
 ---
 
 # Console E2E Suite
@@ -48,7 +50,7 @@ pnpm test:e2e --grep "assistant"
 | `dashboard.spec.ts` | Overview metrics load and unauthenticated redirect. |
 | `subjects.spec.ts` | Subject and rule create/edit validation flows. |
 | `org.spec.ts` | Divisions, teams, and team-member columns. |
-| `members.spec.ts` | Open/specific invites and role changes. |
+| `members.spec.ts` | Add member by email (stored lowercase), remove, and role changes. |
 | `destinations.spec.ts` | Destination-group create and rename. |
 | `sites.spec.ts` | Site selector edit and site creation. |
 | `publish.spec.ts` | Publish, history, and rollback. |
@@ -56,5 +58,8 @@ pnpm test:e2e --grep "assistant"
 | `audit.spec.ts` | Activity (audit log) event rows, filters, and pagination. |
 | `billing.spec.ts` | Settings billing UI, upgrade banner, and assistant plan gate. |
 | `assistant.spec.ts` | Chat, proposals, discard/apply, and sessions with assistant APIs mocked. |
+| `signup-flows.spec.ts` | Brand-new user signs up through Clerk's form: no org -> onboarding; existing org (admin-added email) -> Overview / "You're all set"; `/extension-login` relay hands a new user their code on the first pass. Creates and deletes its own Clerk users. |
+
+`signup-flows.spec.ts` uses real Clerk sign-up (with `@clerk/testing`'s bot-protection bypass), so it needs `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY` and only ever touches `+clerk_test@example.com` accounts it creates itself. The Clerk `user.created` webhook cannot reach a local backend, which is intentional: the backend provisions the user just-in-time, and that is what the spec proves.
 
 These tests do not replace the monorepo cross-service suite. Shared policy, auth, token, database, API, or assistant-apply changes require the root regression commands.

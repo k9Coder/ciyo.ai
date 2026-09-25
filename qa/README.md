@@ -10,7 +10,7 @@ for the full design and how this relates to `e2e/` and to gstack's `/qa` /
 
 | Surface | Status |
 |---|---|
-| `pretzel-console` | Implemented — `journeys/console/` |
+| `pretzel-console` | Implemented — `journeys/console/` (incl. new-user sign-up into an existing org, see below) |
 | `mykka-web` | Not yet implemented |
 | `pretzel` (extension) | Not yet implemented |
 | `pretzel-desktop` | Not yet implemented |
@@ -81,6 +81,17 @@ scripted journey here or an exploratory `/qa-only` run.
 3. Promote any confirmed bug worth guarding permanently into a new spec
    under `qa/journeys/<surface>/`.
 4. Re-run before promoting `staging` → `master`.
+
+## New-user sign-up coverage
+
+The four brand-new-user flows (console / extension, with and without an existing org) are described
+step by step in [`plans/signup-flows-test-plan.md`](plans/signup-flows-test-plan.md) for human or
+gstack `/qa` runs. One of them is also scripted: `journeys/console/signup-existing-org.spec.ts`
+(admin adds an email, a fresh browser signs up once, lands on the member page, then it cleans up).
+It needs two extra values in your env file — `QA_CLERK_SECRET_KEY` (to bypass Clerk bot protection
+for the throwaway user and delete it afterwards) — and skips itself with a clear message when they
+are absent. The no-org flow is deliberately manual-only: it creates a persistent personal
+organisation, which a journey against shared staging must not leave behind.
 
 ## Adding a journey
 
