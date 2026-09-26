@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ChevronDown, Code, CreditCard, Menu, Scale, Stethoscope, X, type LucideIcon } from 'lucide-react'
-import { APP_URL } from '@/lib/config'
 import { primaryCta } from '@/lib/cta'
 import { env } from '@/lib/env'
 import { MykkaLogo } from './MykkaLogo'
@@ -84,10 +83,6 @@ export function Header() {
 
         <div className="ml-auto flex items-center gap-2.5 md:ml-0">
           <ThemeToggle />
-          <Link href={APP_URL}
-            className="hidden whitespace-nowrap px-2 py-1.5 text-[15px] text-ink md:block">
-            Sign in
-          </Link>
           <Link href={cta.href}
             className="whitespace-nowrap rounded-btn bg-btn px-4 py-[9px] text-[15px] font-medium text-btn-fg transition-opacity hover:opacity-90">
             {cta.label}
@@ -114,10 +109,6 @@ export function Header() {
               ))}
             </div>
           ))}
-          <Link href={APP_URL} onClick={() => setOpen(false)}
-            className="block py-2 text-[15px] text-muted hover:text-ink">
-            Sign in
-          </Link>
         </div>
       )}
     </header>
