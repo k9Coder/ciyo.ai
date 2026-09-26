@@ -1,0 +1,137 @@
+/* /login — two-column layout from the mykka "Console Login" design. Colors, radii and fonts come from tokens.css. */
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+.login-main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 100vh;
+  padding: 32px 40px;
+  box-sizing: border-box;
+}
+
+.login-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-wordmark { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; }
+
+.login-tag {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  padding: 2px 8px;
+}
+
+.login-theme {
+  display: flex;
+  background: var(--fill);
+  border: none;
+  border-radius: var(--r-btn);
+  padding: 3px;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--ink);
+}
+.login-theme span { padding: 5px 11px; border-radius: var(--r-btn); }
+.login-theme span[data-active='true'] { background: var(--surface); }
+
+.login-center { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login-head { display: flex; flex-direction: column; gap: 8px; }
+.login-head h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.login-head p { margin: 0; font-size: 16px; color: var(--muted); line-height: 1.5; }
+
+.login-switch { font-size: 14px; color: var(--muted); }
+.login-switch a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.login-switch a:hover { color: var(--brand); }
+
+.login-note { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.login-foot {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+}
+.login-foot a { color: var(--muted); text-decoration: none; }
+.login-foot a:hover { color: var(--ink); }
+.login-secure { display: flex; gap: 6px; align-items: center; }
+.login-spacer { flex: 1; }
+
+.login-proof {
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  box-sizing: border-box;
+}
+.login-proof-eyebrow { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.login-proof-claim {
+  font-size: clamp(26px, 2.8vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  max-width: 480px;
+  text-wrap: balance;
+}
+.login-stats {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg);
+  overflow: hidden;
+  max-width: 480px;
+}
+.login-stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.login-stat { padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+.login-stat + .login-stat { border-left: 1px solid var(--line); }
+.login-stat-label { font-size: 13px; color: var(--muted); }
+.login-stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+.login-stats-foot {
+  border-top: 1px solid var(--line);
+  padding: 12px 18px;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.login-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+
+@media (max-width: 520px) {
+  .login-main { padding: 24px 20px; }
+  .login-proof { padding: 40px 20px; }
+}

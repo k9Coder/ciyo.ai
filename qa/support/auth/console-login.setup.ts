@@ -15,7 +15,6 @@ setup('authenticate to console via Clerk', async ({ page }) => {
   await clerkSetup({ publishableKey, secretKey: env.QA_CLERK_SECRET_KEY })
 
   await page.goto(consoleUrl + '/login')
-  await page.getByRole('button', { name: /sign in/i }).click()
 
   await page.getByLabel(/email address/i).fill(email)
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
