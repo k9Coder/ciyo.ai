@@ -48,7 +48,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/login"          element={<LoginPage />} />
+          {/* Splat: Clerk's embedded <SignIn/>/<SignUp/> use path routing and own
+              the sub-steps (/login/factor-one, /login/sign-up/verify-email-address, …). */}
+          <Route path="/login/*"        element={<LoginPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
           <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
           {/* Token-invite-link flow retired in favor of admin-add-by-email
