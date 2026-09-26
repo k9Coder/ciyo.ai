@@ -33,12 +33,14 @@ async function fillSignUp(page: Page, email: string) {
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
 }
 
-/** Console login page: open the Clerk modal, then sign up. */
+/** Console /login: Clerk's sign-up form is embedded on the page (no modal). */
 async function signUpFromLoginPage(page: Page, email: string) {
   await setupClerkTestingToken({ page })
   await page.goto('/login')
-  await page.getByRole('button', { name: /sign in/i }).click()
-  await fillSignUp(page, email)
+  await page.getByRole('link', { name: /set up your organization/i }).click()
+  await page.getByLabel(/email address/i).fill(email)
+  await page.locator('input[type="password"]').fill(TEST_PASSWORD)
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 }
 
 let email: string

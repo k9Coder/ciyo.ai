@@ -7,21 +7,21 @@ const TIERS = [
   {
     name: 'Solo', monthly: 0, annual: 0, per: 'forever',
     desc: 'For individuals validating Pretzel before recommending it.',
-    cta: 'Get Started Free', href: `${APP_URL}/onboarding`, featured: false,
+    cta: 'Start free', href: `${APP_URL}/onboarding`, featured: false,
     features: ['3 users', '1 subject, 5 rules', 'Keyword detection only', '500 scans / month', 'Basic Console access'],
     missing: ['Analytics', 'Org hierarchy', 'Entropy/pattern detection', 'AI assistant', 'Alerting'],
   },
   {
     name: 'Starter', monthly: 49, annual: 40, per: '/mo flat',
     desc: 'Small teams. Easy to expense — no per-seat maths.',
-    cta: 'Start Free Trial', href: `${APP_URL}/onboarding?plan=starter`, featured: false,
+    cta: 'Start free', href: `${APP_URL}/onboarding`, featured: false,
     features: ['25 users', 'Unlimited subjects + rules', 'Keyword + regex detection', '50,000 scans / month', '30-day analytics', 'Basic audit log', 'Email support'],
     missing: ['Entropy detection', 'AI assistant', 'Slack alerting'],
   },
   {
     name: 'Business', monthly: 15, annual: 12, per: '/user/mo',
     desc: 'Full protection for the whole org. Scales with headcount.',
-    cta: 'Start Business', href: `${APP_URL}/onboarding?plan=business`, featured: true,
+    cta: 'Start free', href: `${APP_URL}/onboarding`, featured: true,
     features: ['Unlimited users', 'All detection types', 'Unlimited scans', '12-month audit log', 'Division & team hierarchy', 'AI policy assistant', 'Slack + email alerting', 'Priority support'],
     missing: [],
   },
@@ -54,7 +54,7 @@ export default function PricingClient() {
             href={`${APP_URL}/onboarding`}
             className="inline-block rounded-xl bg-btn px-8 py-3 text-[14px] font-bold text-btn-fg hover:opacity-90"
           >
-            Get started free →
+            Start free →
           </Link>
         </div>
       </div>
