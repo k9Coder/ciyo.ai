@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { ChevronDown, Code, CreditCard, Menu, Scale, Stethoscope, X, type LucideIcon } from 'lucide-react'
+import { ChevronDown, Code, CreditCard, Download, Menu, Scale, Stethoscope, X, type LucideIcon } from 'lucide-react'
 import { primaryCta } from '@/lib/cta'
 import { env } from '@/lib/env'
 import { MykkaLogo } from './MykkaLogo'
@@ -83,6 +83,11 @@ export function Header() {
 
         <div className="ml-auto flex items-center gap-2.5 md:ml-0">
           <ThemeToggle />
+          <Link href="/download"
+            className={`flex items-center gap-1.5 whitespace-nowrap px-2 py-1.5 text-[15px] transition-colors hover:text-ink ${isActive(pathname, '/download') ? 'text-ink shadow-[inset_0_-2px_0_var(--ink)]' : 'text-muted'}`}>
+            <Download size={16} aria-hidden="true" />
+            Download
+          </Link>
           <Link href={cta.href}
             className="whitespace-nowrap rounded-btn bg-btn px-4 py-[9px] text-[15px] font-medium text-btn-fg transition-opacity hover:opacity-90">
             {cta.label}
