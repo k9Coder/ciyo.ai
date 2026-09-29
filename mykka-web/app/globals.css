@@ -40,12 +40,6 @@
 
   --shadow: 0 20px 50px rgba(24, 32, 28, 0.12);
   --scrim:  rgba(24, 32, 28, 0.32);
-
-  /* Legacy aliases used by app/download/DownloadClient.tsx */
-  --border:   var(--line);
-  --surface2: var(--fill);
-  --green:    var(--brand);
-  --dim:      var(--muted);
 }
 
 [data-theme="dark"] {
