@@ -1,236 +1,237 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
+import { useState, useSyncExternalStore } from 'react'
+import { Check, Copy, Globe, Monitor } from 'lucide-react'
+import { CHROME_EXTENSION_ID, CHROME_WEB_STORE_URL } from '@/lib/config'
 import type { DownloadAsset, Downloads } from './getDownloads'
 
-type Platform = 'mac-arm' | 'mac-intel' | 'windows' | 'linux' | 'unknown'
+type PickKey = 'chrome' | 'win' | 'mac'
+type Os = 'mac' | 'win' | 'other'
 
-function detectPlatform(): Platform {
-  if (typeof navigator === 'undefined') return 'unknown'
-  const ua = navigator.userAgent.toLowerCase()
-  if (ua.includes('mac')) {
-    // Apple Silicon detection via canvas trick or just default to arm64 since 2021+ is ARM
-    return (navigator as unknown as { userAgentData?: { platform?: string } })
-      .userAgentData?.platform?.toLowerCase().includes('arm') !== false
-      ? 'mac-arm'
-      : 'mac-intel'
-  }
-  if (ua.includes('win')) return 'windows'
-  if (ua.includes('linux')) return 'linux'
-  return 'unknown'
+interface Option {
+  key: PickKey
+  title: string
+  meta: string
+  cta: string
+  href: string
+  available: boolean
 }
 
 function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-export function DownloadClient({ downloads: releaseDownloads }: { downloads: Downloads }) {
-  // Server-rendered HTML always sees 'unknown' (no `navigator` on the
-  // server), so the initial client render must match that exactly or React
-  // flags a hydration mismatch. useSyncExternalStore returns the server
-  // snapshot ('unknown') during SSR + initial hydration, then the client
-  // snapshot (the real platform) afterwards — the correct post-hydration
-  // pattern, without a setState-in-effect (which the lint rule rejects).
-  const platform = useSyncExternalStore<Platform>(
-    () => () => {}, // platform never changes at runtime — nothing to subscribe to
-    () => detectPlatform(), // client snapshot
-    () => 'unknown', // server / first-hydration snapshot
-  )
+function detectOs(): Os {
+  if (typeof navigator === 'undefined') return 'other'
+  const ua = navigator.userAgent
+  if (/Mac/.test(ua)) return 'mac'
+  if (/Win/.test(ua)) return 'win'
+  return 'other'
+}
 
-  const version = releaseDownloads.version ? `v${releaseDownloads.version}` : ''
+// Chrome and Chromium-based Edge both ship the extension APIs it needs; everything else
+// (Safari, Firefox, or a non-browser UA) gets steered to Pretzel Desktop instead.
+function detectIsChromium(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /Chrome|Edg\//.test(navigator.userAgent)
+}
 
-  const downloads: Array<{
-    id: Platform
-    label: string
-    sublabel: string
-    icon: string
-    asset: DownloadAsset | null
-    installCmd?: string
-    installCmdLabel?: string
-  }> = [
-    {
-      id: 'mac-arm',
-      label: 'macOS',
-      sublabel: 'Apple Silicon (M1/M2/M3/M4)',
-      icon: '🍎',
-      asset: releaseDownloads.macArm,
-      installCmd: 'brew install --cask pretzel-desktop',
-      installCmdLabel: 'or via Homebrew',
+function buildOptions(downloads: Downloads): Record<PickKey, Option> {
+  // Apple Silicon has been the default Mac since 2020; the single "Mac" download offered here
+  // (matching the redesign) points at the arm64 build, falling back to Intel if that's all
+  // there is. Both stay reachable individually in "All downloads" only via this one link, so an
+  // Intel-only build with no arm64 build still works — there's just no separate Intel row.
+  const mac = downloads.macArm ?? downloads.macIntel
+  const macAsset: DownloadAsset | null = mac
+  const winAsset = downloads.windows
+  const version = downloads.version ? `v${downloads.version}` : null
+
+  return {
+    chrome: {
+      key: 'chrome',
+      title: 'Pretzel for Chrome',
+      meta: 'Browser extension · works in Chrome and Edge',
+      cta: 'Add to Chrome',
+      href: CHROME_WEB_STORE_URL,
+      available: true,
     },
-    {
-      id: 'mac-intel',
-      label: 'macOS',
-      sublabel: 'Intel (2020 and earlier)',
-      icon: '🍎',
-      asset: releaseDownloads.macIntel,
+    win: {
+      key: 'win',
+      title: 'Pretzel Desktop for Windows',
+      meta: winAsset
+        ? `Windows 10 or 11 · 64-bit${version ? ` · ${version}` : ''}`
+        : 'Windows 10 or 11 · 64-bit',
+      cta: winAsset ? `Download for Windows (${formatBytes(winAsset.size)})` : 'Unavailable',
+      href: winAsset?.url ?? '#',
+      available: !!winAsset,
     },
-    {
-      id: 'windows',
-      label: 'Windows',
-      sublabel: 'Windows 10 / 11 (x64)',
-      icon: '🪟',
-      asset: releaseDownloads.windows,
-      installCmd: 'winget install mykka.PretzelDesktop',
-      installCmdLabel: 'or via winget',
+    mac: {
+      key: 'mac',
+      title: 'Pretzel Desktop for Mac',
+      meta: macAsset
+        ? `macOS 13+ · Apple silicon and Intel${version ? ` · ${version}` : ''}`
+        : 'macOS 13+ · Apple silicon and Intel',
+      cta: macAsset ? `Download for Mac (${formatBytes(macAsset.size)})` : 'Unavailable',
+      href: macAsset?.url ?? '#',
+      available: !!macAsset,
     },
-    {
-      id: 'linux',
-      label: 'Linux',
-      sublabel: 'AppImage (x64)',
-      icon: '🐧',
-      asset: releaseDownloads.linux,
-    },
-  ]
+  }
+}
+
+export function DownloadClient({ downloads }: { downloads: Downloads }) {
+  const [copied, setCopied] = useState(false)
+
+  // Server-rendered HTML has no navigator, so the snapshot used during SSR and first hydration
+  // must be a constant that matches on both sides — real detection only kicks in client-side,
+  // same pattern as the platform detection this file used before the redesign.
+  const isChromium = useSyncExternalStore(() => () => {}, detectIsChromium, () => false)
+  const os = useSyncExternalStore(() => () => {}, detectOs, () => 'other' as Os)
+
+  const options = buildOptions(downloads)
+  const pickKey: PickKey = isChromium ? 'chrome' : os === 'mac' ? 'mac' : os === 'win' ? 'win' : 'chrome'
+  const pick = options[pickKey]
+  const others = (['chrome', 'win', 'mac'] as const).filter((k) => k !== pickKey).map((k) => options[k])
+  const osLabel = os === 'mac' ? 'your Mac' : os === 'win' ? 'your Windows PC' : 'your computer'
+
+  async function copyExtensionId() {
+    try {
+      await navigator.clipboard.writeText(CHROME_EXTENSION_ID)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // Clipboard permission denied — nothing to fall back to, leave the button as-is.
+    }
+  }
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', padding: '64px 24px' }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 56 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, padding: '4px 14px', fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
-          {version ? `Latest: ${version}` : 'Latest release'}
-        </div>
-
-        <h1 style={{ fontSize: 48, fontWeight: 800, letterSpacing: -1, marginBottom: 16 }}>
-          Download Pretzel Desktop
+    <>
+      <section className="mx-auto flex max-w-[1200px] flex-col gap-[18px] px-6 pb-10 pt-[72px]">
+        <div className="font-mono text-[13px] text-muted">Download</div>
+        <h1 className="m-0 max-w-[860px] text-balance text-[clamp(38px,5vw,60px)] font-semibold leading-[1.04] tracking-[-0.035em]">
+          Install Pretzel, then sign in with your work email.
         </h1>
-        <p style={{ fontSize: 18, color: 'var(--muted)', maxWidth: 520, margin: '0 auto' }}>
-          System-wide AI prompt DLP. Monitors all apps — including Chrome, Safari, and native AI tools — not just the browser.
+        <p className="m-0 max-w-[640px] text-[19px] leading-[1.5] text-muted">
+          The extension covers ChatGPT, Claude and Gemini in Chrome. Pretzel Desktop covers AI apps
+          outside the browser. Most people only need the extension.
         </p>
-      </div>
+      </section>
 
-      {/* Platform cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 40 }}>
-        {downloads.map(d => {
-          const isDetected = d.id === platform || (platform === 'mac-arm' && d.id === 'mac-arm')
-          const url = d.asset?.url ?? '#'
-          const size = d.asset ? formatBytes(d.asset.size) : ''
+      <section className="mx-auto max-w-[1200px] px-6 pb-14">
+        <div className="grid grid-cols-1 items-center gap-6 rounded-[calc(var(--r)+4px)] border-[1.5px] border-brand bg-surface p-8 shadow-(--shadow) sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <span className="flex size-14 items-center justify-center rounded-token bg-brand-soft text-brand">
+            {pick.key === 'chrome'
+              ? <Globe size={28} strokeWidth={1.5} aria-hidden="true" />
+              : <Monitor size={28} strokeWidth={1.5} aria-hidden="true" />}
+          </span>
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <span className="font-mono text-[12px] text-brand">Recommended for {osLabel}</span>
+            <span className="text-[clamp(22px,2.4vw,28px)] font-semibold tracking-[-0.02em]">{pick.title}</span>
+            <span className="text-[15px] text-muted">{pick.meta}</span>
+          </div>
+          <a
+            href={pick.href}
+            download={pick.key !== 'chrome' && pick.available}
+            aria-disabled={!pick.available}
+            className={`flex items-center gap-[9px] whitespace-nowrap rounded-btn px-6 py-[14px] text-[16px] font-medium ${
+              pick.available ? 'bg-btn text-btn-fg hover:opacity-90' : 'pointer-events-none bg-fill text-muted'
+            }`}
+          >
+            {pick.key === 'chrome'
+              ? <Globe size={18} strokeWidth={1.5} aria-hidden="true" />
+              : <Monitor size={18} strokeWidth={1.5} aria-hidden="true" />}
+            {pick.cta}
+          </a>
+        </div>
+      </section>
 
-          return (
+      <section className="mx-auto flex max-w-[1200px] flex-col gap-[18px] px-6 pb-20">
+        <h2 className="m-0 text-[22px] font-semibold tracking-[-0.015em]">All downloads</h2>
+        <div className="overflow-hidden rounded-token border border-line bg-surface">
+          {others.map((d, i) => (
             <div
-              key={d.id}
-              style={{
-                background: 'var(--surface)',
-                border: `1px solid ${isDetected ? 'var(--btn-bg)' : 'var(--border)'}`,
-                borderRadius: 16,
-                padding: 24,
-                position: 'relative',
-                boxShadow: isDetected ? '0 0 0 1px var(--btn-bg)' : 'none',
-              }}
+              key={d.key}
+              className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5 px-6 py-5 ${i ? 'border-t border-line' : ''}`}
             >
-              {isDetected && (
-                <div style={{ position: 'absolute', top: -10, left: 16, background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20 }}>
-                  Recommended for you
-                </div>
-              )}
-
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{d.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{d.label}</div>
-              <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>{d.sublabel}</div>
-
+              <div className="flex min-w-0 flex-col gap-1">
+                <span className="text-[17px] font-medium">{d.title}</span>
+                <span className="text-[14px] text-muted">{d.meta}</span>
+              </div>
               <a
-                href={url}
-                download={!!d.asset}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'center',
-                  padding: '10px 0',
-                  background: isDetected ? 'var(--btn-bg)' : 'var(--surface2)',
-                  color: 'var(--btn-fg)',
-                  borderRadius: 10,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  textDecoration: 'none',
-                  marginBottom: d.installCmd ? 12 : 0,
-                  cursor: 'pointer',
-                }}
+                href={d.href}
+                download={d.key !== 'chrome' && d.available}
+                aria-disabled={!d.available}
+                className={`whitespace-nowrap rounded-btn border px-[18px] py-2.5 text-[15px] ${
+                  d.available ? 'border-line text-ink hover:border-ink' : 'pointer-events-none border-line text-muted'
+                }`}
               >
-                {d.asset ? `Download ${size ? `(${size})` : ''}` : 'Unavailable'}
+                {d.cta}
               </a>
-
-              {d.installCmd && (
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--dim)', marginBottom: 6 }}>{d.installCmdLabel}</div>
-                  <code
-                    style={{
-                      display: 'block',
-                      background: 'var(--surface2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 8,
-                      padding: '8px 12px',
-                      fontSize: 12,
-                      color: 'var(--brand)',
-                      cursor: 'pointer',
-                      userSelect: 'all',
-                    }}
-                    title="Click to copy"
-                    onClick={() => navigator.clipboard?.writeText(d.installCmd!)}
-                  >
-                    {d.installCmd}
-                  </code>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Requirements + what it does */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 48 }}>
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
-          <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>System requirements</div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <li>✓ macOS 12+ (Monterey or later)</li>
-            <li>✓ Windows 10 / 11 (64-bit)</li>
-            <li>✓ Linux (glibc 2.28+)</li>
-            <li>✓ 50 MB disk space</li>
-            <li>✓ Admin rights for CA cert install</li>
-          </ul>
-        </div>
-
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
-          <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 14 }}>What it does</div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <li>🔍 Inspects HTTPS traffic to AI chat sites only — everything else passes through untouched</li>
-            <li>🛡️ Applies your org policy to every AI request</li>
-            <li>🪟 Works with Chrome, Edge, Safari, Copilot</li>
-            <li>🔔 Decision window for warn/block actions</li>
-            <li>📊 Audit events sent to your dashboard</li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Why this isn't the network-proxy TLS inspection our blog argues against */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 28, marginBottom: 40 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10 }}>Not the TLS inspection you&apos;re thinking of</div>
-        <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
-          If you&apos;ve read our take on why network-level TLS inspection is the wrong approach to AI DLP, this looks like a contradiction — it isn&apos;t. That critique is about corporate-proxy inspection: a gateway decrypting every app&apos;s traffic for the whole network, which breaks certificate-pinned apps and needs real IT infrastructure. Pretzel Desktop does something narrower: it runs locally on your own machine and only terminates TLS for four AI hostnames (ChatGPT, Claude, Gemini, and their variants) — every other app and site is blind-tunnelled straight through, untouched. It&apos;s the same &quot;read the prompt before it&apos;s gone&quot; principle as the browser extension, just extended to native apps that don&apos;t run in a browser tab.
-        </div>
-      </div>
-
-      {/* First-run steps */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>After installing</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[
-            ['1', 'Launch Pretzel Desktop', 'It installs a local CA cert and sets up your system proxy. You\'ll be prompted for admin password once.'],
-            ['2', 'Sign in with mykka.ai', 'Click the tray icon → "Sign in" to load your organisation\'s policy. Opens in your browser.'],
-            ['3', 'Done', 'The tray icon turns green. Every request to a supported AI site — from any app on your machine — is now checked against your policy.'],
-          ].map(([num, title, desc]) => (
-            <div key={num} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {num}
-              </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{title}</div>
-                <div style={{ fontSize: 13, color: 'var(--muted)' }}>{desc}</div>
-              </div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-    </div>
+      <section className="border-y border-line bg-surface">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-2">
+          <div className="flex flex-col gap-5">
+            <h2 className="m-0 text-[clamp(26px,3vw,36px)] font-semibold leading-[1.1] tracking-[-0.03em]">
+              Invited by your admin?
+            </h2>
+            <div className="flex flex-col">
+              {[
+                'Install the extension above.',
+                'Click the Pretzel icon and sign in with the email your invite was sent to.',
+                "That's it. Your company's rules load in a few seconds.",
+              ].map((step, i, arr) => (
+                <div
+                  key={step}
+                  className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 border-t border-line py-3.5 ${i === arr.length - 1 ? 'border-b' : ''}`}
+                >
+                  <span className="font-mono text-[14px] text-muted">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="text-[16px] leading-[1.5]">{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <h2 className="m-0 text-[clamp(26px,3vw,36px)] font-semibold leading-[1.1] tracking-[-0.03em]">
+              Installing for everyone?
+            </h2>
+            <p className="m-0 text-[16px] leading-[1.55] text-muted">
+              Force-install the extension with Chrome Enterprise, or push Pretzel Desktop with your
+              MDM. Your organization token is in the console under Settings.
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[13px] text-muted">Extension ID</span>
+              <div className="flex items-center gap-2 rounded-token-sm border border-line bg-bg px-3 py-2.5">
+                <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[14px]">
+                  {CHROME_EXTENSION_ID}
+                </span>
+                <button
+                  onClick={copyExtensionId}
+                  className="flex items-center gap-1.5 rounded-btn bg-fill px-3 py-1.5 text-[13px] text-ink"
+                >
+                  {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <a
+              href="https://docs.mykka.ai/enterprise"
+              className="text-[16px] text-ink underline underline-offset-4"
+            >
+              Deployment guide
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto flex max-w-[1200px] flex-wrap gap-7 px-6 pb-24 pt-14 text-[14px] text-muted">
+        <span><b className="font-semibold text-ink">Extension</b> · Chrome 116+, Edge 116+</span>
+        <span><b className="font-semibold text-ink">Windows</b> · 10 or 11, 64-bit</span>
+        <span><b className="font-semibold text-ink">macOS</b> · 13 Ventura or later, Apple silicon and Intel</span>
+      </section>
+    </>
   )
 }
