@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>mykka local judge (offscreen)</title>
+  </head>
+  <body>
+    <!--
+      Offscreen document for the local-judge wiring spike
+      (spike/local-judge-poc). Exists only to host a model outside the
+      service worker's ~30s idle-kill lifecycle — chrome.offscreen documents
+      stay open until explicitly closed. No visible UI; never shown to the
+      user.
+    -->
+    <script type="module" src="./offscreen.ts"></script>
+  </body>
+</html>

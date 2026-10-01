@@ -34,3 +34,8 @@ export { DEFAULT_POLICY } from './policy/defaults'
 
 // Constants
 export { SNIPPET_CONTEXT_CHARS } from './constants'
+
+// Local-judge wiring spike (spike/local-judge-poc) — not production detection
+// logic. See judge/types.ts for the swap-friendly LocalJudge contract.
+export type { JudgeInput, JudgeVerdict, LocalJudge, JudgePromptRule } from './judge'
+export { POC_JUDGE_RULES, StubLocalJudge } from './judge'

@@ -6,6 +6,7 @@ import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
+import { runLocalJudgePoc } from "@/background/local-judge-poc";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
 import { appendAuditEvent } from "@/audit/log";
@@ -33,6 +34,15 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onMessage.addListener(
   (message: Message, _sender, sendResponse) => {
+    // The local-judge wiring spike (spike/local-judge-poc) talks to the
+    // offscreen document via this same chrome.runtime.sendMessage channel.
+    // That message isn't part of the Message union and must be answered
+    // exclusively by the offscreen document — handleMessage's default case
+    // would otherwise race sendResponse against the offscreen doc's real
+    // (async) classify call and could win with a bogus `null`.
+    if ((message as { type?: string })?.type === "LOCAL_JUDGE_CLASSIFY") {
+      return undefined;
+    }
     handleMessage(message)
       .then(sendResponse)
       .catch((err) => {
@@ -94,6 +104,9 @@ async function handleMessage(message: Message): Promise<unknown> {
       void dispatchEvents(result, hostname);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();
+      // Shadow-mode only (spike/local-judge-poc) — fire-and-forget, never
+      // awaited here, never affects the returned result.
+      void runLocalJudgePoc(hostname, text);
       return result;
     }
 

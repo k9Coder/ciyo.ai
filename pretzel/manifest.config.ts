@@ -60,7 +60,9 @@ export default defineManifest(async ({ mode }) => {
     name: "Pretzel",
     version,
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
-    permissions: ["storage", "activeTab", "alarms", "cookies", "identity"],
+    // "offscreen": hosts the local-judge model outside the service worker's
+    // idle-kill lifecycle (spike/local-judge-poc) — see background/local-judge-poc.ts.
+    permissions: ["storage", "activeTab", "alarms", "cookies", "identity", "offscreen"],
     host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",
