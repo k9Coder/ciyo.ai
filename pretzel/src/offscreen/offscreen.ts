@@ -3,15 +3,17 @@
  *
  * Hosts the LocalJudge so it survives outside the service worker's ~30s
  * idle-kill lifecycle (service-worker.ts can't hold a loaded model in memory
- * between calls; this document only closes when explicitly told to). Right
- * now it hosts StubLocalJudge — a deterministic placeholder — proving the
- * message-passing/lifecycle wiring works. Swapping in a real WASM runtime
- * (e.g. ONNX Runtime Web) happens here, behind the same LocalJudge contract,
- * once the wiring itself is proven.
+ * between calls; this document only closes when explicitly told to).
+ *
+ * Hosts TransformersLocalJudge (onnx-community/Qwen2.5-0.5B-Instruct via WASM)
+ * — see transformers-judge.ts for why this model was picked over the
+ * StubLocalJudge placeholder that originally proved this wiring, and over a
+ * generic zero-shot NLI classifier that was tried and rejected first.
  */
-import { StubLocalJudge, type LocalJudge, type JudgeInput } from "@mykka/detect";
+import type { LocalJudge, JudgeInput } from "@mykka/detect";
+import { TransformersLocalJudge } from "./transformers-judge";
 
-const judge: LocalJudge = new StubLocalJudge();
+const judge: LocalJudge = new TransformersLocalJudge();
 
 type ClassifyMessage = {
   type: "LOCAL_JUDGE_CLASSIFY";

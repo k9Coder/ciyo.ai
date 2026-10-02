@@ -106,5 +106,11 @@ export default defineManifest(async ({ mode }) => {
       "48": "public/icons/icon48.png",
       "128": "public/icons/icon128.png",
     },
+    // wasm-unsafe-eval: the offscreen document's local-judge model
+    // (spike/local-judge-poc, transformers-judge.ts) runs via WASM, which MV3's
+    // default CSP blocks compiling without this explicit opt-in.
+    content_security_policy: {
+      extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+    },
   };
 });
