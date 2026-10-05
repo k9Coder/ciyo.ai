@@ -12,6 +12,20 @@ files:
   - package.json
   - build/icon.*
 
+# Themis model for the local-judge PoC (spike/local-judge-poc) — copied into
+# process.resourcesPath/models at build time, matching
+# electron/themis-judge.ts's resolveModelDir() packaged-mode branch.
+extraResources:
+  - from: resources/models
+    to: models
+
+# Node's dlopen cannot load a native .node addon from inside an asar
+# archive — onnxruntime-node loads fine in dev (no asar involved) and would
+# silently fail only in a packaged build without this. Scoped to only this
+# package, not touching any other native dependency's existing packaging.
+asarUnpack:
+  - node_modules/onnxruntime-node/**/*
+
 mac:
   category: public.app-category.productivity
   icon: build/icon.icns

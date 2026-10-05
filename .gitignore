@@ -21,6 +21,10 @@ models/themis/*.onnx.data
 pretzel/public/models/
 pretzel/public/ort/
 
+# Themis model bundled for the desktop local-judge PoC, same reasoning and
+# regeneration source as pretzel/public/models/ above.
+pretzel-desktop/resources/models/
+
 # Prod env files across all packages — contain real secrets
 # .env.staging files are safe to commit (test keys only)
 **/.env.prod
