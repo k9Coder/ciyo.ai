@@ -55,10 +55,13 @@ const loading: Promise<void> = (async () => {
   const modelDir = resolveModelDir()
   transformersEnv.allowLocalModels = true
   transformersEnv.allowRemoteModels = false
-  // transformers.js string-joins this with the model id and filename — a
-  // trailing slash matters, mixed path separators on Windows don't (Node's
-  // fs accepts both).
-  transformersEnv.localModelPath = modelDir + '/'
+  // transformers.js string-joins localModelPath with the model id ('themis')
+  // and then the filename — localModelPath must be modelDir's PARENT, not
+  // modelDir itself, or 'themis' gets appended twice
+  // (.../resources/models/themis/themis/tokenizer_config.json, which never
+  // exists). A trailing slash matters for the join; mixed path separators on
+  // Windows don't (Node's fs accepts both).
+  transformersEnv.localModelPath = path.dirname(modelDir) + '/'
 
   const [tok, mdl, remapText] = await Promise.all([
     AutoTokenizer.from_pretrained('themis'),

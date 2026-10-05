@@ -11,6 +11,22 @@ vi.mock('electron', () => ({
   },
 }))
 
+// ThemisLocalJudge's "model unavailable" behavior must be deterministic
+// regardless of whether this checkout happens to have the real (git-ignored,
+// ~140MB) model files staged under resources/models/ — it's legitimately
+// absent in CI and present after a local verify-themis.ts run, and the
+// module-level `loading` promise is a singleton memoized at import time, so
+// without this mock these tests would pass or fail based on ambient
+// filesystem state rather than the behavior they're pinning.
+vi.mock('@huggingface/transformers', () => ({
+  AutoTokenizer: { from_pretrained: vi.fn().mockRejectedValue(new Error('mocked: no model in this test')) },
+  AutoModelForSequenceClassification: {
+    from_pretrained: vi.fn().mockRejectedValue(new Error('mocked: no model in this test')),
+  },
+  Tensor: class {},
+  env: { allowLocalModels: false, allowRemoteModels: false, localModelPath: '' },
+}))
+
 import { resolveModelDir, remapIds, softmax, type VocabRemap } from '../../electron/themis-judge'
 
 describe('resolveModelDir', () => {

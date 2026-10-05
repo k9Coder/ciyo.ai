@@ -1,19 +1,19 @@
 /**
- * Shadow-mode wiring for the local-judge PoC (branch: spike/local-judge-poc,
- * see docs/superpowers/specs equivalent plan "client-local LLM judge" design).
+ * Shadow-mode wiring for the local-judge PoC (branch: spike/local-judge-poc).
  *
- * Runs a LocalJudge against the same request body tier 1 (`evaluateRequest`)
- * already inspects, and only LOGS the verdict — never affects enforcement,
- * never blocks/warns, never touches the response path. Entirely gated behind
- * PRETZEL_LOCAL_JUDGE_POC=1 so it is a no-op everywhere outside this spike.
+ * Runs judge-prompt test rules against the same text the DETECT handler
+ * already inspects, and only LOGS verdicts — never affects the returned
+ * DetectionResult, never blocks/warns. Gated on PRETZEL_LOCAL_JUDGE_POC=1.
  *
- * `judge` is swapped from StubLocalJudge to a real on-device model (Jev or a
- * stand-in) once the wiring proven here holds up — that swap costs nothing
- * because both sides of the call only ever touch the LocalJudge interface.
+ * Uses ThemisLocalJudge (DeBERTa-v3-small, fine-tuned + vocabulary-pruned,
+ * same model as the extension's offscreen/themis-judge.ts) running natively
+ * via onnxruntime-node — no WASM, no browser sandbox, since this runs
+ * directly in Electron's main process.
  */
-import { StubLocalJudge, POC_JUDGE_RULES, type LocalJudge } from '@mykka/detect'
+import { POC_JUDGE_RULES, type LocalJudge } from '@mykka/detect'
+import { ThemisLocalJudge } from './themis-judge'
 
-const judge: LocalJudge = new StubLocalJudge()
+const judge: LocalJudge = new ThemisLocalJudge()
 
 export function isLocalJudgePocEnabled(): boolean {
   return process.env.PRETZEL_LOCAL_JUDGE_POC === '1'
