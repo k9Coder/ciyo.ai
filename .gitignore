@@ -13,6 +13,14 @@ dist/
 models/themis/*.onnx
 models/themis/*.onnx.data
 
+# Themis model + ONNX Runtime Web WASM binaries bundled into the extension
+# for the local-judge PoC (spike/local-judge-poc) — copied from models/themis/
+# and from the onnxruntime-web package respectively, both local-only for the
+# same reason as above. See pretzel/src/offscreen/themis-judge.ts for the
+# exact source paths/commands to regenerate them.
+pretzel/public/models/
+pretzel/public/ort/
+
 # Prod env files across all packages — contain real secrets
 # .env.staging files are safe to commit (test keys only)
 **/.env.prod

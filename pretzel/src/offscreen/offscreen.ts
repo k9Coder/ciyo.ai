@@ -5,15 +5,15 @@
  * idle-kill lifecycle (service-worker.ts can't hold a loaded model in memory
  * between calls; this document only closes when explicitly told to).
  *
- * Hosts TransformersLocalJudge (onnx-community/Qwen2.5-0.5B-Instruct via WASM)
- * — see transformers-judge.ts for why this model was picked over the
- * StubLocalJudge placeholder that originally proved this wiring, and over a
- * generic zero-shot NLI classifier that was tried and rejected first.
+ * Hosts ThemisLocalJudge (DeBERTa-v3-small, fine-tuned + vocabulary-pruned,
+ * bundled as an extension asset) — see themis-judge.ts for why this replaced
+ * the earlier TransformersLocalJudge (Qwen2.5-0.5B-Instruct) spike: same
+ * accuracy class, 3.5x smaller, ~100x faster per call.
  */
 import type { LocalJudge, JudgeInput } from "@mykka/detect";
-import { TransformersLocalJudge } from "./transformers-judge";
+import { ThemisLocalJudge } from "./themis-judge";
 
-const judge: LocalJudge = new TransformersLocalJudge();
+const judge: LocalJudge = new ThemisLocalJudge();
 
 type ClassifyMessage = {
   type: "LOCAL_JUDGE_CLASSIFY";
