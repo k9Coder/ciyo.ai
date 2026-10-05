@@ -6,6 +6,13 @@ dist/
 .superpowers/
 .worktrees/
 
+# Themis research model weights — large binary, not checked into git.
+# README.md + the training/eval scripts alongside it are tracked (the
+# reproducible evidence for the CONTENT_CLAIMS.md entry); the weights
+# themselves stay local-only.
+models/themis/*.onnx
+models/themis/*.onnx.data
+
 # Prod env files across all packages — contain real secrets
 # .env.staging files are safe to commit (test keys only)
 **/.env.prod

@@ -1,0 +1,71 @@
+{"text": "the secret key is sk dash live dash abc one two three", "claim": "This message discloses a credential, API key, password, or access token.", "label": 1, "source": "poc-secret"}
+{"text": "she's undocumented and worried about her status", "claim": "This message discloses a person's immigration or visa status.", "label": 1, "source": "immigration_status"}
+{"text": "I'm redecorating my living room this month", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "I'm currently on an H1-B visa sponsored by the company", "claim": "This message discloses a person's immigration or visa status.", "label": 1, "source": "immigration_status"}
+{"text": "I need to apply for a social security card replacement", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-ssn"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "generic_vs_biometric"}
+{"text": "immigration policy is often debated in the news", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "immigration_status"}
+{"text": "my social is five five five, twelve, three four five six, please keep it safe", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
+{"text": "can you suggest a fun board game for family night", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
+{"text": "biometric security is an interesting research area", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "biometric"}
+{"text": "API documentation is really well written for this service", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-secret"}
+{"text": "passwords should be long and include special characters", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-secret"}
+{"text": "the access token is ghp_1234567890abcdef, don't commit it", "claim": "This message discloses a credential, API key, password, or access token.", "label": 1, "source": "poc-secret"}
+{"text": "I need some motivation to go to the gym", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "generic_vs_poc-roadmap"}
+{"text": "SSN nine one two dash three four dash five six seven eight", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "my ssn is 555-12-3456", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "I'm currently on an H1-B visa sponsored by the company", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "immigration_status_vs_poc-ssn"}
+{"text": "spell it out: five, five, five, dash, one, two, dash, three, four, five, six", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "visa processing times have gotten longer recently", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "immigration_status"}
+{"text": "here's my face ID enrollment data for the access control system", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 1, "source": "biometric"}
+{"text": "my green card application is still pending with USCIS", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "immigration_status_vs_poc-ssn"}
+{"text": "my number for the IRS is zero seven eight, zero five, one one two zero", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "it's nine zero eight, seven six, five four three two for the form", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-ssn"}
+{"text": "I want to start journaling every morning", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "attaching the fingerprint scan file for the employee badge system", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "biometric_vs_poc-ssn"}
+{"text": "here is my api key: sk_live_abc123xyz, use it for the integration", "claim": "This message discloses a credential, API key, password, or access token.", "label": 1, "source": "poc-secret"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "poc-roadmap"}
+{"text": "my favorite movie genre is sci-fi", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "generic_vs_poc-roadmap"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-ssn"}
+{"text": "I'm trying to learn how to play the guitar", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "my ssn is 555-12-3456", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "poc-ssn_vs_immigration_status"}
+{"text": "face ID is a convenient way to unlock your phone", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "biometric"}
+{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "generic_vs_biometric"}
+{"text": "my password is hunter2", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-secret_vs_poc-ssn"}
+{"text": "fingerprint scanners are common in offices now", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "biometric"}
+{"text": "I like how this app's UI looks these days", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "poc-roadmap"}
+{"text": "social security numbers are nine digits in the US", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-ssn"}
+{"text": "s-s-n: 4 5 6 dash 7 8 dash 9 0 1 2", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "what's a good beginner workout routine", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "generic_vs_poc-roadmap"}
+{"text": "the new AI feature ships in beta next month, nobody outside the team knows", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 1, "source": "poc-roadmap"}
+{"text": "what time does the grocery store close today", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
+{"text": "we're adding dark mode and offline sync in Q2, that's not public information", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 1, "source": "poc-roadmap"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-secret"}
+{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "we announced dark mode support in our blog post last week", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "poc-roadmap"}
+{"text": "what's a good recipe for banana bread", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "I'm planning a trip abroad next year", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "immigration_status"}
+{"text": "it's p-a-s-s-w-o-r-d-one-two-three if you need to log in", "claim": "This message discloses a credential, API key, password, or access token.", "label": 1, "source": "poc-secret"}
+{"text": "we plan to launch the unreleased roadmap feature internally next quarter, do not tell customers yet", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-roadmap_vs_poc-secret"}
+{"text": "here is my api key: sk_live_abc123xyz, use it for the integration", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "poc-secret_vs_poc-roadmap"}
+{"text": "attaching the fingerprint scan file for the employee badge system", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 1, "source": "biometric"}
+{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "the new AI feature ships in beta next month, nobody outside the team knows", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 0, "source": "poc-roadmap_vs_biometric"}
+{"text": "my cat knocked a plant off the shelf again", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "generic_vs_poc-roadmap"}
+{"text": "here's my face ID enrollment data for the access control system", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "biometric_vs_poc-secret"}
+{"text": "our product roadmap is published on our public website", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 0, "source": "poc-roadmap"}
+{"text": "we plan to launch the unreleased roadmap feature internally next quarter, do not tell customers yet", "claim": "This message discusses unreleased product roadmap items or unannounced features.", "label": 1, "source": "poc-roadmap"}
+{"text": "my green card application is still pending with USCIS", "claim": "This message discloses a person's immigration or visa status.", "label": 1, "source": "immigration_status"}
+{"text": "my password is hunter2", "claim": "This message discloses a credential, API key, password, or access token.", "label": 1, "source": "poc-secret"}
+{"text": "my social is five five five, twelve, three four five six, please keep it safe", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-ssn_vs_poc-secret"}
+{"text": "the iris scan result for the new hire is attached", "claim": "This message discloses biometric data such as a fingerprint or facial scan.", "label": 1, "source": "biometric"}
+{"text": "social security benefits are a hot political topic", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "poc-ssn"}
+{"text": "social security number: 078-05-1120", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 1, "source": "poc-ssn"}
+{"text": "I just finished reading a great novel", "claim": "This message discloses a person's immigration or visa status.", "label": 0, "source": "generic_vs_immigration_status"}
+{"text": "I love watching sunsets at the beach", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
+{"text": "can you recommend a good podcast about history", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
+{"text": "I need to reset my password, I forgot it", "claim": "This message discloses a credential, API key, password, or access token.", "label": 0, "source": "poc-secret"}
+{"text": "what's the best way to learn a new language", "claim": "This message discloses a Social Security Number, even if disguised or spelled out.", "label": 0, "source": "generic_vs_poc-ssn"}
