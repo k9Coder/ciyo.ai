@@ -1,3 +1,18 @@
+/**
+ * Desktop-side ThemisLocalJudge for the local-judge PoC (spike/local-judge-poc).
+ * Ports pretzel/src/offscreen/themis-judge.ts (the extension's verified
+ * implementation, commit c37099d) to run natively via onnxruntime-node
+ * instead of onnxruntime-web/WASM — same model, same tokenizer/vocab-remap
+ * logic, no browser sandbox since this runs in Electron's main process.
+ *
+ * `resources/models/` is git-ignored (large binaries, local-only — same
+ * reasoning as pretzel/public/models/, see root .gitignore). To regenerate
+ * after a fresh checkout:
+ *   mkdir -p resources/models/themis/onnx
+ *   cp ../pretzel/public/models/themis/{config.json,tokenizer.json,tokenizer_config.json,vocab_remap.json} resources/models/themis/
+ *   cp ../pretzel/public/models/themis/onnx/{themis.onnx,themis.onnx.data} resources/models/themis/onnx/
+ * See models/themis/README.md for how these files were produced originally.
+ */
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { app } from 'electron'
@@ -48,50 +63,66 @@ let model: PreTrainedModel | null = null
 let vocabRemap: VocabRemap | null = null
 let loadError: unknown = null
 
-// Kick off loading at module import time, same rationale as the extension's
-// offscreen judge: give the model a head start before the first real
-// classify() call arrives.
-const loading: Promise<void> = (async () => {
-  const modelDir = resolveModelDir()
-  transformersEnv.allowLocalModels = true
-  transformersEnv.allowRemoteModels = false
-  // transformers.js string-joins localModelPath with the model id ('themis')
-  // and then the filename — localModelPath must be modelDir's PARENT, not
-  // modelDir itself, or 'themis' gets appended twice
-  // (.../resources/models/themis/themis/tokenizer_config.json, which never
-  // exists). A trailing slash matters for the join; mixed path separators on
-  // Windows don't (Node's fs accepts both).
-  transformersEnv.localModelPath = path.dirname(modelDir) + '/'
+// Lazy and memoized: importing this module (which happens unconditionally
+// from local-judge-poc.ts, which is always imported by proxy.ts) must not
+// load the ~140MB model on every app launch regardless of whether the spike
+// is enabled. Loading only starts on the first isAvailable()/classify()
+// call, and every caller — concurrent or sequential — awaits the same
+// in-flight promise rather than starting a second load.
+let loadingPromise: Promise<void> | null = null
 
-  const [tok, mdl, remapText] = await Promise.all([
-    AutoTokenizer.from_pretrained('themis'),
-    AutoModelForSequenceClassification.from_pretrained('themis', {
-      dtype: 'fp32',
-      device: 'cpu',
-      // The exported file is named themis.onnx/.onnx.data, not the
-      // transformers.js default model[_<dtype>].onnx convention.
-      model_file_name: 'themis',
-      session_options: {
-        externalData: [{ path: 'themis.onnx.data', data: 'onnx/themis.onnx.data' }],
-      },
-    }),
-    readFile(path.join(modelDir, 'vocab_remap.json'), 'utf8'),
-  ])
-  tokenizer = tok
-  model = mdl
-  vocabRemap = JSON.parse(remapText) as VocabRemap
-})().catch((err: unknown) => {
-  loadError = err
-  console.error('[local-judge-poc:desktop] themis model load failed', err)
-})
+function ensureLoading(): Promise<void> {
+  if (loadingPromise) return loadingPromise
+
+  loadingPromise = (async () => {
+    const modelDir = resolveModelDir()
+    transformersEnv.allowLocalModels = true
+    transformersEnv.allowRemoteModels = false
+    // transformers.js string-joins localModelPath with the model id ('themis')
+    // and then the filename — localModelPath must be modelDir's PARENT, not
+    // modelDir itself, or 'themis' gets appended twice
+    // (.../resources/models/themis/themis/tokenizer_config.json, which never
+    // exists). A trailing slash matters for the join; mixed path separators on
+    // Windows don't (Node's fs accepts both).
+    transformersEnv.localModelPath = path.dirname(modelDir) + '/'
+
+    const [tok, mdl, remapText] = await Promise.all([
+      AutoTokenizer.from_pretrained('themis'),
+      AutoModelForSequenceClassification.from_pretrained('themis', {
+        dtype: 'fp32',
+        device: 'cpu',
+        // The exported file is named themis.onnx/.onnx.data, not the
+        // transformers.js default model[_<dtype>].onnx convention.
+        model_file_name: 'themis',
+        session_options: {
+          externalData: [{ path: 'themis.onnx.data', data: 'onnx/themis.onnx.data' }],
+        },
+      }),
+      readFile(path.join(modelDir, 'vocab_remap.json'), 'utf8'),
+    ])
+    tokenizer = tok
+    model = mdl
+    vocabRemap = JSON.parse(remapText) as VocabRemap
+  })().catch((err: unknown) => {
+    loadError = err
+    console.error('[local-judge-poc:desktop] themis model load failed', err)
+  })
+
+  return loadingPromise
+}
 
 export class ThemisLocalJudge implements LocalJudge {
   isAvailable(): boolean {
+    // Fire-and-forget: kicks off the load on first check without blocking
+    // the caller, per the LocalJudge interface contract. Returns current
+    // known state — a check made right after enabling the flag legitimately
+    // reports false while the load completes in the background.
+    void ensureLoading()
     return model !== null && tokenizer !== null && vocabRemap !== null
   }
 
   async classify(input: JudgeInput): Promise<JudgeVerdict> {
-    await loading
+    await ensureLoading()
     if (!model || !tokenizer || !vocabRemap) {
       throw loadError ?? new Error('themis judge model failed to load')
     }
