@@ -71,3 +71,31 @@ describe('softmax', () => {
     expect(probs[0]).toBeCloseTo(probs[1], 10)
   })
 })
+
+describe('ThemisLocalJudge', () => {
+  it('isAvailable() is false before the model loads (e.g. files missing in this checkout)', async () => {
+    const { ThemisLocalJudge } = await import('../../electron/themis-judge')
+    const judge = new ThemisLocalJudge()
+    // In a fresh checkout the gitignored resources/models/themis files don't
+    // exist, so the background load this module kicks off at import time
+    // will have already failed by the time this test runs.
+    expect(judge.isAvailable()).toBe(false)
+  })
+
+  it('classify() rejects with a clear error when the model never loaded', async () => {
+    const { ThemisLocalJudge } = await import('../../electron/themis-judge')
+    const judge = new ThemisLocalJudge()
+    await expect(judge.classify({ text: 'hello', prompt: 'does this match anything' })).rejects.toBeTruthy()
+  })
+
+  it('two concurrent classify() calls both reject consistently, not racing into a duplicate load attempt', async () => {
+    const { ThemisLocalJudge } = await import('../../electron/themis-judge')
+    const judge = new ThemisLocalJudge()
+    const [first, second] = await Promise.allSettled([
+      judge.classify({ text: 'hello', prompt: 'does this match anything' }),
+      judge.classify({ text: 'world', prompt: 'does this match anything else' }),
+    ])
+    expect(first.status).toBe('rejected')
+    expect(second.status).toBe('rejected')
+  })
+})
