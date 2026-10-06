@@ -77,12 +77,12 @@ Two purposes, not just observability: (1) gates the load attempt itself — don'
 - mykka.ai FAQ entry: enhanced (on-device) detection is available on supported platforms/hardware; baseline detection (today's fixed-function engine) always runs regardless.
 - pretzel-console: admin-facing status indicator per seat — enhanced vs. baseline-only — so org admins understand fleet coverage isn't 100% by design, not a bug.
 
-### G. Store/release readiness — exit gate, not a build phase
+### G. Store/release readiness — ✅ done (confirmed by user, 2026-10-06)
 
 Before any public release of this feature:
 - Chrome Web Store developer account — ✅ already paid ($5, one-time).
-- Package size vs. current published Chrome Web Store limits — verify against live docs before submission (not verified with confidence as of this doc).
-- Permissions justification (`offscreen` permission) and privacy-practices disclosure updated to reflect the bundled model — this is a selling point (nothing leaves the device) once declared correctly, not a liability.
+- Package size vs. current published Chrome Web Store limits — ✅ done.
+- Permissions justification (`offscreen` permission) and privacy-practices disclosure updated to reflect the bundled model — ✅ done. This is a selling point (nothing leaves the device) once declared correctly, not a liability.
 
 ## Cost summary (confirmed 2026-10-05)
 
