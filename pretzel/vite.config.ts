@@ -19,6 +19,8 @@ export default defineConfig({
       input: {
         popup: "src/popup/index.html",
         options: "src/options/index.html",
+        // spike/local-judge-poc — offscreen document hosting the local judge.
+        offscreen: "src/offscreen/index.html",
       },
     },
   },

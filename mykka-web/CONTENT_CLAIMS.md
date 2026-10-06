@@ -142,6 +142,19 @@ Home page rebuilt again from the updated design: scripted three-scenario demo, b
 4. Industry statistics name reports without direct citations or evidence artifacts in this package.
 5. Blog posts make regulatory and product-template assertions without an evidence trail.
 
+## 2026-10-03 Themis research page
+
+New page (`app/themis/page.tsx`) describing an internal research spike: an
+on-device judge model (DeBERTa-v3-small, vocabulary-pruned, 8-bit quantized).
+**Not integrated into the shipped Pretzel extension or desktop app** — the
+page must not imply otherwise.
+
+| Claim | Location | Status |
+|---|---|---|
+| Model size (138.8MB), F1 (0.800), precision (0.667), recall (1.000), accuracy (0.845), latency (~207ms) | `app/themis/page.tsx` | Code-backed: `models/themis/README.md`, `models/themis/verify.py` re-runs the exact held-out benchmark against the committed `models/themis/themis.onnx` (weights themselves are git-ignored — see `models/themis/README.md` for why — but the training/eval scripts and the held-out set `eval_heldout.jsonl` are tracked and reproduce the numbers). |
+| Architecture description (DeBERTa-v3-small base, vocab pruning 128,100→18,899 tokens, 8-bit MatMul+Gather quantization) | `app/themis/page.tsx` | Code-backed: `models/themis/train.py`, `models/themis/prepare_vocab_pruned_backbone.py`. |
+| "Not shipped in the product" framing | `app/themis/page.tsx` | This is the actual state — Themis has no integration point in `pretzel/`, `pretzel-desktop/`, or `backend/`. Re-check this entry if that changes. |
+
 ## Release checklist
 
 Before publishing a claim change:

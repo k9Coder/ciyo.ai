@@ -60,7 +60,9 @@ export default defineManifest(async ({ mode }) => {
     name: "Pretzel",
     version,
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
-    permissions: ["storage", "activeTab", "alarms", "cookies", "identity"],
+    // "offscreen": hosts the local-judge model outside the service worker's
+    // idle-kill lifecycle (spike/local-judge-poc) — see background/local-judge-poc.ts.
+    permissions: ["storage", "activeTab", "alarms", "cookies", "identity", "offscreen"],
     host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",
@@ -103,6 +105,12 @@ export default defineManifest(async ({ mode }) => {
       "32": "public/icons/icon32.png",
       "48": "public/icons/icon48.png",
       "128": "public/icons/icon128.png",
+    },
+    // wasm-unsafe-eval: the offscreen document's local-judge model
+    // (spike/local-judge-poc, themis-judge.ts) runs via WASM, which MV3's
+    // default CSP blocks compiling without this explicit opt-in.
+    content_security_policy: {
+      extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
     },
   };
 });

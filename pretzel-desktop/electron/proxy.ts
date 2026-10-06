@@ -30,6 +30,7 @@ import { EventEmitter } from 'events'
 import { detectPrompt } from '@mykka/detect'
 import type { Policy, DetectionResult } from '@mykka/detect'
 import { signHostCertCached, type CACert } from './ca'
+import { runLocalJudgePoc } from './local-judge-poc'
 
 export const PROXY_PORT = 18888
 
@@ -408,6 +409,9 @@ export class PretzelProxy extends EventEmitter {
     if (!truncated && body.length > 0 && this.policy && !isNoisePath(clientReq.url ?? '')) {
       try {
         const result = await evaluateRequest(this.policy, hostname, body)
+        // Shadow-mode only (spike/local-judge-poc) — fire-and-forget, never
+        // awaited on the request path, never affects enforcement below.
+        void runLocalJudgePoc(hostname, body)
         if (body.includes('AKIA')) {
           console.log(`[proxy][diag] AKIA result: action=${result.highestAction} findings=${result.findings.length}`)
         }
