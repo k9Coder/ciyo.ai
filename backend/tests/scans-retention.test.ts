@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { scans, enforcementSignals, members } from '../src/db/schema.js'
+import { scans, enforcementSignals, members, shadowVerdicts } from '../src/db/schema.js'
 import { purgeExpired, anonymizeMember, PILOT_RETENTION_DAYS } from '../src/scans/service.js'
 import { deleteMember } from '../src/members/service.js'
 import type { FastifyInstance } from 'fastify'
@@ -28,26 +28,31 @@ async function makeMember(email: string): Promise<string> {
 }
 
 describe('retention: purgeExpired', () => {
-  it('deletes only rows older than the retention window, across both tables', async () => {
-    // scans: one old (>90d), one fresh
+  it('deletes only rows older than the retention window, across all three tables', async () => {
     await db.insert(scans).values([
       { tenantId, memberId: null, occurredAt: daysAgo(PILOT_RETENTION_DAYS + 1) },
       { tenantId, memberId: null, occurredAt: daysAgo(1) },
     ])
-    // enforcement_signals: one old, one fresh
     await db.insert(enforcementSignals).values([
       { tenantId, memberId: null, hostname: 'chat.openai.com', reason: 'decision_timeout', occurredAt: daysAgo(PILOT_RETENTION_DAYS + 5) },
       { tenantId, memberId: null, hostname: 'chat.openai.com', reason: 'bridge_error',     occurredAt: daysAgo(2) },
+    ])
+    await db.insert(shadowVerdicts).values([
+      { tenantId, ruleId: '11111111-1111-1111-1111-111111111111', kind: 'keyword', verdict: 'match', confidence: '1', occurredAt: daysAgo(PILOT_RETENTION_DAYS + 3) },
+      { tenantId, ruleId: '22222222-2222-2222-2222-222222222222', kind: 'pattern', verdict: 'match', confidence: '1', occurredAt: daysAgo(1) },
     ])
 
     const counts = await purgeExpired()
     expect(counts.scans).toBe(1)
     expect(counts.enforcementSignals).toBe(1)
+    expect(counts.shadowVerdicts).toBe(1)
 
     const remainingScans = await db.select().from(scans).where(eq(scans.tenantId, tenantId))
     expect(remainingScans).toHaveLength(1)
     const remainingSignals = await db.select().from(enforcementSignals).where(eq(enforcementSignals.tenantId, tenantId))
     expect(remainingSignals).toHaveLength(1)
+    const remainingShadow = await db.select().from(shadowVerdicts).where(eq(shadowVerdicts.tenantId, tenantId))
+    expect(remainingShadow).toHaveLength(1)
   })
 })
 

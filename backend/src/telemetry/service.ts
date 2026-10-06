@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { enforcementSignals, scans, members } from '../db/schema.js'
+import { enforcementSignals, scans, members, shadowVerdicts } from '../db/schema.js'
 
 export type EnforcementReason = 'decision_timeout' | 'bridge_error' | 'adapter_miss'
 export const ENFORCEMENT_REASONS: EnforcementReason[] = ['decision_timeout', 'bridge_error', 'adapter_miss']
@@ -17,6 +17,31 @@ export async function recordEnforcementSignal(
     reason:     data.reason,
     extVersion: data.extVersion ?? null,
   })
+}
+
+export type ShadowVerdictKind = 'keyword' | 'pattern' | 'entropy' | 'score'
+export const SHADOW_VERDICT_KINDS: ShadowVerdictKind[] = ['keyword', 'pattern', 'entropy', 'score']
+export type ShadowVerdictOutcome = 'match' | 'no_match'
+export const SHADOW_VERDICT_OUTCOMES: ShadowVerdictOutcome[] = ['match', 'no_match']
+
+export interface ShadowVerdictInput {
+  ruleId: string
+  kind: ShadowVerdictKind
+  verdict: ShadowVerdictOutcome
+  confidence: number
+  timestamp: string
+}
+
+export async function recordShadowVerdicts(tenantId: string, items: ShadowVerdictInput[]): Promise<void> {
+  if (items.length === 0) return
+  await db.insert(shadowVerdicts).values(items.map((item) => ({
+    tenantId,
+    ruleId:     item.ruleId,
+    kind:       item.kind,
+    verdict:    item.verdict,
+    confidence: String(item.confidence),
+    occurredAt: new Date(item.timestamp),
+  })))
 }
 
 export interface DegradedHost {

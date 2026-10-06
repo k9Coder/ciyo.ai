@@ -1,5 +1,5 @@
 import {
-  pgTable, pgEnum, uuid, text, boolean, integer,
+  pgTable, pgEnum, uuid, text, boolean, integer, numeric,
   timestamp, jsonb, index, unique, primaryKey,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
@@ -242,6 +242,35 @@ export const enforcementSignals = pgTable('enforcement_signals', {
   reason:     enforcementReasonEnum('reason').notNull(),
   extVersion: text('ext_version'),
   occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+}))
+
+export const shadowVerdictKindEnum = pgEnum('shadow_verdict_kind', [
+  'keyword',
+  'pattern',
+  'entropy',
+  'score',
+])
+
+export const shadowVerdictOutcomeEnum = pgEnum('shadow_verdict_outcome', [
+  'match',
+  'no_match',
+])
+
+// Shadow-mode telemetry for the now-demoted legacy rule kinds (pattern/
+// keyword/entropy/score — see docs/superpowers/specs/2026-10-06-judge-
+// prompt-client-engine-design.md). No raw content, ever — only what would
+// have matched and what the real verdict was.
+export const shadowVerdicts = pgTable('shadow_verdicts', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  ruleId:     uuid('rule_id').notNull(),
+  kind:       shadowVerdictKindEnum('kind').notNull(),
+  verdict:    shadowVerdictOutcomeEnum('verdict').notNull(),
+  confidence: numeric('confidence', { precision: 4, scale: 3 }).notNull(),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
 }))
