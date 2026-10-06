@@ -12,6 +12,7 @@ const { buildAuthHeaders } = await import('@/auth/headers')
 
 const CLERK_TOKEN = 'eyJhbGciOiJSUzI1NiJ9.clerk-jwt-payload.sig'
 const ORG_TOKEN = 'ps_live_acmelaw_' + 'a'.repeat(32)
+const DEVICE_TOKEN = 'pd_3fc0f2db-001b-4b18-b6de-d45304d67d43_' + 'a'.repeat(32)
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -31,6 +32,13 @@ describe('buildAuthHeaders', () => {
     mockLocalGet.mockResolvedValue({ selectedTenantId: 'tenant-123' })
     const headers = await buildAuthHeaders(ORG_TOKEN)
     expect(headers).toEqual({ Authorization: `Bearer ${ORG_TOKEN}` })
+    expect(headers['X-Tenant-Id']).toBeUndefined()
+  })
+
+  it('omits X-Tenant-Id for a device (pd_) token even when a selection exists', async () => {
+    mockLocalGet.mockResolvedValue({ selectedTenantId: 'tenant-123' })
+    const headers = await buildAuthHeaders(DEVICE_TOKEN)
+    expect(headers).toEqual({ Authorization: `Bearer ${DEVICE_TOKEN}` })
     expect(headers['X-Tenant-Id']).toBeUndefined()
   })
 

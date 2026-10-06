@@ -6,10 +6,14 @@ sources:
   - scripts/set-env.mjs
   - scripts/agent-db-start.sh
   - scripts/agent-stack-start.sh
+  - scripts/agent-stack-daemon.sh
+  - scripts/agent-stack-stop.sh
+  - scripts/local-env.sh
   - scripts/cleanup-worktrees.sh
   - package.json
   - backend/package.json
   - pretzel-console/src/lib/api.ts
+  - docker-compose.yml
 ---
 
 # Repository Scripts
@@ -140,6 +144,69 @@ unnecessary for the normal full runner.
   `E2E_ADMIN_URL` names consumed by the cross-package Playwright runner.
 
 These are descriptions of the current scripts, not fixes.
+
+## Isolated Agent Stack (detached)
+
+`agent-stack-daemon.sh` and `agent-stack-stop.sh` are a fork of the pair
+above for callers that can't keep one shell alive for the whole test run —
+e.g. an orchestrator that starts the stack, hands its URL to a separately
+launched background agent, and only later gets a signal to tear it down
+(`.claude/skills/qa-fleet/SKILL.md` is the current user). `agent-stack-start.sh`'s
+`EXIT` trap doesn't survive that; `agent-stack-daemon.sh` detaches every
+child process with `nohup ... & disown` instead and writes resolved state to
+disk rather than only exporting into the current shell:
+
+```bash
+scripts/agent-stack-daemon.sh seed:e2e --label my-run
+scripts/agent-stack-daemon.sh seed:e2e --with-console --label my-run
+scripts/agent-stack-daemon.sh seed:e2e --with-web --label my-run
+source .gstack/agent-stacks/my-run/env   # DATABASE_URL / BACKEND_URL / CONSOLE_URL / WEB_URL
+
+scripts/agent-stack-stop.sh my-run       # explicit teardown, whenever ready
+```
+
+`--label` is required in practice (no implicit `agent-$$` fallback is safe to
+rely on once the stack outlives the shell that created it — you need a known
+name to pass to `agent-stack-stop.sh` later). `--with-web` starts
+`mykka-web` (`next dev -p <random>`, `NEXT_PUBLIC_API_BASE=$BACKEND_URL`) —
+there's no equivalent flag on `agent-stack-start.sh` today. The console flag
+also fixes the `VITE_API_BASE`/`VITE_API_URL` mismatch noted above (this
+fork exports `VITE_API_BASE`, so the isolated console actually reaches the
+isolated backend instead of falling back to `:3000`).
+
+State lives in `.gstack/agent-stacks/<label>/` (`env` = source-able exports,
+`pids` = teardown manifest read by `agent-stack-stop.sh`). If a run dies
+before calling `agent-stack-stop.sh`, that directory and the orphaned
+container/processes are left behind — clean up manually
+(`docker rm -f mykka-db-<label>`, `kill <pid>` from the `pids` file,
+`rm -rf .gstack/agent-stacks/<label>`).
+
+## Full Local Docker Stack
+
+`local-env.sh` is a different tool from the agent scripts above: instead of
+random-port, per-agent-session isolation, it manages the **fixed-port**
+`docker-compose.yml` stack (`postgres`, `backend`, `pretzel-console`,
+`mykka-web`) intended for manual or `/qa-env local` browser QA.
+
+```bash
+scripts/local-env.sh up      # docker compose up -d --build, wait for backend health, print URLs
+scripts/local-env.sh down    # docker compose down (keeps the postgres_data volume)
+scripts/local-env.sh urls    # print the URL table without touching the stack
+scripts/local-env.sh status  # docker compose ps
+```
+
+Equivalent root scripts: `pnpm env:local:up`, `pnpm env:local:down`.
+
+| Service | URL |
+|---|---|
+| backend | `http://localhost:3000` |
+| pretzel-console | `http://localhost:5173` |
+| mykka-web | `http://localhost:3001` |
+| postgres | `localhost:5432` |
+
+`pretzel-desktop` and `pretzel` (the extension) are not part of this stack —
+run them natively with `PRETZEL_API_URL` / `VITE_API_BASE` set to
+`http://localhost:3000`. See [docs/operations/local-development.md](../docs/operations/local-development.md).
 
 ## Worktree Cleanup
 

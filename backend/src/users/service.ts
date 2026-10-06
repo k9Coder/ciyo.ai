@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { users, members, type User, type NewUser } from '../db/schema.js'
 
@@ -8,7 +8,7 @@ export async function getUserByClerkId(clerkId: string): Promise<User | null> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const [row] = await db.select().from(users).where(eq(users.email, email))
+  const [row] = await db.select().from(users).where(sql`lower(${users.email}) = ${email.trim().toLowerCase()}`)
   return row ?? null
 }
 
@@ -39,8 +39,10 @@ export async function setPlatformAdmin(userId: string, value: boolean): Promise<
 }
 
 // Connects pre-enrolled members (userId = null) to a newly-signed-up user.
+// Emails compare case-insensitively: an admin may type "Alice@Corp.com" while Clerk
+// reports "alice@corp.com", and that must still be the same person.
 export async function claimPendingMembers(email: string, userId: string): Promise<void> {
   await db.update(members)
     .set({ userId })
-    .where(and(eq(members.email, email), isNull(members.userId)))
+    .where(and(sql`lower(${members.email}) = ${email.trim().toLowerCase()}`, isNull(members.userId)))
 }

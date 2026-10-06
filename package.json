@@ -9,6 +9,8 @@
     "docs:check": "node scripts/docs-check.mjs",
     "set-env:staging": "node scripts/set-env.mjs staging",
     "set-env:prod": "node scripts/set-env.mjs prod",
+    "env:local:up": "bash scripts/local-env.sh up",
+    "env:local:down": "bash scripts/local-env.sh down",
     "render-brand-assets": "node scripts/render-brand-assets.mjs"
   },
   "devDependencies": {

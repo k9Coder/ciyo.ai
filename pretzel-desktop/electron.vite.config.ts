@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin, loadEnv } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import { cspPlugin } from './renderer-csp'
 
 export default defineConfig(({ mode }) => {
   // Bake API URL + Clerk key into the main-process bundle: a packaged app has
@@ -15,10 +16,15 @@ export default defineConfig(({ mode }) => {
 
   return {
     main: {
-      plugins: [externalizeDepsPlugin()],
+      // @mykka/detect ships only raw TypeScript source (its package.json
+      // "exports" points at ./src/index.ts, no compiled JS) — fine for
+      // bundlers that understand TS, fatal for plain Node require() at
+      // runtime. Bundle it into main.js instead of leaving a bare require.
+      plugins: [externalizeDepsPlugin({ exclude: ['@mykka/detect'] })],
       define: {
         'process.env.PRETZEL_API_URL': baked('PRETZEL_API_URL'),
         'process.env.CLERK_PUBLISHABLE_KEY': baked('CLERK_PUBLISHABLE_KEY'),
+        'process.env.SENTRY_DSN_DESKTOP': baked('SENTRY_DSN_DESKTOP'),
       },
       build: {
         outDir: 'dist-electron',
@@ -54,7 +60,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-      plugins: [react()],
+      plugins: [react(), cspPlugin()],
     },
   }
 })

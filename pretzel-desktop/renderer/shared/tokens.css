@@ -1,0 +1,140 @@
+/**
+ * Shared design tokens for the desktop app's two windows (tray-ui,
+ * decision-ui). Values match pretzel-console/src/styles/tokens.css exactly —
+ * same product, same brand, dark mode only (these are small always-on-top
+ * utility windows; there's no in-app theme toggle to honor here).
+ */
+:root {
+  --brand-primary:      #5b8cff;
+  --brand-primary-soft: rgba(91, 140, 255, 0.14);
+  --brand-primary-dim:  rgba(91, 140, 255, 0.35);
+
+  --bg-base:            #0b0e16;
+  --bg-surface:         #10141f;
+  --bg-surface-raised:  #1b2233;
+  --border:             #242c40;
+  --border-soft:        #1a2032;
+
+  --text-primary:       #f5f7fa;
+  --text-secondary:     #9aa4bc;
+  --text-muted:         #5b6580;
+
+  --status-danger:      #ff6b7f;
+  --status-danger-soft: rgba(255, 107, 127, 0.14);
+  --status-warn:        #ffb648;
+  --status-warn-soft:   rgba(255, 182, 72, 0.14);
+  --status-safe:        #3ddc97;
+  --status-safe-soft:   rgba(61, 220, 151, 0.14);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.mono {
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+}
+
+/* Any text that echoes untrusted content (matched snippets, URLs, request
+   bodies) MUST wrap instead of forcing horizontal scroll on a fixed-size,
+   non-resizable window — this is the actual fix for the sideways-scrolling
+   decision popup. */
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--brand-primary-dim) 0%, var(--brand-primary-soft) 100%);
+  border-radius: 100px;
+  border: 1px solid var(--brand-primary-soft);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+button {
+  font-family: inherit;
+  -webkit-app-region: no-drag;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, opacity 120ms ease, transform 80ms ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { cursor: default; opacity: 0.55; }
+
+.btn-primary { background: var(--brand-primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #6f9aff; }
+
+.btn-danger { background: var(--status-danger); color: #2a0d12; }
+.btn-danger:hover:not(:disabled) { background: #ff8494; }
+
+.btn-safe { background: var(--status-safe); color: #042013; }
+.btn-safe:hover:not(:disabled) { background: #55e3a8; }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--brand-primary-dim);
+  color: var(--text-primary);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.2em 0.65em;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.pill-safe   { background: var(--status-safe-soft);   color: var(--status-safe); }
+.pill-warn   { background: var(--status-warn-soft);   color: var(--status-warn); }
+.pill-danger { background: var(--status-danger-soft); color: var(--status-danger); }
+.pill-muted  { background: rgba(255,255,255,0.05);    color: var(--text-muted); }
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-safe   { background: var(--status-safe);   box-shadow: 0 0 8px var(--status-safe); }
+.dot-danger { background: var(--status-danger); box-shadow: 0 0 8px var(--status-danger); }
+.dot-warn   { background: var(--status-warn);   box-shadow: 0 0 8px var(--status-warn); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in { animation: pretzel-fade-in 180ms ease-out; }
+}
+@keyframes pretzel-fade-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

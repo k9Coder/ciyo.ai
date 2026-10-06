@@ -1,0 +1,117 @@
+name: Cut Pretzel Desktop Release
+
+# Manual trigger only. Run from the branch you want to release (pick it in
+# the "Run workflow" dropdown — normally staging). Chains:
+#   1. bump-version + release (pretzel-desktop's own scripts) — commits the
+#      version bump, tags pretzel-desktop-v<version>, pushes the tag.
+#   2. Waits for the tag push to trigger pretzel-desktop-release.yml (builds
+#      mac/win/linux installers, publishes them as a GitHub Release) and
+#      blocks until that run finishes.
+#   3. Publishes the built installers to the STAGING Vercel Blob store.
+#
+# Production Blob publish is a deliberately separate, separately-triggered
+# workflow (publish-desktop-blob-production.yml) — required-reviewer
+# environment protection needs a paid GitHub plan on private repos, which
+# this repo doesn't have, so the manual gate is "someone has to click Run
+# workflow on the other file" instead of a formal approval click.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        default: patch
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  bump-and-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        working-directory: pretzel-desktop
+        run: node scripts/bump-version.mjs ${{ inputs.bump }}
+
+      - name: Push version bump to branch
+        run: git push origin HEAD:${{ github.ref_name }}
+
+      - name: Tag and push release
+        working-directory: pretzel-desktop
+        run: node scripts/release.mjs
+
+      - name: Record tag for downstream jobs
+        id: tag
+        working-directory: pretzel-desktop
+        run: echo "tag=pretzel-desktop-v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+  wait-for-build:
+    needs: bump-and-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for pretzel-desktop-release.yml to pick up the tag and finish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.bump-and-tag.outputs.tag }}"
+          echo "Waiting for a run triggered by tag $TAG..."
+          RUN_ID=""
+          for i in $(seq 1 30); do
+            RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow=pretzel-desktop-release.yml \
+              --json databaseId,headBranch --jq ".[] | select(.headBranch==\"$TAG\") | .databaseId" | head -1)
+            if [ -n "$RUN_ID" ]; then break; fi
+            sleep 10
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "Never saw a run triggered by $TAG after 5 minutes" >&2
+            exit 1
+          fi
+          echo "Found run $RUN_ID — watching until it finishes..."
+          gh run watch "$RUN_ID" --repo ${{ github.repository }} --exit-status
+
+  publish-blob-staging:
+    needs: [bump-and-tag, wait-for-build]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        working-directory: mykka-web
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish installers to staging Blob
+        working-directory: mykka-web
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: node scripts/publish-desktop-blob.mjs
+
+      - name: Next step
+        run: echo "Staging looks good? Run the 'Publish Pretzel Desktop to Production Blob' workflow manually to ship to mykka.ai/download."

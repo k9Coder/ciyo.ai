@@ -109,3 +109,64 @@ describe('GET /v1/me/memberships', () => {
     expect(res.body.error).toMatch(/User not found/)
   })
 })
+
+describe('POST /v1/me/self-serve-org', () => {
+  // Console-only endpoint: this is where "sign up with a brand-new email ->
+  // get your own org" now lives, since the webhook no longer does it
+  // automatically for every signup (see backend/src/webhooks/clerk.ts).
+  it('provisions a new tenant + super_admin member when the user has zero memberships', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'newfounder@startup.com')
+
+    const res = await supertest(app.server)
+      .post('/v1/me/self-serve-org')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(200)
+    expect(res.body.memberships).toHaveLength(1)
+    expect(res.body.memberships[0]).toMatchObject({ userId: user.id, role: 'super_admin' })
+
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
+    expect(tenantRows[0]!.autoProvisioned).toBe(true)
+    expect(tenantRows[0]!.name).toBe("newfounder's Organization")
+  })
+
+  it('claims a pending admin-added row instead of provisioning a new org (race-safety)', async () => {
+    const { tenantId } = await buildTestTenant('acme')
+    // Admin pre-added this email via POST /members before the user ever signed up.
+    await db.insert(members).values({ tenantId, email: 'invitee@acme.com', role: 'member' })
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'invitee@acme.com')
+
+    const res = await supertest(app.server)
+      .post('/v1/me/self-serve-org')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(200)
+    expect(res.body.memberships).toHaveLength(1)
+    expect(res.body.memberships[0]).toMatchObject({ tenantId, userId: user.id })
+
+    // Must NOT have created a second (auto-provisioned) tenant.
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
+  })
+
+  it('is idempotent: no-ops when the user already has a membership', async () => {
+    const user = await buildTestUser(MOCK_CLERK_USER_ID, 'already@acme.com')
+    const { tenantId } = await buildTestTenant('acme')
+    await buildTestMember(tenantId, user)
+
+    const res = await supertest(app.server)
+      .post('/v1/me/self-serve-org')
+      .set('Authorization', `Bearer ${MOCK_CLERK_JWT}`)
+    expect(res.status).toBe(200)
+    expect(res.body.memberships).toHaveLength(1)
+    expect(res.body.memberships[0]).toMatchObject({ tenantId, userId: user.id })
+
+    // Must NOT have created any additional tenant.
+    const tenantRows = await db.select().from(tenants)
+    expect(tenantRows).toHaveLength(1)
+  })
+
+  it('returns 401 without a token', async () => {
+    const res = await supertest(app.server).post('/v1/me/self-serve-org')
+    expect(res.status).toBe(401)
+  })
+})

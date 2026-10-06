@@ -161,10 +161,15 @@ export function activateSystemProxy(port: number): void {
   switch (process.platform) {
     case 'darwin': {
       const services = macListServices()
+      // Crash-recovery guard (see win32 above): never record our own proxy as a
+      // service's "previous" state, or a clean quit would restore to our dead
+      // daemon and kill the user's connectivity.
+      const sanitize = (s: ProxyState): ProxyState =>
+        s.host === host && s.port === port ? { enabled: false, host: '', port: 0 } : s
       const macServices = services.map(service => ({
         service,
-        http: macGetProxyState(service, 'web'),
-        https: macGetProxyState(service, 'secureweb'),
+        http: sanitize(macGetProxyState(service, 'web')),
+        https: sanitize(macGetProxyState(service, 'secureweb')),
       }))
       saved = { platform: 'darwin', macServices }
       for (const { service } of macServices) {
@@ -176,7 +181,17 @@ export function activateSystemProxy(port: number): void {
     case 'win32': {
       const winPrevEnabled = winGetRegDword('ProxyEnable')
       const winPrevServer = winGetRegSz('ProxyServer')
-      saved = { platform: 'win32', winPrevEnabled, winPrevServer }
+      // Crash-recovery guard: if a previous run was force-killed/crashed, it may
+      // have left OUR proxy still set. Recording that as the "previous" value
+      // would make a later clean quit "restore" to our own dead daemon —
+      // stranding the user with no internet. Treat our own proxy as "none".
+      const ours = `${host}:${port}`
+      const isOurs = winPrevServer === ours
+      saved = {
+        platform: 'win32',
+        winPrevEnabled: isOurs ? 0 : winPrevEnabled,
+        winPrevServer: isOurs ? '' : winPrevServer,
+      }
       winSetProxy(host, port)
       break
     }
@@ -186,7 +201,15 @@ export function activateSystemProxy(port: number): void {
       const linuxPrevHost = linuxGetGsetting('org.gnome.system.proxy.http', 'host')
       const linuxPrevPortStr = linuxGetGsetting('org.gnome.system.proxy.http', 'port')
       const linuxPrevPort = parseInt(linuxPrevPortStr, 10) || 0
-      saved = { platform: 'linux', linuxPrevMode, linuxPrevHost, linuxPrevPort }
+      // Crash-recovery guard (see win32 above): don't record our own proxy as
+      // the previous state.
+      const isOurs = linuxPrevHost === host && linuxPrevPort === port
+      saved = {
+        platform: 'linux',
+        linuxPrevMode: isOurs ? 'none' : linuxPrevMode,
+        linuxPrevHost: isOurs ? '' : linuxPrevHost,
+        linuxPrevPort: isOurs ? 0 : linuxPrevPort,
+      }
       linuxSetProxy(host, port)
       break
     }

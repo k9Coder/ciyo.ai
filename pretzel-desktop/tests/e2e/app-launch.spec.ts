@@ -10,11 +10,16 @@ import path from 'path'
 
 const ROOT = path.resolve(__dirname, '../../')
 
+// PRETZEL_E2E gates: skipping the real OS tray icon (no D-Bus tray host on
+// CI displays) and showing the tray window (Playwright's firstWindow() never
+// resolves for a window that's never shown or never loads content).
+process.env.NODE_ENV = 'test'
+process.env.PRETZEL_E2E = '1'
+
 test.describe('pretzel-desktop app', () => {
   test('app launches without crashing', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
     })
 
     // App should not exit immediately
@@ -27,12 +32,11 @@ test.describe('pretzel-desktop app', () => {
   test('tray window is created on launch', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
     })
 
-    // Wait for windows to be created
-    const windows = app.windows()
-    expect(windows.length).toBeGreaterThan(0)
+    // Wait for the tray window to actually open before inspecting windows()
+    await app.firstWindow()
+    expect(app.windows().length).toBeGreaterThan(0)
 
     await app.close()
   })
@@ -40,7 +44,6 @@ test.describe('pretzel-desktop app', () => {
   test('decision window renders policy decision UI', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
     })
 
     // Evaluate in main process — simulate a decision event
@@ -54,7 +57,6 @@ test.describe('pretzel-desktop app', () => {
   test('IPC policy:get returns null when no policy loaded', async () => {
     const app = await electron.launch({
       args: [path.join(ROOT, 'dist-electron/main.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
     })
 
     const policy = await app.evaluate(async ({ ipcMain }) => {

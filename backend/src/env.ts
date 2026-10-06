@@ -12,6 +12,7 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   APP_ENV: z.string().optional(),
   CORS_ORIGIN: z.string().optional(),
+  PRETZEL_CONSOLE_URL: z.string().default('https://pretzel-console.mykka.ai'),
   DB_POOL_MAX: z.coerce.number().int().positive().optional(),
   INTERNAL_API_URL: z.string().optional(),
   ADMIN_BASE_URL: z.string().optional(),
@@ -49,6 +50,8 @@ const schema = z.object({
   RATE_LIMIT_DISABLED: z.string().optional(),
   RATE_LIMIT_MAX: z.string().optional(),
   RATE_LIMIT_WINDOW: z.string().optional(),
+
+  SENTRY_DSN: z.string().optional(),
 })
 
 // Fail fast at import: the server must not boot with a missing/invalid env.

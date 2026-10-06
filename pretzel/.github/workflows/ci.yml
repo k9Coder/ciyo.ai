@@ -20,7 +20,9 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm typecheck
-      - run: pnpm test
+      # CI unit test run disabled — tests are now mandatory for the AI agent (Claude/Codex/etc.)
+      # to run locally before and after every change. See AGENTS.md "Mandatory AI Test Policy".
+      # - run: pnpm test
       - run: pnpm build
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}

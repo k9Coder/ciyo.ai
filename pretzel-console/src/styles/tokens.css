@@ -1,48 +1,116 @@
+/*
+ * Design tokens — mykka redesign.
+ * Dark  = direction 1c: Public Sans / JetBrains Mono, near-black neutrals, mint accent, square-ish.
+ * Light = direction 1b: Familjen Grotesk / Geist Mono, deep green brand, soft warm neutrals, pill buttons.
+ *
+ * Legacy token names (--brand-primary, --bg-*, --text-*, --status-*) are kept as aliases so
+ * existing components pick up the new palette; new code should prefer the short names.
+ */
+
 /* Dark mode — default */
 :root {
-  --brand-primary:     #5b8cff;
-  --bg-base:           #0b0e16;
-  --bg-surface:        #10141f;
-  --bg-surface-raised: #1b2233;
-  --border:            #242c40;
-  --text-primary:      #f5f7fa;
-  --text-secondary:    #9aa4bc;
-  --text-muted:        #5b6580;
-  --status-danger:     #ff6b7f;
-  --status-warn:       #ffb648;
-  --status-safe:       #3ddc97;
+  --bg:         #101113;
+  --surface:    #16181b;
+  --fill:       #202327;
+  --fill2:      #2a2d31;
+  --line:       #26292d;
+  --ink:        #e8e9ea;
+  --muted:      #9aa0a6;
+  --brand:      #7fd08a;
+  --brand-soft: rgba(127, 208, 138, 0.12);
+  --btn-bg:     #e8e9ea;
+  --btn-fg:     #101113;
+  --block:      #f08a6c;
+  --block-fill: rgba(240, 138, 108, 0.14);
+  --block-fg:   #101113;
+  --warn:       #e2b155;
+  --warn-fill:  rgba(226, 177, 85, 0.14);
+
+  --r:     6px;
+  --r-sm:  4px;
+  --r-btn: 4px;
+
+  --font: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+
+  --logo-bg:  transparent;
+  --logo-bd:  2px;
+  --logo-bar: #e8e9ea;
+  --logo-mid: #7fd08a;
+  --logo-r:   5px;
+
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+
+  /* Legacy aliases */
+  --brand-primary:     var(--brand);
+  --bg-base:           var(--bg);
+  --bg-surface:        var(--surface);
+  --bg-surface-raised: var(--fill);
+  --border:            var(--line);
+  --text-primary:      var(--ink);
+  --text-secondary:    var(--muted);
+  --text-muted:        #7d838a;
+  --status-danger:     var(--block);
+  --status-warn:       var(--warn);
+  --status-safe:       var(--brand);
+
+  --scroll-thumb:       rgba(154, 160, 166, 0.28);
+  --scroll-thumb-hover: rgba(154, 160, 166, 0.5);
 }
 
 [data-theme="light"] {
-  --brand-primary:     #3059d6;
-  --bg-base:           #f3f5fa;
-  --bg-surface:        #ffffff;
-  --bg-surface-raised: #f7f9fc;
-  --border:            #dee3ee;
-  --text-primary:      #0b0e16;
-  --text-secondary:    #4a5470;
-  --text-muted:        #8991aa;
-  --status-danger:     #c82a44;
-  --status-warn:       #9a6300;
-  --status-safe:       #0a7a4b;
+  --bg:         #f6f7f5;
+  --surface:    #ffffff;
+  --fill:       #eef1ef;
+  --fill2:      #e3e6e4;
+  --line:       #e8ebe9;
+  --ink:        #18201c;
+  --muted:      #5d635f;
+  --brand:      #1f6b4f;
+  --brand-soft: #e3efe8;
+  --btn-bg:     #1f6b4f;
+  --btn-fg:     #ffffff;
+  --block:      #9a3b1f;
+  --block-fill: #f5e3dc;
+  --block-fg:   #ffffff;
+  --warn:       #7a5a10;
+  --warn-fill:  #f3ead4;
+
+  --r:     14px;
+  --r-sm:  10px;
+  --r-btn: 999px;
+
+  --font: 'Familjen Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'Geist Mono', ui-monospace, 'Courier New', monospace;
+
+  --logo-bg:  #1f6b4f;
+  --logo-bd:  0px;
+  --logo-bar: #f6f7f5;
+  --logo-mid: #f6f7f5;
+  --logo-r:   6px;
+
+  --shadow: 0 24px 60px rgba(24, 32, 28, 0.16);
+
+  --text-muted: #6b716d;
+
+  --scroll-thumb:       rgba(93, 99, 95, 0.3);
+  --scroll-thumb-hover: rgba(93, 99, 95, 0.55);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #5b8cff33 0%, #5b8cff1a 100%);
+  background: var(--scroll-thumb);
   border-radius: 100px;
-  border: 1px solid #5b8cff22;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #5b8cffaa 0%, #5b8cff55 100%);
-  border-color: #5b8cff66;
+  background: var(--scroll-thumb-hover);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -50,17 +118,5 @@
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #5b8cff33 transparent;
-}
-
-[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #3059d633 0%, #3059d61a 100%);
-  border-color: #3059d622;
-}
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #3059d6aa 0%, #3059d655 100%);
-  border-color: #3059d666;
-}
-[data-theme="light"] * {
-  scrollbar-color: #3059d633 transparent;
+  scrollbar-color: var(--scroll-thumb) transparent;
 }

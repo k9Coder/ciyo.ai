@@ -1,4 +1,5 @@
 import { defineManifest } from "@crxjs/vite-plugin";
+import { loadEnv } from "vite";
 import packageJson from "./package.json";
 
 // Single source of truth: version comes from package.json, not hardcoded here.
@@ -19,19 +20,50 @@ const PRODUCTION_LLM_HOSTS = [
  */
 const DEV_EXTRA_HOSTS = ["http://localhost:9876/*"];
 
+// The backend API host must be a host_permission: the service worker fetches
+// the tenant policy from it, and without host access that cross-origin fetch is
+// CORS-gated (the backend only allow-lists the console origin).
+function apiHostPattern(base: string): string {
+  const { protocol, host } = new URL(base);
+  return `${protocol}//${host}/*`;
+}
+
 export default defineManifest(async ({ mode }) => {
   const isDev = mode === "development" || mode === "test";
   const LLM_HOSTS = isDev
     ? [...PRODUCTION_LLM_HOSTS, ...DEV_EXTRA_HOSTS]
     : PRODUCTION_LLM_HOSTS;
+  // Derive the API host from the SAME VITE_API_BASE the extension code reads.
+  // The code reads it via import.meta.env (Vite injects .env there); this
+  // manifest must read the same .env via loadEnv. Previously it used
+  // process.env.VITE_API_BASE, which Vite does NOT populate from .env — so a
+  // plain `pnpm build:e2e` silently defaulted the manifest to prod
+  // (api.mykka.ai) while the code targeted localhost, leaving the service
+  // worker's policy fetch blocked by host_permissions on every dev/e2e build.
+  const env = loadEnv(mode, process.cwd(), "VITE_");
+  const apiBase = env.VITE_API_BASE ?? process.env.VITE_API_BASE ?? "https://api.mykka.ai";
+  // Production Clerk needs the extension to reach the Clerk Frontend API and to
+  // sync the session from the console (the Sync Host, a trusted mykka.ai
+  // origin) — a pk_live instance won't authenticate the chrome-extension origin
+  // directly. Dev (pk_test) allows the extension origin, so no extra hosts are
+  // needed there. Keep these in sync with CLERK_SYNC_HOST in shared/constants.
+  const clerkPk = env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  const CLERK_HOSTS = clerkPk.startsWith("pk_live")
+    ? ["https://clerk.mykka.ai/*", "https://pretzel-console.mykka.ai/*"]
+    : [];
+  // API host goes in host_permissions only — NOT content_scripts/matches (we
+  // never inject into the API) or web_accessible_resources.
+  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern(apiBase), ...CLERK_HOSTS];
 
   return {
     manifest_version: 3,
     name: "Pretzel",
     version,
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
-    permissions: ["storage", "scripting", "activeTab", "alarms"],
-    host_permissions: LLM_HOSTS,
+    // "offscreen": hosts the local-judge model outside the service worker's
+    // idle-kill lifecycle (spike/local-judge-poc) — see background/local-judge-poc.ts.
+    permissions: ["storage", "activeTab", "alarms", "cookies", "identity", "offscreen"],
+    host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",
       type: "module",
@@ -73,6 +105,12 @@ export default defineManifest(async ({ mode }) => {
       "32": "public/icons/icon32.png",
       "48": "public/icons/icon48.png",
       "128": "public/icons/icon128.png",
+    },
+    // wasm-unsafe-eval: the offscreen document's local-judge model
+    // (spike/local-judge-poc, themis-judge.ts) runs via WASM, which MV3's
+    // default CSP blocks compiling without this explicit opt-in.
+    content_security_policy: {
+      extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
     },
   };
 });

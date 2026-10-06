@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Dashboard', () => {
+test.describe('Overview', () => {
   test('loads without error and renders metric cards', async ({ page }) => {
     await page.goto('/dashboard')
     await expect(page).toHaveURL(/dashboard/)
 
     // Page heading
-    await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /overview/i })).toBeVisible()
 
     // Metric cards should render (values may be zero)
     await expect(page.getByText(/incidents/i)).toBeVisible()

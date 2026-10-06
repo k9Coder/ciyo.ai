@@ -80,28 +80,28 @@ export function EntityModal({ open, title, onClose, onSave, saving, children }: 
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         style={{
-          position: 'relative', background: 'var(--bg-surface)', borderRadius: 12,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)', width: '100%', maxWidth: 448,
-          margin: '0 16px', padding: 24, border: '1px solid var(--border)',
+          position: 'relative', background: 'var(--surface)', borderRadius: 'var(--r)',
+          boxShadow: 'var(--shadow)', width: '100%', maxWidth: 448,
+          margin: '0 16px', padding: 26, border: '1px solid var(--line)',
         }}
       >
-        <h2 id={titleId} style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 16px' }}>{title}</h2>
+        <h2 id={titleId} style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--ink)', margin: '0 0 16px' }}>{title}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
           <button
             type="button"
             onClick={onClose}
             style={{
-              padding: '7px 16px', fontSize: 13, color: 'var(--text-secondary)',
-              background: 'var(--bg-surface-raised)', border: '1px solid var(--border)',
-              borderRadius: 6, cursor: 'pointer',
+              padding: '10px 18px', fontSize: 15, color: 'var(--ink)',
+              background: 'var(--fill)', border: 'none',
+              borderRadius: 'var(--r-btn)', cursor: 'pointer',
             }}
           >
             Cancel
@@ -111,9 +111,9 @@ export function EntityModal({ open, title, onClose, onSave, saving, children }: 
             onClick={onSave}
             disabled={saving}
             style={{
-              padding: '7px 16px', fontSize: 13, fontWeight: 600,
-              color: 'var(--bg-base)', background: 'var(--brand-primary)',
-              border: 'none', borderRadius: 6, cursor: saving ? 'not-allowed' : 'pointer',
+              padding: '10px 18px', fontSize: 15, fontWeight: 500,
+              color: 'var(--btn-fg)', background: 'var(--btn-bg)',
+              border: 'none', borderRadius: 'var(--r-btn)', cursor: saving ? 'not-allowed' : 'pointer',
               opacity: saving ? 0.5 : 1,
             }}
           >

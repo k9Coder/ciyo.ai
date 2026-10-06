@@ -247,8 +247,16 @@ export const DEFAULT_POLICY: Policy = {
       enabled: true,
       tags: ["pii", "financial"],
       kind: "pattern",
+      // Each brand alternative is "fixed literal prefix" + "(optional
+      // separator)(digit), repeated" instead of a bare digit run — a plain
+      // \d{n} run never matches how people actually type/paste card numbers
+      // (spaces or hyphens every 4 digits, e.g. "4111 1111 1111 1111"),
+      // so the old pattern silently let every human-formatted card through
+      // undetected. luhnCheck() strips non-digits before validating, so
+      // allowing the separator anywhere between digits doesn't weaken the
+      // Luhn check — it just stops requiring a compact run to match at all.
       pattern:
-        "\\b(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})\\b",
+        "\\b(?:4(?:[\\s-]?[0-9]){12}(?:(?:[\\s-]?[0-9]){3})?|[25][1-7](?:[\\s-]?[0-9]){14}|6(?:011|5[0-9][0-9])(?:[\\s-]?[0-9]){12}|3[47](?:[\\s-]?[0-9]){13}|3(?:0[0-5]|[68][0-9])(?:[\\s-]?[0-9]){11}|(?:2131|1800)(?:[\\s-]?[0-9]){11}|35(?:[\\s-]?[0-9]){14})\\b",
       flags: "",
       validator: "luhn",
       scope: "all",

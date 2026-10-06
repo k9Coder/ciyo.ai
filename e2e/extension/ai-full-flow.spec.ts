@@ -98,8 +98,8 @@ test('AI-created rule is enforced by the extension after policy publish', async 
   const modal = page.locator('#mykka-overlay-host').locator('#ps-react-root')
   await expect(modal.getByText('Sensitive content detected')).toBeVisible({ timeout: 8_000 })
 
-  // block action — no "Looks fine, send it"
-  await expect(modal.getByRole('button', { name: 'Looks fine, send it' })).not.toBeVisible()
+  // block action — no "It's fine, send it"
+  await expect(modal.getByRole('button', { name: "It's fine, send it" })).not.toBeVisible()
   await expect(modal.getByText('Your policy does not allow sending this content.')).toBeVisible()
 
   await context.close()

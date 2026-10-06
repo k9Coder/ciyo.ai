@@ -1,13 +1,25 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, eq, max } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { members, users, memberTeams, type Member, type NewMember, type User } from '../db/schema.js'
+import { members, users, memberTeams, deviceTokens, type Member, type NewMember, type User } from '../db/schema.js'
 import { usersClient, tenantsClient, teamsClient } from '../http/internal-client.js'
 import { isOverSeatLimit, getSeatLimit, type Plan } from '../billing/limits.js'
 import { getContext } from '../context/request-context.js'
 import { anonymizeMember } from '../scans/service.js'
+import { divisionExists } from '../divisions/service.js'
+
+async function assertDivisionOwnership(tenantId: string, adminDivisionId: string | null | undefined): Promise<void> {
+  if (!adminDivisionId) return
+  if (!(await divisionExists(tenantId, adminDivisionId))) {
+    throw Object.assign(new Error('Division not found'), { statusCode: 404 })
+  }
+}
 
 export interface MemberRow extends Member {
   user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatarUrl'> | null
+  // Desktop app observability: newest sign-in (token minted) and newest
+  // user-initiated sign-out. Null when the member never used the desktop app.
+  desktopLastSignInAt:  Date | null
+  desktopLastSignOutAt: Date | null
 }
 
 export async function listMembers(tenantId: string): Promise<MemberRow[]> {
@@ -16,8 +28,22 @@ export async function listMembers(tenantId: string): Promise<MemberRow[]> {
     .from(members)
     .leftJoin(users, eq(members.userId, users.id))
     .where(eq(members.tenantId, tenantId))
+
+  const desktopActivity = await db
+    .select({
+      memberId:   deviceTokens.memberId,
+      lastSignIn: max(deviceTokens.createdAt),
+      lastSignOut: max(deviceTokens.signedOutAt),
+    })
+    .from(deviceTokens)
+    .where(and(eq(deviceTokens.tenantId, tenantId), eq(deviceTokens.client, 'desktop')))
+    .groupBy(deviceTokens.memberId)
+  const activityByMember = new Map(desktopActivity.map(a => [a.memberId, a]))
+
   return rows.map(r => ({
     ...r.members,
+    desktopLastSignInAt:  activityByMember.get(r.members.id)?.lastSignIn ?? null,
+    desktopLastSignOutAt: activityByMember.get(r.members.id)?.lastSignOut ?? null,
     user: r.users
       ? { email: r.users.email, firstName: r.users.firstName, lastName: r.users.lastName, avatarUrl: r.users.avatarUrl }
       : null,
@@ -33,10 +59,11 @@ export async function getMemberByEmail(tenantId: string, email: string): Promise
 
 export async function createMember(
   tenantId: string,
-  data: Pick<NewMember, 'email' | 'displayName' | 'role'>
+  data: Pick<NewMember, 'email' | 'displayName' | 'role' | 'adminDivisionId'>
 ): Promise<Member> {
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
+  await assertDivisionOwnership(tenantId, data.adminDivisionId)
 
   const tenant = await tenantsClient.get<{ plan: string }>(`/${tenantId}`)
     .then(r => r.data)
@@ -58,12 +85,14 @@ export async function createMember(
     }
   }
 
-  const existingUser = await usersClient.get<User>('/by-email', { params: { email: data.email } })
+  const email = data.email.trim().toLowerCase()
+  const existingUser = await usersClient.get<User>('/by-email', { params: { email } })
     .then(r => r.data)
     .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
   const [row] = await db.insert(members).values({
     tenantId,
     ...data,
+    email,
     userId: existingUser?.id ?? null,
   }).returning()
   return row!
@@ -72,8 +101,9 @@ export async function createMember(
 export async function updateMember(
   tenantId: string,
   id: string,
-  data: Partial<Pick<NewMember, 'displayName' | 'role' | 'adminDivisionId'>>
+  data: Partial<Pick<NewMember, 'displayName' | 'role' | 'adminDivisionId' | 'failMode'>>
 ): Promise<Member | null> {
+  if ('adminDivisionId' in data) await assertDivisionOwnership(tenantId, data.adminDivisionId)
   const [row] = await db
     .update(members)
     .set(data)
@@ -149,12 +179,13 @@ export async function importMembers(
 ): Promise<Member[]> {
   if (rows.length === 0) return []
   const toInsert = await Promise.all(rows.map(async r => {
-    const existingUser = await usersClient.get<User>('/by-email', { params: { email: r.email } })
+    const email = r.email.trim().toLowerCase()
+    const existingUser = await usersClient.get<User>('/by-email', { params: { email } })
       .then(r => r.data)
       .catch(e => { if ((e as Error).message.startsWith('[404]')) return null; throw e })
     return {
       tenantId,
-      email:       r.email,
+      email,
       displayName: r.displayName ?? null,
       role:        'member' as const,
       userId:      existingUser?.id ?? null,

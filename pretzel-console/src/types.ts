@@ -79,8 +79,14 @@ export interface Member {
   firstName: string | null
   lastName: string | null
   role: 'super_admin' | 'division_admin' | 'member'
+  /** Only meaningful when role is 'division_admin' — which division they administer. */
+  adminDivisionId: string | null
   clerkId: string | null
+  failMode: 'open' | 'closed' | null
   createdAt: string
+  /** Desktop app: newest sign-in / newest user sign-out. Null if never used the desktop app. */
+  desktopLastSignInAt: string | null
+  desktopLastSignOutAt: string | null
 }
 
 export interface DestinationGroup {
@@ -109,6 +115,25 @@ export interface PolicyInfo {
   plan: string
   expiresAt: string | null
   warning?: string
+}
+
+export type DraftChangeKind   = 'added' | 'changed' | 'removed'
+export type DraftChangeEntity = 'subject' | 'rule' | 'siteConfig' | 'failMode'
+
+export interface DraftChange {
+  kind:   DraftChangeKind
+  entity: DraftChangeEntity
+  id:     string
+  title:  string
+  detail: string
+}
+
+/** Unpublished changes: live authoring state diffed against the latest published snapshot. */
+export interface PolicyDraft {
+  liveVersion: number | null
+  nextVersion: number
+  count:       number
+  changes:     DraftChange[]
 }
 
 export interface PolicyHistoryEntry {
@@ -190,6 +215,13 @@ export interface AuditLogEntry {
 export interface AuditLogPage {
   entries:    AuditLogEntry[]
   nextBefore: string | null
+}
+
+export interface RuleExceptionSummary {
+  ruleId:       string
+  ruleMessage:  string | null
+  memberCount:  number
+  memberEmails: string[]
 }
 
 export interface ChatSession {

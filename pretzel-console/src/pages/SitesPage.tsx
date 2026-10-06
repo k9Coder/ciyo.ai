@@ -8,12 +8,12 @@ import { useSiteConfigs, useSiteConfigMutations } from '../hooks/useSiteConfigs'
 import type { SiteConfig } from '../types'
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', fontSize: 13, borderRadius: 6,
-  border: '1px solid var(--border)', background: 'var(--bg-surface-raised)',
-  color: 'var(--text-primary)', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box',
+  width: '100%', padding: '8px 12px', fontSize: 15, borderRadius: 'var(--r-sm)',
+  border: '1px solid var(--line)', background: 'var(--fill)',
+  color: 'var(--ink)', outline: 'none', fontFamily: 'var(--mono)', boxSizing: 'border-box',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4,
+  display: 'block', fontSize: 14, fontWeight: 500, color: 'var(--muted)', marginBottom: 4,
 }
 
 const blank = { domain: '', inputSelector: '', sendButtonSelector: '' }
@@ -68,14 +68,14 @@ export function SitesPage() {
   }
 
   return (
-    <>
+    <div style={{ padding: '32px 36px 40px' }}>
       <PageHeader
         title="Site Configs"
         action={
           <button
             onClick={openNew}
-            style={{ padding: '7px 16px', fontSize: 13, fontWeight: 600, color: 'var(--bg-base)',
-                     background: 'var(--brand-primary)', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+            style={{ padding: '7px 16px', fontSize: 15, fontWeight: 600, color: 'var(--btn-fg)',
+                     background: 'var(--btn-bg)', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer' }}
           >
             + New site
           </button>
@@ -91,13 +91,13 @@ export function SitesPage() {
           action={{ label: '+ New site', onClick: openNew }}
         />
       ) : (
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r)', overflow: 'hidden' }}>
+          <table style={{ width: '100%', fontSize: 15, borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr style={{ borderBottom: '1px solid var(--line)' }}>
                 {['Domain', 'Input selector', 'Send button selector', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700,
-                                       letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, fontWeight: 400,
+                                       color: 'var(--muted)' }}>
                     {h}
                   </th>
                 ))}
@@ -105,14 +105,14 @@ export function SitesPage() {
             </thead>
             <tbody>
               {configs.map((c, i) => (
-                <tr key={c.id} style={{ borderTop: i > 0 ? '1px solid var(--border)' : undefined }}>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-primary)' }}>{c.domain}</td>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: 'var(--text-secondary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.inputSelector}</td>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: 'var(--text-secondary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.sendButtonSelector}</td>
+                <tr key={c.id} style={{ borderTop: i > 0 ? '1px solid var(--line)' : undefined }}>
+                  <td style={{ padding: '10px 16px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--ink)' }}>{c.domain}</td>
+                  <td style={{ padding: '10px 16px', fontFamily: 'var(--mono)', color: 'var(--muted)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.inputSelector}</td>
+                  <td style={{ padding: '10px 16px', fontFamily: 'var(--mono)', color: 'var(--muted)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.sendButtonSelector}</td>
                   <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                      <button onClick={() => openEdit(c)} style={{ fontSize: 13, color: 'var(--brand-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
-                      <button onClick={() => setDeleting(c)} style={{ fontSize: 13, color: 'var(--status-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                      <button onClick={() => openEdit(c)} style={{ fontSize: 15, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                      <button onClick={() => setDeleting(c)} style={{ fontSize: 15, color: 'var(--block)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -139,6 +139,6 @@ export function SitesPage() {
         onConfirm={async () => { await mutations.remove.mutateAsync(deleting!.domain); setDeleting(null) }}
         confirming={mutations.remove.isPending}
       />
-    </>
+    </div>
   )
 }

@@ -20,10 +20,10 @@ export function PlanGate({ feature, children }: PlanGateProps) {
       height: '100%', gap: 16, padding: 40, textAlign: 'center',
     }}>
       <div style={{ fontSize: 32 }}>✦</div>
-      <div style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 700 }}>
+      <div style={{ color: 'var(--ink)', fontSize: 20, fontWeight: 700 }}>
         Business plan required
       </div>
-      <div style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, lineHeight: 1.6 }}>
+      <div style={{ color: 'var(--muted)', fontSize: 15, maxWidth: 360, lineHeight: 1.6 }}>
         The AI Assistant is available on the Business plan. Upgrade to unlock intelligent policy suggestions and bulk apply.
       </div>
       {data?.paymentProvider === 'stripe' ? (
@@ -31,9 +31,9 @@ export function PlanGate({ feature, children }: PlanGateProps) {
           onClick={() => openPortal.mutate(window.location.href)}
           disabled={openPortal.isPending}
           style={{
-            marginTop: 8, padding: '10px 24px', fontSize: 14, fontWeight: 600,
-            color: '#fff', background: 'var(--brand-primary)',
-            border: 'none', borderRadius: 8, cursor: 'pointer',
+            marginTop: 8, padding: '10px 24px', fontSize: 15, fontWeight: 600,
+            color: 'var(--btn-fg)', background: 'var(--btn-bg)',
+            border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer',
           }}
         >
           {openPortal.isPending ? 'Redirecting…' : 'Upgrade to Business'}
@@ -44,9 +44,9 @@ export function PlanGate({ feature, children }: PlanGateProps) {
           target="_blank"
           rel="noreferrer"
           style={{
-            marginTop: 8, padding: '10px 24px', fontSize: 14, fontWeight: 600,
-            color: '#fff', background: 'var(--brand-primary)',
-            borderRadius: 8, textDecoration: 'none',
+            marginTop: 8, padding: '10px 24px', fontSize: 15, fontWeight: 600,
+            color: 'var(--btn-fg)', background: 'var(--btn-bg)',
+            borderRadius: 'var(--r-sm)', textDecoration: 'none',
           }}
         >
           View plans →

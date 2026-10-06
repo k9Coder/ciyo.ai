@@ -46,6 +46,21 @@ describe('executeActions', () => {
     expect(rule?.action).toBe('block')
   })
 
+  it('creates a judge_prompt rule', async () => {
+    const { applied, errors } = await runWithCtx(tenantId, () =>
+      executeActions(tenantId, [
+        { op: 'create_rule', subjectId, kind: 'judge_prompt',
+          prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+          action: 'block' },
+      ])
+    )
+    expect(errors).toHaveLength(0)
+    expect(applied).toHaveLength(1)
+    const [rule] = await db.select().from(rules).where(eq(rules.subjectId, subjectId))
+    expect(rule?.kind).toBe('judge_prompt')
+    expect(rule?.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+  })
+
   it('creates a subject', async () => {
     const { applied, errors } = await runWithCtx(tenantId, () =>
       executeActions(tenantId, [

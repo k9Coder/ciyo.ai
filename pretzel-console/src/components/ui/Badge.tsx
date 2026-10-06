@@ -1,15 +1,17 @@
 type BadgeVariant = 'keyword' | 'pattern' | 'entropy' | 'score' | 'warn' | 'block' | 'global' | 'division' | 'team'
 
+// Two-tone pills built from the semantic tokens: block = terracotta, warn = amber,
+// detection kinds and scopes use the neutral fill / brand-soft pair so they read as labels, not alerts.
 const COLORS: Record<BadgeVariant, { bg: string; color: string }> = {
-  keyword:  { bg: 'rgba(245,158,11,0.15)',  color: '#f59e0b' },
-  pattern:  { bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
-  entropy:  { bg: 'rgba(139,92,246,0.15)',  color: '#8b5cf6' },
-  score:    { bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6' },
-  warn:     { bg: 'rgba(234,179,8,0.15)',   color: '#eab308' },
-  block:    { bg: 'rgba(239,68,68,0.2)',    color: '#dc2626' },
-  global:   { bg: 'var(--bg-surface-raised)', color: 'var(--text-secondary)' },
-  division: { bg: 'rgba(99,102,241,0.15)',  color: '#6366f1' },
-  team:     { bg: 'rgba(20,184,166,0.15)',  color: '#14b8a6' },
+  keyword:  { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
+  pattern:  { bg: 'var(--block-fill)', color: 'var(--block)' },
+  entropy:  { bg: 'var(--fill)',       color: 'var(--ink)' },
+  score:    { bg: 'var(--fill)',       color: 'var(--ink)' },
+  warn:     { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
+  block:    { bg: 'var(--block-fill)', color: 'var(--block)' },
+  global:   { bg: 'var(--fill)',       color: 'var(--muted)' },
+  division: { bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  team:     { bg: 'var(--brand-soft)', color: 'var(--brand)' },
 }
 
 interface Props {
@@ -21,8 +23,8 @@ export function Badge({ variant, children }: Props) {
   const { bg, color } = COLORS[variant]
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', padding: '2px 8px',
-      borderRadius: 4, fontSize: 11, fontWeight: 600,
+      display: 'inline-flex', alignItems: 'center', padding: '3px 10px',
+      borderRadius: 'var(--r-btn)', fontSize: 13, fontWeight: 500,
       background: bg, color,
     }}>
       {children}

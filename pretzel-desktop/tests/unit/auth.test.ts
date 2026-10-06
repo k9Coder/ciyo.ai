@@ -15,7 +15,7 @@ vi.mock('electron', () => ({
 
 const mockKeytar = {
   setPassword: vi.fn(() => Promise.resolve()),
-  getPassword: vi.fn(() => Promise.resolve(null)),
+  getPassword: vi.fn(() => Promise.resolve(null as string | null)),
   deletePassword: vi.fn(() => Promise.resolve()),
 }
 vi.mock('keytar', () => mockKeytar)

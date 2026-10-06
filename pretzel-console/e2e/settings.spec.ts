@@ -8,7 +8,9 @@ test.describe('Settings', () => {
     await page.goto('/settings')
 
     await expect(page.getByRole('heading', { name: /settings/i })).toBeVisible()
-    await expect(page.getByText('E2E Test Org')).toBeVisible()
+    // 'E2E Test Org' also appears in the sidebar org badge — scope to the
+    // Organisation section's own name field, not just the sidebar match.
+    await expect(page.getByText('E2E Test Org').last()).toBeVisible()
     await expect(page.getByText('Organisation')).toBeVisible()
     await expect(page.getByText('API Tokens')).toBeVisible()
   })

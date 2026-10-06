@@ -1,5 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+const { mockLoadSettings, mockSaveSettings, mockCheckForUpdate, mockIsAutoUpdateSupported,
+  mockCheckForAutoUpdateAsync, mockDownloadUpdate, mockInstallUpdate } = vi.hoisted(() => ({
+  mockLoadSettings: vi.fn(() => ({ hasSeenWalkthrough: false, notifyOnBlock: 'native', notifyOnWarn: 'badge' })),
+  mockSaveSettings: vi.fn((_dir: string, patch: object) => ({
+    hasSeenWalkthrough: false, notifyOnBlock: 'native', notifyOnWarn: 'badge', ...patch,
+  })),
+  mockCheckForUpdate: vi.fn(() => Promise.resolve({ current: '1.0.0', latest: null, updateAvailable: false })),
+  mockIsAutoUpdateSupported: vi.fn(() => false),
+  mockCheckForAutoUpdateAsync: vi.fn(() => Promise.resolve({ current: '1.0.0', latest: '2.0.0', updateAvailable: true })),
+  mockDownloadUpdate: vi.fn(),
+  mockInstallUpdate: vi.fn(),
+}))
+
 // Mock electron before importing handlers
 vi.mock('electron', () => ({
   ipcMain: {
@@ -9,6 +22,24 @@ vi.mock('electron', () => ({
     removeHandler: vi.fn(),
   },
   BrowserWindow: vi.fn(),
+  app: { getPath: vi.fn(() => 'C:/fake/userData') },
+}))
+
+vi.mock('../../electron/settings', async () => {
+  const actual = await vi.importActual('../../electron/settings')
+  return { ...actual, loadSettings: mockLoadSettings, saveSettings: mockSaveSettings }
+})
+
+vi.mock('../../electron/version-check', async () => {
+  const actual = await vi.importActual('../../electron/version-check')
+  return { ...actual, checkForUpdate: mockCheckForUpdate }
+})
+
+vi.mock('../../electron/auto-update', () => ({
+  isAutoUpdateSupported: mockIsAutoUpdateSupported,
+  checkForAutoUpdateAsync: mockCheckForAutoUpdateAsync,
+  downloadUpdate: mockDownloadUpdate,
+  installUpdate: mockInstallUpdate,
 }))
 
 import { ipcMain } from 'electron'
@@ -37,22 +68,17 @@ beforeEach(() => {
 
 describe('registerIpcHandlers', () => {
   it('registers decision:respond handler', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.on).toHaveBeenCalledWith('decision:respond', expect.any(Function))
   })
 
-  it('registers policy:update handler', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
-    expect(mockIpcMain.on).toHaveBeenCalledWith('policy:update', expect.any(Function))
-  })
-
   it('registers policy:get handle', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.handle).toHaveBeenCalledWith('policy:get', expect.any(Function))
   })
 
   it('registers proxy:status handle', () => {
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
     expect(mockIpcMain.handle).toHaveBeenCalledWith('proxy:status', expect.any(Function))
   })
 })
@@ -61,7 +87,6 @@ describe('unregisterIpcHandlers', () => {
   it('removes all listeners', () => {
     unregisterIpcHandlers()
     expect(mockIpcMain.removeAllListeners).toHaveBeenCalledWith('decision:respond')
-    expect(mockIpcMain.removeAllListeners).toHaveBeenCalledWith('policy:update')
     expect(mockIpcMain.removeHandler).toHaveBeenCalledWith('policy:get')
     expect(mockIpcMain.removeHandler).toHaveBeenCalledWith('proxy:status')
   })
@@ -70,7 +95,7 @@ describe('unregisterIpcHandlers', () => {
 describe('decision:respond IPC', () => {
   it('calls onDecision with valid payload', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     // Extract the handler registered for 'decision:respond'
     const handler = mockIpcMain.on.mock.calls.find(
@@ -83,7 +108,7 @@ describe('decision:respond IPC', () => {
 
   it('ignores invalid payload (missing requestId)', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     const handler = mockIpcMain.on.mock.calls.find(
       ([channel]) => channel === 'decision:respond'
@@ -95,7 +120,7 @@ describe('decision:respond IPC', () => {
 
   it('ignores non-boolean allow field', () => {
     const onDecision = vi.fn()
-    registerIpcHandlers({ onDecision, onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision })
 
     const handler = mockIpcMain.on.mock.calls.find(
       ([channel]) => channel === 'decision:respond'
@@ -106,36 +131,10 @@ describe('decision:respond IPC', () => {
   })
 })
 
-describe('policy:update IPC', () => {
-  it('calls onPolicyUpdate with valid failMode', () => {
-    const onPolicyUpdate = vi.fn()
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate })
-
-    const handler = mockIpcMain.on.mock.calls.find(
-      ([channel]) => channel === 'policy:update'
-    )?.[1] as (event: unknown, raw: unknown) => void
-
-    handler({}, { failMode: 'closed' })
-    expect(onPolicyUpdate).toHaveBeenCalledWith({ failMode: 'closed' })
-  })
-
-  it('ignores invalid failMode value', () => {
-    const onPolicyUpdate = vi.fn()
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate })
-
-    const handler = mockIpcMain.on.mock.calls.find(
-      ([channel]) => channel === 'policy:update'
-    )?.[1] as (event: unknown, raw: unknown) => void
-
-    handler({}, { failMode: 'maybe' })
-    expect(onPolicyUpdate).not.toHaveBeenCalled()
-  })
-})
-
 describe('policy:get handle', () => {
   it('returns null when policy not set', () => {
     setCurrentPolicy(null)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'policy:get'
@@ -147,7 +146,7 @@ describe('policy:get handle', () => {
   it('returns current policy when set', () => {
     const policy: Policy = { ...DEFAULT_POLICY }
     setCurrentPolicy(policy)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'policy:get'
@@ -160,7 +159,7 @@ describe('policy:get handle', () => {
 describe('proxy:status handle', () => {
   it('returns proxyRunning: false when proxy not running', () => {
     setProxyRunning(false)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'
@@ -171,7 +170,7 @@ describe('proxy:status handle', () => {
 
   it('returns proxyRunning: true when proxy running', () => {
     setProxyRunning(true)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'
@@ -183,7 +182,7 @@ describe('proxy:status handle', () => {
   it('returns systemProxyActive field', () => {
     setProxyRunning(true)
     setSystemProxyActive(true)
-    registerIpcHandlers({ onDecision: vi.fn(), onPolicyUpdate: vi.fn() })
+    registerIpcHandlers({ onDecision: vi.fn() })
 
     const handler = mockIpcMain.handle.mock.calls.find(
       ([channel]) => channel === 'proxy:status'
@@ -197,9 +196,110 @@ describe('pushDecisionRequired', () => {
   it('sends decision:required to window webContents', () => {
     const mockSend = vi.fn()
     const mockWin = { webContents: { send: mockSend } } as unknown as import('electron').BrowserWindow
-    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [] }
+    const payload = { requestId: 'r1', hostname: 'chat.openai.com', findings: [], deadlineAt: 123, onTimeout: 'block' as const }
     pushDecisionRequired(mockWin, payload)
     expect(mockSend).toHaveBeenCalledWith('decision:required', payload)
+  })
+})
+
+describe('decision:always-allow IPC', () => {
+  it('calls onAlwaysAllow with the ruleId', () => {
+    const onAlwaysAllow = vi.fn()
+    registerIpcHandlers({ onDecision: vi.fn(), onAlwaysAllow })
+
+    const handler = mockIpcMain.on.mock.calls.find(([c]) => c === 'decision:always-allow')?.[1] as
+      (event: unknown, raw: unknown) => void
+    handler({}, 'rule-123')
+    expect(onAlwaysAllow).toHaveBeenCalledWith('rule-123')
+  })
+
+  it('ignores a non-string payload', () => {
+    const onAlwaysAllow = vi.fn()
+    registerIpcHandlers({ onDecision: vi.fn(), onAlwaysAllow })
+
+    const handler = mockIpcMain.on.mock.calls.find(([c]) => c === 'decision:always-allow')?.[1] as
+      (event: unknown, raw: unknown) => void
+    handler({}, { ruleId: 'rule-123' })
+    expect(onAlwaysAllow).not.toHaveBeenCalled()
+  })
+
+  it('is a no-op if no onAlwaysAllow callback was registered', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.on.mock.calls.find(([c]) => c === 'decision:always-allow')?.[1] as
+      (event: unknown, raw: unknown) => void
+    expect(() => handler({}, 'rule-123')).not.toThrow()
+  })
+})
+
+describe('update:check handle', () => {
+  it('uses the lightweight version check when auto-update is unsupported', async () => {
+    mockIsAutoUpdateSupported.mockReturnValue(false)
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.handle.mock.calls.find(([c]) => c === 'update:check')?.[1] as () => Promise<unknown>
+
+    const result = await handler()
+    expect(mockCheckForUpdate).toHaveBeenCalled()
+    expect(mockCheckForAutoUpdateAsync).not.toHaveBeenCalled()
+    expect(result).toEqual({ current: '1.0.0', latest: null, updateAvailable: false, autoUpdateSupported: false })
+  })
+
+  it('uses the real electron-updater check when auto-update is supported', async () => {
+    mockIsAutoUpdateSupported.mockReturnValue(true)
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.handle.mock.calls.find(([c]) => c === 'update:check')?.[1] as () => Promise<unknown>
+
+    const result = await handler()
+    expect(mockCheckForAutoUpdateAsync).toHaveBeenCalled()
+    expect(mockCheckForUpdate).not.toHaveBeenCalled()
+    expect(result).toEqual({ current: '1.0.0', latest: '2.0.0', updateAvailable: true, autoUpdateSupported: true })
+  })
+})
+
+describe('update:download / update:install', () => {
+  it('update:download calls downloadUpdate', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.on.mock.calls.find(([c]) => c === 'update:download')?.[1] as () => void
+    handler()
+    expect(mockDownloadUpdate).toHaveBeenCalled()
+  })
+
+  it('update:install calls installUpdate', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.on.mock.calls.find(([c]) => c === 'update:install')?.[1] as () => void
+    handler()
+    expect(mockInstallUpdate).toHaveBeenCalled()
+  })
+})
+
+describe('settings:get handle', () => {
+  it('returns settings loaded from userData', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.handle.mock.calls.find(([c]) => c === 'settings:get')?.[1] as () => unknown
+    expect(handler()).toEqual({ hasSeenWalkthrough: false, notifyOnBlock: 'native', notifyOnWarn: 'badge' })
+    expect(mockLoadSettings).toHaveBeenCalledWith('C:/fake/userData')
+  })
+})
+
+describe('settings:set handle', () => {
+  it('saves a valid patch', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.handle.mock.calls.find(([c]) => c === 'settings:set')?.[1] as
+      (event: unknown, raw: unknown) => unknown
+
+    const result = handler({}, { notifyOnBlock: 'off' })
+    expect(mockSaveSettings).toHaveBeenCalledWith('C:/fake/userData', { notifyOnBlock: 'off' })
+    expect(result).toMatchObject({ notifyOnBlock: 'off' })
+  })
+
+  it('ignores an invalid patch and returns current settings unchanged', () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    const handler = mockIpcMain.handle.mock.calls.find(([c]) => c === 'settings:set')?.[1] as
+      (event: unknown, raw: unknown) => unknown
+
+    mockSaveSettings.mockClear()
+    const result = handler({}, { notifyOnBlock: 'not-a-real-level' })
+    expect(mockSaveSettings).not.toHaveBeenCalled()
+    expect(result).toEqual({ hasSeenWalkthrough: false, notifyOnBlock: 'native', notifyOnWarn: 'badge' })
   })
 })
 
@@ -209,5 +309,29 @@ describe('pushStatusUpdate', () => {
     const mockWin = { webContents: { send: mockSend } } as unknown as import('electron').BrowserWindow
     pushStatusUpdate(mockWin, { proxyRunning: true, policyAvailable: false })
     expect(mockSend).toHaveBeenCalledWith('status:update', { proxyRunning: true, policyAvailable: false })
+  })
+})
+
+describe('auth:sign-out / auth:get-state handles', () => {
+  const handlerFor = (channel: string) =>
+    mockIpcMain.handle.mock.calls.find(([c]) => c === channel)?.[1] as (() => unknown) | undefined
+
+  it('sign-out returns what the app reported about recording it on the server', async () => {
+    const onSignOut = vi.fn().mockResolvedValue({ recorded: true })
+    registerIpcHandlers({ onDecision: vi.fn(), onSignOut })
+    expect(await handlerFor('auth:sign-out')!()).toEqual({ recorded: true })
+    expect(onSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('sign-out without a handler reports not recorded instead of throwing', async () => {
+    registerIpcHandlers({ onDecision: vi.fn() })
+    expect(await handlerFor('auth:sign-out')!()).toEqual({ recorded: false })
+  })
+
+  it('get-state returns the live auth view, or signed out when none is provided', () => {
+    registerIpcHandlers({ onDecision: vi.fn(), getAuthState: () => ({ authenticated: true }) })
+    expect(handlerFor('auth:get-state')!()).toEqual({ authenticated: true })
+    registerIpcHandlers({ onDecision: vi.fn() })
+    expect(handlerFor('auth:get-state')!()).toEqual({ authenticated: false })
   })
 })

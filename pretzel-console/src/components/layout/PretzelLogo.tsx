@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react'
-import { getTheme } from '../../utils/theme'
-import type { Theme } from '../../utils/theme'
-
-export function PretzelLogo({ size = 28 }: { size?: number }) {
-  const [theme, setThemeState] = useState<Theme>(() => getTheme())
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => setThemeState(getTheme()))
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-    return () => observer.disconnect()
-  }, [])
-
-  const src = theme === 'light' ? '/logo-light.png' : '/logo-dark.png'
+/**
+ * Logo 2a: rounded square with three bars (top, thick middle, short bottom).
+ * Light theme: filled green. Dark theme: outlined with a mint middle bar.
+ * Colors come from the --logo-* tokens so it follows the active theme without JS.
+ */
+export function PretzelLogo({ size = 26 }: { size?: number }) {
   return (
-    <img
-      src={src}
-      alt="Pretzel logo"
-      style={{ display: 'block', height: size, width: 'auto', flexShrink: 0 }}
-    />
+    <span
+      role="img"
+      aria-label="Pretzel logo"
+      style={{
+        width: size, height: size, flexShrink: 0, position: 'relative', display: 'block',
+        borderRadius: 'var(--logo-r)', background: 'var(--logo-bg)',
+        border: 'var(--logo-bd) solid var(--ink)', boxSizing: 'border-box',
+      }}
+    >
+      <span style={{ position: 'absolute', left: '20%', top: '24%', width: '60%', height: '9%', background: 'var(--logo-bar)' }} />
+      <span style={{ position: 'absolute', left: '20%', top: '40%', width: '60%', height: '20%', background: 'var(--logo-mid)' }} />
+      <span style={{ position: 'absolute', left: '20%', top: '67%', width: '36%', height: '9%', background: 'var(--logo-bar)' }} />
+    </span>
   )
 }

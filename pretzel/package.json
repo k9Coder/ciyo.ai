@@ -1,6 +1,6 @@
 {
   "name": "pretzel-extension",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Pretzel by mykka.ai — browser-based AI prompt DLP",
   "private": true,
   "scripts": {
@@ -11,6 +11,9 @@
     "build:e2e": "vite build --mode development",
     "build:staging": "vite build --mode staging",
     "build:prod": "vite build --mode prod",
+    "zip": "node scripts/zip-extension.mjs build",
+    "package:staging": "npm run build:staging && node scripts/zip-extension.mjs staging",
+    "package:prod": "npm run build:prod && node scripts/zip-extension.mjs prod",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -18,8 +21,9 @@
     "test:e2e": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
+    "@clerk/chrome-extension": "^3.1.76",
+    "@huggingface/transformers": "^4.3.0",
     "@mykka/detect": "workspace:*",
-    "@clerk/chrome-extension": "^3.1.26",
     "@sentry/browser": "^10.56.0",
     "idb": "^8.0.0",
     "jszip": "^3.10.1",
@@ -30,6 +34,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@clerk/testing": "^1.14.8",
     "@crxjs/vite-plugin": "^2.0.0-beta.26",
     "@playwright/test": "^1.47.0",
     "@types/chrome": "^0.0.268",

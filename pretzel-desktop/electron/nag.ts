@@ -17,6 +17,14 @@ let nagTimer: ReturnType<typeof setInterval> | null = null
 let onSignInRequest: (() => void) | null = null
 
 function showNag(trayWin: BrowserWindow): void {
+  // The nag runs on a timer, so the tray window can be gone (app quit, window
+  // closed) by the time it fires. Touching a destroyed window throws an uncaught
+  // "Object has been destroyed" and crashes the main process — stop nagging and
+  // bail instead.
+  if (trayWin.isDestroyed()) {
+    stopNagging()
+    return
+  }
   if (isAuthenticated()) {
     stopNagging()
     return
@@ -25,11 +33,15 @@ function showNag(trayWin: BrowserWindow): void {
   // OS native notification
   if (Notification.isSupported()) {
     const notif = new Notification({
-      title: 'Pretzel Desktop — Sign in required',
-      body: 'Sign in to load your organisation\'s policy. Without it, only default rules apply.',
+      title: 'Pretzel Desktop — Protection is off',
+      // Accurate, not softened: with no policy loaded, the proxy has nothing
+      // to check requests against and forwards everything unexamined — this
+      // is genuinely "nothing is protected," not "default rules apply."
+      body: "Nothing you send to ChatGPT, Claude, or Gemini is being checked right now. Sign in to load your organisation's policy.",
       urgency: 'normal',
     })
     notif.on('click', () => {
+      if (trayWin.isDestroyed()) return
       trayWin.show()
       trayWin.focus()
       onSignInRequest?.()
@@ -42,7 +54,9 @@ function showNag(trayWin: BrowserWindow): void {
   trayWin.focus()
 
   // Tell renderer to show sign-in prompt
-  trayWin.webContents.send('auth:nag')
+  if (!trayWin.webContents.isDestroyed()) {
+    trayWin.webContents.send('auth:nag')
+  }
 }
 
 /**
@@ -50,13 +64,18 @@ function showNag(trayWin: BrowserWindow): void {
  * If already authenticated: no-op.
  * If not: nag immediately then every 24h.
  */
-export function startNagging(trayWin: BrowserWindow, options?: { onSignInRequest?: () => void }): void {
+export function startNagging(
+  trayWin: BrowserWindow,
+  options?: { onSignInRequest?: () => void; skipImmediate?: boolean },
+): void {
   onSignInRequest = options?.onSignInRequest ?? null
 
   if (isAuthenticated()) return
 
-  // Nag immediately on first launch
-  showNag(trayWin)
+  // Nag immediately on first launch. Skipped after a deliberate sign-out: the
+  // user just chose this, so do not pop a notification at them straight away;
+  // the 24h reminder below still applies.
+  if (!options?.skipImmediate) showNag(trayWin)
 
   // Then repeat every 24h
   nagTimer = setInterval(() => {

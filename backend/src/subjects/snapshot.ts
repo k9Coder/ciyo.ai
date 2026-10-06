@@ -42,6 +42,7 @@ export async function snapshotSubject(
       kind:                r.kind,
       keywords:            r.keywords ?? null,
       pattern:             r.pattern ?? null,
+      prompt:              r.prompt ?? null,
       destinations:        r.destinations ?? [],
       destinationGroupIds: r.destinationGroupIds ?? [],
       action:              r.action,

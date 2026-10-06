@@ -115,6 +115,47 @@ describe('POST /v1/assistant/messages/:messageId/revert', () => {
     expect(after.some(r => r.keywords?.includes('token'))).toBe(false)
   })
 
+  it('preserves a judge_prompt rule\'s prompt text through snapshot and revert', async () => {
+    const [sub] = await db.insert(subjects)
+      .values({ tenantId, name: 'Judged', active: true })
+      .returning()
+    const subjectId = sub!.id
+
+    await db.insert(rules).values({
+      tenantId, subjectId, kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block', active: true, reportLevel: 'none',
+    })
+
+    const [session] = await db.insert(chatSessions)
+      .values({ tenantId, title: 'T' })
+      .returning()
+    const [msg] = await db.insert(chatMessages)
+      .values({ sessionId: session!.id, role: 'assistant', content: '', actionsJson: [], appliedAt: new Date() })
+      .returning()
+    const messageId = msg!.id
+
+    const { snapshotSubject } = await import('../src/subjects/snapshot.js')
+    await new Promise<void>((resolve, reject) =>
+      requestContext.run({ traceId: randomUUID(), tenantId, isM2M: true }, () =>
+        snapshotSubject(tenantId, subjectId, 'pre_ai_apply', messageId).then(resolve).catch(reject)
+      )
+    )
+
+    // Mutate: delete the judge_prompt rule (simulates what an assistant action might do)
+    await db.delete(rules).where(eq(rules.subjectId, subjectId))
+
+    const res = await supertest(app.server)
+      .post(`/v1/assistant/messages/${messageId}/revert`)
+      .set('Authorization', `Bearer ${adminToken}`)
+    expect(res.status).toBe(200)
+
+    const after = await db.select().from(rules).where(eq(rules.subjectId, subjectId))
+    expect(after).toHaveLength(1)
+    expect(after[0]?.kind).toBe('judge_prompt')
+    expect(after[0]?.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+  })
+
   it('restores subject name from snapshot', async () => {
     const [sub] = await db.insert(subjects)
       .values({ tenantId, name: 'Original Name', active: true })

@@ -9,7 +9,10 @@ export function useSubjects() {
 export function useSubjectMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['subjects'] })
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['subjects'] })
+    qc.invalidateQueries({ queryKey: ['policy-draft'] })
+  }
 
   const create = useMutation({
     mutationFn: api.subjects.create,

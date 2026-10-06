@@ -6,6 +6,6 @@ declare module 'fastify' {
     member?:       Member
     user?:         User
     platformUser?: User
-    tokenPrefix:   'ps_live' | 'ps_adm' | 'clerk'
+    tokenPrefix:   'ps_live' | 'ps_adm' | 'clerk' | 'pd'
   }
 }

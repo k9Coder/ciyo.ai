@@ -1,5 +1,6 @@
 import type { ChatMessage } from '../../types'
 import { useRevertMessage } from '../../hooks/useAssistant'
+import { PretzelLogo } from '../layout/PretzelLogo'
 
 interface MessageBubbleProps {
   message:   ChatMessage
@@ -7,19 +8,8 @@ interface MessageBubbleProps {
   isPending: boolean
 }
 
-function SparkleAvatar() {
-  return (
-    <div style={{
-      width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-      background: 'var(--brand-primary)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 0 14px color-mix(in srgb, var(--brand-primary) 45%, transparent)',
-    }}>
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-        <path d="M8 1L9.5 6.5L15 8L9.5 9.5L8 15L6.5 9.5L1 8L6.5 6.5Z" fill="white"/>
-      </svg>
-    </div>
-  )
+export function AssistantAvatar({ size = 30 }: { size?: number }) {
+  return <PretzelLogo size={size} />
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
@@ -31,29 +21,25 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div style={{
-      display: 'flex', gap: 10, alignItems: 'flex-start',
+      display: 'flex', gap: 10, alignItems: isUser ? 'flex-end' : 'flex-start',
       flexDirection: isUser ? 'row-reverse' : 'row',
       animation: 'pretzel-msg-in 0.22s ease-out forwards',
     }}>
-      {!isUser && <SparkleAvatar />}
+      {!isUser && <AssistantAvatar size={30} />}
 
       <div style={{
-        maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: 6,
+        maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: 8,
         alignItems: isUser ? 'flex-end' : 'flex-start',
       }}>
         <div style={{
-          background: isUser ? 'var(--brand-primary)' : 'var(--bg-surface-raised)',
-          border: isUser ? 'none' : '1px solid var(--border)',
-          borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-          padding: '10px 14px',
-          boxShadow: isUser
-            ? '0 2px 14px color-mix(in srgb, var(--brand-primary) 30%, transparent)'
-            : '0 1px 4px rgba(0,0,0,0.12)',
+          background: isUser ? 'var(--btn-bg)' : 'var(--fill)',
+          borderRadius: isUser ? 'var(--r) var(--r) 4px var(--r)' : '4px var(--r) var(--r) var(--r)',
+          padding: '12px 16px',
         }}>
           <p style={{
             margin: 0,
-            color: isUser ? '#fff' : 'var(--text-primary)',
-            fontSize: 13, lineHeight: 1.65,
+            color: isUser ? 'var(--btn-fg)' : 'var(--ink)',
+            fontSize: 15, lineHeight: 1.55,
             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
           }}>
             {message.content}
@@ -63,14 +49,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {hasActions && !isApplied && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: 'color-mix(in srgb, var(--brand-primary) 10%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--brand-primary) 25%, transparent)',
-            borderRadius: 20, padding: '3px 10px',
-            fontSize: 11, color: 'var(--brand-primary)', fontWeight: 500,
+            background: 'var(--brand-soft)', borderRadius: 'var(--r-btn)', padding: '4px 12px',
+            fontSize: 13, color: 'var(--brand)', fontWeight: 500,
           }}>
-            <svg width="9" height="9" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1L9.5 6.5L15 8L9.5 9.5L8 15L6.5 9.5L1 8L6.5 6.5Z" fill="currentColor"/>
-            </svg>
             {count} proposed change{count !== 1 ? 's' : ''} · review in preview
           </div>
         )}
@@ -79,10 +60,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: 'rgba(74,222,128,0.08)',
-              border: '1px solid rgba(74,222,128,0.28)',
-              borderRadius: 20, padding: '3px 10px',
-              fontSize: 11, color: '#4ade80', fontWeight: 500,
+              background: 'var(--brand-soft)', borderRadius: 'var(--r-btn)', padding: '4px 12px',
+              fontSize: 13, color: 'var(--brand)', fontWeight: 500,
             }}>
               ✓ {count} change{count !== 1 ? 's' : ''} applied
             </div>
@@ -92,7 +71,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 disabled={revert.isPending}
                 style={{
                   background: 'none', border: 'none', padding: '2px 4px',
-                  fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer',
+                  fontSize: 13, color: 'var(--muted)', cursor: 'pointer',
                   textDecoration: 'underline', opacity: revert.isPending ? 0.5 : 1,
                 }}
               >

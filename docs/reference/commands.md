@@ -9,6 +9,7 @@ sources:
   - pretzel-console/package.json
   - mykka-web/package.json
   - e2e/package.json
+  - qa/package.json
 ---
 
 # Manifest-Backed Commands
@@ -33,9 +34,11 @@ all proven healthy: known runtime and CI failures are recorded in
 | Website lint/build | `cd mykka-web; pnpm lint; pnpm build` |
 | Unified E2E | `cd e2e; pnpm test:e2e` |
 | E2E project | `cd e2e; pnpm test:e2e -- --project=api` |
+| Manual QA suite (staging) | `cd qa; $env:QA_ENV_FILE=".env.qa.staging"; pnpm test:qa` |
+| Manual QA project | `cd qa; pnpm test:qa -- --project=console` |
 | Docs validation | `pnpm docs:check` |
 
-Root recursive/filter scripts are listed as a known issue and should not be relied on until workspace configuration is added or the scripts are replaced.
+Root recursive/filter scripts were previously listed as a known issue for lacking workspace configuration. A `pnpm-workspace.yaml` now exists at the repository root, but the root scripts' reliability under it has not been re-verified — see `docs/KNOWN_ISSUES.md`.
 
 `pnpm test:e2e -- --project=api` forwards arguments through the package script.
 The longer equivalent is

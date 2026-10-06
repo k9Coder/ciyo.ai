@@ -8,6 +8,7 @@ sources:
   - backend/package.json
   - pretzel/package.json
   - pretzel-console/package.json
+  - qa/README.md
 ---
 
 # Testing
@@ -39,3 +40,13 @@ pnpm test:e2e -- --project=admin
 The extension must be built, backend must be available, admin must be available for admin tests, and `e2e/.env.e2e` must contain test-only credentials. Global setup seeds the database.
 
 The current GitHub Actions E2E workflow has known command/install defects; see [Known Issues](../KNOWN_ISSUES.md).
+
+## Manual QA Suite
+
+`qa/` runs scripted journeys against a real deployed environment (staging or
+a prod smoke subset) that you point it at — never a local dev server, never
+a database this suite can truncate. It's the pre-release, human-simulation
+counterpart to `e2e/`'s pre-merge developer gate. See
+[`qa/README.md`](../../qa/README.md) for setup and the full pre-release QA
+cycle, including the hand-off to gstack's `/qa-only` for exploratory
+coverage.

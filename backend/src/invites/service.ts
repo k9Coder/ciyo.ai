@@ -1,3 +1,4 @@
+// DISABLED — token-invite-link flow retired, see invites/router.ts for why.
 import { randomBytes } from 'node:crypto'
 import { and, count, eq, isNull } from 'drizzle-orm'
 import { db } from '../db/client.js'
@@ -21,7 +22,7 @@ export interface InvitePreview {
 export async function createInvite(
   tenantId:    string,
   createdById: string | null,
-  opts: { email?: string; role?: Invite['role'] }
+  opts: { email?: string; role?: Invite['role']; divisionId?: string }
 ): Promise<{ token: string; expiresAt: Date }> {
   const token     = generateToken()
   const expiresAt = new Date(Date.now() + INVITE_TTL_MS)
@@ -30,6 +31,7 @@ export async function createInvite(
     token,
     email:       opts.email ?? null,
     role:        opts.role ?? 'member',
+    divisionId:  opts.divisionId ?? null,
     createdById: createdById ?? null,
     expiresAt,
   })
@@ -122,7 +124,7 @@ export async function acceptInvite(
     const updated = await tx.update(invites)
       .set({ usedAt: now, usedByUserId: userId })
       .where(and(eq(invites.token, token), isNull(invites.usedAt)))
-      .returning({ id: invites.id, tenantId: invites.tenantId, role: invites.role })
+      .returning({ id: invites.id, tenantId: invites.tenantId, role: invites.role, divisionId: invites.divisionId })
 
     if (!updated.length) {
       // Another concurrent request claimed the invite first. Nothing was
@@ -146,7 +148,8 @@ export async function acceptInvite(
       displayName: user.firstName && user.lastName
         ? `${user.firstName} ${user.lastName}`
         : undefined,
-      role: claimed.role,
+      role:            claimed.role,
+      adminDivisionId: claimed.divisionId,
     }).returning()
 
     return { member: member! }

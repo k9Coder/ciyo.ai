@@ -1,27 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import * as Sentry from '@sentry/electron/renderer'
+import { Logo } from '../shared/Logo'
+import { isBlockingDecision, secondsLeft, countdownText, timeoutNotice } from './decision-kind'
+import './style.css'
 
-interface DecisionPayload {
-  requestId: string
-  hostname: string
-  findings: Array<{ ruleId: string; severity: string; snippet?: string }>
-}
-
-declare global {
-  interface Window {
-    pretzel: {
-      onDecisionRequired: (cb: (p: DecisionPayload) => void) => void
-      respondDecision: (requestId: string, allow: boolean) => void
-    }
-  }
+if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
+  Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN_DESKTOP })
 }
 
 function DecisionUI() {
   const [pending, setPending] = useState<DecisionPayload | null>(null)
+  const [timedOut, setTimedOut] = useState<{ requestId: string; allowed: boolean } | null>(null)
+  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
-    window.pretzel.onDecisionRequired((payload) => setPending(payload))
+    window.pretzel.onDecisionRequired((payload) => { setTimedOut(null); setPending(payload) })
+    window.pretzel.onDecisionTimeout?.((payload) => setTimedOut(payload))
+    // Tell main the listener is live so it (re)sends any pending decision —
+    // otherwise the first block races React mount and is dropped.
+    window.pretzel.decisionReady?.()
   }, [])
+
+  // Tick once a second so the countdown line stays honest.
+  useEffect(() => {
+    if (!pending || timedOut) return
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [pending, timedOut])
 
   function respond(allow: boolean) {
     if (!pending) return
@@ -29,51 +35,94 @@ function DecisionUI() {
     setPending(null)
   }
 
+  function alwaysAllow() {
+    if (!pending) return
+    // Target the highest-severity finding — the same one the header/pill
+    // display is built from. Reported to the backend (not a local-only
+    // mute) so it's admin-visible and applies from the next policy sync on;
+    // this specific request is also let through right now, same as "Allow
+    // anyway", since muting a rule and then still blocking the very message
+    // that triggered the mute would be a confusing first impression.
+    const ruleId = pending.findings[0]?.ruleId
+    if (ruleId) window.pretzel.alwaysAllowRule(ruleId)
+    respond(true)
+  }
+
   if (!pending) {
+    return <div className="waiting">Waiting for policy decision…</div>
+  }
+
+  const isBlock = isBlockingDecision(pending.findings)
+  const severityClass = isBlock ? 'danger' : 'warn'
+
+  // Nobody answered: the request was already resolved by policy. Say so
+  // plainly — the window closes itself a few seconds later.
+  if (timedOut && timedOut.requestId === pending.requestId) {
+    const notice = timeoutNotice(timedOut.allowed)
     return (
-      <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
-        <p>Waiting for policy decision...</p>
+      <div className="app fade-in">
+        <div className={`accent-bar ${timedOut.allowed ? 'warn' : 'danger'}`} />
+        <div className="body">
+          <div className="header">
+            <Logo size={26} />
+            <div className="header-text">
+              <p className={`title ${timedOut.allowed ? 'warn' : 'danger'}`}>{notice.title}</p>
+              <p className="subtitle">{notice.body}</p>
+            </div>
+          </div>
+          <p className="subtitle">
+            Request to <strong>{pending.hostname}</strong> · {pending.findings[0]?.ruleName ?? pending.findings[0]?.ruleId}
+          </p>
+        </div>
       </div>
     )
   }
 
-  const highestSeverity = pending.findings[0]?.severity ?? 'medium'
-  const isBlock = pending.findings.some(f => f.severity === 'critical')
-
   return (
-    <div style={{ padding: '1.5rem', maxWidth: 440, margin: '0 auto' }}>
-      <h2 style={{ color: isBlock ? '#ff6b6b' : '#ffd93d', marginBottom: '0.5rem' }}>
-        {isBlock ? 'Request Blocked' : 'Policy Warning'}
-      </h2>
-      <p style={{ marginBottom: '1rem', color: '#aaa' }}>
-        Outbound request to <strong style={{ color: '#e0e0e0' }}>{pending.hostname}</strong> triggered a policy rule.
-      </p>
-
-      <div style={{ background: '#16213e', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
-        {pending.findings.map((f, i) => (
-          <div key={i} style={{ marginBottom: i < pending.findings.length - 1 ? '0.5rem' : 0 }}>
-            <span style={{ color: '#ff6b6b', fontSize: '0.8rem', fontWeight: 600 }}>{f.severity.toUpperCase()}</span>
-            <span style={{ marginLeft: '0.5rem', color: '#ccc', fontSize: '0.85rem' }}>{f.ruleId}</span>
-            {f.snippet && <p style={{ color: '#777', fontSize: '0.75rem', marginTop: 2, fontFamily: 'monospace' }}>{f.snippet}</p>}
+    <div className="app fade-in">
+      <div className={`accent-bar ${severityClass}`} />
+      <div className="body">
+        <div className="header">
+          <Logo size={26} />
+          <div className="header-text">
+            <p className={`title ${severityClass}`}>{isBlock ? 'Request Blocked' : 'Policy Warning'}</p>
+            <p className="subtitle">
+              Outbound request to <strong>{pending.hostname}</strong> triggered a policy rule.
+            </p>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button
-          onClick={() => respond(false)}
-          style={{ flex: 1, padding: '0.6rem', background: '#c0392b', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
-        >
-          Block
-        </button>
-        {!isBlock && (
-          <button
-            onClick={() => respond(true)}
-            style={{ flex: 1, padding: '0.6rem', background: '#2d6a4f', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
-          >
-            Allow anyway
+        <div className="findings-list">
+          {pending.findings.map((f, i) => {
+            const snippet = f.matchedText ?? f.snippet
+            const pillClass = f.severity === 'critical' || f.severity === 'high' ? 'pill-danger' : 'pill-warn'
+            return (
+              <div className="finding-card" key={i}>
+                <div className="finding-head">
+                  <span className={`pill ${pillClass}`}>{f.severity}</span>
+                  <span className="finding-rule">{f.ruleName ?? f.ruleId}</span>
+                </div>
+                {snippet && <p className="finding-snippet mono wrap-anywhere">{snippet}</p>}
+              </div>
+            )
+          })}
+        </div>
+
+        <p className="countdown">{countdownText(pending.onTimeout, secondsLeft(pending.deadlineAt, now))}</p>
+
+        <div className="actions">
+          <button className="btn btn-danger" onClick={() => respond(false)}>
+            Block
           </button>
-        )}
+          {!isBlock && (
+            <button className="btn btn-safe" onClick={() => respond(true)}>
+              Allow anyway
+            </button>
+          )}
+        </div>
+        <button className="always-allow-link" onClick={alwaysAllow}>
+          Always allow this rule for me
+        </button>
       </div>
     </div>
   )

@@ -1,5 +1,11 @@
 import type { PolicyDoc, ResolvedRule, Policy } from "./schema";
 
+// ResolvedRule is a single z.object() shape (kind is a wide string-literal
+// union property, not a z.discriminatedUnion), so Exclude<ResolvedRule, ...>
+// has no effect — it only strips union members, and there's only one. This
+// reconstructs the object with just the kind property narrowed instead.
+type NonJudgePromptRule = Omit<ResolvedRule, "kind"> & { kind: Exclude<ResolvedRule["kind"], "judge_prompt"> }
+
 type EngineAction = "log" | "warn" | "require_confirmation" | "block"
 type Severity = "low" | "medium" | "high" | "critical"
 
@@ -21,7 +27,10 @@ const DEFAULT_SCORE_SIGNALS = [
   { id: "block_quote",         description: "Block quote or indented text", points: 10, enabled: true },
 ]
 
-function bridgeRule(rule: ResolvedRule, subjectName: string): Policy["custom"][number] {
+// Only ever called with non-judge_prompt rules — bridgePolicy filters those
+// out before mapping, and narrowing the parameter type here (not just the
+// call-site array) is what keeps the switch below exhaustive and type-checked.
+function bridgeRule(rule: NonJudgePromptRule, subjectName: string): Policy["custom"][number] {
   const base = {
     id:          rule.id,
     name:        `${subjectName} — ${rule.kind}`,
@@ -46,7 +55,13 @@ function bridgeRule(rule: ResolvedRule, subjectName: string): Policy["custom"][n
 
 export function bridgePolicy(doc: PolicyDoc, disabledSites: string[]): Policy {
   const allRules = doc.subjects.flatMap(subject =>
-    subject.rules.map(rule => bridgeRule(rule, subject.name))
+    subject.rules
+      // judge_prompt rules aren't enforced by this client yet — real
+      // on-device judging is a separate, later client-engine plan. Filtered
+      // out here (rather than given a bridgeRule case) so bridgeRule's
+      // switch stays exhaustive over the kinds it actually knows how to run.
+      .filter((rule): rule is NonJudgePromptRule => rule.kind !== "judge_prompt")
+      .map(rule => bridgeRule(rule, subject.name))
   )
 
   const perSite: Record<string, { enabled: boolean }> = {}

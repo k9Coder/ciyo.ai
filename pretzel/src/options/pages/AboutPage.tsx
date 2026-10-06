@@ -4,11 +4,11 @@ export function AboutPage() {
   return (
     <div className="space-y-6 max-w-xl">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">About {EXTENSION_NAME}</h2>
-        <p className="text-sm text-gray-500 mt-1">Version {EXTENSION_VERSION}</p>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">About {EXTENSION_NAME}</h2>
+        <p className="text-sm text-[var(--text-muted)] mt-1">Version {EXTENSION_VERSION}</p>
       </div>
 
-      <div className="prose prose-sm text-gray-700 space-y-4">
+      <div className="prose prose-sm text-[var(--text-secondary)] space-y-4">
         <p>
           mykka is a browser extension that inspects your prompts before they are sent
           to LLM chat interfaces. It detects credentials, PII, and other sensitive content

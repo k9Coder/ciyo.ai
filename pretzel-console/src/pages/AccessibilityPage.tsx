@@ -1,41 +1,41 @@
 export function AccessibilityPage() {
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 32px', color: 'var(--text-secondary, #94a3b8)', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 32px', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
 
       {/* English */}
       <div lang="en" style={{ marginBottom: 64 }}>
-        <h1 style={{ color: 'var(--text-primary, #fff)', fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
+        <h1 style={{ color: 'var(--ink)', fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
           Accessibility Statement
         </h1>
-        <p style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', marginBottom: 32 }}>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 32 }}>
           Last updated: June 2026
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> is committed to digital
+          <strong style={{ color: 'var(--ink)' }}>Pretzel by mykka.ai</strong> is committed to digital
           accessibility for people with disabilities. We continually improve the user experience for everyone.
         </p>
 
-        <h2 style={{ color: 'var(--text-primary, #fff)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
+        <h2 style={{ color: 'var(--ink)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
           Conformance Status
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: 16 }}>
           This application aims to conform to WCAG 2.1 Level AA and Israeli Standard 5568.
         </p>
 
-        <h2 style={{ color: 'var(--text-primary, #fff)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
+        <h2 style={{ color: 'var(--ink)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
           Known Limitations
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: 16 }}>
           Third-party embedded content may not fully conform. We actively work to address these gaps.
         </p>
 
-        <h2 style={{ color: 'var(--text-primary, #fff)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
+        <h2 style={{ color: 'var(--ink)', fontSize: 16, fontWeight: 600, marginTop: 32, marginBottom: 12 }}>
           Contact
         </h2>
         <p style={{ lineHeight: 1.7 }}>
           Report accessibility issues to{' '}
-          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>
             accessibility@mykka.ai
           </a>
           . We respond within 5 business days.
@@ -43,24 +43,24 @@ export function AccessibilityPage() {
       </div>
 
       {/* Divider */}
-      <hr style={{ borderColor: 'var(--border, rgba(255,255,255,0.06))', marginBottom: 48 }} />
+      <hr style={{ borderColor: 'var(--line)', marginBottom: 48 }} />
 
       {/* Hebrew — required by Israeli Standard 5568 */}
       <div dir="rtl" lang="he">
-        <h2 style={{ color: 'var(--text-primary, #fff)', fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
+        <h2 style={{ color: 'var(--ink)', fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
           הצהרת נגישות
         </h2>
-        <p style={{ fontSize: 12, color: 'var(--text-muted, #64748b)', marginBottom: 32 }}>
+        <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 32 }}>
           עודכן לאחרונה: יוני 2026
         </p>
 
         <p style={{ lineHeight: 1.7, marginBottom: 24 }}>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>Pretzel by mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
+          <strong style={{ color: 'var(--ink)' }}>Pretzel by mykka.ai</strong> מחויבת לנגישות דיגיטלית לאנשים עם מוגבלות.
           אנו פועלים לשיפור מתמיד של חוויית המשתמש עבור כלל האוכלוסייה,
           ומיישמים את תקני הנגישות הרלוונטיים.
         </p>
 
-        <h3 style={{ color: 'var(--text-primary, #fff)', fontSize: 14, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
+        <h3 style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
           רמת ציות
         </h3>
         <p style={{ lineHeight: 1.7, marginBottom: 16 }}>
@@ -69,7 +69,7 @@ export function AccessibilityPage() {
           (התאמות נגישות לשירות), התשע"ג-2013.
         </p>
 
-        <h3 style={{ color: 'var(--text-primary, #fff)', fontSize: 14, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
+        <h3 style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
           מה מונגש באתר
         </h3>
         <ul style={{ lineHeight: 1.8, paddingRight: 20, marginBottom: 16 }}>
@@ -80,7 +80,7 @@ export function AccessibilityPage() {
           <li>הודעות שגיאה ברורות ומוקדות</li>
         </ul>
 
-        <h3 style={{ color: 'var(--text-primary, #fff)', fontSize: 14, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
+        <h3 style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
           מגבלות ידועות
         </h3>
         <ul style={{ lineHeight: 1.8, paddingRight: 20, marginBottom: 16 }}>
@@ -88,15 +88,15 @@ export function AccessibilityPage() {
           <li>אנו עובדים על שיפורי נגישות באופן שוטף</li>
         </ul>
 
-        <h3 style={{ color: 'var(--text-primary, #fff)', fontSize: 14, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
+        <h3 style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 600, marginTop: 24, marginBottom: 10 }}>
           יצירת קשר בנושא נגישות
         </h3>
         <p style={{ lineHeight: 1.7, marginBottom: 8 }}>
           נתקלתם בבעיית נגישות? פנו אלינו ונשתדל לתת מענה תוך 5 ימי עסקים:
         </p>
         <p>
-          <strong style={{ color: 'var(--text-primary, #fff)' }}>אימייל: </strong>
-          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand-primary, #6366f1)', textDecoration: 'underline' }}>
+          <strong style={{ color: 'var(--ink)' }}>אימייל: </strong>
+          <a href="mailto:accessibility@mykka.ai" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>
             accessibility@mykka.ai
           </a>
         </p>

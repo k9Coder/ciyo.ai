@@ -73,3 +73,41 @@ describe('publishPolicy', () => {
     expect(mockEmit).not.toHaveBeenCalled()
   })
 })
+
+describe('publishInitialPolicy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockInsert.mockReturnValue({ values: mockInsertValues })
+    mockInsertValues.mockResolvedValue(undefined)
+  })
+
+  it('publishes an empty v1 for a tenant with no existing policy', async () => {
+    mockSelect.mockReturnValue(makeSelectBuilder([{ version: null }])) // getVersionOnly → null
+    const { publishInitialPolicy } = await import('../src/policy/service.js')
+    const v = await publishInitialPolicy('tenant-new')
+    expect(v).toBe(1)
+    expect(mockInsertValues).toHaveBeenCalledTimes(1)
+    const row = mockInsertValues.mock.calls[0]![0] as Record<string, unknown>
+    expect(row.tenantId).toBe('tenant-new')
+    expect(row.version).toBe(1)
+    expect(row.policyJson).toEqual({ version: 1, tenantId: 'tenant-new', subjects: [], siteConfigs: {}, failMode: 'open' })
+    expect(mockEmit).toHaveBeenCalledWith('policy:updated:tenant-new')
+  })
+
+  it('honors an explicit failMode', async () => {
+    mockSelect.mockReturnValue(makeSelectBuilder([{ version: null }]))
+    const { publishInitialPolicy } = await import('../src/policy/service.js')
+    await publishInitialPolicy('tenant-new', 'closed')
+    const row = mockInsertValues.mock.calls[0]![0] as Record<string, unknown>
+    expect((row.policyJson as Record<string, unknown>).failMode).toBe('closed')
+  })
+
+  it('is a no-op when the tenant already has a published policy', async () => {
+    mockSelect.mockReturnValue(makeSelectBuilder([{ version: 2 }])) // getVersionOnly → 2
+    const { publishInitialPolicy } = await import('../src/policy/service.js')
+    const v = await publishInitialPolicy('tenant-existing')
+    expect(v).toBeNull()
+    expect(mockInsertValues).not.toHaveBeenCalled()
+    expect(mockEmit).not.toHaveBeenCalled()
+  })
+})

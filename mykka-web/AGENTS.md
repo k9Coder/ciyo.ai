@@ -9,6 +9,7 @@ sources:
   - app/README.md
   - next.config.ts
   - vercel.json
+  - TESTING.md
 ---
 
 # mykka-web Agent Guide
@@ -34,12 +35,15 @@ This package is the public Next.js 16 App Router marketing site.
 
 ## Verification
 
-There is no automated test suite. For every change run:
+For every change run:
 
 ```bash
 pnpm lint
+pnpm test
 pnpm build
 ```
+
+`pnpm test` runs the vitest unit suite (see [TESTING.md](TESTING.md)) — currently pure-logic coverage for `lib/posts.ts`, `app/download/getDownloads.ts`, and `lib/env.ts`. No component/integration tests yet.
 
 Also manually verify affected routes, mobile navigation when relevant, outbound CTAs, metadata, and dynamic 404 behavior.
 

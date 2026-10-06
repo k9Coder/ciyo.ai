@@ -12,9 +12,8 @@ export function SessionTabs({ sessions, activeSessionId, onSelect, onNew }: Sess
 
   return (
     <div style={{
-      borderBottom: '1px solid var(--border)',
-      padding: '8px 16px',
-      background: 'var(--bg-surface)',
+      borderBottom: '1px solid var(--line)',
+      padding: '8px 24px',
       display: 'flex', gap: 6, overflowX: 'auto', alignItems: 'center',
       // hide scrollbar but keep scrollability
       scrollbarWidth: 'none',
@@ -22,13 +21,10 @@ export function SessionTabs({ sessions, activeSessionId, onSelect, onNew }: Sess
       <button
         onClick={onNew}
         style={{
-          background: 'none',
-          border: '1px dashed color-mix(in srgb, var(--brand-primary) 35%, transparent)',
-          borderRadius: 20, padding: '3px 12px',
-          fontSize: 10, fontWeight: 500,
-          color: 'var(--brand-primary)',
+          background: 'var(--fill)', border: 'none',
+          borderRadius: 'var(--r-btn)', padding: '5px 13px',
+          fontSize: 14, color: 'var(--ink)',
           cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-          display: 'flex', alignItems: 'center', gap: 4,
         }}
       >
         + New
@@ -42,18 +38,13 @@ export function SessionTabs({ sessions, activeSessionId, onSelect, onNew }: Sess
             onClick={() => onSelect(s.id)}
             title={s.title}
             style={{
-              background: active
-                ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)'
-                : 'transparent',
-              color:  active ? 'var(--brand-primary)' : 'var(--text-muted)',
-              border: active
-                ? '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)'
-                : '1px solid transparent',
-              borderRadius: 20, padding: '3px 12px',
-              fontSize: 10, fontWeight: active ? 600 : 400,
+              background: active ? 'var(--brand-soft)' : 'transparent',
+              color:  active ? 'var(--brand)' : 'var(--muted)',
+              border: 'none',
+              borderRadius: 'var(--r-btn)', padding: '5px 13px',
+              fontSize: 14, fontWeight: active ? 600 : 400,
               cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-              maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis',
-              transition: 'all 0.15s',
+              maxWidth: 170, overflow: 'hidden', textOverflow: 'ellipsis',
             }}
           >
             {s.title}

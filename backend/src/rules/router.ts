@@ -11,9 +11,10 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
   fastify.post('/subjects/:subjectId/rules', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { subjectId } = req.params as { subjectId: string }
     const body = req.body as {
-      kind: 'keyword' | 'pattern' | 'entropy' | 'score'
+      kind: 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
       keywords?: string[]
       pattern?: string
+      prompt?: string
       destinations?: string[]
       destinationGroupIds?: string[]
       action: 'warn' | 'block'
@@ -28,9 +29,10 @@ export async function rulesRouter(fastify: FastifyInstance): Promise<void> {
   fastify.patch('/rules/:id', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     const { id } = req.params as { id: string }
     const body = req.body as Partial<{
-      kind: 'keyword' | 'pattern' | 'entropy' | 'score'
+      kind: 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
       keywords: string[]
       pattern: string
+      prompt: string
       destinations: string[]
       destinationGroupIds: string[]
       action: 'warn' | 'block'

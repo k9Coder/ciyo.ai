@@ -45,8 +45,10 @@ export async function getAuditLog(
     })
     .from(events)
     .leftJoin(members,   eq(events.memberId,  members.id))
-    .innerJoin(rules,    eq(events.ruleId,    rules.id))
-    .innerJoin(subjects, eq(rules.subjectId,  subjects.id))
+    // leftJoin (not inner): events.ruleId is SET NULL when a rule is deleted, and
+    // audit history must still show those past violations, not silently drop them.
+    .leftJoin(rules,     eq(events.ruleId,    rules.id))
+    .leftJoin(subjects,  eq(rules.subjectId,  subjects.id))
     .where(and(...conditions))
     .orderBy(desc(events.occurredAt))
     .limit(opts.limit + 1)
@@ -58,8 +60,8 @@ export async function getAuditLog(
     entries: page.map(r => ({
       id:          r.id,
       memberEmail: r.memberEmail ?? null,
-      subjectName: r.subjectName,
-      ruleKind:    r.ruleKind,
+      subjectName: r.subjectName ?? '(deleted rule)',
+      ruleKind:    r.ruleKind ?? 'deleted',
       action:      r.action,
       siteUrl:     r.siteUrl,
       matchedTerm: r.matchedTerm ?? null,

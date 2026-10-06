@@ -36,6 +36,62 @@
       "when": 1783697329725,
       "tag": "0004_legal_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784842393111,
+      "tag": "0005_marvelous_blue_shield",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784908672464,
+      "tag": "0006_yummy_rawhide_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1786039591203,
+      "tag": "0007_military_jazinda",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1786186934666,
+      "tag": "0008_productive_hiroim",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1786896010334,
+      "tag": "0009_glossy_hellion",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1789224748502,
+      "tag": "0010_clear_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1789847559388,
+      "tag": "0011_wealthy_winter_soldier",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1791312572471,
+      "tag": "0012_romantic_speedball",
+      "breakpoints": true
     }
   ]
 }

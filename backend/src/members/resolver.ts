@@ -1,15 +1,17 @@
-import { eq, inArray, and } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { memberTeams, members } from '../db/schema.js'
 import { teamsClient, destinationGroupsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
+import { getMemberExceptionRuleIds } from '../policy/exceptions.js'
 import type { PolicyDoc, RulePolicy, SubjectPolicy } from '../policy/compiler.js'
 
 export interface ResolvedRulePolicy {
   id: string
-  kind: 'keyword' | 'pattern' | 'entropy' | 'score'
+  kind: 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
   keywords: string[] | null
   pattern: string | null
+  prompt: string | null
   destinations: string[]
   action: 'warn' | 'block'
   message: string | null
@@ -25,6 +27,7 @@ export interface ResolvedPolicy {
   version: number
   tenantId: string
   subjects: ResolvedSubjectPolicy[]
+  failMode: 'open' | 'closed'
 }
 
 type Scope = 'global' | 'division' | 'team'
@@ -37,8 +40,9 @@ function scopeOf(s: SubjectPolicy): Scope {
 }
 
 function detectionKey(r: RulePolicy): string {
-  if (r.kind === 'keyword') return `keyword:${[...(r.keywords ?? [])].sort().join(',')}`
-  if (r.kind === 'pattern') return `pattern:${r.pattern ?? ''}`
+  if (r.kind === 'keyword')      return `keyword:${[...(r.keywords ?? [])].sort().join(',')}`
+  if (r.kind === 'pattern')      return `pattern:${r.pattern ?? ''}`
+  if (r.kind === 'judge_prompt') return `judge_prompt:${r.prompt ?? ''}`
   return r.kind
 }
 
@@ -50,12 +54,22 @@ export async function resolveMemberPolicy(
   const ctx = getContext()
   if (ctx && !ctx.tenantId) ctx.tenantId = tenantId
 
-  // memberTeams is owned by the members domain — direct DB access is legitimate
+  // memberTeams and members are owned by the members domain — direct DB access
+  // is legitimate. A member's failMode overrides the tenant default when set;
+  // null falls back to whatever the published snapshot carries.
+  const [memberRow] = await db
+    .select({ failMode: members.failMode })
+    .from(members)
+    .where(and(eq(members.id, memberId), eq(members.tenantId, tenantId)))
+  const failMode = memberRow?.failMode ?? snapshot.failMode
+
   const teamRows = await db
     .select({ teamId: memberTeams.teamId })
     .from(memberTeams)
     .where(eq(memberTeams.memberId, memberId))
   const memberTeamIds = new Set(teamRows.map(r => r.teamId))
+
+  const exceptionRuleIds = await getMemberExceptionRuleIds(tenantId, memberId)
 
   let memberDivisionIds = new Set<string>()
   if (memberTeamIds.size > 0) {
@@ -108,6 +122,11 @@ export async function resolveMemberPolicy(
 
   const subjectMap = new Map<string, ResolvedSubjectPolicy>()
   for (const { rule, subjectId, subjectName } of byKey.values()) {
+    // This member has always-allowed this specific rule — leave it out of
+    // their resolved policy entirely rather than sending it and trusting the
+    // client to also skip it (a compromised/buggy client should not be able
+    // to un-skip a rule the server already decided not to enforce for them).
+    if (exceptionRuleIds.has(rule.id)) continue
     if (!subjectMap.has(subjectId)) {
       subjectMap.set(subjectId, { id: subjectId, name: subjectName, rules: [] })
     }
@@ -120,6 +139,7 @@ export async function resolveMemberPolicy(
       kind: rule.kind,
       keywords: rule.keywords,
       pattern: rule.pattern,
+      prompt: rule.prompt,
       destinations: [...new Set(merged)],
       action: rule.action,
       message: rule.message,
@@ -130,5 +150,6 @@ export async function resolveMemberPolicy(
     version: snapshot.version,
     tenantId,
     subjects: [...subjectMap.values()],
+    failMode,
   }
 }

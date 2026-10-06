@@ -48,6 +48,27 @@ describe('compilePolicy', () => {
     expect(policy.subjects[0]!.rules[0]!.action).toBe('block')
   })
 
+  it('includes prompt for a judge_prompt rule', async () => {
+    const subject = await createSubject(tenantId, { name: 'Judged Data' })
+    await createRule(tenantId, subject.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block',
+    })
+
+    const policy = await compile(tenantId)
+    expect(policy.subjects[0]!.rules[0]!.kind).toBe('judge_prompt')
+    expect(policy.subjects[0]!.rules[0]!.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+  })
+
+  it('returns null prompt for non-judge_prompt rules', async () => {
+    const subject = await createSubject(tenantId, { name: 'Pattern Data' })
+    await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })
+
+    const policy = await compile(tenantId)
+    expect(policy.subjects[0]!.rules[0]!.prompt).toBeNull()
+  })
+
   it('excludes inactive rules', async () => {
     const subject = await createSubject(tenantId, { name: 'Test' })
     const rule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['x'], action: 'warn' })

@@ -1,38 +1,75 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import * as Sentry from '@sentry/electron/renderer'
+import { Logo } from '../shared/Logo'
+import { SettingsView } from './SettingsView'
+import { WalkthroughView } from './WalkthroughView'
+import { ActivityFeed } from './ActivityFeed'
+import './style.css'
 
-interface Status {
-  proxyRunning: boolean
-  policyAvailable: boolean
-  systemProxyActive?: boolean
+if (import.meta.env.VITE_SENTRY_DSN_DESKTOP) {
+  Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN_DESKTOP })
 }
 
-declare global {
-  interface Window {
-    pretzel: {
-      onStatusUpdate: (cb: (s: Status) => void) => void
-      onAuthNag: (cb: () => void) => void
-      onAuthSuccess: (cb: () => void) => void
-      onAuthError: (cb: (msg: string) => void) => void
-      getProxyStatus: () => Promise<{ proxyRunning: boolean; systemProxyActive: boolean }>
-      updateFailMode: (failMode: 'open' | 'closed') => void
-      signIn: () => void
-    }
-  }
+type View = 'status' | 'settings' | 'walkthrough'
+
+function InfoIcon({ title }: { title: string }) {
+  return <i className="info-icon" title={title}>i</i>
 }
+
+type UpdateState =
+  | { kind: 'idle' }
+  | { kind: 'checking' }
+  | { kind: 'current'; version: string }
+  | { kind: 'available'; latest: string; canAutoUpdate: boolean }
+  | { kind: 'downloading'; percent: number }
+  | { kind: 'downloaded' }
+  | { kind: 'error' }
 
 function TrayUI() {
-  const [status, setStatus] = useState<Status>({ proxyRunning: false, policyAvailable: false })
-  const [failMode, setFailMode] = useState<'open' | 'closed'>('open')
+  const [status, setStatus] = useState<StatusPayload>({ proxyRunning: false, policyAvailable: false })
   const [showSignIn, setShowSignIn] = useState(false)
+  const [auth, setAuth] = useState<AuthStatePayload | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
+  const [signOutNote, setSignOutNote] = useState<string | null>(null)
+  const [showCancelHint, setShowCancelHint] = useState(false)
+  const [update, setUpdate] = useState<UpdateState>({ kind: 'idle' })
+  const [view, setView] = useState<View>('status')
+  const [activity, setActivity] = useState<ActivityEntryPayload[]>([])
+
+  useEffect(() => {
+    if (!signingIn) {
+      setShowCancelHint(false)
+      return
+    }
+    // If the OS browser never visibly opens (no default browser registered,
+    // sandboxed env, shell.openExternal silently no-op'd), the user has no
+    // way to tell the difference from a slow-but-working sign-in without
+    // this hint — give them a way out well before the 90s server timeout.
+    const t = setTimeout(() => setShowCancelHint(true), 8000)
+    return () => clearTimeout(t)
+  }, [signingIn])
+
+  useEffect(() => {
+    window.pretzel.getSettings().then((s) => {
+      if (!s.hasSeenWalkthrough) setView('walkthrough')
+    })
+  }, [])
+
+  useEffect(() => {
+    window.pretzel.getRecentActivity().then(setActivity)
+    window.pretzel.onActivityUpdate(setActivity)
+  }, [])
 
   useEffect(() => {
     window.pretzel.onStatusUpdate(setStatus)
     window.pretzel.getProxyStatus().then((s) =>
       setStatus((prev) => ({ ...prev, proxyRunning: s.proxyRunning, systemProxyActive: s.systemProxyActive }))
     )
+    window.pretzel.getAuthState().then(setAuth)
+    window.pretzel.onAuthState(setAuth)
     window.pretzel.onAuthNag(() => setShowSignIn(true))
     window.pretzel.onAuthSuccess(() => {
       setShowSignIn(false)
@@ -43,7 +80,46 @@ function TrayUI() {
       setSigningIn(false)
       setAuthError(msg)
     })
+    // Launch auto-check found a newer version — surface it without the user
+    // asking (mac/linux path — no in-app auto-update, see auto-update.ts).
+    window.pretzel.onUpdateAvailable(({ latest }) => setUpdate({ kind: 'available', latest, canAutoUpdate: false }))
+    // win32's real electron-updater lifecycle — checking/available/
+    // downloading/downloaded/error, including progress.
+    window.pretzel.onAutoUpdateStatus((event) => {
+      switch (event.kind) {
+        case 'checking': setUpdate({ kind: 'checking' }); break
+        case 'available': setUpdate({ kind: 'available', latest: event.version, canAutoUpdate: true }); break
+        case 'not-available': break // launch check found nothing new — stay quiet, same as before
+        case 'downloading': setUpdate({ kind: 'downloading', percent: event.percent }); break
+        case 'downloaded': setUpdate({ kind: 'downloaded' }); break
+        case 'error': setUpdate({ kind: 'error' }); break
+      }
+    })
   }, [])
+
+  async function handleCheckForUpdate() {
+    setUpdate({ kind: 'checking' })
+    try {
+      const r = await window.pretzel.checkForUpdate()
+      if (r.updateAvailable && r.latest) {
+        setUpdate({ kind: 'available', latest: r.latest, canAutoUpdate: r.autoUpdateSupported })
+      } else {
+        setUpdate({ kind: 'current', version: r.current })
+      }
+    } catch {
+      setUpdate({ kind: 'error' })
+    }
+  }
+
+  function handleDownloadUpdate() {
+    if (update.kind !== 'available') return
+    if (update.canAutoUpdate) {
+      setUpdate({ kind: 'downloading', percent: 0 })
+      window.pretzel.downloadUpdate()
+    } else {
+      window.pretzel.openDownloadPage()
+    }
+  }
 
   function handleSignIn() {
     setSigningIn(true)
@@ -51,71 +127,220 @@ function TrayUI() {
     window.pretzel.signIn()
   }
 
-  function handleFailModeChange(mode: 'open' | 'closed') {
-    setFailMode(mode)
-    window.pretzel.updateFailMode(mode)
+  async function handleSignOut() {
+    setConfirmingSignOut(false)
+    const { recorded } = await window.pretzel.signOut()
+    setSignOutNote(
+      recorded ? null : 'Signed out on this device. Could not reach the server to record it, so your organisation will see it once you sign in again.',
+    )
   }
 
-  const dot = status.proxyRunning ? '🟢' : '🔴'
-  const policyLabel = status.policyAvailable ? 'Policy active' : 'No policy cached'
+  function handleCancelSignIn() {
+    window.pretzel.cancelSignIn()
+  }
+
+  function finishWalkthrough() {
+    window.pretzel.setSettings({ hasSeenWalkthrough: true })
+    setView('status')
+  }
+
+  if (view === 'walkthrough') {
+    return <WalkthroughView onDone={finishWalkthrough} />
+  }
+  if (view === 'settings') {
+    return (
+      <SettingsView
+        onBack={() => setView('status')}
+        onReplayWalkthrough={() => setView('walkthrough')}
+      />
+    )
+  }
+
+  // The server can sign us out at any time (token expiry / admin revoke), so
+  // the sign-in box follows the live auth state, not just the launch-time nag.
+  const needsSignIn = showSignIn || auth?.authenticated === false
+  const sessionExpired = auth?.reason === 'expired'
+
+  const unreachable = !status.policyAvailable && status.syncIssue === 'unreachable'
+  const unreadable = !status.policyAvailable && status.syncIssue === 'invalid'
+  const policyLabel = status.policyAvailable
+    ? 'Policy active'
+    : unreachable ? "Can't reach server" : unreadable ? 'Policy unavailable' : 'No policy cached'
+  const policyPill = status.policyAvailable ? 'Active' : unreachable ? 'Retrying' : unreadable ? 'Error' : 'Waiting'
+  const policyInfo = status.policyAvailable
+    ? "Pretzel has your organisation's rules loaded and is checking traffic against them."
+    : unreachable
+      ? "Pretzel couldn't reach your organisation's server. It keeps retrying automatically; until it connects, nothing is checked."
+      : unreadable
+        ? "The server sent a policy Pretzel couldn't read. It will try again every couple of minutes. Contact your admin if this continues."
+        : "Pretzel doesn't have your organisation's rules yet — sign in to load them. Until then, nothing is checked."
   const sysProxyLabel = status.systemProxyActive
-    ? 'System proxy: active (Chrome + all apps)'
-    : 'System proxy: inactive'
-  const sysProxyColor = status.systemProxyActive ? '#2d6a4f' : '#555'
+    ? 'System proxy active'
+    : 'System proxy inactive'
+  const sysProxyInfo = status.systemProxyActive
+    ? 'Pretzel is actively watching traffic on this device.'
+    : "Pretzel isn't watching traffic yet — sign in to turn it on."
 
   return (
-    <div style={{ padding: '1.25rem', fontFamily: 'system-ui, sans-serif', background: '#1a1a2e', color: '#e0e0e0', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-        <span style={{ fontSize: '1.1rem' }}>{dot}</span>
-        <span style={{ fontWeight: 600 }}>Pretzel Desktop</span>
+    <div className="app fade-in">
+      <div className="header">
+        <div className="logo-wrap">
+          <Logo size={30} />
+          <span className={`logo-status-dot ${status.proxyRunning ? 'dot-safe' : 'dot-danger'}`} />
+        </div>
+        <div className="header-text">
+          <div className="title">Pretzel Desktop</div>
+          <div className="eyebrow">AI prompt protection</div>
+        </div>
+        <button className="gear-btn" onClick={() => setView('settings')} aria-label="Settings" title="Settings">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="2.3" stroke="currentColor" strokeWidth="1.3" />
+            <path
+              d="M8 1.5v1.6M8 12.9v1.6M14.5 8h-1.6M3.1 8H1.5M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1M12.6 12.6l-1.1-1.1M4.5 4.5L3.4 3.4"
+              stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"
+            />
+          </svg>
+        </button>
+        <button className="close-btn" onClick={() => window.pretzel.hideWindow()} aria-label="Close" title="Close">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </button>
       </div>
 
-      <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '0.4rem' }}>{policyLabel}</p>
-      <p style={{ color: sysProxyColor, fontSize: '0.8rem', marginBottom: '1rem' }}>{sysProxyLabel}</p>
+      <div className="status-card">
+        <div className="status-row">
+          <span className="status-row-label">{policyLabel}</span>
+          <span className={`pill ${status.policyAvailable ? 'pill-safe' : 'pill-muted'}`}>
+            <span className={`dot ${status.policyAvailable ? 'dot-safe' : 'dot-warn'}`} />
+            {policyPill}
+          </span>
+          <InfoIcon title={policyInfo} />
+        </div>
+        <div className="status-row">
+          <span className="status-row-label">{sysProxyLabel}</span>
+          <span className={`pill ${status.systemProxyActive ? 'pill-safe' : 'pill-muted'}`}>
+            <span className={`dot ${status.systemProxyActive ? 'dot-safe' : 'dot-warn'}`} />
+            {status.systemProxyActive ? 'Active' : 'Off'}
+          </span>
+          <InfoIcon title={sysProxyInfo} />
+        </div>
+      </div>
 
-      {showSignIn && (
-        <div style={{ background: '#16213e', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem', borderLeft: '3px solid #ffd93d' }}>
-          <p style={{ fontSize: '0.8rem', color: '#ffd93d', marginBottom: '0.5rem', fontWeight: 600 }}>
-            Sign in to load your organisation's policy
-          </p>
-          <p style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.75rem' }}>
-            Without authentication, only default rules apply.
-          </p>
-          {authError && (
-            <p style={{ fontSize: '0.75rem', color: '#ff6b6b', marginBottom: '0.5rem' }}>{authError}</p>
+      {auth?.authenticated && auth.account && (
+        <div className="account-row">
+          <div className="account-text">
+            <span className="account-name">{auth.account.displayName ?? auth.account.email}</span>
+            <span className="account-org">
+              {auth.account.displayName ? `${auth.account.email} · ` : ''}{auth.account.tenantName}
+            </span>
+          </div>
+          {confirmingSignOut ? (
+            <div className="account-confirm">
+              <span className="account-confirm-text">Protection turns off.</span>
+              <button className="link-btn" onClick={handleSignOut}>Sign out</button>
+              <button className="link-btn link-btn-muted" onClick={() => setConfirmingSignOut(false)}>Cancel</button>
+            </div>
+          ) : (
+            <button className="link-btn" onClick={() => setConfirmingSignOut(true)}>Sign out</button>
           )}
-          <button
-            onClick={handleSignIn}
-            disabled={signingIn}
-            style={{
-              width: '100%', padding: '0.5rem',
-              background: signingIn ? '#333' : '#4a90d9',
-              color: '#fff', border: 'none', borderRadius: 6,
-              cursor: signingIn ? 'default' : 'pointer', fontWeight: 600, fontSize: '0.85rem',
-            }}
-          >
-            {signingIn ? 'Opening browser…' : 'Sign in with mykka.ai'}
+        </div>
+      )}
+
+      <ActivityFeed entries={activity} />
+
+      {auth?.authenticated && auth.expiresInDays !== undefined && (
+        <div className="nag-card fade-in">
+          <p className="nag-title">Your sign-in expires soon</p>
+          <p className="nag-body">
+            Your sign-in expires in {auth.expiresInDays} day{auth.expiresInDays === 1 ? '' : 's'}. Sign in again now
+            so protection doesn't switch off.
+          </p>
+          {authError && <p className="nag-error">{authError}</p>}
+          <button className="btn btn-primary btn-block" onClick={handleSignIn} disabled={signingIn}>
+            {signingIn ? 'Opening browser…' : 'Sign in again'}
           </button>
         </div>
       )}
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ fontSize: '0.8rem', color: '#aaa', display: 'block', marginBottom: '0.4rem' }}>
-          Fail mode
-        </label>
-        <select
-          value={failMode}
-          onChange={(e) => handleFailModeChange(e.target.value as 'open' | 'closed')}
-          style={{ width: '100%', padding: '0.4rem', background: '#16213e', color: '#e0e0e0', border: '1px solid #333', borderRadius: 4 }}
-        >
-          <option value="open">Fail open (allow on error)</option>
-          <option value="closed">Fail closed (block on error)</option>
-        </select>
-      </div>
+      {needsSignIn && signOutNote && <p className="signout-note">{signOutNote}</p>}
 
-      <p style={{ color: '#555', fontSize: '0.75rem' }}>
-        Proxy: 127.0.0.1:18888
-      </p>
+      {needsSignIn && (
+        <div className="nag-card fade-in">
+          <p className="nag-title">{sessionExpired ? 'Your session expired' : 'Protection is off until you sign in'}</p>
+          <p className="nag-body">
+            {sessionExpired
+              ? "Your sign-in is no longer valid, so Pretzel has no rules loaded and nothing sent to ChatGPT, Claude, or Gemini is being checked. Sign in again to turn protection back on."
+              : "Nothing sent to ChatGPT, Claude, or Gemini is being checked right now — Pretzel has no rules loaded. Signing in takes about 10 seconds and loads your organisation's policy."}
+          </p>
+          {authError && <p className="nag-error">{authError}</p>}
+          <button
+            className="btn btn-primary btn-block"
+            onClick={handleSignIn}
+            disabled={signingIn}
+          >
+            {signingIn ? 'Opening browser…' : 'Sign in with mykka.ai'}
+          </button>
+          {showCancelHint && (
+            <div className="cancel-hint fade-in">
+              <p>Still waiting — didn't see a browser open?</p>
+              <button className="link-btn" onClick={handleCancelSignIn}>
+                Cancel and try again
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="footer">
+        {update.kind === 'available' && (
+          <div className="update-available-card fade-in">
+            <p className="update-available-title">
+              <span className="dot dot-warn" />
+              Version {update.latest} available
+            </p>
+            <button className="btn btn-primary btn-block" onClick={handleDownloadUpdate}>
+              Download update
+            </button>
+          </div>
+        )}
+        {update.kind === 'downloading' && (
+          <div className="update-available-card fade-in">
+            <p className="update-available-title">Downloading update — {update.percent}%</p>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${update.percent}%` }} />
+            </div>
+          </div>
+        )}
+        {update.kind === 'downloaded' && (
+          <div className="update-available-card fade-in">
+            <p className="update-available-title">
+              <span className="dot dot-safe" />
+              Update ready — restart to install
+            </p>
+            <button className="btn btn-safe btn-block" onClick={() => window.pretzel.installUpdate()}>
+              Restart & install
+            </button>
+          </div>
+        )}
+        {(update.kind === 'idle' || update.kind === 'checking' || update.kind === 'current' || update.kind === 'error') && (
+          <div className="update-row">
+            <span className="update-text">
+              {update.kind === 'checking' && 'Checking…'}
+              {update.kind === 'current' && `Up to date — ${update.version}`}
+              {update.kind === 'error' && "Couldn't check — try again"}
+              {update.kind === 'idle' && 'Check for updates'}
+            </span>
+            <button
+              className="btn btn-outline btn-check"
+              onClick={handleCheckForUpdate}
+              disabled={update.kind === 'checking'}
+            >
+              Check
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

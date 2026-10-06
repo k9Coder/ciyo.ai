@@ -4,8 +4,22 @@ import { verifyToken as clerkVerifyToken } from '@clerk/backend'
 import { db } from '../db/client.js'
 import { members, users, tenants } from '../db/schema.js'
 import { env } from '../env.js'
+import { requireClerkUser } from '../auth/middleware.js'
+import { selfServeProvisionOrg } from './service.js'
+import { getOrProvisionUserByClerkId } from '../users/jit.js'
 
 export async function meRouter(fastify: FastifyInstance): Promise<void> {
+  // Console-only: provisions a personal org for a signed-up-but-unenrolled
+  // user. Never called by extension/desktop — see selfServeProvisionOrg for
+  // why keeping this explicit (rather than automatic on every signup) is
+  // what makes those surfaces admin-add-only. Race-safe/idempotent: safe to
+  // call even if the webhook's pending-claim already enrolled this user.
+  fastify.post('/me/self-serve-org', { preHandler: requireClerkUser }, async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Not authenticated' })
+    const memberships = await selfServeProvisionOrg(req.user)
+    return reply.status(200).send({ memberships })
+  })
+
   fastify.get('/me/memberships', async (req, reply) => {
     const auth = req.headers.authorization
     if (!auth?.startsWith('Bearer ')) {
@@ -23,7 +37,7 @@ export async function meRouter(fastify: FastifyInstance): Promise<void> {
       return reply.status(401).send({ error: 'Invalid Clerk token' })
     }
 
-    const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+    const user = await getOrProvisionUserByClerkId(clerkUserId)
     if (!user) return reply.status(401).send({ error: 'User not found — sign up first' })
 
     // Deterministic order: real (invited) orgs before auto-provisioned personal tenants,

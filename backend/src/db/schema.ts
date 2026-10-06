@@ -6,10 +6,11 @@ import { sql } from 'drizzle-orm'
 
 // ── Enums ────────────────────────────────────────────────────────────────────
 export const memberRoleEnum  = pgEnum('member_role',  ['super_admin', 'division_admin', 'member'])
-export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score'])
+export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'])
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 export const failModeEnum    = pgEnum('fail_mode',    ['open', 'closed'])
+export const deviceClientEnum = pgEnum('device_client', ['desktop', 'extension'])
 
 // ── Users (global identity, not tenant-scoped) ────────────────────────────────
 export const users = pgTable('users', {
@@ -97,6 +98,10 @@ export const members = pgTable('members', {
   displayName:     text('display_name'),
   role:            memberRoleEnum('role').notNull().default('member'),
   adminDivisionId: uuid('admin_division_id').references(() => divisions.id),
+  // Per-member override of the tenant's failMode. Null = inherit the tenant
+  // default (see resolveMemberPolicy). Admin-set only, via pretzel-console —
+  // never exposed as user-editable in pretzel-desktop or the extension.
+  failMode:        failModeEnum('fail_mode'),
   createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   tenantEmailUniq: unique().on(t.tenantId, t.email),
@@ -108,6 +113,23 @@ export const memberTeams = pgTable('member_teams', {
   teamId:   uuid('team_id').notNull().references(() => teams.id),
 }, (t) => ({
   pk: primaryKey({ columns: [t.memberId, t.teamId] }),
+}))
+
+// A member's own "always allow" exceptions — set from a decision popup
+// (pretzel-desktop today), filtered out of that member's resolved policy in
+// resolveMemberPolicy so the rule stops triggering for them specifically.
+// Deliberately NOT silent: admins can see exception counts per rule via
+// GET /v1/policy/exceptions — this is a per-member override, not a way to
+// quietly disable a rule tenant-wide.
+export const memberRuleExceptions = pgTable('member_rule_exceptions', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  tenantId:  uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:  uuid('member_id').notNull().references(() => members.id),
+  ruleId:    uuid('rule_id').notNull().references(() => rules.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  memberRuleUniq: unique().on(t.memberId, t.ruleId),
+  ruleIdx:        index().on(t.ruleId),
 }))
 
 // ── Subjects ──────────────────────────────────────────────────────────────────
@@ -133,6 +155,10 @@ export const rules = pgTable('rules', {
   kind:                ruleKindEnum('kind').notNull(),
   keywords:            text('keywords').array(),
   pattern:             text('pattern'),
+  // Only populated for kind='judge_prompt' — the plain-English claim the
+  // on-device model judges against captured content (not user content
+  // itself, an admin-authored instruction, same privacy class as `message`).
+  prompt:              text('prompt'),
   destinations:        text('destinations').array().default(sql`'{}'`),
   destinationGroupIds: uuid('destination_group_ids').array().default(sql`'{}'`),
   action:              ruleActionEnum('action').notNull(),
@@ -173,7 +199,12 @@ export const siteConfigs = pgTable('site_configs', {
 export const events = pgTable('events', {
   id:          uuid('id').primaryKey().defaultRandom(),
   tenantId:    uuid('tenant_id').notNull().references(() => tenants.id),
-  ruleId:      uuid('rule_id').notNull().references(() => rules.id),
+  // Nullable + ON DELETE SET NULL: events are historical audit records that must
+  // outlive the rule that fired them. A NOT NULL / no-onDelete FK made it
+  // impossible to delete any rule that had ever fired an event, which broke the
+  // AI-assistant revert (subjects/service.ts deletes+recreates a subject's rules
+  // from a snapshot) for every policy that had recorded a violation.
+  ruleId:      uuid('rule_id').references(() => rules.id, { onDelete: 'set null' }),
   memberId:    uuid('member_id').references(() => members.id),
   action:      ruleActionEnum('action').notNull(),
   siteUrl:     text('site_url').notNull(),
@@ -250,9 +281,10 @@ export interface SubjectSnapshot {
   active:      boolean
   rules: Array<{
     id:                  string
-    kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+    kind:                'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
     keywords:            string[] | null
     pattern:             string | null
+    prompt:              string | null
     destinations:        string[]
     destinationGroupIds: string[]
     action:              'warn' | 'block'
@@ -291,6 +323,12 @@ export const invites = pgTable('invites', {
   token:        text('token').notNull(),
   email:        text('email'),                              // null = open link
   role:         memberRoleEnum('role').notNull().default('member'),
+  // Only meaningful when role = 'division_admin' — the division the invited
+  // admin will oversee once accepted. Must be captured at invite-creation
+  // time since acceptance happens later (a different session, possibly a
+  // different day), so it can't be supplied at accept time the way a direct
+  // POST /members call can.
+  divisionId:   uuid('division_id').references(() => divisions.id),
   createdById:  uuid('created_by_id').references(() => members.id),
   expiresAt:    timestamp('expires_at', { withTimezone: true }).notNull(),
   usedAt:       timestamp('used_at', { withTimezone: true }),
@@ -300,6 +338,67 @@ export const invites = pgTable('invites', {
   tokenUniq: unique().on(t.token),
   tenantIdx: index().on(t.tenantId),
 }))
+
+// ── Desktop Auth Codes ────────────────────────────────────────────────────
+// Transient, single-use PKCE authorization codes minted by
+// POST /auth/desktop/authorize/complete and redeemed by POST /auth/desktop/token.
+// 5-minute TTL — matches the desktop app's own callback-server timeout.
+export const desktopAuthCodes = pgTable('desktop_auth_codes', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  code:          text('code').notNull(),
+  memberId:      uuid('member_id').notNull().references(() => members.id),
+  tenantId:      uuid('tenant_id').notNull().references(() => tenants.id),
+  codeChallenge: text('code_challenge').notNull(),
+  redirectUri:   text('redirect_uri').notNull(),
+  expiresAt:     timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:        timestamp('used_at', { withTimezone: true }),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  codeUniq: unique().on(t.code),
+}))
+
+// ── Extension Auth Codes ──────────────────────────────────────────────────
+// Same shape and purpose as Desktop Auth Codes above, minted by
+// POST /auth/extension/authorize/complete and redeemed by
+// POST /auth/extension/token. Kept as its own table (mirroring the desktop
+// one) rather than a shared table with a client column, matching the
+// existing per-client convention here and keeping desktop's code/tests
+// untouched.
+export const extensionAuthCodes = pgTable('extension_auth_codes', {
+  id:            uuid('id').primaryKey().defaultRandom(),
+  code:          text('code').notNull(),
+  memberId:      uuid('member_id').notNull().references(() => members.id),
+  tenantId:      uuid('tenant_id').notNull().references(() => tenants.id),
+  codeChallenge: text('code_challenge').notNull(),
+  redirectUri:   text('redirect_uri').notNull(),
+  expiresAt:     timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt:        timestamp('used_at', { withTimezone: true }),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  codeUniq: unique().on(t.code),
+}))
+
+// ── Device Tokens ────────────────────────────────────────────────────────
+// Long-lived, revocable per-member credential for pretzel-desktop and
+// pretzel-extension, minted at the end of the PKCE exchange. 90-day expiry;
+// revokedAt exists for a future manual-revoke feature (not built yet — no
+// endpoint sets it today). `client` distinguishes which app a token belongs
+// to (for a future "manage devices" console screen); the auth middleware
+// itself is client-agnostic and doesn't branch on it.
+export const deviceTokens = pgTable('device_tokens', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  memberId:   uuid('member_id').notNull().references(() => members.id),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  tokenHash:  text('token_hash').notNull(),
+  client:     deviceClientEnum('client').notNull().default('desktop'),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt:  timestamp('expires_at', { withTimezone: true }).notNull(),
+  lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+  revokedAt:  timestamp('revoked_at', { withTimezone: true }),
+  // Set (together with revokedAt) when the user signs out from the app itself,
+  // as opposed to an admin revoke. Lets the console show "last signed out".
+  signedOutAt: timestamp('signed_out_at', { withTimezone: true }),
+})
 
 // ── Policy Templates (onboarding wizard) ─────────────────────────────────────
 // policy_json stores TemplateContent: { subjects: [{ name, description, rules: [...] }] }
@@ -367,6 +466,15 @@ export type NewChatMessage = typeof chatMessages.$inferInsert
 
 export type Invite    = typeof invites.$inferSelect
 export type NewInvite = typeof invites.$inferInsert
+
+export type DesktopAuthCode    = typeof desktopAuthCodes.$inferSelect
+export type NewDesktopAuthCode = typeof desktopAuthCodes.$inferInsert
+
+export type ExtensionAuthCode    = typeof extensionAuthCodes.$inferSelect
+export type NewExtensionAuthCode = typeof extensionAuthCodes.$inferInsert
+
+export type DeviceToken    = typeof deviceTokens.$inferSelect
+export type NewDeviceToken = typeof deviceTokens.$inferInsert
 
 export type SubjectVersion    = typeof subjectVersions.$inferSelect
 export type NewSubjectVersion = typeof subjectVersions.$inferInsert

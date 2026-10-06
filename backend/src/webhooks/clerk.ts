@@ -1,11 +1,17 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 import { Webhook } from 'svix'
 import { db } from '../db/client.js'
-import { tenants, members } from '../db/schema.js'
-import { generateSecret, hashToken } from '../auth/tokens.js'
+import { members } from '../db/schema.js'
 import { usersClient } from '../http/internal-client.js'
 import { env } from '../env.js'
 import type { FastifyInstance } from 'fastify'
+// NOTE: auto-provisioning a personal tenant used to happen inline here on
+// EVERY signup, regardless of which surface (console/extension/desktop)
+// triggered it. It's been moved to POST /me/self-serve-org
+// (backend/src/me/service.ts::selfServeProvisionOrg), which only console
+// calls — see that file for why. If auto-provision-on-signup is ever needed
+// back inline here, its logic (tenant + member insert, publishInitialPolicy)
+// lives there now, unchanged.
 
 type ClerkWebhookEvent =
   | { type: 'user.created'; data: { id: string; first_name: string | null; last_name: string | null; image_url: string; email_addresses: Array<{ email_address: string }> } }
@@ -32,7 +38,7 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
     switch (event.type) {
       case 'user.created': {
         const { id, first_name, last_name, image_url, email_addresses } = event.data
-        const email = email_addresses[0]?.email_address ?? ''
+        const email = (email_addresses[0]?.email_address ?? '').trim().toLowerCase()
         if (!email) break
 
         const user = (await usersClient.post('/', {
@@ -53,36 +59,22 @@ export async function clerkWebhookRouter(fastify: FastifyInstance): Promise<void
         if (alreadyEnrolled) break
 
         // Check for pre-enrolled members (userId = null) matching this email
+        // — admin-added via POST /members (createMember). This is the only
+        // pre-enrollment mechanism left; the token-invite-link check that used
+        // to run alongside this (querying the `invites` table) is retired —
+        // see backend/src/invites/ and backend/src/app.ts.
         const pending = await db.select({ id: members.id })
           .from(members)
-          .where(and(eq(members.email, email), isNull(members.userId)))
+          .where(and(sql`lower(${members.email}) = ${email}`, isNull(members.userId)))
 
         if (pending.length > 0) {
           await usersClient.post('/claim-pending', { email, userId: user.id })
-        } else {
-          // No pre-enrollment — auto-provision a tenant for this user
-          const localPart = email.split('@')[0] ?? email
-
-          const orgSecret   = generateSecret()
-          const adminSecret = generateSecret()
-
-          const autoPlan = env.PILOT_MODE === 'true' ? 'pilot' : 'free'
-
-          const [tenant] = await db.insert(tenants).values({
-            name:            `${first_name ?? localPart}'s Organization`,
-            orgTokenHash:    await hashToken(orgSecret),
-            adminTokenHash:  await hashToken(adminSecret),
-            plan:            autoPlan,
-            autoProvisioned: true,
-          }).returning({ id: tenants.id })
-
-          await db.insert(members).values({
-            tenantId: tenant!.id,
-            userId:   user.id,
-            email,
-            role:     'super_admin',
-          })
         }
+        // No pre-enrollment: leave the user at zero memberships. Console
+        // explicitly calls POST /me/self-serve-org to provision a personal
+        // org when it sees this state; extension/desktop never do, so a
+        // non-enrolled sign-up through those surfaces just stays unusable
+        // (auth middleware rejects with "Not enrolled in any organisation").
         break
       }
 

@@ -5,12 +5,32 @@ copyright: Copyright © 2026 mykka.ai
 directories:
   output: release/${version}
 
+beforePack: build/before-pack.js
+
 files:
   - dist-electron/**/*
   - dist/**/*
   - node_modules/**/*
   - package.json
   - build/icon.*
+
+# Themis model for the local-judge PoC (spike/local-judge-poc) — copied into
+# process.resourcesPath/models at build time, matching
+# electron/themis-judge.ts's resolveModelDir() packaged-mode branch.
+extraResources:
+  - from: resources/models
+    to: models
+
+# Node's dlopen cannot load a native .node/.dylib/.so addon from inside an
+# asar archive — these load fine in dev (no asar involved) and would
+# silently fail only in a packaged build without this. Scoped to only these
+# packages, not touching any other native dependency's existing packaging.
+# @img/sharp-* are sharp's (an @huggingface/transformers dependency, used
+# for image preprocessing we never exercise but which it requires
+# unconditionally at module load) own per-platform native binaries.
+asarUnpack:
+  - node_modules/onnxruntime-node/**/*
+  - node_modules/@img/**/*
 
 mac:
   category: public.app-category.productivity
@@ -19,6 +39,13 @@ mac:
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
+  # onnxruntime-node and sharp's @img/* packages bundle prebuilt native
+  # binaries for every platform they support — without this, a mac build
+  # would also ship the win32/linux binaries it can never load.
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
+    - '!node_modules/@img/sharp-{win32,linux}-*/**'
+    - '!node_modules/@img/sharp-libvips-linux-*/**'
   target:
     - target: dmg
       arch: [x64, arm64]
@@ -27,6 +54,10 @@ mac:
 
 win:
   icon: build/icon.ico
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
+    - '!node_modules/@img/sharp-{darwin,linux}-*/**'
+    - '!node_modules/@img/sharp-libvips-{darwin,linux}-*/**'
   target:
     - target: nsis
       arch: [x64]
@@ -34,6 +65,10 @@ win:
 linux:
   icon: build/icon.png
   category: Utility
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,darwin}/**'
+    - '!node_modules/@img/sharp-{win32,darwin}-*/**'
+    - '!node_modules/@img/sharp-libvips-darwin-*/**'
   target:
     - target: AppImage
       arch: [x64]
@@ -44,6 +79,15 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   perMachine: false
+  # Full reset on uninstall — the CA cert file, watchdog/sentinel temp
+  # scripts, and cached auth state all live under userData; without this
+  # they'd survive an uninstall and a later reinstall would start from
+  # half-cleaned state.
+  deleteAppDataOnUninstall: true
+  # Custom cleanup for what lives OUTSIDE userData: OS proxy setting,
+  # scheduled watchdog task, trusted CA cert, QUIC-block firewall rule.
+  # See build/installer.nsh.
+  include: build/installer.nsh
 
 publish:
   provider: github

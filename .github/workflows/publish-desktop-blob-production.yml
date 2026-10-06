@@ -1,0 +1,48 @@
+name: Publish Pretzel Desktop to Production Blob
+
+# Manual trigger only, deliberately separate from the main release pipeline
+# (pretzel-desktop-full-release.yml). This is the production safety gate:
+# nothing publishes to the production Vercel Blob store (what mykka.ai/download
+# actually serves) until a human explicitly runs this workflow.
+#
+# Defaults to whatever version is currently in pretzel-desktop/package.json
+# on the selected branch — normally you'd run the full-release workflow first
+# (which bumps that version and publishes to staging), verify staging looks
+# right, then run this one.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (blank = current pretzel-desktop/package.json version)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish-blob-prod:
+    runs-on: ubuntu-latest
+    environment: desktop-blob-production
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        working-directory: mykka-web
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish installers to production Blob
+        working-directory: mykka-web
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: node scripts/publish-desktop-blob.mjs ${{ inputs.version }}

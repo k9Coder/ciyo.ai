@@ -2,6 +2,9 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import supertest from 'supertest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
+import { db } from '../src/db/client.js'
+import { tenants } from '../src/db/schema.js'
+import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 
 let app: FastifyInstance
@@ -55,6 +58,97 @@ describe('POST /v1/subjects/:subjectId/rules', () => {
     expect(res.body.kind).toBe('pattern')
     expect(res.body.pattern).toBe('\\d{4}-\\d{4}-\\d{4}-\\d{4}')
     expect(res.body.message).toBe('Credit card detected')
+  })
+
+  it('creates a judge_prompt rule', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        kind: 'judge_prompt',
+        prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+        action: 'block',
+      })
+    expect(res.status).toBe(201)
+    expect(res.body.kind).toBe('judge_prompt')
+    expect(res.body.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+    expect(res.body.pattern).toBeNull()
+    expect(res.body.keywords).toBeNull()
+  })
+
+  it('rejects a judge_prompt rule missing a prompt with a clear error, not a silent null', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', action: 'block' })
+    // judge_prompt is meant to be the sole real enforcement mechanism for
+    // its rule — an empty prompt isn't a harmless no-op, it's an empty
+    // claim the model would judge every message against, which is an
+    // arbitrary-match risk, not inert. The DB column stays nullable (an
+    // existing row predating this validation, or one with kind temporarily
+    // something else, shouldn't be impossible to represent) but creating
+    // or updating a rule AS judge_prompt with no prompt text is rejected.
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('prompt')
+  })
+
+  it('rejects a judge_prompt rule with a prompt over the length cap', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'x'.repeat(1001), action: 'block' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('prompt')
+  })
+})
+
+describe('PATCH /v1/rules/:id — judge_prompt', () => {
+  it('updates an existing judge_prompt rule\'s prompt text', async () => {
+    const { body: created } = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'original claim', action: 'warn' })
+
+    const res = await supertest(app.server)
+      .patch(`/v1/rules/${created.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: 'revised, more precise claim' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.prompt).toBe('revised, more precise claim')
+  })
+
+  it('rejects clearing an existing judge_prompt rule\'s prompt to empty', async () => {
+    const { body: created } = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'original claim', action: 'warn' })
+
+    const res = await supertest(app.server)
+      .patch(`/v1/rules/${created.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: '' })
+
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('judge_prompt entitlement', () => {
+  it('rejects judge_prompt on a plan without the entitlement', async () => {
+    const freeTenant = await buildTestTenant('free-plan')
+    await db.update(tenants).set({ plan: 'free' }).where(eq(tenants.id, freeTenant.tenantId))
+
+    const { body: freeSubject } = await supertest(app.server)
+      .post('/v1/subjects')
+      .set('Authorization', `Bearer ${freeTenant.adminToken}`)
+      .send({ name: 'Free Plan Subject' })
+
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${freeSubject.id}/rules`)
+      .set('Authorization', `Bearer ${freeTenant.adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'test claim', action: 'block' })
+    expect(res.status).toBe(402)
+    expect(res.body.error).toContain('judge_prompt')
   })
 })
 

@@ -159,6 +159,28 @@ describe('Windows — activateSystemProxy', () => {
     activateSystemProxy(PORT)
     expect(isSystemProxyActive()).toBe(true)
   })
+
+  it('crash-recovery guard: does not restore to our own proxy if a prior run left it set', () => {
+    // Simulate a previous crash/force-kill: the current ProxyServer is already
+    // OUR daemon. Restoring to that would strand the user with no internet.
+    mockExecSync.mockImplementation((cmd: string) => {
+      if (cmd.includes('query') && cmd.includes('ProxyEnable')) return '    ProxyEnable    REG_DWORD    0x1\n'
+      if (cmd.includes('query') && cmd.includes('ProxyServer')) return `    ProxyServer    REG_SZ    127.0.0.1:${PORT}\n`
+      return ''
+    })
+    activateSystemProxy(PORT)
+    restoreSystemProxy()
+
+    // The guard makes the saved "previous" server empty, so restore turns the
+    // proxy OFF and DELETES ProxyServer. Without the guard it would instead
+    // `reg add ProxyServer 127.0.0.1:PORT` on restore (re-pointing at our dead
+    // daemon) and never delete — so the delete call is the proof the guard ran.
+    expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining('ProxyEnable /t REG_DWORD /d 0'))
+    const deletedServer = mockExecSync.mock.calls.find(
+      ([c]) => typeof c === 'string' && c.includes('delete') && c.includes('ProxyServer'),
+    )
+    expect(deletedServer).toBeDefined()
+  })
 })
 
 // ─── Linux ─────────────────────────────────────────────────────────────────

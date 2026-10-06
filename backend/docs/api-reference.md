@@ -5,6 +5,7 @@ verified_at: 2026-06-13
 sources:
   - ../src/app.ts
   - ../src/policy/router.ts
+  - ../src/policy/diff.ts
   - ../src/assistant/router.ts
   - ../src/billing/router.ts
   - ../src/platform/router.ts
@@ -46,6 +47,7 @@ Auth labels:
 | GET | `/v1/policy/last-updates` | Org + active subscription | Latest publish time as epoch milliseconds |
 | GET | `/v1/events?token=<clerk-jwt>` | Clerk query token | SSE policy-update notifications and 25-second heartbeats |
 | POST | `/v1/policy/publish` | Admin | Compile and publish a new immutable policy version |
+| GET | `/v1/policy/draft` | Admin | Unpublished changes: live subjects/rules/site configs/fail mode diffed against the latest snapshot (`liveVersion`, `nextVersion`, `count`, `changes[]`) |
 | GET | `/v1/policy/history` | Admin | Published versions, newest first |
 | POST | `/v1/policy/rollback/:version` | Admin | Republish an old snapshot as a new version |
 
@@ -67,7 +69,7 @@ All endpoints in this section require **Admin** auth.
 Important constraints:
 
 - A subject is global when `divisionId` and `teamId` are absent, division-scoped with `divisionId`, and team-scoped with `teamId`.
-- Rule kinds are `keyword`, `pattern`, `entropy`, or `score`; actions are `warn` or `block`; report levels are `none`, `minimal`, `medium`, or `rich`.
+- Rule kinds are `keyword`, `pattern`, `entropy`, `score`, or `judge_prompt`; actions are `warn` or `block`; report levels are `none`, `minimal`, `medium`, or `rich`. `judge_prompt` rules require a non-empty `prompt` (max 1000 chars) instead of `keywords`/`pattern`, and are entitlement-gated to business/enterprise/pilot plans.
 - Rule creation enforces plan rule-kind limits. Rule patch currently does not repeat that plan check.
 - Member import inserts role `member` and ignores tenant-email conflicts. Creating one member enforces seat limits; bulk import currently does not.
 
@@ -86,6 +88,11 @@ Important constraints:
 
 ## Assistant, invites, and billing
 
+**Invites are disabled.** The token-invite-link endpoints below are retired
+in favor of admin-add-by-email (`POST /v1/members`) + `POST /v1/me/self-serve-org`
+(console-only self-serve org provisioning). Routes are unmounted in
+`backend/src/app.ts`; code kept in `backend/src/invites/`, not deleted.
+
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | POST | `/v1/assistant/chat` | Admin + assistant-enabled plan | Ask the configured LLM for proposed actions |
@@ -93,9 +100,10 @@ Important constraints:
 | POST | `/v1/assistant/messages/:messageId/revert` | Admin | Restore pre-apply subject snapshots |
 | GET | `/v1/assistant/sessions` | Admin | Latest 50 tenant sessions |
 | GET | `/v1/assistant/sessions/:id/messages` | Admin | Session messages and revert flags |
-| POST | `/v1/invites` | Admin | Create an invite link |
-| GET | `/v1/invites/:token` | Public | Preview an invite |
-| POST | `/v1/invites/:token/accept` | Clerk | Accept an invite |
+| ~~POST~~ | ~~`/v1/invites`~~ | ~~Admin~~ | **Disabled** — was: create an invite link |
+| ~~GET~~ | ~~`/v1/invites/:token`~~ | ~~Public~~ | **Disabled** — was: preview an invite |
+| ~~POST~~ | ~~`/v1/invites/:token/accept`~~ | ~~Clerk~~ | **Disabled** — was: accept an invite |
+| POST | `/v1/me/self-serve-org` | Clerk (any, even zero memberships) | Console-only: provision a personal org |
 | POST | `/v1/billing/free-signup` | Public | Create a free tenant and deployment tokens |
 | POST | `/v1/billing/paypal/checkout` | Public | Create a PayPal approval URL |
 | GET | `/v1/billing/status` | Admin | Usage, limits, provider, and feature flags |

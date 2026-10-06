@@ -36,7 +36,7 @@ The result: **your existing DLP solution sees nothing when an employee pastes a 
 
 ## How Big Is the AI Data Leakage Problem?
 
-Based on data from the Pretzel platform, **roughly 1 in 8 prompts from business users contains at least one piece of sensitive data**. For developer teams specifically, that ratio rises sharply: **approximately 1 in 3 developer prompts contains a credential, API key, or piece of proprietary code**.
+Based on patterns we see across the Pretzel platform, a meaningful share of business prompts contain sensitive data our detection rules are built to catch — and developer teams see this at a noticeably higher rate, since credentials and API keys end up in AI prompts far more often than most security teams assume.
 
 The most common categories:
 
@@ -821,10 +821,10 @@ The kit is included in your Pretzel account. [Create a free account](/download) 
   {
     slug: 'ai-prompt-leakage',
     title: '5 Types of Data Your Team Is Accidentally Leaking to ChatGPT',
-    description: 'We analysed 100,000 AI prompts. Here\'s what security teams found and how Pretzel stops it.',
+    description: 'What security teams find when they look closely at AI prompts — and how Pretzel stops the leaks.',
     date: '2026-06-01',
     tag: 'Report',
-    content: `Every week, your team sends thousands of prompts to ChatGPT, Claude, and Gemini. Most are harmless. But based on data from the Pretzel platform, **roughly 1 in 8 prompts from business users contains at least one piece of sensitive data**.
+    content: `Every week, your team sends thousands of prompts to ChatGPT, Claude, and Gemini. Most are harmless. But a meaningful share contain sensitive data — patterns we see consistently across the Pretzel platform.
 
 Here are the five categories we see most often — and what you can do about each one.
 
@@ -867,7 +867,7 @@ We've compiled all of the above into a ready-to-import Pretzel policy template. 
   {
     slug: 'hipaa-ai-policy-template',
     title: 'HIPAA AI Policy Template: What to Block Before Your Clinical Team Uses ChatGPT',
-    description: 'A practical guide to configuring AI DLP for healthcare teams. Covers the 18 HIPAA PHI identifiers and how to enforce them with Pretzel.',
+    description: 'A practical guide to configuring AI DLP for healthcare teams — covers the 18 HIPAA PHI identifiers and how to build detection rules for each in Pretzel.',
     date: '2026-06-03',
     tag: 'Healthcare',
     content: `Clinical and operations teams at healthcare organisations are using ChatGPT and other AI tools every day — for drafting patient communications, summarising notes, and researching treatments. Without guardrails, protected health information (PHI) ends up in AI training data.
@@ -914,11 +914,13 @@ Pattern rule matching ICD-10 code formats in context of clinical keywords. Actio
 **Rule 5: Insurance Member IDs**
 Pattern rule matching common payer formats. Action: Block for external AI sites, Allow for internal tools.
 
-## One-Click Healthcare Template
+## What the Healthcare Starter Template Actually Covers
 
-Pretzel ships with a pre-configured Healthcare policy starter kit covering all five rule categories above. Activate it from the Console in one click, then adjust the scope to your clinical team division.
+Pretzel's Healthcare starter template ships with Rule 1 (SSN detection) and a keyword set covering patient name, date of birth, medical record, diagnosis, and health plan beneficiary language — activate it from the Console in one click, then scope it to your clinical team division.
 
-Start free at mykka.ai — the Healthcare template is included on all plans.`,
+Rules 2, 4, and 5 above (date-of-birth pattern matching, ICD-10 code detection, insurance member ID formats) aren't pre-built. Add them as custom pattern rules yourself, or describe what you need to the Pretzel Console AI assistant — it proposes ready-to-approve rules for you to review.
+
+Start free at mykka.ai.`,
   },
   {
     slug: 'legal-ai-usage-policy',
@@ -965,12 +967,12 @@ Keyword block on party names and case identifiers from active matters. Action: W
 - Use Pretzel's Division hierarchy to separate litigation, transactional, and compliance teams with different policy strictness.
 - Review and update the client name blocklist quarterly or after major client roster changes.
 
-The Pretzel Legal template is pre-configured with rules 1-3. Activate it in one click from the Console.`,
+Pretzel's Legal starter template ships with SSN detection and a privilege-marker keyword set ("attorney-client privilege," "attorney work product," "privileged and confidential") — activate it in one click from the Console. Matter-number detection (Rule 1) and a client-name blocklist (Rule 2) aren't pre-built; add them as custom rules, or describe them to the Console AI assistant and approve what it proposes.`,
   },
   {
     slug: 'fintech-ai-risk-template',
     title: 'Fintech AI Risk Template: Keeping PCI, AML, and Trading Data Out of AI Tools',
-    description: 'A practical Pretzel policy template for financial services teams. Covers credit card patterns, AML keywords, and MNPI detection.',
+    description: 'A practical policy guide for financial services teams. Luhn-validated card detection ships by default in Pretzel; AML and MNPI detection are custom rules you configure.',
     date: '2026-06-05',
     tag: 'Fintech',
     content: `Financial services teams are among the heaviest users of AI tools — and among the highest-risk from a regulatory standpoint. Finance, compliance, and trading teams use ChatGPT to analyse transactions, draft reports, and model portfolios. Card numbers, account details, and non-public financial information must never reach a third-party AI.
@@ -1005,9 +1007,11 @@ Financial regulatory frameworks (PCI-DSS, SOX, FINRA, MiFID II) all have data ha
 
 Pretzel's audit log provides the evidence trail regulators look for: which employee, which AI site, which rule triggered, what action was taken.
 
-## Activate the Fintech Template
+## Building This in Pretzel — No Fintech Template Yet
 
-The Pretzel Fintech template covers PAN detection, IBAN patterns, and a starter AML keyword set. Activate it from the Console and customise the MNPI keyword list for your organisation's current deals.`,
+Pretzel doesn't ship a dedicated Fintech starter template. What you get out of the box: Luhn-validated credit card detection, on by default for every user, no setup required.
+
+Everything else above — IBAN patterns, the AML keyword list, MNPI detection — isn't pre-built. Define these as custom rules in the Console, or describe what you need to the Console AI assistant in plain English; it proposes ready-to-approve rules for your review.`,
   },
   {
     slug: 'engineering-ai-security-starter',

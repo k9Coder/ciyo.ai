@@ -4,6 +4,7 @@ import { tenants } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { tenantsClient } from '../http/internal-client.js'
 import { sendWelcomeEmail } from './email.js'
+import { env } from '../env.js'
 
 export async function tenantIdBySubId(subId: string): Promise<string | null> {
   const [row] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.externalSubId, subId))
@@ -74,7 +75,7 @@ export async function freeTierSignup(input: {
     name:            input.name,
     paymentProvider: null,
     externalSubId:   null,
-    plan:            'free',
+    plan:            env.PILOT_MODE === 'true' ? 'pilot' : 'free',
     seatCount:       1,
   })
   sendWelcomeEmail({

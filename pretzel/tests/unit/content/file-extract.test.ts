@@ -4,9 +4,11 @@ import { extractFile, FILE_SIZE_LIMIT_BYTES } from '@/content/file-extract'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeFile(name: string, content: string | Uint8Array, type = ''): File {
-  const blob = typeof content === 'string'
-    ? new Blob([content], { type })
-    : new Blob([content], { type })
+  // `content as BlobPart`: a Uint8Array is a valid BlobPart at runtime, but
+  // the DOM lib's BlobPart types the buffer as ArrayBuffer (not
+  // ArrayBufferLike), so a plain Uint8Array trips a spurious SharedArrayBuffer
+  // variance error. The cast is safe here.
+  const blob = new Blob([content as BlobPart], { type })
   return new File([blob], name, { type })
 }
 

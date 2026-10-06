@@ -12,9 +12,10 @@ export interface SiteConfig {
 
 export interface RulePolicy {
   id:                  string
-  kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+  kind:                'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
   keywords:            string[] | null
   pattern:             string | null
+  prompt:              string | null
   destinations:        string[]
   destinationGroupIds: string[]
   action:              'warn' | 'block'
@@ -44,6 +45,7 @@ function toRulePolicy(r: Rule): RulePolicy {
     kind:                r.kind,
     keywords:            r.keywords ?? null,
     pattern:             r.pattern ?? null,
+    prompt:              r.prompt ?? null,
     destinations:        r.destinations ?? [],
     destinationGroupIds: r.destinationGroupIds ?? [],
     action:              r.action,

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
+import { eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { db } from '../src/db/client.js'
-import { divisions, teams, members, memberTeams, destinationGroups } from '../src/db/schema.js'
+import { divisions, teams, members, memberTeams, destinationGroups, memberRuleExceptions } from '../src/db/schema.js'
 import { createSubject } from '../src/subjects/service.js'
 import { createRule } from '../src/rules/service.js'
 import { compilePolicy } from '../src/policy/compiler.js'
@@ -44,6 +45,47 @@ function runWithCtx<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 describe('resolveMemberPolicy', () => {
+  it('includes prompt for a judge_prompt rule in a member\'s resolved policy', async () => {
+    const globalSubject = await createSubject(tenantId, { name: 'Global' })
+    await createRule(tenantId, globalSubject.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block',
+    })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    expect(resolved.subjects[0]!.rules[0]!.kind).toBe('judge_prompt')
+    expect(resolved.subjects[0]!.rules[0]!.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+  })
+
+  it('keeps multiple distinct judge_prompt rules, not just one (dedup must key on prompt text)', async () => {
+    const subjectA = await createSubject(tenantId, { name: 'SSN' })
+    await createRule(tenantId, subjectA.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block',
+    })
+    const subjectB = await createSubject(tenantId, { name: 'Roadmap' })
+    await createRule(tenantId, subjectB.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses unreleased product roadmap items.',
+      action: 'warn',
+    })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    const allPrompts = resolved.subjects.flatMap(s => s.rules.map(r => r.prompt))
+    expect(allPrompts).toContain('This message discloses a Social Security Number, even if disguised or spelled out.')
+    expect(allPrompts).toContain('This message discloses unreleased product roadmap items.')
+  })
+
   it('member with no teams gets only global subjects', async () => {
     const globalSubject = await createSubject(tenantId, { name: 'Global' })
     await createRule(tenantId, globalSubject.id, { kind: 'keyword', keywords: ['secret'], action: 'warn' })
@@ -173,5 +215,56 @@ describe('resolveMemberPolicy', () => {
     })
 
     expect((resolved.subjects[0]!.rules[0]! as Record<string, unknown>)['destinationGroupIds']).toBeUndefined()
+  })
+
+  it('falls back to the tenant/snapshot failMode when the member has no override', async () => {
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+    expect(resolved.failMode).toBe('open') // buildTestTenant defaults to 'open'
+  })
+
+  it('uses the member-level failMode override when set', async () => {
+    await db.update(members).set({ failMode: 'closed' }).where(eq(members.id, memberId))
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+    expect(resolved.failMode).toBe('closed')
+  })
+
+  it('omits a rule this member has always-allowed (member_rule_exceptions)', async () => {
+    const subject = await createSubject(tenantId, { name: 'Global' })
+    const keptRule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['keep'], action: 'warn' })
+    const exceptedRule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['skip'], action: 'block' })
+
+    await db.insert(memberRuleExceptions).values({ tenantId, memberId, ruleId: exceptedRule.id })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    const allRuleIds = resolved.subjects.flatMap(s => s.rules).map(r => r.id)
+    expect(allRuleIds).toContain(keptRule.id)
+    expect(allRuleIds).not.toContain(exceptedRule.id)
+  })
+
+  it('exceptions are per-member — a different member still sees the rule', async () => {
+    const subject = await createSubject(tenantId, { name: 'Global' })
+    const rule = await createRule(tenantId, subject.id, { kind: 'keyword', keywords: ['x'], action: 'block' })
+    await db.insert(memberRuleExceptions).values({ tenantId, memberId, ruleId: rule.id })
+
+    const [otherMember] = await db.insert(members).values({ tenantId, email: 'bob@example.com', role: 'member' }).returning()
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, otherMember!.id, snapshot)
+    })
+
+    const allRuleIds = resolved.subjects.flatMap(s => s.rules).map(r => r.id)
+    expect(allRuleIds).toContain(rule.id)
   })
 })

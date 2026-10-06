@@ -4,8 +4,6 @@ import { AppLayout } from './components/layout/AppLayout'
 import { RequireAuth } from './components/layout/RequireAuth'
 import { TenantBootstrap } from './components/layout/TenantBootstrap'
 import { LoginPage } from './pages/LoginPage'
-import { UnauthorizedPage } from './pages/UnauthorizedPage'
-import { OnboardingPage } from './pages/OnboardingPage'
 import { OnboardingProfilePage } from './pages/OnboardingProfilePage'
 import { DashboardPage } from './pages/DashboardPage'
 import { SubjectsPage } from './pages/SubjectsPage'
@@ -17,13 +15,31 @@ import { SettingsPage } from './pages/SettingsPage'
 import { MembersPage } from './pages/MembersPage'
 import { AuditLogPage } from './pages/AuditLogPage'
 import { AssistantPage } from './pages/AssistantPage'
-import { InvitePage } from './pages/InvitePage'
+// import { InvitePage } from './pages/InvitePage' // retired — see route below
+import { DesktopLoginPage } from './pages/DesktopLoginPage'
+import { ExtensionLoginPage } from './pages/ExtensionLoginPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
+import { UnauthorizedPage } from './pages/UnauthorizedPage'
 import { PlanGate } from './components/billing/PlanGate'
 import { Sentry } from './lib/sentry'
+import { AdminApiError } from './api'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false, refetchOnMount: false } },
+  defaultOptions: {
+    queries: {
+      retry:      1,
+      staleTime:  30_000,
+      refetchOnWindowFocus: false,
+      refetchOnMount:       false,
+      // On a 429, honor the server's Retry-After instead of react-query's
+      // default ~1s retry delay — retrying immediately into the same
+      // rate-limit window just produces another 429.
+      retryDelay: (attempt, error) =>
+        error instanceof AdminApiError && error.status === 429 && error.retryAfterMs
+          ? error.retryAfterMs
+          : Math.min(1_000 * 2 ** attempt, 30_000),
+    },
+  },
 })
 
 export function App() {
@@ -32,12 +48,19 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/login"          element={<LoginPage />} />
-          <Route path="/unauthorized"   element={<UnauthorizedPage />} />
-          <Route path="/onboarding"         element={<OnboardingPage />} />
+          {/* Splat: Clerk's embedded <SignIn/>/<SignUp/> use path routing and own
+              the sub-steps (/login/factor-one, /login/sign-up/verify-email-address, …). */}
+          <Route path="/login/*"        element={<LoginPage />} />
           <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
-          <Route path="/invite/:token"  element={<InvitePage />} />
+          <Route path="/onboarding" element={<Navigate to="/onboarding/profile" replace />} />
+          {/* Token-invite-link flow retired in favor of admin-add-by-email
+              (Members page "+ Add Member") + POST /me/self-serve-org.
+              Route kept commented rather than deleted. */}
+          {/* <Route path="/invite/:token"  element={<InvitePage />} /> */}
+          <Route path="/desktop-login" element={<DesktopLoginPage />} />
+          <Route path="/extension-login" element={<ExtensionLoginPage />} />
           <Route path="/accessibility"  element={<AccessibilityPage />} />
+          <Route path="/unauthorized"   element={<UnauthorizedPage />} />
           <Route
             element={
               <RequireAuth>
@@ -50,15 +73,25 @@ export function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard"    element={<DashboardPage />} />
             <Route path="/subjects"     element={<SubjectsPage />} />
+            {/* Sidebar labels this section "Policies"; the page lives at
+                /subjects. Redirect the labelled URL so bookmarks/guesses land
+                on it instead of the catch-all bouncing them to /dashboard. */}
+            <Route path="/policies"     element={<Navigate to="/subjects" replace />} />
             <Route path="/org"          element={<OrgPage />} />
             <Route path="/destinations" element={<DestinationsPage />} />
             <Route path="/sites"        element={<SitesPage />} />
             <Route path="/publish"      element={<PublishPage />} />
             <Route path="/settings"     element={<SettingsPage />} />
             <Route path="/members"      element={<MembersPage />} />
-            <Route path="/audit"        element={<AuditLogPage />} />
+            <Route path="/audit-log"    element={<AuditLogPage />} />
+            <Route path="/audit"        element={<Navigate to="/audit-log" replace />} />
             <Route path="/assistant"    element={<PlanGate feature="assistantEnabled"><AssistantPage /></PlanGate>} />
           </Route>
+          {/* Unmatched paths (typos, stale bookmarks, guessed URLs like /sign-in)
+              render nothing under react-router — defer to "/" instead of a
+              hardcoded /login so an already-authenticated user lands on their
+              dashboard rather than being bounced to sign-in. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

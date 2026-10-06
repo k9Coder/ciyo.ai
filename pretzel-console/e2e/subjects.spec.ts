@@ -110,7 +110,8 @@ test.describe('Subjects', () => {
     await api.dispose()
 
     await page.goto('/subjects')
-    await page.locator('button', { hasText: 'ACME Confidential' }).click()
+    // The subject row is a div[role=button] (so its Edit/Delete buttons can nest inside it).
+    await page.getByRole('button', { name: /^ACME Confidential/ }).click()
 
     // Walk up 2 levels from the keyword span to the card div, then click Edit
     const keywordSpan = page.locator('span').filter({ hasText: /^EDIT_RULE_E2E$/ })

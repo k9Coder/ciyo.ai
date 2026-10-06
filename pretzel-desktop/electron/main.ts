@@ -1,45 +1,105 @@
 /**
  * Electron main process — app lifecycle, system tray, IPC hub.
  */
-import { app, Tray, Menu, nativeImage, BrowserWindow } from 'electron'
+
+// A dev/QA harness that spawns this process (e.g. Playwright's electron.launch(),
+// or a terminal the user closes) can go away while this process is still
+// running, closing the read end of stdout/stderr. Node doesn't guard against
+// that by default — the next console.log/error call throws EPIPE, and since
+// nothing catches it, it crashes the whole main process. Logging to a pipe
+// nobody's reading should be a silent no-op, not a fatal error.
+process.stdout.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+process.stderr.on('error', (err: NodeJS.ErrnoException) => { if (err.code !== 'EPIPE') throw err })
+
+import { initSentry, Sentry } from './sentry'
+initSentry()
+
+import { app, Tray, Menu, BrowserWindow, ipcMain, Notification, shell, powerMonitor, dialog } from 'electron'
 import path from 'path'
-import { proxy, PROXY_PORT, type ProxyDecisionEvent } from './proxy'
-import { generateCACert, saveCACertFile, installCACert, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { proxy, PROXY_PORT, type ProxyDecisionEvent, type ProxyDecisionTimeoutEvent } from './proxy'
+import { generateCACert, saveCACertFile, storeCAKeyInKeychain, loadCAKeyFromKeychain, type CACert } from './ca'
+import { ensureHostHardening } from './hardening'
+import { ensureProxyWatchdog } from './proxy-watchdog'
+import { spawnProxySentinel } from './proxy-sentinel'
+import { renderTrayIcon } from './tray-icon'
+import { deriveTrayState, formatTrayTooltip, type TrayStatus } from './tray-status'
 import {
   registerIpcHandlers,
   setCurrentPolicy,
   setProxyRunning,
   setSystemProxyActive,
   pushStatusUpdate,
+  pushUpdateAvailable,
+  pushAutoUpdateStatus,
+  pushActivityUpdate,
+  pushAuthState,
 } from './ipc-handlers'
-import { showDecisionWindow } from './decision-window'
+import { checkForUpdate, DOWNLOAD_URL } from './version-check'
+import { isAutoUpdateSupported, initAutoUpdate, checkForAutoUpdateAsync } from './auto-update'
+import { loadSettings } from './settings'
+import { notifyDecision, notifyTimeout } from './decision-notify'
+import { recordActivity, getRecentActivity, setActivityOutcome } from './activity-log'
+import { reportEvent } from './report-event'
+import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
-import { isAuthenticated, signIn } from './auth'
+import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
+import { fetchSession, buildAuthView, reportSignOut, type SessionInfo } from './session'
 import { startNagging, stopNagging } from './nag'
-import { startPolicySync, stopPolicySync, triggerSync } from './policy-sync'
+import { startPolicySync, stopPolicySync, triggerSync, alwaysAllowRule, getLastKnownPolicy, resetPolicySync } from './policy-sync'
 import forge from 'node-forge'
+
+// Headless CI (bare Xvfb, no GPU) hangs BrowserWindow creation forever
+// without these — Chromium's sandbox/GPU init never completes there.
+if (process.env.PRETZEL_E2E === '1') {
+  app.commandLine.appendSwitch('no-sandbox')
+  app.commandLine.appendSwitch('disable-gpu')
+  app.commandLine.appendSwitch('disable-software-rasterizer')
+  // The default /dev/shm in CI containers/runners is too small for
+  // Chromium's shared memory needs — this is what actually crashes the
+  // GPU/renderer process on launch, not the GPU flags above alone.
+  app.commandLine.appendSwitch('disable-dev-shm-usage')
+  app.disableHardwareAcceleration()
+}
+
+// Without this, a second launch (e.g. a QA/dev instance started while a
+// packaged install is already running) silently shares the same userData/
+// Chromium profile as the first — no error, just contention on profile
+// files that can stall the second instance's window creation forever with
+// no visible cause. Fail fast instead: if another instance already holds
+// the lock, quit immediately rather than hang.
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+}
 
 let tray: Tray | null = null
 let trayWin: BrowserWindow | null = null
 let ca: CACert | null = null
 
+function caCertPath(): string {
+  return path.join(app.getPath('userData'), 'pretzel-ca.crt')
+}
+
+// Deliberately does NOT run host hardening (elevation) — see startProxy(),
+// which fires that in the background AFTER the proxy is already listening and
+// the system proxy is already pointed at it. Blocking here on a UAC prompt
+// (as an earlier version did) meant that if the prompt went unnoticed, the OS
+// proxy could sit pointed at a port nothing was listening on yet for as long
+// as the prompt was pending — a full internet outage, not just "degraded
+// protection". Getting the proxy up must never wait on elevation.
 async function ensureCA(): Promise<CACert> {
   const storedKey = await loadCAKeyFromKeychain()
-  const certPath = path.join(app.getPath('userData'), 'pretzel-ca.crt')
+  const certPath = caCertPath()
+  const fs = await import('fs')
 
-  if (storedKey) {
-    const fs = await import('fs')
-    if (fs.existsSync(certPath)) {
-      const certPem = fs.readFileSync(certPath, 'utf-8')
-      const cert = forge.pki.certificateFromPem(certPem)
-      return { cert, certPem, keyPem: storedKey }
-    }
+  if (storedKey && fs.existsSync(certPath)) {
+    const certPem = fs.readFileSync(certPath, 'utf-8')
+    return { cert: forge.pki.certificateFromPem(certPem), certPem, keyPem: storedKey }
   }
 
   const generated = generateCACert()
-  const saved = saveCACertFile(generated.certPem)
+  saveCACertFile(generated.certPem)
   await storeCAKeyInKeychain(generated.keyPem)
-  installCACert(saved)
   return generated
 }
 
@@ -48,39 +108,179 @@ function rebuildTrayMenu(authenticated: boolean): void {
   const menu = Menu.buildFromTemplate([
     { label: 'Pretzel Desktop', enabled: false },
     { type: 'separator' },
-    { label: 'Open Status', click: () => trayWin?.show() },
-    ...(authenticated ? [] : [{
-      label: 'Sign in…',
-      click: () => handleSignIn(),
-    }] as Electron.MenuItemConstructorOptions[]),
+    { label: 'Open Status', click: () => showTrayWindow() },
+    ...(authenticated
+      ? [{ label: 'Sign out…', click: () => { void confirmAndSignOut() } }]
+      : [{ label: 'Sign in…', click: () => handleSignIn() }]) as Electron.MenuItemConstructorOptions[],
     { type: 'separator' as const },
     { label: 'Quit', click: () => app.quit() },
   ])
   tray.setContextMenu(menu)
-  tray.setToolTip(authenticated ? 'Pretzel Desktop — Active' : 'Pretzel Desktop — Sign in required')
+  // Icon + tooltip are owned separately by updateTrayVisual (they reflect
+  // live proxy/policy status, not just auth) — see the pushStatusUpdate call
+  // sites below.
+}
+
+/**
+ * Single source of truth for what the tray icon + tooltip look like. Called
+ * everywhere status changes (see the pushStatusUpdate call sites) so the
+ * icon in the taskbar always matches what the status window would show if
+ * opened, instead of a static icon that never reflects reality.
+ */
+let lastTrayStatus: TrayStatus = { proxyRunning: false, policyAvailable: false, systemProxyActive: false }
+function updateTrayVisual(status: TrayStatus): void {
+  lastTrayStatus = status
+  if (!tray) return
+  tray.setImage(renderTrayIcon(deriveTrayState(status)))
+  tray.setToolTip(formatTrayTooltip(status))
+}
+
+function showTrayWindow(): void {
+  trayWin?.show()
+  trayWin?.focus()
+}
+
+/** Push a status update to both the tray window (if open) and the tray icon/tooltip (always). */
+function pushStatus(status: TrayStatus): void {
+  if (trayWin) pushStatusUpdate(trayWin, status)
+  updateTrayVisual(status)
+}
+
+// Who is signed in + token expiry, from GET /auth/desktop/session. Null until
+// the first successful fetch (offline start) — the tray just omits the account
+// row and expiry warning until then.
+let sessionInfo: SessionInfo | null = null
+// True once the server has told us the token is dead (expired / revoked), as
+// opposed to the user never having signed in. Drives the "session expired"
+// copy in the tray.
+let sessionLost = false
+let expiryNotified = false
+const SESSION_REFRESH_MS = 6 * 60 * 60 * 1000
+
+function currentAuthView() {
+  return buildAuthView({ authenticated: isAuthenticated(), sessionLost, session: sessionInfo })
+}
+
+/** Tell the tray UI and native menu about the current auth state. */
+function pushAuth(): void {
+  rebuildTrayMenu(isAuthenticated())
+  if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+    pushAuthState(trayWin, currentAuthView())
+  }
+}
+
+async function refreshSession(): Promise<void> {
+  if (!isAuthenticated()) { sessionInfo = null; return }
+  const token = await loadToken()
+  if (!token) return
+  const result = await fetchSession(token)
+  if (result === 'unauthorized') { await handleSessionLost(); return }
+  if (!result) return // couldn't tell (offline / 5xx) — try again on the next tick
+  sessionInfo = result
+  pushAuth()
+
+  const days = currentAuthView().expiresInDays
+  if (days !== undefined && !expiryNotified) {
+    expiryNotified = true
+    if (Notification.isSupported()) {
+      const notif = new Notification({
+        title: 'Pretzel Desktop — sign in again soon',
+        body: `Your sign-in expires in ${days} day${days === 1 ? '' : 's'}. Sign in again to stay protected.`,
+        urgency: 'normal',
+      })
+      notif.on('click', () => showTrayWindow())
+      notif.show()
+    }
+  }
+}
+
+/**
+ * The server rejected our device token (90-day expiry or an admin revoke).
+ * Previously the credentials were cleared but nothing told the UI, so the tray
+ * sat on "Waiting" with no sign-in button until the next app restart. Drop the
+ * policy (protection really is off now), tell the tray, and start the nag so
+ * the user gets the OS notification + sign-in prompt right away.
+ */
+async function handleSessionLost(): Promise<void> {
+  if (sessionLost) return
+  sessionLost = true
+  await clearCredentials() // idempotent — policy-sync usually already did
+  sessionInfo = null
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
+  pushAuth()
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn })
+}
+
+/**
+ * User-initiated sign-out. Tells the server first (revokes this device token
+ * and stamps the sign-out time the console shows to admins), then forgets the
+ * credentials and policy locally. If the server cannot be reached the device is
+ * still signed out; `recorded: false` lets the tray say so.
+ */
+async function handleSignOut(): Promise<{ recorded: boolean }> {
+  const token = await loadToken()
+  const recorded = token ? await reportSignOut(token) : false
+  await clearCredentials()
+  sessionInfo = null
+  sessionLost = false // the user chose this; it is not an "expired" session
+  setCurrentPolicy(null)
+  proxy.setPolicy(null)
+  resetPolicySync()
+  pushStatus({ ...lastTrayStatus, policyAvailable: false, syncIssue: null })
+  pushAuth()
+  // Remind again in 24h like any signed-out device, but not right now.
+  if (trayWin) startNagging(trayWin, { onSignInRequest: handleSignIn, skipImmediate: true })
+  return { recorded }
+}
+
+async function confirmAndSignOut(): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Sign out', 'Cancel'],
+    defaultId: 1,
+    cancelId: 1,
+    title: 'Sign out of Pretzel Desktop',
+    message: 'Sign out of Pretzel Desktop?',
+    detail: 'Protection turns off on this device until you sign in again. Your organisation can see when you sign out.',
+  })
+  if (response === 0) await handleSignOut()
 }
 
 async function handleSignIn(): Promise<void> {
   try {
     await signIn()
     stopNagging()
-    rebuildTrayMenu(true)
+    sessionLost = false
+    expiryNotified = false
     // Immediately fetch policy after auth
     await triggerSync()
+    await refreshSession()
+    pushAuth()
     trayWin?.webContents.send('auth:success')
   } catch (err) {
+    // Log the raw error for debugging, but never surface it to the user —
+    // strings like "Token exchange failed: 400" are developer-facing.
     console.error('[pretzel-desktop] Sign-in failed:', err)
-    trayWin?.webContents.send('auth:error', String(err))
+    trayWin?.webContents.send('auth:error', "Couldn't sign you in. Please try again.")
   }
 }
 
-function createTrayWindow(): BrowserWindow {
+async function createTrayWindow(): Promise<BrowserWindow> {
   const win = new BrowserWindow({
     width: 320,
     height: 480,
-    show: false,
+    // Playwright's firstWindow() waits on paint/DOM-ready signals that
+    // never fire for a window that's never shown — confirmed via multiple
+    // closed microsoft/playwright issues (e.g. #13575, #21117). Show it
+    // under E2E only; production keeps the real hidden-until-click UX.
+    show: process.env.PRETZEL_E2E === '1',
     frame: false,
     resizable: false,
+    roundedCorners: true,
+    backgroundColor: '#0b0e16',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -88,29 +288,53 @@ function createTrayWindow(): BrowserWindow {
     },
   })
 
+  // Click-away-to-dismiss, like a native tray flyout / macOS menu-bar app —
+  // the old behavior (only the tray icon itself could open/close it) meant
+  // the only way to get rid of the window was to find and re-click a tiny
+  // icon in the notification area. Skipped under E2E: Playwright driving the
+  // window inevitably shifts OS focus around, which would blur-hide it out
+  // from under the test.
+  if (process.env.PRETZEL_E2E !== '1') {
+    win.on('blur', () => win.hide())
+  }
+
   const isDev = process.env.NODE_ENV === 'development'
-  if (isDev) {
-    win.loadURL('http://localhost:5174/tray-ui/')
-  } else {
-    win.loadFile(path.join(__dirname, '../renderer/tray-ui/index.html'))
+  try {
+    if (isDev) {
+      await win.loadURL('http://localhost:5174/tray-ui/')
+    } else {
+      await win.loadFile(path.join(__dirname, '../dist/renderer/tray-ui/index.html'))
+    }
+  } catch (err) {
+    console.error('[pretzel-desktop] Tray window failed to load:', err)
   }
   return win
 }
 
-function setupTray(authenticated: boolean): void {
-  const iconPath = path.join(__dirname, '../build/icon.png')
-  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-  tray = new Tray(icon)
-  trayWin = createTrayWindow()
+async function setupTray(authenticated: boolean): Promise<void> {
+  // Real OS tray icon needs a tray host (StatusNotifierWatcher/D-Bus on Linux);
+  // a bare Xvfb CI display has none, and `new Tray()` blocks indefinitely
+  // waiting for it. Skip the OS integration under test, keep the window.
+  // (Vite inlines process.env.NODE_ENV at build time, so a dedicated var is
+  // used here instead — it's still readable at runtime in the built bundle.)
+  if (process.env.PRETZEL_E2E !== '1') {
+    tray = new Tray(renderTrayIcon('inactive'))
+    updateTrayVisual(lastTrayStatus)
+  }
+  trayWin = await createTrayWindow()
 
   rebuildTrayMenu(authenticated)
 
-  tray.on('click', () => {
+  // Explicit close (×) button inside the window itself, in addition to
+  // click-away and re-clicking the tray icon — a visible target beats an
+  // implicit one for anyone who hasn't learned the blur-to-dismiss behavior.
+  ipcMain.on('window:hide', () => trayWin?.hide())
+
+  tray?.on('click', () => {
     if (trayWin?.isVisible()) {
       trayWin.hide()
     } else {
-      trayWin?.show()
-      trayWin?.focus()
+      showTrayWindow()
     }
   })
 }
@@ -123,12 +347,109 @@ async function startProxy(): Promise<void> {
 
   proxy.on('decision-required', (event: ProxyDecisionEvent) => {
     showDecisionWindow(event)
+    const settings = loadSettings(app.getPath('userData'))
+    const level = event.result.highestAction === 'block' ? settings.notifyOnBlock : settings.notifyOnWarn
+    notifyDecision(level, event)
+
+    for (const finding of event.result.findings) {
+      recordActivity({
+        hostname: event.hostname,
+        ruleName: finding.ruleName ?? finding.ruleId,
+        severity: finding.severity,
+        action: event.result.highestAction === 'block' ? 'block' : 'warn',
+        timestamp: Date.now(),
+        requestId: event.requestId,
+      })
+    }
+    if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
+    void reportEvent(event)
+  })
+
+  // Nobody answered the prompt: the proxy already decided by policy (block
+  // rules are blocked, warn rules are sent). Make sure the user can see that
+  // it happened: the open prompt turns into a notice, an OS notification is
+  // raised even if they turned notifications off, and the tray activity list
+  // records the outcome.
+  proxy.on('decision-timeout', (event: ProxyDecisionTimeoutEvent) => {
+    showDecisionTimeout(event)
+    const settings = loadSettings(app.getPath('userData'))
+    notifyTimeout(event.result.highestAction === 'block' ? settings.notifyOnBlock : settings.notifyOnWarn, event)
+    setActivityOutcome(event.requestId, event.allowed ? 'timeout-allowed' : 'timeout-blocked')
+    if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
   })
 
   activateSystemProxy(PROXY_PORT)
   setSystemProxyActive(true)
   console.log(`[pretzel-desktop] Proxy listening on 127.0.0.1:${PROXY_PORT} — system proxy active`)
+
+  // Fast recovery path (~1-2s): a detached companion process watching our PID
+  // directly. Covers the common case — closing the terminal window, a crash —
+  // far quicker than the scheduled-task watchdog below can (Task Scheduler
+  // floors at a 1-minute repetition interval, which means up to a full
+  // minute with no internet; unacceptable for something this disruptive).
+  spawnProxySentinel(PROXY_PORT)
+
+  // Independent OS-scheduled safety net: nothing inside this process can react
+  // to a hard kill (Task Manager "End Task", crash, power loss) — no JS runs on
+  // a SIGKILL. The watchdog runs outside the process entirely and resets the
+  // system proxy within about a minute if we're gone but still configured as
+  // the active proxy. No elevation needed — same trust level as the proxy
+  // registry key it corrects. Fire-and-forget; never blocks startup. Slower
+  // fallback for what the sentinel above doesn't catch (e.g. it gets killed
+  // too, or a reboot happens before it fires).
+  ensureProxyWatchdog(app.getPath('userData'), PROXY_PORT)
+
+  // Host hardening (CA trust + QUIC block) runs in the BACKGROUND, only after
+  // the proxy is already up and the OS is already pointed at it — it must
+  // never be on the critical path to getting the user's internet working.
+  // Until it's approved, intercepted hosts show a cert warning and QUIC can
+  // bypass inspection on them; general (non-monitored) browsing is unaffected
+  // either way, so there's nothing to lose by not waiting on it here.
+  void ensureHostHardening(caCertPath()).catch((err) => {
+    console.error('[pretzel-desktop] Host hardening failed:', err)
+  })
 }
+
+/**
+ * Check for a newer published version once on launch.
+ *
+ * On win32 this runs the real electron-updater check — its own events
+ * (wired via initAutoUpdate below) already push live status into the tray
+ * UI, so there's nothing further to do here beyond kicking it off.
+ *
+ * Everywhere else (no in-app auto-update — see auto-update.ts) this is the
+ * existing lightweight version-string check: fire an OS notification
+ * (click → download page) and push a banner into the tray UI. Silent when
+ * up to date or when the check fails — a failed update check must never
+ * interrupt the user.
+ */
+async function checkForUpdatesOnLaunch(): Promise<void> {
+  if (isAutoUpdateSupported()) {
+    void checkForAutoUpdateAsync()
+    return
+  }
+
+  const result = await checkForUpdate()
+  if (!result.updateAvailable || !result.latest) return
+
+  if (Notification.isSupported()) {
+    const notif = new Notification({
+      title: 'Pretzel Desktop — update available',
+      body: `Version ${result.latest} is out (you have ${result.current}). Click to download.`,
+      urgency: 'normal',
+    })
+    notif.on('click', () => { void shell.openExternal(DOWNLOAD_URL) })
+    notif.show()
+  }
+
+  if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+    pushUpdateAvailable(trayWin, { current: result.current, latest: result.latest })
+  }
+}
+
+app.on('second-instance', () => {
+  trayWin?.show()
+})
 
 app.whenReady().then(async () => {
   app.setLoginItemSettings({ openAtLogin: true })
@@ -139,53 +460,114 @@ app.whenReady().then(async () => {
     onDecision: (requestId, allow) => {
       // Route the user's Allow/Block choice back to the held proxy request.
       proxy.resolveDecision(requestId, allow)
+      hideDecisionWindow()
+      setActivityOutcome(requestId, allow ? 'allowed' : 'blocked')
+      if (trayWin) pushActivityUpdate(trayWin, getRecentActivity())
     },
-    onPolicyUpdate: (update) => {
-      console.log('[pretzel-desktop] Policy update from renderer:', update)
-    },
+    getAuthState: currentAuthView,
+    onSignOut: handleSignOut,
     onSignIn: () => { handleSignIn() },
+    onCancelSignIn: () => { cancelSignIn() },
+    onAlwaysAllow: (ruleId) => {
+      // Was previously fire-and-forget with the result silently discarded —
+      // a failure here (network blip, auth issue, backend error) looked
+      // identical to success from the user's side: the current request
+      // still went through (that's respond(true) in the renderer, resolved
+      // independently), but the exception was never actually recorded, so
+      // the same rule would just fire again next time with zero signal why.
+      alwaysAllowRule(ruleId)
+        .then((ok) => {
+          if (!ok) console.error(`[pretzel-desktop] Always-allow failed to save for rule ${ruleId} — will fire again next time`)
+        })
+        .catch((err) => console.error('[pretzel-desktop] Always-allow threw:', err))
+    },
   })
 
-  setupTray(authenticated)
+  // QA-only: let the qa-bridge open the decision window directly with a
+  // synthetic finding, so the warn/block UI can be verified without standing up
+  // the MITM proxy + trusted CA (not automatable in the test harness). Gated on
+  // PRETZEL_E2E so it never exists in a real build.
+  if (process.env.PRETZEL_E2E === '1') {
+    ipcMain.on('e2e:trigger-decision', () => {
+      showDecisionWindow({
+        requestId: `e2e-${Date.now()}`,
+        hostname: 'chatgpt.com',
+        deadlineAt: Date.now() + 30_000,
+        onTimeout: 'block',
+        // No real proxied request to release here — the e2e trigger only needs
+        // the decision window to render for the qa-bridge to assert against.
+        resolve: (allow: boolean) => {
+          console.log(`[pretzel-desktop][e2e] decision resolved: ${allow ? 'allow' : 'block'}`)
+        },
+        result: {
+          findings: [{
+            ruleId: 'e2e-canary',
+            ruleName: 'Integration canary',
+            severity: 'critical',
+            action: 'block',
+            matchedText: 'ZZINTEGCANARY',
+            startOffset: 0,
+            endOffset: 13,
+          }],
+          highestAction: 'block',
+          promptHash: 'e2e',
+          detectedAtMs: Date.now(),
+          durationMs: 0,
+        },
+      })
+    })
+  }
+
+  await setupTray(authenticated)
 
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
-    if (trayWin) {
-      pushStatusUpdate(trayWin, {
-        proxyRunning: true,
-        policyAvailable: true,
-        systemProxyActive: true,
-      })
-    }
+    pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: null })
+  }, {
+    onUnauthorized: () => { void handleSessionLost() },
+    // Lets the tray say "Can't reach server — retrying" instead of a silent "Waiting".
+    onSyncIssue: (issue) => pushStatus({ ...lastTrayStatus, policyAvailable: getLastKnownPolicy() !== null, syncIssue: issue }),
   })
+
+  // Waking from sleep is the other common time the network is briefly down
+  // and a sync was missed — refresh right away instead of waiting for the tick.
+  powerMonitor.on('resume', () => { void triggerSync() })
+
+  void refreshSession()
+  setInterval(() => { void refreshSession() }, SESSION_REFRESH_MS)
 
   // Nag unauthenticated users every 24h until they sign in
   if (trayWin) {
     startNagging(trayWin, { onSignInRequest: handleSignIn })
   }
 
+  // In-app auto-update wiring (win32 only — no-op elsewhere, see
+  // auto-update.ts). Must be wired before the launch check below fires, or
+  // its early events (checking/available) would have nowhere to go.
+  initAutoUpdate((event) => {
+    if (trayWin && !trayWin.isDestroyed() && !trayWin.webContents.isDestroyed()) {
+      pushAutoUpdateStatus(trayWin, event)
+    }
+  })
+
+  // Non-blocking: tell the user if a newer version is out.
+  void checkForUpdatesOnLaunch()
+
   try {
     await startProxy()
-    if (trayWin) {
-      pushStatusUpdate(trayWin, {
-        proxyRunning: true,
-        policyAvailable: false,
-        systemProxyActive: true,
-      })
-    }
+    // policyAvailable must reflect reality: the first policy sync starts before
+    // the proxy finishes starting, so it may already have landed.
+    pushStatus({ proxyRunning: true, policyAvailable: getLastKnownPolicy() !== null, systemProxyActive: true, syncIssue: null })
   } catch (err) {
     console.error('[pretzel-desktop] Proxy start failed:', err)
-    if (trayWin) {
-      pushStatusUpdate(trayWin, { proxyRunning: false, policyAvailable: false, systemProxyActive: false })
-    }
+    pushStatus({ proxyRunning: false, policyAvailable: false, systemProxyActive: false })
   }
 })
 
-app.on('window-all-closed', (e: Event) => {
-  // Keep running in tray — don't quit on window close
-  e.preventDefault()
+app.on('window-all-closed', () => {
+  // Keep running in tray — don't quit on window close (no app.quit() call)
 })
 
 app.on('before-quit', async () => {
@@ -202,5 +584,27 @@ for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) {
     process.exit(0)
   })
 }
+
+// Last-resort safety nets so we never strand the user behind our proxy with no
+// internet. restoreSystemProxy() is synchronous (execSync), so it's safe to run
+// in an 'exit' handler. 'exit' covers normal/most abrupt teardowns the signal
+// handlers above miss; uncaughtException/unhandledRejection cover a crash in our
+// own code. (A hard SIGKILL / Task Manager "End task" still can't be caught —
+// that's what the activate-time crash-recovery guard in system-proxy.ts is for.)
+process.on('exit', () => { restoreSystemProxy() })
+process.on('uncaughtException', (err) => {
+  console.error('[pretzel-desktop] Uncaught exception:', err)
+  restoreSystemProxy()
+  // Sentry's own OnUncaughtException integration also runs off this same
+  // event and reports async — without waiting for it here, this handler's
+  // process.exit(1) wins the race and kills the process before the report
+  // ever reaches the network, silently dropping every real crash.
+  void Sentry.flush(2000).finally(() => process.exit(1))
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('[pretzel-desktop] Unhandled rejection:', reason)
+  restoreSystemProxy()
+  void Sentry.flush(2000).finally(() => process.exit(1))
+})
 
 export { setCurrentPolicy }

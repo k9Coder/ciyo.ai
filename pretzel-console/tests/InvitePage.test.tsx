@@ -10,6 +10,8 @@ vi.mock('react-router-dom', async () => {
 })
 vi.mock('../src/api', () => ({
   api: { invites: { preview: vi.fn(), accept: vi.fn() } },
+  // InvitePage wires the Clerk token via useWireAuthToken → setTokenGetter.
+  setTokenGetter: vi.fn(),
 }))
 vi.mock('../src/lib/tenant', () => ({ setSelectedTenantId: vi.fn() }))
 
@@ -29,14 +31,16 @@ function renderPage() {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(useAuth).mockReturnValue({ isSignedIn: true, isLoaded: true } as any)
+  vi.mocked(useAuth).mockReturnValue({ isSignedIn: true, isLoaded: true, getToken: vi.fn().mockResolvedValue('tok') } as any)
   vi.mocked(api.invites.preview).mockResolvedValue({
     tenantName: 'Acme', role: 'member',
     expiresAt: new Date(Date.now() + 86400000).toISOString(), valid: true,
   } as any)
 })
 
-describe('InvitePage accept', () => {
+// Skipped, not deleted: token-invite-link flow retired (route unmounted in
+// src/App.tsx) in favor of admin-add-by-email + POST /me/self-serve-org.
+describe.skip('InvitePage accept', () => {
   it('sets the selected tenant from the returned member row', async () => {
     vi.mocked(api.invites.accept).mockResolvedValue({ id: 'm1', tenantId: 'tenant_new' } as any)
     renderPage()

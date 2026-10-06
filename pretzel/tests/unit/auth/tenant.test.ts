@@ -13,7 +13,7 @@ vi.stubGlobal('chrome', {
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-const { ensureTenantSelected, getSelectedTenantId, setSelectedTenantId } = await import('@/auth/tenant')
+const { ensureTenantSelected, getSelectedTenantId, setSelectedTenantId, fetchMemberships } = await import('@/auth/tenant')
 
 const TOKEN = 'eyJhbGciOiJSUzI1NiJ9.clerk-jwt-payload.sig'
 
@@ -101,6 +101,32 @@ describe('ensureTenantSelected', () => {
     await expect(ensureTenantSelected(TOKEN, { force: true })).resolves.not.toThrow()
     expect(mockLocalSet).not.toHaveBeenCalled()
     expect(mockLocalRemove).not.toHaveBeenCalled()
+  })
+})
+
+// Used by AccountPage.tsx to reject an inline Clerk sign-in for an email
+// nobody admin-added anywhere, undebounced/independent of ensureTenantSelected
+// (see AccountPage's enrollment-check effect for why it needs its own call).
+describe('fetchMemberships', () => {
+  it('returns the memberships array on success', async () => {
+    const memberships = [{ tenantId: 't1', tenantName: 'Acme', role: 'member' }]
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ memberships }) })
+    expect(await fetchMemberships(TOKEN)).toEqual(memberships)
+  })
+
+  it('returns an empty array (not null) when the caller genuinely has zero memberships', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ memberships: [] }) })
+    expect(await fetchMemberships(TOKEN)).toEqual([])
+  })
+
+  it('returns null on a non-ok response (fail open, not "confirmed zero")', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false })
+    expect(await fetchMemberships(TOKEN)).toBeNull()
+  })
+
+  it('returns null on a network error (fail open)', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('offline'))
+    expect(await fetchMemberships(TOKEN)).toBeNull()
   })
 })
 

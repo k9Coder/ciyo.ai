@@ -33,7 +33,7 @@ To use the committed staging endpoints, run `pnpm set-env:staging` from the mono
 
 | Variable | Required | Behavior |
 |---|---:|---|
-| `NEXT_PUBLIC_APP_URL` | No | Console/app origin used by sign-in and onboarding links. Defaults to `https://app.mykka.ai`. |
+| `NEXT_PUBLIC_APP_URL` | No | Console/app origin used by sign-in and onboarding links. Defaults to `https://pretzel-console.mykka.ai`; a value without `https://` gets it added. |
 | `NEXT_PUBLIC_ENV` | No | Shows a `STAGING` badge when set to `staging`. |
 | `NEXT_PUBLIC_API_BASE` | No current runtime consumer | Passed by the Docker build and CI build, but site source does not currently read it. |
 
@@ -74,8 +74,7 @@ Manually verify changed routes and outbound links, especially dynamic solution/b
 ## Known issues
 
 - No automated tests exist.
-- The footer links to `/changelog`, but no `app/changelog/page.tsx` route exists.
-- Product-page screenshots are placeholder panels.
+- Product-page panels are illustrative HTML mock-ups with sample data, not real screenshots.
 - `NEXT_PUBLIC_API_BASE` is configured in environment/deploy paths but is unused by the current site source.
 - Marketing claims include externally verifiable assertions that code cannot substantiate; see [CONTENT_CLAIMS.md](CONTENT_CLAIMS.md).
 

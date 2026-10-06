@@ -37,7 +37,18 @@ vi.mock('../src/events/policy-bus.js', () => ({
   policyUpdatedEvent: (id: string) => `policy:updated:${id}`,
 }))
 
-function makeApp(tenantOverrides: Record<string, unknown> = {}) {
+const { mockAddException, mockRemoveException, mockGetExceptionSummary } = vi.hoisted(() => ({
+  mockAddException: vi.fn().mockResolvedValue(undefined),
+  mockRemoveException: vi.fn().mockResolvedValue(undefined),
+  mockGetExceptionSummary: vi.fn().mockResolvedValue([]),
+}))
+vi.mock('../src/policy/exceptions.js', () => ({
+  addException: mockAddException,
+  removeException: mockRemoveException,
+  getExceptionSummary: mockGetExceptionSummary,
+}))
+
+function makeApp(tenantOverrides: Record<string, unknown> = {}, member: Record<string, unknown> | null = null) {
   const app = Fastify()
   app.addHook('onRequest', async (req) => {
     ;(req as any).tenant = {
@@ -45,15 +56,18 @@ function makeApp(tenantOverrides: Record<string, unknown> = {}) {
       gracePeriodEndsAt: null, subscriptionStatus: 'active',
       ...tenantOverrides,
     }
-    ;(req as any).member = null
+    ;(req as any).member = member
   })
   // Import inline to use the already-mocked module
   return app
 }
 
-async function makeRegisteredApp(tenantOverrides: Record<string, unknown> = {}) {
+async function makeRegisteredApp(
+  tenantOverrides: Record<string, unknown> = {},
+  member: Record<string, unknown> | null = null,
+) {
   const { policyRouter } = await import('../src/policy/router.js')
-  const app = makeApp(tenantOverrides)
+  const app = makeApp(tenantOverrides, member)
   await app.register(policyRouter, { prefix: '' })
   return app
 }
@@ -115,5 +129,58 @@ describe('GET /policy/last-updates', () => {
     const app = await makeRegisteredApp({ subscriptionStatus: 'cancelled' })
     const res = await app.inject({ method: 'GET', url: '/policy/last-updates' })
     expect(res.statusCode).toBe(402)
+  })
+})
+
+describe('POST /policy/exceptions', () => {
+  it('requires a member context — org tokens (ps_) have none', async () => {
+    const app = await makeRegisteredApp({}, null)
+    const res = await app.inject({ method: 'POST', url: '/policy/exceptions', payload: { ruleId: 'r1' } })
+    expect(res.statusCode).toBe(400)
+    expect(mockAddException).not.toHaveBeenCalled()
+  })
+
+  it('requires a ruleId', async () => {
+    const app = await makeRegisteredApp({}, { id: 'm1' })
+    const res = await app.inject({ method: 'POST', url: '/policy/exceptions', payload: {} })
+    expect(res.statusCode).toBe(400)
+    expect(mockAddException).not.toHaveBeenCalled()
+  })
+
+  it('adds the exception for the authenticated member and tenant', async () => {
+    const app = await makeRegisteredApp({}, { id: 'm1' })
+    const res = await app.inject({ method: 'POST', url: '/policy/exceptions', payload: { ruleId: 'r1' } })
+    expect(res.statusCode).toBe(201)
+    expect(mockAddException).toHaveBeenCalledWith('t1', 'm1', 'r1')
+  })
+})
+
+describe('DELETE /policy/exceptions/:ruleId', () => {
+  it('requires a member context', async () => {
+    const app = await makeRegisteredApp({}, null)
+    const res = await app.inject({ method: 'DELETE', url: '/policy/exceptions/r1' })
+    expect(res.statusCode).toBe(400)
+    expect(mockRemoveException).not.toHaveBeenCalled()
+  })
+
+  it('removes the exception for the authenticated member and tenant', async () => {
+    const app = await makeRegisteredApp({}, { id: 'm1' })
+    const res = await app.inject({ method: 'DELETE', url: '/policy/exceptions/r1' })
+    expect(res.statusCode).toBe(204)
+    expect(mockRemoveException).toHaveBeenCalledWith('t1', 'm1', 'r1')
+  })
+})
+
+describe('GET /policy/exceptions (admin)', () => {
+  it('returns the tenant-wide exception summary', async () => {
+    mockGetExceptionSummary.mockResolvedValueOnce([
+      { ruleId: 'r1', ruleMessage: 'AWS key', memberCount: 3, memberEmails: ['a@x.com', 'b@x.com', 'c@x.com'] },
+    ])
+    const app = await makeRegisteredApp()
+    const res = await app.inject({ method: 'GET', url: '/policy/exceptions' })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().exceptions).toHaveLength(1)
+    expect(res.json().exceptions[0].memberCount).toBe(3)
+    expect(mockGetExceptionSummary).toHaveBeenCalledWith('t1')
   })
 })

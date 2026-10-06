@@ -1,18 +1,40 @@
 import { initSentry, Sentry } from "@/lib/sentry";
 import { getAdapter } from "./adapters/registry";
-import { showWarningModal } from "./overlay/overlay-root";
+import { showWarningModal, showToast, mountStatusChip } from "./overlay/overlay-root";
+import { redactPrompt, isRedacted } from "./redact";
+import type { ReportingSummary } from "@/events/dispatch";
 import { sendMessage } from "@/shared/messages";
-import { appendAuditEvent } from "@/audit/log";
 import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
 import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
 import type { EnforcementReason } from "@/shared/messages";
 
-/** Report degraded enforcement to the service worker (which debounces + POSTs). */
+/**
+ * Report degraded enforcement to the service worker (which debounces + POSTs)
+ * and tell the user this send went out unchecked.
+ */
 function reportDegraded(reason: EnforcementReason): void {
   void sendMessage({ type: "REPORT_DEGRADED", payload: { hostname: location.hostname, reason } }).catch(() => {});
+  void showToast({ kind: "unchecked" });
 }
+
+/** What IT will receive for these findings. Any failure just hides the footnote. */
+async function getReporting(result: DetectionResult): Promise<ReportingSummary> {
+  try {
+    const summary = await sendMessage<ReportingSummary | null>({
+      type: "GET_REPORTING_SUMMARY",
+      payload: { findings: result.findings },
+    });
+    return summary ?? "none";
+  } catch {
+    return "none";
+  }
+}
+
+/** Give the host's framework a beat to pick up a programmatic composer edit. */
+const COMPOSER_SETTLE_MS = 50;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 initSentry();
 
@@ -69,7 +91,11 @@ async function bootstrap() {
         },
       });
 
-      if (result.signInNudge) showSignInNudge();
+      // Don't nudge sign-in on a result that just blocked/warned — the modal
+      // about to show already proves protection is active while signed out,
+      // so "sign in to start protecting" would contradict what the user is
+      // seeing on screen.
+      if (result.signInNudge && result.highestAction === "log") showSignInNudge();
 
       if (result.highestAction === "log") {
         window.postMessage({ type: MSG_DECISION, id, proceed: true }, "*");
@@ -78,15 +104,20 @@ async function bootstrap() {
 
       const promptText = String(payload.text ?? "");
       const eventHostname = String(payload.hostname ?? hostname);
-      const decision = await showWarningModal(result, label);
+      const decision = await showWarningModal(result, label, { reporting: await getReporting(result) });
       const proceed = decision.type === "send_anyway";
-      // Record the outcome — the network/file backstop must be visible in the audit
-      // trail, not just the button-click path.
+      // Record the outcome — the network/file backstop must be visible in the
+      // audit trail, not just the button-click path. A hard block that the user
+      // couldn't send through logs as "cancelled"; a warn the user edited logs
+      // as "edited".
+      const userDecision = proceed
+        ? "sent_with_reason"
+        : result.highestAction === "block" ? "cancelled" : "edited";
       await writeAuditEvent(
         result,
         promptText,
         eventHostname,
-        proceed ? "sent_with_reason" : "edited",
+        userDecision,
         proceed && decision.type === "send_anyway" ? decision.reason : undefined,
       );
       window.postMessage({ type: MSG_DECISION, id, proceed }, "*");
@@ -118,7 +149,9 @@ async function bootstrap() {
 
       logger.debug("Detection result:", result);
 
-      if (result.signInNudge) {
+      // Don't nudge sign-in on a result that just blocked/warned — see the
+      // matching comment on the paste/file-upload path above.
+      if (result.signInNudge && result.highestAction === "log") {
         showSignInNudge();
       }
 
@@ -131,17 +164,47 @@ async function bootstrap() {
         return { proceed: true };
       }
 
-      // For warn/block results, defer the audit write until AFTER the modal so
-      // the logged decision reflects what the user actually chose. Writing
-      // "sent" before the modal would produce a spurious extra event whenever
-      // the user clicks "Edit prompt".
-      const decision = await showWarningModal(result, promptText);
+      // A hard block stops the send no matter what the user does in the modal,
+      // so its outcome is already known here (like the "log" branch above).
+      // Record it immediately as a "cancelled" send — otherwise a block that
+      // the user simply closes without picking "Edit" would never reach the
+      // audit log, hiding the rule trigger entirely. Warn is different: there
+      // the user's choice IS the outcome, so its write stays deferred to after
+      // the modal to avoid a spurious event before "Edit prompt".
+      const isBlock = result.highestAction === "block";
+      if (isBlock) {
+        await writeAuditEvent(result, promptText, hostname, "cancelled");
+      }
+
+      const decision = await showWarningModal(result, promptText, {
+        // Only a hard block offers redaction; a warn already lets the user send as is.
+        canRedact: isBlock,
+        reporting: await getReporting(result),
+      });
 
       switch (decision.type) {
         case "edit":
-          await writeAuditEvent(result, promptText, hostname, "edited");
+          // A block already logged its "cancelled" outcome above; only warn
+          // defers the write to the user's decision here.
+          if (!isBlock) await writeAuditEvent(result, promptText, hostname, "edited");
           composer.focus();
           return { proceed: false };
+
+        case "redact": {
+          const redaction = redactPrompt(promptText, result.findings);
+          adapter.writePromptText(composer, redaction.text);
+          await sleep(COMPOSER_SETTLE_MS);
+          // Never send unless the details are really gone from the composer.
+          if (!isRedacted(adapter.readPromptText(composer), result.findings)) {
+            logger.warn("Redaction did not stick in the composer; keeping the send blocked.");
+            composer.focus();
+            return { proceed: false };
+          }
+          await writeAuditEvent(result, promptText, hostname, "redacted_and_sent");
+          if (typeof window !== "undefined") window.postMessage({ type: MSG_UNLOCK_FETCH }, "*");
+          void showToast({ kind: "redacted", count: redaction.removedCount, ruleNames: redaction.ruleNames });
+          return { proceed: true };
+        }
 
         case "send_anyway":
           await writeAuditEvent(result, promptText, hostname, "sent_with_reason", decision.reason);
@@ -152,6 +215,7 @@ async function bootstrap() {
     } catch (err) {
       logger.error("Send-intent handler error:", err);
       Sentry.captureException(err, { tags: { context: 'send-intent', hostname } });
+      void showToast({ kind: "unchecked" });
       return { proceed: true };
     }
   });
@@ -159,6 +223,10 @@ async function bootstrap() {
   // Mark extension as ready for E2E test synchronisation — set synchronously
   // after ALL listeners so tests can waitFor this before interacting with the page.
   document.documentElement.dataset.mykkaReady = '1';
+
+  // "Pretzel on" chip next to the composer — cosmetic, so it comes after the
+  // security listeners like the scan-limit banner below.
+  void mountStatusChip(() => adapter.findComposer(), hostname);
 
   // Cosmetic scan-limit banner — checked after all security listeners are registered
   // so service-worker startup latency cannot delay click interception.
@@ -277,7 +345,11 @@ async function writeAuditEvent(
       promptLengthChars: promptText.length,
       promptHash: result.promptHash,
     };
-    await appendAuditEvent(event);
+    // Content scripts run in the injected page's origin, not the extension's
+    // — writing directly via appendAuditEvent() here would land in that
+    // page's IndexedDB, invisible to the options page's Audit Log. Route
+    // through the service worker, which runs at the extension's own origin.
+    await sendMessage({ type: "APPEND_AUDIT_EVENT", payload: event });
   } catch (err) {
     logger.error("Failed to write audit event:", err);
   }

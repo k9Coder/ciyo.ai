@@ -1,11 +1,19 @@
 import { z } from 'zod'
 
+// The console origin is used in absolute links. A value without a scheme (e.g. "pretzel-console.mykka.ai")
+// would resolve as a path on this site, so add https:// when it is missing.
+export function withScheme(url: string): string {
+  const v = url.trim().replace(/\/+$/, '')
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(v) ? v : `https://${v}`
+}
+
 const schema = z.object({
   NEXT_PUBLIC_API_BASE: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().default('https://app.mykka.ai'),
+  NEXT_PUBLIC_APP_URL: z.string().default('https://pretzel-console.mykka.ai').transform(withScheme),
   NEXT_PUBLIC_ENV: z.string().optional(),
   NEXT_PUBLIC_PILOT_MODE: z.string().optional(),
   NEXT_PUBLIC_LOGROCKET_ID: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 })
 
 // Next.js inlines NEXT_PUBLIC_* at build time — every var MUST be referenced
@@ -16,4 +24,5 @@ export const env = schema.parse({
   NEXT_PUBLIC_ENV: process.env.NEXT_PUBLIC_ENV,
   NEXT_PUBLIC_PILOT_MODE: process.env.NEXT_PUBLIC_PILOT_MODE,
   NEXT_PUBLIC_LOGROCKET_ID: process.env.NEXT_PUBLIC_LOGROCKET_ID,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 })

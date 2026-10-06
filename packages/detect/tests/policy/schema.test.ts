@@ -196,3 +196,31 @@ describe("PolicySchema failMode", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("PolicyDocSchema judge_prompt forward-compat", () => {
+  it("parses a PolicyDoc containing a judge_prompt rule, instead of failing the whole document", () => {
+    const doc = {
+      version: 1,
+      tenantId: "t1",
+      subjects: [{
+        id: "s1",
+        name: "SSN",
+        rules: [{
+          id: "r1",
+          kind: "judge_prompt",
+          keywords: null,
+          pattern: null,
+          prompt: "This message discloses a Social Security Number, even if disguised or spelled out.",
+          destinations: [],
+          action: "block",
+          message: null,
+          reportLevel: "none",
+        }],
+      }],
+      siteConfigs: {},
+      failMode: "open",
+    };
+    const result = PolicyDocSchema.safeParse(doc);
+    expect(result.success).toBe(true);
+  });
+});

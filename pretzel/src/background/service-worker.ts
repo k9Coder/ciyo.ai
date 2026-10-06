@@ -1,13 +1,15 @@
 import { initSentry, Sentry } from "@/lib/sentry";
-import { detectPrompt } from "@mykka/detect";
+import { detectPrompt, DEFAULT_POLICY } from "@mykka/detect";
 import { loadPolicy } from "@/policy/loader";
-import { dispatchEvents } from "@/events/dispatch";
+import { dispatchEvents, getReportingSummary } from "@/events/dispatch";
 import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
+import { runLocalJudgePoc } from "@/background/local-judge-poc";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
+import { appendAuditEvent } from "@/audit/log";
 import type { Message } from "@/shared/messages";
 import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
@@ -32,6 +34,15 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onMessage.addListener(
   (message: Message, _sender, sendResponse) => {
+    // The local-judge wiring spike (spike/local-judge-poc) talks to the
+    // offscreen document via this same chrome.runtime.sendMessage channel.
+    // That message isn't part of the Message union and must be answered
+    // exclusively by the offscreen document — handleMessage's default case
+    // would otherwise race sendResponse against the offscreen doc's real
+    // (async) classify call and could win with a bogus `null`.
+    if ((message as { type?: string })?.type === "LOCAL_JUDGE_CLASSIFY") {
+      return undefined;
+    }
     handleMessage(message)
       .then(sendResponse)
       .catch((err) => {
@@ -56,18 +67,11 @@ async function isAuthenticated(): Promise<boolean> {
 
 const NUDGE_EVERY = 10;
 
-async function unauthResult(): Promise<DetectionResult> {
+async function shouldNudge(): Promise<boolean> {
   const stored = await chrome.storage.local.get("unauthPromptCount") as Record<string, unknown>;
   const count = (typeof stored["unauthPromptCount"] === "number" ? stored["unauthPromptCount"] : 0) + 1;
   await chrome.storage.local.set({ unauthPromptCount: count });
-  return {
-    findings: [],
-    highestAction: "log",
-    promptHash: "",
-    detectedAtMs: Date.now(),
-    durationMs: 0,
-    signInNudge: count % NUDGE_EVERY === 1 ? true : undefined,
-  };
+  return count % NUDGE_EVERY === 1;
 }
 
 async function getDisabledSites(): Promise<string[]> {
@@ -80,15 +84,29 @@ async function handleMessage(message: Message): Promise<unknown> {
   switch (message.type) {
     case "DETECT": {
       const { text, hostname, pasteDetected, inputType, filename, mimeType } = message.payload;
-      if (!await isAuthenticated()) return unauthResult();
+      const detectInput = { text, hostname, pasteDetected, inputType: inputType ?? "prompt" as const, filename, mimeType };
+
+      if (!await isAuthenticated()) {
+        // Signed-out users still get the built-in baseline ruleset — matches
+        // the desktop app's own documented behavior ("Without authentication,
+        // only default rules apply"). This used to skip detectPrompt()
+        // entirely and return empty findings unconditionally, meaning
+        // signed-out users got zero protection despite the extension's own
+        // About copy promising detection regardless of sign-in state.
+        // Event/scan dispatch stays gated on auth — there's no org/tenant to
+        // attribute them to without a signed-in account.
+        const result = await detectPrompt(detectInput, DEFAULT_POLICY);
+        return { ...result, signInNudge: (await shouldNudge()) ? true : undefined };
+      }
+
       const policy = await loadPolicy();
-      const result = await detectPrompt(
-        { text, hostname, pasteDetected, inputType: inputType ?? "prompt", filename, mimeType },
-        policy,
-      );
+      const result = await detectPrompt(detectInput, policy);
       void dispatchEvents(result, hostname);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();
+      // Shadow-mode only (spike/local-judge-poc) — fire-and-forget, never
+      // awaited here, never affects the returned result.
+      void runLocalJudgePoc(hostname, text);
       return result;
     }
 
@@ -130,6 +148,21 @@ async function handleMessage(message: Message): Promise<unknown> {
     case "REPORT_DEGRADED": {
       const { hostname, reason } = message.payload;
       void reportDegraded(hostname, reason);
+      return { ok: true };
+    }
+
+    case "GET_REPORTING_SUMMARY": {
+      return getReportingSummary(message.payload.findings);
+    }
+
+    case "APPEND_AUDIT_EVENT": {
+      // Content scripts run in the injected page's origin, so `indexedDB`
+      // there resolves to that page's storage, not the extension's — the
+      // options page (which reads via the same @/audit/log module but from
+      // the chrome-extension:// origin) would never see events written from
+      // a content script directly. Route through here instead, since the
+      // service worker runs at the extension's own origin.
+      await appendAuditEvent(message.payload);
       return { ok: true };
     }
 

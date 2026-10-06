@@ -1,6 +1,6 @@
 import type { Action, Finding } from "@mykka/detect";
 
-export type UserDecision = "sent" | "edited" | "cancelled" | "sent_with_reason";
+export type UserDecision = "sent" | "edited" | "cancelled" | "sent_with_reason" | "redacted_and_sent";
 
 export interface AuditEvent {
   id: string;

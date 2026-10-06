@@ -1,7 +1,7 @@
 ---
 status: active
 owner: mykka.ai engineering
-verified_at: 2026-06-13
+verified_at: 2026-07-27
 sources:
   - App.tsx
   - main.tsx
@@ -9,9 +9,16 @@ sources:
   - lib/api.ts
   - lib/sentry.ts
   - components/layout/RequireAuth.tsx
+  - components/layout/TenantBootstrap.tsx
   - components/layout/AppLayout.tsx
+  - styles/tokens.css
+  - styles/fonts.css
   - components/billing/PlanGate.tsx
+  - hooks/usePolicy.ts
   - hooks/usePolicyRealtime.ts
+  - hooks/useWireAuthToken.ts
+  - hooks/useMemberships.ts
+  - hooks/useTenant.ts
   - realtime/sse.adapter.ts
 ---
 
@@ -23,14 +30,24 @@ sources:
 
 The query client retries queries once, treats results as fresh for 30 seconds, and disables refetch on window focus and mount. `AppLayout` subscribes to policy-update events and invalidates policy queries through the realtime hook.
 
+## Visual design
+
+The look follows the mykka redesign (Claude Design handoff, `Console.dc.html`). Dark theme (default) is direction 1c: Public Sans / JetBrains Mono, near-black neutrals, mint accent, 4-6px radii. Light theme (`[data-theme="light"]`) is direction 1b: Familjen Grotesk / Geist Mono, deep-green brand, pill buttons, 14px radii.
+
+- `styles/tokens.css` defines the short tokens (`--bg`, `--surface`, `--fill`, `--line`, `--ink`, `--muted`, `--brand`, `--btn-bg`/`--btn-fg`, `--block`, `--warn`, `--r`, `--r-sm`, `--r-btn`, `--font`, `--mono`, `--logo-*`). The legacy names (`--brand-primary`, `--bg-*`, `--text-*`, `--status-*`) remain as aliases; prefer the short names in new code.
+- Fonts are self-hosted through `@fontsource/*` (`styles/fonts.css`) because the nginx CSP only allows `'self'` for fonts and styles.
+- Filled buttons use `--btn-bg`/`--btn-fg` (not `--brand` with white text) so contrast holds in both themes.
+- `AppLayout` provides the inset main card, resizable sidebar (190-380px, width kept in `localStorage` key `pretzel-sidebar-width`, double-click the handle to reset), the Ask bar (opens `/assistant`, also Cmd/Ctrl+K) and the Light/Dark pill.
+
+Policy content edits are a draft until published: clients read only published snapshots. `usePolicyDraft` (query key `policy-draft`) feeds the sidebar "N changes not live" card and the Publish page change list. Every mutation that edits rules, subjects, site configs, fail mode or applies/reverts assistant changes invalidates that key, as do publish, rollback and the realtime policy event.
+
 ## Route reference
 
 | Route | Access | Purpose |
 |---|---|---|
-| `/login` | Public | Opens Clerk sign-in and honors a `redirect` query parameter. |
-| `/unauthorized` | Public | Explains that the active user is not an organization admin. |
-| `/onboarding` | Public route; page requires sign-in | Creates a Clerk organization for a signed-in user without one. |
-| `/invite/:token` | Public | Previews and accepts a single invite token. |
+| `/login/*` | Public | Two-column mykka login. Embeds Clerk `<SignIn />` at `/login` and `<SignUp />` at `/login/sign-up` (path routing; Clerk owns the sub-steps such as `/login/factor-one`), themed via CSS variables. Honors a same-origin `redirect` query parameter. Right panel is labeled example data. |
+| `/onboarding/profile` | Public route; page wires its own Clerk token | Lets a lone `super_admin` on a freshly auto-provisioned tenant apply or skip a recommended DLP policy template. `TenantBootstrap` redirects here automatically when needed. |
+| ~~`/invite/:token`~~ | ~~Public~~ | **Disabled** — was: previews and accepts a single invite token. Route commented out in `App.tsx`; admin-add-by-email on `/members` replaces it. |
 | `/accessibility` | Public | Console accessibility statement. |
 | `/` | Protected | Redirects to `/dashboard`. |
 | `/dashboard` | Protected | Analytics summary, incidents, sites, subjects, and policy status. |
@@ -38,13 +55,13 @@ The query client retries queries once, treats results as fresh for 30 seconds, a
 | `/org` | Protected | CRUD for divisions and teams, plus team membership. |
 | `/destinations` | Protected | CRUD for destination groups and domains. |
 | `/sites` | Protected | CRUD for site domains and CSS selectors. |
-| `/publish` | Protected | Publish, inspect history, and roll back policy versions. |
+| `/publish` | Protected | Review unpublished changes (`GET /v1/policy/draft`), publish them, inspect history, and roll back policy versions. |
 | `/settings` | Protected | Tenant name, billing status/portal, and token rotation. |
-| `/members` | Protected | Generate invites, change roles, and remove members. |
-| `/audit` | Protected | Filter and paginate warn/block audit events. |
+| `/members` | Protected | Add members directly by email (`POST /v1/members`), change roles, and remove members. |
+| `/audit-log` | Protected | Filter and paginate warn/block audit events. Matches the backend's `/v1/audit-log` naming; `/audit` redirects here for old bookmarks. |
 | `/assistant` | Protected + Business feature | Chat, preview proposed actions, and apply assistant changes. |
 
-Protected means `RequireAuth` has confirmed a signed-in user, active Clerk organization, and `org:admin` role.
+Protected means `RequireAuth` has confirmed a signed-in Clerk user; `TenantBootstrap` (inside it) then resolves which backend tenant/membership applies from `/v1/me/memberships` and redirects to `/onboarding/profile` when the sole membership is a `super_admin` on a tenant that hasn't completed onboarding. Clerk is identity-only here — organization, tenant, and role data live entirely in our own backend (`tenants`/`members` tables), never in Clerk Organizations.
 
 ## State and API flow
 
@@ -60,7 +77,7 @@ page/component
 
 `lib/api.ts` defines the backend origin and defaults it to `http://localhost:3000`. The request helper adds JSON headers when a body exists, adds the Clerk bearer token when available, maps non-2xx responses to `AdminApiError`, and returns `undefined` for HTTP 204.
 
-The public API groups are subjects, rules, divisions, teams, members, destination groups, site configs, policy, tenant, audit log, analytics, assistant, invites, and billing.
+The public API groups are subjects, rules, divisions, teams, members, destination groups, site configs, policy, tenant, audit log, analytics, assistant, me (memberships + self-serve-org), and billing. (`api.invites.*` remains in `api.ts`, unreferenced — the token-invite-link endpoints it called are disabled server-side.)
 
 ## Gates and entitlements
 
@@ -68,8 +85,8 @@ The public API groups are subjects, rules, divisions, teams, members, destinatio
 
 - Clerk loading: show an authentication loader.
 - Signed out: redirect to `/login`.
-- No active organization: redirect to `/onboarding`.
-- Role other than `org:admin`: redirect to `/unauthorized`.
+
+`TenantBootstrap` resolves the active backend tenant from `/v1/me/memberships` and, for a lone `super_admin` membership on a tenant that hasn't completed onboarding, redirects to `/onboarding/profile`. Every sensitive backend endpoint independently re-checks `member.role === 'super_admin'` server-side (`requireAdminTokenOrClerkAdmin`), so the frontend gate is UX only, not the security boundary.
 
 `PlanGate` owns feature entitlements. It currently supports `assistantEnabled` and `advancedAnalytics`, but only `/assistant` uses it. When the feature is unavailable, Stripe-backed tenants get a billing-portal action; other tenants get a link to `https://mykka.ai/pricing`.
 

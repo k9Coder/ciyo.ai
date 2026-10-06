@@ -1,11 +1,12 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { verifyToken as clerkVerifyToken } from '@clerk/backend'
-import { parseToken, compareToken } from './tokens.js'
+import { parseToken, compareToken, parseDeviceToken } from './tokens.js'
 import { db } from '../db/client.js'
-import { members, users, tenants } from '../db/schema.js'
+import { members, users, tenants, deviceTokens } from '../db/schema.js'
 import type { Tenant } from '../db/schema.js'
 import { env } from '../env.js'
+import { getOrProvisionUserByClerkId } from '../users/jit.js'
 
 const _tenantCache = new Map<string, { data: Tenant; expiresAt: number }>()
 
@@ -50,6 +51,51 @@ async function resolveOrgToken(
   request.tokenPrefix = parsed.prefix as 'ps_live' | 'ps_adm'
 }
 
+async function resolveDeviceToken(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  token: string
+): Promise<void> {
+  const parsed = parseDeviceToken(token)
+  if (!parsed) {
+    return reply.status(401).send({ error: 'Invalid token format' })
+  }
+
+  const [row] = await db.select().from(deviceTokens).where(eq(deviceTokens.id, parsed.deviceTokenId))
+  if (!row) {
+    return reply.status(401).send({ error: 'Invalid token' })
+  }
+  if (row.revokedAt) {
+    return reply.status(401).send({ error: 'Device token revoked — sign in again' })
+  }
+  if (row.expiresAt < new Date()) {
+    return reply.status(401).send({ error: 'Device token expired — sign in again' })
+  }
+  if (!(await compareToken(parsed.secret, row.tokenHash))) {
+    return reply.status(401).send({ error: 'Invalid token' })
+  }
+
+  const [member] = await db.select().from(members).where(eq(members.id, row.memberId))
+  if (!member) {
+    return reply.status(401).send({ error: 'Member not found' })
+  }
+  const tenant = await getTenantCached(row.tenantId)
+  if (!tenant) {
+    return reply.status(401).send({ error: 'Tenant not found' })
+  }
+  // member.userId is guaranteed set here: device tokens are only ever minted
+  // after a successful resolveClerkJwt call (see desktop-auth service), which
+  // requires a linked user.
+  const [user] = await db.select().from(users).where(eq(users.id, member.userId!))
+
+  request.tenant = tenant
+  request.member = member
+  request.user = user
+  request.tokenPrefix = 'pd'
+
+  void db.update(deviceTokens).set({ lastUsedAt: new Date() }).where(eq(deviceTokens.id, row.id))
+}
+
 export async function resolveClerkJwt(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -68,7 +114,9 @@ export async function resolveClerkJwt(
     return reply.status(401).send({ error: 'Invalid Clerk token' })
   }
 
-  const [user] = await db.select().from(users).where(eq(users.clerkId, clerkUserId))
+  // The Clerk webhook can lag a fresh sign-up; provision just-in-time instead of
+  // making a brand-new user sign in twice.
+  const user = await getOrProvisionUserByClerkId(clerkUserId)
   if (!user) {
     return reply.status(401).send({ error: 'User not found — sign up first' })
   }
@@ -101,13 +149,63 @@ export async function resolveClerkJwt(
   request.tokenPrefix = 'clerk'
 }
 
+// Verifies the Clerk JWT and resolves req.user only — unlike requireClerkAuth,
+// it does NOT require an existing membership. Needed for routes a brand-new,
+// not-yet-enrolled user must call to become a member in the first place (e.g.
+// POST /invites/:token/accept) — requireClerkAuth would 401 them with "Not
+// enrolled in any organisation" before they ever get the chance to enroll.
+export async function requireClerkUser(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  const secretKey = env.CLERK_SECRET_KEY
+  if (!secretKey) {
+    return reply.status(500).send({ error: 'Clerk not configured' })
+  }
+
+  let clerkUserId: string
+  try {
+    const payload = await clerkVerifyToken(auth.slice(7), { secretKey })
+    clerkUserId = payload.sub
+  } catch {
+    return reply.status(401).send({ error: 'Invalid Clerk token' })
+  }
+
+  const user = await getOrProvisionUserByClerkId(clerkUserId)
+  if (!user) {
+    return reply.status(401).send({ error: 'User not found — sign up first' })
+  }
+
+  req.user = user
+  req.tokenPrefix = 'clerk'
+}
+
 export function invalidateTenantCache(tenantId: string): void {
   _tenantCache.delete(tenantId)
 }
 
 export async function requireClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const token = req.headers.authorization?.slice(7) ?? ''
-  return resolveClerkJwt(req, reply, token)
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  return resolveClerkJwt(req, reply, auth.slice(7))
+}
+
+// Device-token-only auth for routes an installed app calls about its own
+// session (desktop /session, /sign-out). Deliberately rejects org tokens and
+// Clerk JWTs so the route can rely on the token id being a device token.
+export async function requireDeviceAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) {
+    return reply.status(401).send({ error: 'Missing bearer token' })
+  }
+  const token = auth.slice(7)
+  if (!token.startsWith('pd_')) {
+    return reply.status(401).send({ error: 'Device token required' })
+  }
+  return resolveDeviceToken(req, reply, token)
 }
 
 export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -118,6 +216,9 @@ export async function requireOrgTokenOrClerkAuth(req: FastifyRequest, reply: Fas
   const token = auth.slice(7)
   if (token.startsWith('ps_')) {
     return resolveOrgToken(req, reply, false)
+  }
+  if (token.startsWith('pd_')) {
+    return resolveDeviceToken(req, reply, token)
   }
   return resolveClerkJwt(req, reply, token)
 }

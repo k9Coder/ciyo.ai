@@ -13,6 +13,7 @@ import {
   subjects, rules, policies,
   destinationGroups, siteConfigs, events, scans,
   chatSessions, chatMessages, invites, enforcementSignals,
+  memberRuleExceptions, deviceTokens, desktopAuthCodes, extensionAuthCodes, subjectVersions,
 } from '../db/schema.js'
 import { generateSecret, formatToken, hashToken } from '../auth/tokens.js'
 import { compilePolicy } from '../policy/compiler.js'
@@ -26,9 +27,14 @@ async function main() {
   await db.delete(invites)
   await db.delete(chatMessages)
   await db.delete(chatSessions)
+  await db.delete(memberRuleExceptions)
   await db.delete(events)
   await db.delete(scans)
+  await db.delete(deviceTokens)
+  await db.delete(desktopAuthCodes)
+  await db.delete(extensionAuthCodes)
   await db.delete(memberTeams)
+  await db.delete(subjectVersions)
   await db.delete(rules)
   await db.delete(subjects)
   await db.delete(destinationGroups)
@@ -54,6 +60,10 @@ async function main() {
     subscriptionStatus: 'active',
     plan:               'business',
     seatCount:          10,
+    // The seeded user is the tenant's sole super_admin — TenantBootstrap redirects
+    // any such admin to /onboarding/profile until this is true, which would send
+    // every admin-suite test off to the wizard instead of the page under test.
+    onboardingWizardCompleted: true,
   }).returning({ id: tenants.id })
 
   const tenantId = tenant!.id
@@ -155,6 +165,19 @@ async function main() {
       occurredAt:  new Date(now.getTime() - (8 + i) * 60_000),
     })),
   ])
+
+  // Every real block/warn event traces back to the scan that triggered it —
+  // the dashboard's "Active Users" tile counts distinct scans.memberId, not
+  // events.memberId. Without a matching scans row per event above, that tile
+  // reads 0 despite 15 incidents from this exact member being visible on the
+  // same screen.
+  await db.insert(scans).values(
+    Array.from({ length: 15 }, (_, i) => ({
+      tenantId,
+      memberId:   member!.id,
+      occurredAt: new Date(now.getTime() - i * 60_000),
+    })),
+  )
 
   const [chatSession1] = await db.insert(chatSessions).values({
     tenantId,

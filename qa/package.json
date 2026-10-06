@@ -1,0 +1,18 @@
+{
+  "name": "mykka-qa",
+  "version": "0.1.0",
+  "description": "Manual QA suite — scripted journeys against real deployed environments",
+  "private": true,
+  "scripts": {
+    "test:qa": "playwright test --config playwright.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@clerk/testing": "^1.4.4",
+    "@playwright/test": "^1.47.0",
+    "@types/node": "^20.0.0",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.5.4",
+    "zod": "^4.4.3"
+  }
+}

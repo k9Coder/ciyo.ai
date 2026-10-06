@@ -2,14 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { useToast } from './useToast'
 
-export function useTenant() {
-  return useQuery({ queryKey: ['tenant'], queryFn: api.tenant.get, staleTime: 60_000, refetchOnMount: false })
+export function useTenant(enabled = true) {
+  return useQuery({ queryKey: ['tenant'], queryFn: api.tenant.get, staleTime: 60_000, refetchOnMount: false, enabled })
 }
 
 export function useTenantMutations() {
   const qc = useQueryClient()
   const { toast } = useToast()
-  const inv = () => qc.invalidateQueries({ queryKey: ['tenant'] })
+  const inv = () => {
+    qc.invalidateQueries({ queryKey: ['tenant'] })
+    qc.invalidateQueries({ queryKey: ['policy-draft'] }) // fail mode is part of the policy
+  }
 
   const updateName = useMutation({
     mutationFn: (name: string) => api.tenant.update(name),

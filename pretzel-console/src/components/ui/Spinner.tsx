@@ -18,7 +18,7 @@ export function Spinner({ size = 'md', style }: SpinnerProps) {
   const circumference = 2 * Math.PI * r;
   const arc = circumference * 0.72;
   const gap = circumference - arc;
-  const primary = 'var(--brand-primary, #5b8cff)';
+  const primary = 'var(--brand)';
 
   return (
     <span
@@ -39,7 +39,6 @@ export function Spinner({ size = 'md', style }: SpinnerProps) {
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${arc} ${gap}`}
-          style={{ filter: `drop-shadow(0 0 3px ${primary})` }}
           transform={`rotate(-90 ${cx} ${cx})`}
         />
       </svg>

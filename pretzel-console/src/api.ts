@@ -1,9 +1,10 @@
 import type {
   Subject, Rule, Division, Team, Member,
-  DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, TenantInfo,
+  DestinationGroup, SiteConfig, PolicyInfo, PolicyHistoryEntry, PolicyDraft, TenantInfo,
   AnalyticsSummary, AnalyticsDailyEntry, AnalyticsIncident,
   AnalyticsTopSiteEntry, AnalyticsBySubjectEntry,
   AuditLogPage,
+  RuleExceptionSummary,
   ChatSession, ChatMessage, AssistantChatResponse, AssistantApplyResponse,
   InvitePreview, InviteCreated,
   BillingStatus,
@@ -17,7 +18,7 @@ import { getSelectedTenantId } from './lib/tenant'
 const TOKEN_KEY = 'ps_admin_token'
 
 export class AdminApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public retryAfterMs?: number) {
     super(message)
     this.name = 'AdminApiError'
   }
@@ -50,7 +51,12 @@ async function request<T>(method: string, path: string, body?: unknown, opts?: {
   })
   if (!res.ok) {
     const json = await res.json().catch(() => ({ error: res.statusText })) as { error?: string }
-    throw new AdminApiError(res.status, json.error ?? res.statusText)
+    // `Retry-After` on 429s is in seconds per RFC 9110 §10.2.3. Surface it so
+    // callers back off for as long as the server asked instead of retrying
+    // immediately into the same rate-limit window.
+    const retryAfterHeader = res.status === 429 ? res.headers.get('Retry-After') : null
+    const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1_000 : undefined
+    throw new AdminApiError(res.status, json.error ?? res.statusText, retryAfterMs)
   }
   if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
@@ -95,9 +101,9 @@ export const api = {
   },
   members: {
     list: () => request<Member[]>('GET', '/v1/members'),
-    create: (data: { email: string; displayName?: string; role?: Member['role'] }) =>
+    create: (data: { email: string; displayName?: string; role?: Member['role']; adminDivisionId?: string }) =>
       request<Member>('POST', '/v1/members', data),
-    update: (id: string, data: Partial<{ displayName: string; role: Member['role'] }>) =>
+    update: (id: string, data: Partial<{ displayName: string; role: Member['role']; adminDivisionId: string | null; failMode: Member['failMode'] }>) =>
       request<Member>('PATCH', `/v1/members/${id}`, data),
     remove: (id: string) => request<void>('DELETE', `/v1/members/${id}`),
     assignTeam: (memberId: string, teamId: string) =>
@@ -125,7 +131,12 @@ export const api = {
     get: () => request<PolicyInfo>('GET', '/v1/policy'),
     publish: () => request<{ version: number }>('POST', '/v1/policy/publish', {}),
     history: () => request<PolicyHistoryEntry[]>('GET', '/v1/policy/history'),
+    draft: () => request<PolicyDraft>('GET', '/v1/policy/draft'),
     rollback: (version: number) => request<{ version: number }>('POST', `/v1/policy/rollback/${version}`),
+    // Admin-only view of per-member "always allow" exceptions (set from a
+    // decision popup in pretzel-desktop) — not silent: this is how an admin
+    // sees a rule is being muted and by whom.
+    exceptions: () => request<{ exceptions: RuleExceptionSummary[] }>('GET', '/v1/policy/exceptions'),
   },
   tenant: {
     get:              ()                                    => request<TenantInfo>('GET', '/v1/tenant'),
@@ -171,9 +182,14 @@ export const api = {
   me: {
     memberships: () =>
       request<{ memberships: Membership[] }>('GET', '/v1/me/memberships', undefined, { skipTenant: true }),
+    // Console-only: provisions a personal org when the signed-in user has zero
+    // memberships (nobody pre-added them). Never called by extension/desktop —
+    // see backend/src/me/service.ts::selfServeProvisionOrg.
+    selfServeOrg: () =>
+      request<{ memberships: Membership[] }>('POST', '/v1/me/self-serve-org', undefined, { skipTenant: true }),
   },
   invites: {
-    create: (opts: { email?: string; role?: Member['role'] }) =>
+    create: (opts: { email?: string; role?: Member['role']; divisionId?: string }) =>
       request<InviteCreated>('POST', '/v1/invites', opts),
     preview: (token: string) =>
       request<InvitePreview>('GET', `/v1/invites/${token}`),
