@@ -13,6 +13,7 @@ const RuleBaseSchema = z.object({
   action: ActionSchema,
   enabled: z.boolean(),
   tags: z.array(z.string()),
+  enforced: z.boolean().default(true),
 });
 
 export const PatternRuleSchema = RuleBaseSchema.extend({
@@ -55,11 +56,18 @@ export const ScoreRuleSchema = RuleBaseSchema.extend({
   confirmThreshold: z.number().int().min(10).max(100),
 });
 
+export const JudgePromptRuleSchema = RuleBaseSchema.extend({
+  kind: z.literal("judge_prompt"),
+  /** The admin's plain-English claim, judged against message content on-device. */
+  prompt: z.string().min(1),
+});
+
 export const RuleSchema = z.discriminatedUnion("kind", [
   PatternRuleSchema,
   EntropyRuleSchema,
   DictionaryRuleSchema,
   ScoreRuleSchema,
+  JudgePromptRuleSchema,
 ]);
 
 // ─── Full policy ─────────────────────────────────────────────────────────────
@@ -89,6 +97,7 @@ export type EntropyRule = z.infer<typeof EntropyRuleSchema>;
 export type DictionaryRule = z.infer<typeof DictionaryRuleSchema>;
 export type ScoreSignalConfig = z.infer<typeof ScoreSignalConfigSchema>;
 export type ScoreRule = z.infer<typeof ScoreRuleSchema>;
+export type JudgePromptRule = z.infer<typeof JudgePromptRuleSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type Policy = z.infer<typeof PolicySchema>;
 

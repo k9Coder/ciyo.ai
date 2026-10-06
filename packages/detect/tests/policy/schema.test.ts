@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PolicySchema, PolicyDocSchema } from "../../src/policy/schema";
+import { PolicySchema, PolicyDocSchema, RuleSchema } from "../../src/policy/schema";
 import { DEFAULT_POLICY } from "../../src/policy/defaults";
 
 describe("PolicySchema", () => {
@@ -222,5 +222,40 @@ describe("PolicyDocSchema judge_prompt forward-compat", () => {
     };
     const result = PolicyDocSchema.safeParse(doc);
     expect(result.success).toBe(true);
+  });
+});
+
+describe("judge_prompt rule kind and enforced field", () => {
+  it("parses a judge_prompt rule with a prompt field", () => {
+    const rule = {
+      id: "jp-1", name: "SSN judge", description: "", severity: "high",
+      action: "block", enabled: true, tags: [],
+      kind: "judge_prompt", prompt: "Does this message contain a Social Security Number?",
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.kind).toBe("judge_prompt");
+  });
+
+  it("defaults enforced to true when omitted", () => {
+    const rule = {
+      id: "d-1", name: "Dict", description: "", severity: "medium",
+      action: "warn", enabled: true, tags: [],
+      kind: "dictionary", terms: ["secret"], caseSensitive: false,
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.enforced).toBe(true);
+  });
+
+  it("accepts an explicit enforced: false", () => {
+    const rule = {
+      id: "d-2", name: "Dict", description: "", severity: "medium",
+      action: "warn", enabled: true, tags: [], enforced: false,
+      kind: "dictionary", terms: ["secret"], caseSensitive: false,
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.enforced).toBe(false);
   });
 });
