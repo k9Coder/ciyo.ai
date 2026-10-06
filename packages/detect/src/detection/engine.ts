@@ -1,4 +1,4 @@
-import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule } from "../policy/schema";
+import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule, JudgePromptRule } from "../policy/schema";
 import type { DetectionResult, DetectionInput, Finding, ScoreRule, ScoreSignalConfig } from "./types";
 import { maxAction, compareSeverity } from "./types";
 import { normalizeText } from "./normalize";
@@ -8,6 +8,26 @@ import { findHighEntropyTokens } from "./layer1-patterns/entropy";
 import { runExactDictionaryRule } from "./layer3-dictionary/exact";
 import { runFuzzyDictionaryRule } from "./layer3-dictionary/fuzzy";
 import { SNIPPET_CONTEXT_CHARS } from "../constants";
+import type { LocalJudge } from "../judge/types";
+
+/**
+ * Rule excludes judge_prompt — runRule's switch stays exhaustive over the
+ * kinds it evaluates synchronously; judge_prompt is evaluated separately,
+ * in parallel, via LocalJudge (see detectPrompt).
+ */
+type SyncRule = Exclude<Rule, { kind: "judge_prompt" }>;
+
+const JUDGE_TIMEOUT_MS = 2000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("judge timeout")), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
+}
 
 async function sha256(text: string): Promise<string> {
   const buf = await crypto.subtle.digest(
@@ -189,7 +209,7 @@ function dedupeIdenticalSpanFindings(kinded: KindedFinding[]): Finding[] {
 function runRule(
   text: string,
   normalised: string,
-  rule: Rule | ScoreRule,
+  rule: SyncRule | ScoreRule,
   codeSpans: ReturnType<typeof findCodeSpans>,
   pasteDetected: boolean
 ): Finding[] {
@@ -206,11 +226,44 @@ function runRule(
   }
 }
 
+async function runJudgePromptRules(
+  text: string,
+  rules: JudgePromptRule[],
+  judge: LocalJudge | undefined,
+): Promise<Finding[]> {
+  if (!judge || rules.length === 0 || !judge.isAvailable()) return [];
+
+  const results = await Promise.all(
+    rules.map(async (rule): Promise<Finding | null> => {
+      try {
+        const verdict = await withTimeout(judge.classify({ text, prompt: rule.prompt }), JUDGE_TIMEOUT_MS);
+        if (verdict.verdict !== "match") return null;
+        return {
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: rule.severity,
+          action: rule.action,
+          matchedText: text.slice(0, 200),
+          startOffset: 0,
+          endOffset: text.length,
+        };
+      } catch {
+        // Fail open: a broken/slow judge never blocks the user, and never
+        // takes down the other rules evaluated in this same request.
+        return null;
+      }
+    }),
+  );
+
+  return results.filter((f): f is Finding => f !== null);
+}
+
 export async function detectPrompt(
   input: DetectionInput | string,
   policy: Policy,
   hostnameOrUndefined?: string,
-  pasteDetected = false
+  pasteDetected = false,
+  judge?: LocalJudge,
 ): Promise<DetectionResult> {
   const start = performance.now();
 
@@ -238,13 +291,19 @@ export async function detectPrompt(
   const codeSpans = findCodeSpans(normalised);
   const effectivePasteDetected = isFile ? false : pasteDetected;
   const allRules = [...policy.baseline, ...policy.custom];
+  const syncRules = allRules.filter((r): r is SyncRule => r.kind !== "judge_prompt");
+  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt");
 
   const kindedFindings: KindedFinding[] = [];
-  for (const rule of allRules) {
-    const ruleFindings = runRule(promptText, normalised, rule as Rule | ScoreRule, codeSpans, effectivePasteDetected);
-    const isEntropy = (rule as Rule | ScoreRule).kind === "entropy";
+  for (const rule of syncRules) {
+    const ruleFindings = runRule(promptText, normalised, rule as SyncRule | ScoreRule, codeSpans, effectivePasteDetected);
+    const isEntropy = (rule as SyncRule | ScoreRule).kind === "entropy";
     for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy });
   }
+
+  const judgeFindings = await runJudgePromptRules(promptText, judgePromptRules, judge);
+  for (const finding of judgeFindings) kindedFindings.push({ finding, isEntropy: false });
+
   const findings = dedupeIdenticalSpanFindings(kindedFindings);
 
   let highestAction: Finding["action"] = "log";
@@ -257,6 +316,7 @@ export async function detectPrompt(
 
   return {
     findings,
+    shadowFindings: [],
     highestAction,
     promptHash,
     detectedAtMs: Date.now(),
@@ -267,6 +327,7 @@ export async function detectPrompt(
 function emptyResult(_promptText: string, startPerf: number): DetectionResult {
   return {
     findings: [],
+    shadowFindings: [],
     highestAction: "log",
     promptHash: "",
     detectedAtMs: Date.now(),
