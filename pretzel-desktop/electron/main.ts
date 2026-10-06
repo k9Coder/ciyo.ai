@@ -509,6 +509,7 @@ app.whenReady().then(async () => {
             startOffset: 0,
             endOffset: 13,
           }],
+          shadowFindings: [],
           highestAction: 'block',
           promptHash: 'e2e',
           detectedAtMs: Date.now(),

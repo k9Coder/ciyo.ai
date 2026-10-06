@@ -113,4 +113,46 @@ describe("detectPrompt — judge_prompt enforcement", () => {
     const result = await detectPrompt(longText, policy, "example.com", false, judge);
     expect(result.findings[0]!.matchedText).toHaveLength(200);
   });
+
+  it("keeps every matching judge_prompt rule as a separate finding, and highestAction is the strongest action among them", async () => {
+    const policy: Policy = {
+      ...DEFAULT_POLICY,
+      baseline: [],
+      custom: [
+        {
+          id: "jp-warn", name: "Warn rule", description: "", severity: "high",
+          action: "warn", enabled: true, tags: [], enforced: true,
+          kind: "judge_prompt", prompt: "Does this discuss roadmap items?",
+        },
+        {
+          id: "jp-block", name: "Block rule", description: "", severity: "medium",
+          action: "block", enabled: true, tags: [], enforced: true,
+          kind: "judge_prompt", prompt: "Does this contain a secret?",
+        },
+      ],
+    };
+    const judge = new FakeJudge({ verdict: "match", confidence: 0.9 });
+    const result = await detectPrompt("this leaks a secret and the roadmap", policy, "example.com", false, judge);
+    expect(result.findings).toHaveLength(2);
+    expect(result.findings.map((f) => f.ruleId).sort()).toEqual(["jp-block", "jp-warn"]);
+    expect(result.highestAction).toBe("block");
+  });
+
+  it("a disabled judge_prompt rule is never evaluated, matching every other rule kind's enabled check", async () => {
+    const policy: Policy = {
+      ...policyWithJudgePrompt("Does this contain a secret?", "block"),
+      custom: [{ ...policyWithJudgePrompt("x", "block").custom[0]!, enabled: false }],
+    };
+    let calls = 0;
+    class CountingJudge extends FakeJudge {
+      async classify(input: JudgeInput): Promise<JudgeVerdict> {
+        calls++;
+        return super.classify(input);
+      }
+    }
+    const judge = new CountingJudge({ verdict: "match", confidence: 0.9 });
+    const result = await detectPrompt("this is a secret", policy, "example.com", false, judge);
+    expect(calls).toBe(0);
+    expect(result.highestAction).toBe("log");
+  });
 });

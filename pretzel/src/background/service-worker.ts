@@ -43,7 +43,8 @@ chrome.runtime.onMessage.addListener(
     // document — handleMessage's default case would otherwise race
     // sendResponse against the offscreen doc's real (async) classify call
     // and could win with a bogus `null`.
-    if ((message as { type?: string })?.type === "LOCAL_JUDGE_CLASSIFY") {
+    const messageType = (message as { type?: string })?.type;
+    if (messageType === "LOCAL_JUDGE_CLASSIFY" || messageType === "LOCAL_JUDGE_PING") {
       return undefined;
     }
     handleMessage(message)

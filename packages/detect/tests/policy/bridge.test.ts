@@ -85,6 +85,22 @@ describe('bridgePolicy', () => {
     expect((p.custom[0] as { prompt: string }).prompt).toBe('This message discloses a Social Security Number.')
   })
 
+  it("disables a judge_prompt rule with a null/empty prompt instead of handing an empty claim to the model (fail open, never fail closed)", () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'Empty',
+        rules: [
+          { id: 'r1', kind: 'judge_prompt', keywords: null, pattern: null, prompt: null, destinations: [], action: 'block', message: null, reportLevel: 'none' },
+          { id: 'r2', kind: 'judge_prompt', keywords: null, pattern: null, prompt: '   ', destinations: [], action: 'block', message: null, reportLevel: 'none' },
+        ],
+      }],
+    }
+    const p = bridgePolicy(doc, [])
+    expect(p.custom).toHaveLength(2)
+    for (const rule of p.custom) expect(rule.enabled).toBe(false)
+  })
+
   it("bridges legacy rule kinds with enforced: false", () => {
     const doc: PolicyDoc = {
       ...MINIMAL_DOC,

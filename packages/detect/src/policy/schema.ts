@@ -13,6 +13,16 @@ const RuleBaseSchema = z.object({
   action: ActionSchema,
   enabled: z.boolean(),
   tags: z.array(z.string()),
+  // Whether a match can actually block/warn (true) or only gets reported as
+  // shadow telemetry (false). bridge.ts sets this to false for every
+  // backend-authored legacy kind (pattern/keyword/entropy/score) and true
+  // for judge_prompt — but it does NOT reach DEFAULT_POLICY's own hardcoded
+  // baseline rules (API keys, SSNs, credit cards, ...), which stay a real,
+  // always-on floor regardless of tenant policy (defaults.ts explicitly
+  // sets enforced: true on every one of them — see
+  // tests/policy/schema.test.ts's "DEFAULT_POLICY's built-in rules stay
+  // enforced" test). Signed-out users get only that baseline, so if it ever
+  // silently shadowed, they would have zero real protection.
   enforced: z.boolean().default(true),
 });
 

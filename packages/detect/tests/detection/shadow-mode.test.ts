@@ -62,6 +62,13 @@ describe("detectPrompt — shadow-mode split", () => {
     expect(result.findings).toHaveLength(0);
     expect(result.shadowFindings).toHaveLength(0);
   });
+
+  it("collapses many occurrences of the same shadow rule into one shadow finding, not one per occurrence", async () => {
+    const pastedText = Array.from({ length: 50 }, () => "secretword").join(" ");
+    const result = await detectPrompt(pastedText, policyWithShadowDictionary(["secretword"]), "example.com");
+    expect(result.shadowFindings).toHaveLength(1);
+    expect(result.shadowFindings[0]!.ruleId).toBe("shadow-dict-1");
+  });
 });
 
 describe("toShadowVerdictPayload", () => {

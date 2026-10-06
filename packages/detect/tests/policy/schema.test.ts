@@ -259,3 +259,18 @@ describe("judge_prompt rule kind and enforced field", () => {
     if (result.success) expect(result.data.enforced).toBe(false);
   });
 });
+
+describe("DEFAULT_POLICY's built-in rules stay enforced (not shadowed by the legacy-kind flip)", () => {
+  it("every baseline and custom rule in DEFAULT_POLICY has enforced: true", () => {
+    // The shadow-mode flip (bridge.ts: enforced: false for every KIND the
+    // backend bridges) applies only to backend-authored custom rules — it
+    // does not reach the extension's own hardcoded built-in safety net
+    // (API keys, SSNs, credit cards, ...), which stays a real, always-on
+    // floor regardless of tenant policy. Signed-out users get only this
+    // baseline (service-worker.ts), so if it ever silently shadowed, they
+    // would have zero real protection.
+    for (const rule of [...DEFAULT_POLICY.baseline, ...DEFAULT_POLICY.custom]) {
+      expect(rule.enforced).toBe(true);
+    }
+  });
+});

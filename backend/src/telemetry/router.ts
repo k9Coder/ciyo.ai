@@ -13,6 +13,7 @@ import {
 } from './service.js'
 
 const MAX_SHADOW_VERDICT_BATCH = 200
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
   // Client (extension) reports a degraded-enforcement event. No prompt content.
@@ -60,8 +61,8 @@ export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
     const items: ShadowVerdictInput[] = []
     for (const raw of body as unknown[]) {
       const item = raw as Partial<ShadowVerdictInput & { enforced: unknown }>
-      if (!item.ruleId || typeof item.ruleId !== 'string') {
-        return reply.status(400).send({ error: 'ruleId is required' })
+      if (!item.ruleId || typeof item.ruleId !== 'string' || !UUID_RE.test(item.ruleId)) {
+        return reply.status(400).send({ error: 'ruleId must be a valid UUID' })
       }
       if (!SHADOW_VERDICT_KINDS.includes(item.kind as never)) {
         return reply.status(400).send({ error: 'kind must be one of ' + SHADOW_VERDICT_KINDS.join(', ') })

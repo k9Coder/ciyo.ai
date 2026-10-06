@@ -14,7 +14,14 @@ const OFFSCREEN_URL = "src/offscreen/index.html";
 
 export class RemoteLocalJudge implements LocalJudge {
   private offscreenReady: Promise<void> | null = null;
-  private hasClassifiedSuccessfully = false;
+  // isAvailable() must be synchronous (the LocalJudge contract), but the
+  // engine only ever calls classify() once isAvailable() has already
+  // returned true — a flag that only flips inside classify() can never
+  // flip at all. Mirrors ThemisLocalJudge's own pattern: isAvailable()
+  // kicks off an async readiness check without blocking, and returns the
+  // last known state.
+  private ready = false;
+  private checkingReady = false;
 
   private async ensureOffscreenDocument(): Promise<void> {
     if (this.offscreenReady) return this.offscreenReady;
@@ -30,22 +37,40 @@ export class RemoteLocalJudge implements LocalJudge {
         reasons: [chrome.offscreen.Reason.WORKERS],
         justification: "Hosts the local-judge model outside the service worker's idle-kill lifecycle.",
       });
-    })();
+    })().catch((err: unknown) => {
+      // Never cache a failed attempt — a transient createDocument failure
+      // (quota, a concurrent doc elsewhere) must not permanently disable
+      // judging for this service-worker generation.
+      this.offscreenReady = null;
+      throw err;
+    });
 
     return this.offscreenReady;
   }
 
   isAvailable(): boolean {
-    return this.hasClassifiedSuccessfully;
+    if (!this.checkingReady) {
+      this.checkingReady = true;
+      void this.checkReady().finally(() => { this.checkingReady = false; });
+    }
+    return this.ready;
+  }
+
+  private async checkReady(): Promise<void> {
+    try {
+      await this.ensureOffscreenDocument();
+      const result = (await chrome.runtime.sendMessage({ type: "LOCAL_JUDGE_PING" })) as { available: boolean };
+      this.ready = !!result?.available;
+    } catch {
+      this.ready = false;
+    }
   }
 
   async classify(input: JudgeInput): Promise<JudgeVerdict> {
     await this.ensureOffscreenDocument();
-    const result = (await chrome.runtime.sendMessage({
+    return (await chrome.runtime.sendMessage({
       type: "LOCAL_JUDGE_CLASSIFY",
       payload: { prompt: input.prompt, text: input.text },
     })) as JudgeVerdict;
-    this.hasClassifiedSuccessfully = true;
-    return result;
   }
 }

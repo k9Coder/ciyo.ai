@@ -294,7 +294,7 @@ export async function detectPrompt(
   const effectivePasteDetected = isFile ? false : pasteDetected;
   const allRules = [...policy.baseline, ...policy.custom];
   const syncRules = allRules.filter((r): r is SyncRule => r.kind !== "judge_prompt");
-  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt");
+  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt" && r.enabled);
 
   const kindedFindings: KindedFinding[] = [];
   for (const rule of syncRules) {
@@ -309,10 +309,29 @@ export async function detectPrompt(
   const enforcedKinded = kindedFindings.filter((k) => k.enforced);
   const shadowKinded = kindedFindings.filter((k) => !k.enforced);
 
-  const findings = dedupeIdenticalSpanFindings(enforcedKinded);
+  // dedupeIdenticalSpanFindings exists to collapse overlapping pattern/
+  // entropy/dictionary matches on the same substring span — a different
+  // problem from judge_prompt findings, which are distinct whole-message
+  // judgments that all happen to share the same [0, text.length) span by
+  // construction. Deduping those by span would silently drop every
+  // judge_prompt rule but one (keeping the highest-severity rule, which
+  // isn't necessarily the one with the strongest action). Dedupe only the
+  // span-based kinds; every matching judge_prompt rule is its own finding.
+  const spanKinded = enforcedKinded.filter((k) => k.kind !== "judge_prompt");
+  const judgePromptKinded = enforcedKinded.filter((k) => k.kind === "judge_prompt");
+  const findings = [...dedupeIdenticalSpanFindings(spanKinded), ...judgePromptKinded.map((k) => k.finding)];
 
   const shadowTimestamp = new Date().toISOString();
-  const shadowFindings: ShadowFinding[] = shadowKinded.map((k) => ({
+  // A dictionary/pattern rule can match many times in one message (a pasted
+  // document full of the same keyword) — one shadow row per occurrence is
+  // pure noise and risks exceeding the backend's batch cap for exactly the
+  // high-signal, high-volume case telemetry most needs to see. Collapse to
+  // one shadow finding per rule per request.
+  const shadowByRuleId = new Map<string, KindedFinding>();
+  for (const k of shadowKinded) {
+    if (!shadowByRuleId.has(k.finding.ruleId)) shadowByRuleId.set(k.finding.ruleId, k);
+  }
+  const shadowFindings: ShadowFinding[] = Array.from(shadowByRuleId.values()).map((k) => ({
     ruleId: k.finding.ruleId,
     // shadowKinded only ever contains legacy kinds — judge_prompt rules are
     // always enforced: true (see bridge.ts), so this cast is safe.

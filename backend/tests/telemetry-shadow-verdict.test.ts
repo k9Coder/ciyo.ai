@@ -43,6 +43,14 @@ describe('POST /v1/telemetry/shadow-verdict', () => {
     expect(res.status).toBe(401)
   })
 
+  it('rejects a malformed ruleId with 400, not a 500 from the database', async () => {
+    const res = await supertest(app.server)
+      .post('/v1/telemetry/shadow-verdict')
+      .set('Authorization', `Bearer ${orgToken}`)
+      .send([{ ...VALID_ITEM, ruleId: 'not-a-uuid' }])
+    expect(res.status).toBe(400)
+  })
+
   it('rejects an item with an invalid kind', async () => {
     const res = await supertest(app.server)
       .post('/v1/telemetry/shadow-verdict')

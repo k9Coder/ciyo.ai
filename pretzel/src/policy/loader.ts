@@ -39,6 +39,7 @@ const CLOSED_POLICY: Policy = {
       severity: "critical",
       action: "block",
       enabled: true,
+      enforced: true,
       tags: ["system"],
       pattern: "[\\s\\S]+",
       flags: "s",

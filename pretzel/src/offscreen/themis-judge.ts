@@ -32,7 +32,7 @@
  *   mkdir -p public/models/themis/onnx public/ort
  *   cp ../models/themis/{config.json,tokenizer.json,tokenizer_config.json,vocab_remap.json} public/models/themis/
  *   cp ../models/themis/themis.onnx{,.data} public/models/themis/onnx/
- *   cp node_modules/.pnpm/onnxruntime-web@*/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.{mjs,wasm} public/ort/
+ *   cp "node_modules/.pnpm/onnxruntime-web@"*"/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify."{mjs,wasm} public/ort/
  */
 import { AutoTokenizer, AutoModelForSequenceClassification, Tensor, env } from "@huggingface/transformers";
 import type { PreTrainedTokenizer, PreTrainedModel } from "@huggingface/transformers";
