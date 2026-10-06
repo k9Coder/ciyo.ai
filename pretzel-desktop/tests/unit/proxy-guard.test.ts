@@ -4,7 +4,14 @@
  */
 import { describe, it, expect } from 'vitest'
 import { DEFAULT_POLICY } from '@mykka/detect'
+import type { Policy, LocalJudge, JudgeInput, JudgeVerdict } from '@mykka/detect'
 import { evaluateRequest, needsDecision, isMonitoredHost, isNoisePath } from '../../electron/proxy'
+
+class FakeJudge implements LocalJudge {
+  constructor(private readonly verdict: JudgeVerdict, private readonly available = true) {}
+  isAvailable(): boolean { return this.available }
+  async classify(_input: JudgeInput): Promise<JudgeVerdict> { return this.verdict }
+}
 
 describe('isMonitoredHost', () => {
   it('matches the AI hosts we intercept (and their subdomains)', () => {
@@ -73,5 +80,22 @@ describe('evaluateRequest + needsDecision', () => {
     const body = JSON.stringify({ prompt: 'what is the capital of France?' })
     const result = await evaluateRequest(DEFAULT_POLICY, 'chatgpt.com', body)
     expect(needsDecision(result)).toBe(false)
+  })
+})
+
+describe('evaluateRequest — judge_prompt', () => {
+  it('passes the judge through and lets a real match block', async () => {
+    const policy: Policy = {
+      version: 1, baseline: [], perSite: {}, allowSendAnywayWithReason: false,
+      auditRetentionDays: 90, failMode: 'open',
+      custom: [{
+        id: 'jp-1', name: 'Judge rule', description: '', severity: 'high',
+        action: 'block', enabled: true, tags: [], enforced: true,
+        kind: 'judge_prompt', prompt: 'Does this leak a secret?',
+      }],
+    }
+    const judge = new FakeJudge({ verdict: 'match', confidence: 0.9 })
+    const result = await evaluateRequest(policy, 'example.com', 'leaking a secret', judge)
+    expect(result.highestAction).toBe('block')
   })
 })
