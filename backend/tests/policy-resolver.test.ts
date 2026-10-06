@@ -45,6 +45,23 @@ function runWithCtx<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 describe('resolveMemberPolicy', () => {
+  it('includes prompt for a judge_prompt rule in a member\'s resolved policy', async () => {
+    const globalSubject = await createSubject(tenantId, { name: 'Global' })
+    await createRule(tenantId, globalSubject.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block',
+    })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    expect(resolved.subjects[0]!.rules[0]!.kind).toBe('judge_prompt')
+    expect(resolved.subjects[0]!.rules[0]!.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+  })
+
   it('member with no teams gets only global subjects', async () => {
     const globalSubject = await createSubject(tenantId, { name: 'Global' })
     await createRule(tenantId, globalSubject.id, { kind: 'keyword', keywords: ['secret'], action: 'warn' })

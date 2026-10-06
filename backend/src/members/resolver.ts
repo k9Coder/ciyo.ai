@@ -8,9 +8,10 @@ import type { PolicyDoc, RulePolicy, SubjectPolicy } from '../policy/compiler.js
 
 export interface ResolvedRulePolicy {
   id: string
-  kind: 'keyword' | 'pattern' | 'entropy' | 'score'
+  kind: 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
   keywords: string[] | null
   pattern: string | null
+  prompt: string | null
   destinations: string[]
   action: 'warn' | 'block'
   message: string | null
@@ -137,6 +138,7 @@ export async function resolveMemberPolicy(
       kind: rule.kind,
       keywords: rule.keywords,
       pattern: rule.pattern,
+      prompt: rule.prompt,
       destinations: [...new Set(merged)],
       action: rule.action,
       message: rule.message,
