@@ -69,7 +69,7 @@ All endpoints in this section require **Admin** auth.
 Important constraints:
 
 - A subject is global when `divisionId` and `teamId` are absent, division-scoped with `divisionId`, and team-scoped with `teamId`.
-- Rule kinds are `keyword`, `pattern`, `entropy`, or `score`; actions are `warn` or `block`; report levels are `none`, `minimal`, `medium`, or `rich`.
+- Rule kinds are `keyword`, `pattern`, `entropy`, `score`, or `judge_prompt`; actions are `warn` or `block`; report levels are `none`, `minimal`, `medium`, or `rich`. `judge_prompt` rules require a non-empty `prompt` (max 1000 chars) instead of `keywords`/`pattern`, and are entitlement-gated to business/enterprise/pilot plans.
 - Rule creation enforces plan rule-kind limits. Rule patch currently does not repeat that plan check.
 - Member import inserts role `member` and ignores tenant-email conflicts. Creating one member enforces seat limits; bulk import currently does not.
 

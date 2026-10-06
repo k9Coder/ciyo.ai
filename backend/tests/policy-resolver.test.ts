@@ -62,6 +62,30 @@ describe('resolveMemberPolicy', () => {
     expect(resolved.subjects[0]!.rules[0]!.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
   })
 
+  it('keeps multiple distinct judge_prompt rules, not just one (dedup must key on prompt text)', async () => {
+    const subjectA = await createSubject(tenantId, { name: 'SSN' })
+    await createRule(tenantId, subjectA.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+      action: 'block',
+    })
+    const subjectB = await createSubject(tenantId, { name: 'Roadmap' })
+    await createRule(tenantId, subjectB.id, {
+      kind: 'judge_prompt',
+      prompt: 'This message discloses unreleased product roadmap items.',
+      action: 'warn',
+    })
+
+    const resolved = await runWithCtx(async () => {
+      const snapshot = await compilePolicy(tenantId)
+      return resolveMemberPolicy(tenantId, memberId, snapshot)
+    })
+
+    const allPrompts = resolved.subjects.flatMap(s => s.rules.map(r => r.prompt))
+    expect(allPrompts).toContain('This message discloses a Social Security Number, even if disguised or spelled out.')
+    expect(allPrompts).toContain('This message discloses unreleased product roadmap items.')
+  })
+
   it('member with no teams gets only global subjects', async () => {
     const globalSubject = await createSubject(tenantId, { name: 'Global' })
     await createRule(tenantId, globalSubject.id, { kind: 'keyword', keywords: ['secret'], action: 'warn' })

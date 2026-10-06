@@ -40,8 +40,9 @@ function scopeOf(s: SubjectPolicy): Scope {
 }
 
 function detectionKey(r: RulePolicy): string {
-  if (r.kind === 'keyword') return `keyword:${[...(r.keywords ?? [])].sort().join(',')}`
-  if (r.kind === 'pattern') return `pattern:${r.pattern ?? ''}`
+  if (r.kind === 'keyword')      return `keyword:${[...(r.keywords ?? [])].sort().join(',')}`
+  if (r.kind === 'pattern')      return `pattern:${r.pattern ?? ''}`
+  if (r.kind === 'judge_prompt') return `judge_prompt:${r.prompt ?? ''}`
   return r.kind
 }
 

@@ -81,12 +81,24 @@ describe('POST /v1/subjects/:subjectId/rules', () => {
       .post(`/v1/subjects/${subjectId}/rules`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ kind: 'judge_prompt', action: 'block' })
-    // The DB column is nullable (Task 1), so this currently succeeds with
-    // prompt=null rather than a validation error — documenting the actual
-    // current behavior rather than assuming a 400. If stricter validation
-    // is wanted later, that's a separate, deliberate change.
-    expect(res.status).toBe(201)
-    expect(res.body.prompt).toBeNull()
+    // judge_prompt is meant to be the sole real enforcement mechanism for
+    // its rule — an empty prompt isn't a harmless no-op, it's an empty
+    // claim the model would judge every message against, which is an
+    // arbitrary-match risk, not inert. The DB column stays nullable (an
+    // existing row predating this validation, or one with kind temporarily
+    // something else, shouldn't be impossible to represent) but creating
+    // or updating a rule AS judge_prompt with no prompt text is rejected.
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('prompt')
+  })
+
+  it('rejects a judge_prompt rule with a prompt over the length cap', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'x'.repeat(1001), action: 'block' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toContain('prompt')
   })
 })
 
@@ -105,6 +117,20 @@ describe('PATCH /v1/rules/:id — judge_prompt', () => {
     expect(res.status).toBe(200)
     expect(res.body.prompt).toBe('revised, more precise claim')
   })
+
+  it('rejects clearing an existing judge_prompt rule\'s prompt to empty', async () => {
+    const { body: created } = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ kind: 'judge_prompt', prompt: 'original claim', action: 'warn' })
+
+    const res = await supertest(app.server)
+      .patch(`/v1/rules/${created.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: '' })
+
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('judge_prompt entitlement', () => {
@@ -122,6 +148,7 @@ describe('judge_prompt entitlement', () => {
       .set('Authorization', `Bearer ${freeTenant.adminToken}`)
       .send({ kind: 'judge_prompt', prompt: 'test claim', action: 'block' })
     expect(res.status).toBe(402)
+    expect(res.body.error).toContain('judge_prompt')
   })
 })
 

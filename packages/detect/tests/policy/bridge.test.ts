@@ -64,4 +64,20 @@ describe('bridgePolicy', () => {
     const p = bridgePolicy(MINIMAL_DOC, ['chatgpt.com'])
     expect(p.perSite['chatgpt.com']!.enabled).toBe(false)
   })
+
+  it('safely excludes judge_prompt rules instead of crashing — real on-device judging is a separate, later plan', () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'SSN',
+        rules: [
+          { id: 'r1', kind: 'judge_prompt', keywords: null, pattern: null, prompt: 'This message discloses a Social Security Number.', destinations: [], action: 'block', message: null, reportLevel: 'none' },
+          { id: 'r2', kind: 'keyword', keywords: ['secret'], pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' },
+        ],
+      }],
+    }
+    const p = bridgePolicy(doc, [])
+    expect(p.custom).toHaveLength(1)
+    expect(p.custom[0]!.kind).toBe('dictionary')
+  })
 })
