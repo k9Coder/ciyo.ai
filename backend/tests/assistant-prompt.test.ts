@@ -12,7 +12,7 @@ const snapshot: TenantSnapshot = {
   ],
   rules: [
     { id: 'r1', subjectId: 's1', tenantId: 't1', kind: 'keyword', keywords: ['SSN'], pattern: null,
-      destinations: [], destinationGroupIds: [], action: 'block', message: null,
+      prompt: null, destinations: [], destinationGroupIds: [], action: 'block', message: null,
       active: true, reportLevel: 'none', createdAt: new Date() },
   ],
 }

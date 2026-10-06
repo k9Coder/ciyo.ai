@@ -6,7 +6,7 @@ import { sql } from 'drizzle-orm'
 
 // ── Enums ────────────────────────────────────────────────────────────────────
 export const memberRoleEnum  = pgEnum('member_role',  ['super_admin', 'division_admin', 'member'])
-export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score'])
+export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'])
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 export const failModeEnum    = pgEnum('fail_mode',    ['open', 'closed'])
@@ -155,6 +155,10 @@ export const rules = pgTable('rules', {
   kind:                ruleKindEnum('kind').notNull(),
   keywords:            text('keywords').array(),
   pattern:             text('pattern'),
+  // Only populated for kind='judge_prompt' — the plain-English claim the
+  // on-device model judges against captured content (not user content
+  // itself, an admin-authored instruction, same privacy class as `message`).
+  prompt:              text('prompt'),
   destinations:        text('destinations').array().default(sql`'{}'`),
   destinationGroupIds: uuid('destination_group_ids').array().default(sql`'{}'`),
   action:              ruleActionEnum('action').notNull(),
@@ -277,9 +281,10 @@ export interface SubjectSnapshot {
   active:      boolean
   rules: Array<{
     id:                  string
-    kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+    kind:                'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
     keywords:            string[] | null
     pattern:             string | null
+    prompt:              string | null
     destinations:        string[]
     destinationGroupIds: string[]
     action:              'warn' | 'block'

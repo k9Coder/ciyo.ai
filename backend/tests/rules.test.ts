@@ -56,6 +56,22 @@ describe('POST /v1/subjects/:subjectId/rules', () => {
     expect(res.body.pattern).toBe('\\d{4}-\\d{4}-\\d{4}-\\d{4}')
     expect(res.body.message).toBe('Credit card detected')
   })
+
+  it('creates a judge_prompt rule', async () => {
+    const res = await supertest(app.server)
+      .post(`/v1/subjects/${subjectId}/rules`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        kind: 'judge_prompt',
+        prompt: 'This message discloses a Social Security Number, even if disguised or spelled out.',
+        action: 'block',
+      })
+    expect(res.status).toBe(201)
+    expect(res.body.kind).toBe('judge_prompt')
+    expect(res.body.prompt).toBe('This message discloses a Social Security Number, even if disguised or spelled out.')
+    expect(res.body.pattern).toBeNull()
+    expect(res.body.keywords).toBeNull()
+  })
 })
 
 describe('GET /v1/subjects/:subjectId/rules', () => {

@@ -53,6 +53,7 @@ export async function revertSubjectToSnapshot(
           kind:                r.kind,
           keywords:            r.keywords,
           pattern:             r.pattern,
+          prompt:              r.prompt,
           destinations:        r.destinations,
           destinationGroupIds: r.destinationGroupIds,
           action:              r.action,
