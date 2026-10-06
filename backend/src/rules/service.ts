@@ -72,7 +72,7 @@ export async function listAllActiveRules(tenantId: string): Promise<Rule[]> {
 export async function createRule(
   tenantId: string,
   subjectId: string,
-  data: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'reportLevel'>
+  data: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'prompt' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'reportLevel'>
 ): Promise<Rule> {
   await enforceRuleKind(tenantId, data.kind)
   if (data.pattern) validatePattern(data.pattern)
@@ -83,7 +83,7 @@ export async function createRule(
 export async function updateRule(
   tenantId: string,
   id: string,
-  data: Partial<Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'active' | 'reportLevel'>>
+  data: Partial<Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'prompt' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'active' | 'reportLevel'>>
 ): Promise<Rule | null> {
   if (data.kind) await enforceRuleKind(tenantId, data.kind)
   if (data.pattern) validatePattern(data.pattern)
