@@ -1,5 +1,5 @@
 import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule, JudgePromptRule } from "../policy/schema";
-import type { DetectionResult, DetectionInput, Finding, ScoreRule, ScoreSignalConfig } from "./types";
+import type { DetectionResult, DetectionInput, Finding, ShadowFinding, ScoreRule, ScoreSignalConfig } from "./types";
 import { maxAction, compareSeverity } from "./types";
 import { normalizeText } from "./normalize";
 import { findCodeSpans, isInsideCode } from "./code-block";
@@ -166,6 +166,8 @@ function runDictionaryRule(text: string, rule: DictionaryRule): Finding[] {
 interface KindedFinding {
   finding: Finding;
   isEntropy: boolean;
+  enforced: boolean;
+  kind: "dictionary" | "pattern" | "entropy" | "score" | "judge_prompt";
 }
 
 /**
@@ -298,13 +300,27 @@ export async function detectPrompt(
   for (const rule of syncRules) {
     const ruleFindings = runRule(promptText, normalised, rule as SyncRule | ScoreRule, codeSpans, effectivePasteDetected);
     const isEntropy = (rule as SyncRule | ScoreRule).kind === "entropy";
-    for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy });
+    for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy, enforced: rule.enforced, kind: rule.kind });
   }
 
   const judgeFindings = await runJudgePromptRules(promptText, judgePromptRules, judge);
-  for (const finding of judgeFindings) kindedFindings.push({ finding, isEntropy: false });
+  for (const finding of judgeFindings) kindedFindings.push({ finding, isEntropy: false, enforced: true, kind: "judge_prompt" });
 
-  const findings = dedupeIdenticalSpanFindings(kindedFindings);
+  const enforcedKinded = kindedFindings.filter((k) => k.enforced);
+  const shadowKinded = kindedFindings.filter((k) => !k.enforced);
+
+  const findings = dedupeIdenticalSpanFindings(enforcedKinded);
+
+  const shadowTimestamp = new Date().toISOString();
+  const shadowFindings: ShadowFinding[] = shadowKinded.map((k) => ({
+    ruleId: k.finding.ruleId,
+    // shadowKinded only ever contains legacy kinds — judge_prompt rules are
+    // always enforced: true (see bridge.ts), so this cast is safe.
+    kind: k.kind as ShadowFinding["kind"],
+    verdict: "match",
+    confidence: 1,
+    timestamp: shadowTimestamp,
+  }));
 
   let highestAction: Finding["action"] = "log";
   for (const f of findings) {
@@ -316,7 +332,7 @@ export async function detectPrompt(
 
   return {
     findings,
-    shadowFindings: [],
+    shadowFindings,
     highestAction,
     promptHash,
     detectedAtMs: Date.now(),
