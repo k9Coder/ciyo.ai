@@ -1,488 +1,522 @@
-{"text": "my number is (415) 867-5309", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
-{"text": "use mike.t.wilson@outlook.com, not my work one", "claim": "This message discloses a home address.", "label": 0, "source": "personal_email_vs_home_address"}
-{"text": "c-a-r-d: 5 5 0 0, 0 0 0 0, 0 0 0 0, 0 0 0 4", "claim": "This message discloses a driver's license number.", "label": 0, "source": "credit_card_vs_drivers_license"}
-{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "employee_salary_vs_churn_risk"}
-{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "phone_number_vs_security_vuln"}
-{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "earnings_vs_reorg"}
-{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discloses a date of birth.", "label": 0, "source": "security_vuln_vs_date_of_birth"}
-{"text": "what's a fair price for this kind of service generally", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
-{"text": "I'm redecorating my living room this month", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
-{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
-{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "personal_email_vs_litigation"}
-{"text": "I was born on the fifth of November, 2001", "claim": "This message discloses a home address.", "label": 0, "source": "date_of_birth_vs_home_address"}
-{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
-{"text": "here's a photo of the front of my card for verification", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "credit_card_vs_churn_risk"}
-{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
-{"text": "our Q2 earnings were released publicly last month, revenue was up 10%", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
-{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message discloses a driver's license number.", "label": 0, "source": "source_code_vs_drivers_license"}
-{"text": "my IBAN is DE89 3704 0044 0532 0130 00", "claim": "This message discloses a credit card number.", "label": 0, "source": "bank_account_vs_credit_card"}
-{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
-{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "wifi_password_vs_churn_risk"}
-{"text": "we're planning a surprise birthday party", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
-{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a driver's license number.", "label": 0, "source": "bank_account_vs_drivers_license"}
-{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a passport number.", "label": 0, "source": "generic_vs_passport_number"}
-{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
-{"text": "I need to buy a license for this software", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
-{"text": "what time does the grocery store close today", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
-{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
-{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discloses a passport number.", "label": 0, "source": "ma_discussion_vs_passport_number"}
-{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message discloses a home address.", "label": 0, "source": "source_code_vs_home_address"}
-{"text": "what's a good email client for managing multiple accounts", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "I live at apartment 5B, 100 Main Street, Boston MA", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "home_address_vs_internal_pricing"}
-{"text": "what's the best way to learn a new language", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
-{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "credit_card_vs_earnings"}
-{"text": "I'm redecorating my living room this month", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
-{"text": "what should I get my friend for their birthday", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
-{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "earnings_vs_security_clearance"}
-{"text": "here's a photo of the front of my card for verification", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
-{"text": "our license renewal is coming up next month", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
+{"text": "putting my card on file: 4916338506082832", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "credit_card_vs_wifi_password"}
 {"text": "ship it to 742 Evergreen Terrace, Springfield, IL 62704", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "home_address_vs_litigation"}
-{"text": "my amex is 3782 822463 10005, don't share it though", "claim": "This message discloses a personal phone number.", "label": 0, "source": "credit_card_vs_phone_number"}
-{"text": "I need some motivation to go to the gym", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
-{"text": "I need to open a new bank account this month", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
-{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses a credit card number.", "label": 0, "source": "churn_risk_vs_credit_card"}
-{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses a software license key.", "label": 0, "source": "internal_pricing_vs_software_license"}
-{"text": "I want to start journaling every morning", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
-{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "date_of_birth_vs_wifi_password"}
-{"text": "the wifi has been so slow today", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
-{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "software_license_vs_security_clearance"}
-{"text": "let's plan a hiking trip for this weekend", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
-{"text": "mental health awareness is an important topic generally", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "credit_card_vs_security_clearance"}
-{"text": "I just finished reading a great novel", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
-{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "earnings_vs_generic_gov_id"}
-{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
-{"text": "the office wifi password is Summer2024!", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "wifi_password_vs_earnings"}
-{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discloses a date of birth.", "label": 0, "source": "reorg_vs_date_of_birth"}
-{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "litigation_vs_earnings"}
-{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discloses a software license key.", "label": 0, "source": "security_vuln_vs_software_license"}
-{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
-{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discloses a credit card number.", "label": 0, "source": "ma_discussion_vs_credit_card"}
-{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
-{"text": "I live at apartment 5B, 100 Main Street, Boston MA", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "home_address_vs_bank_account"}
-{"text": "leadership sent the reorg announcement to everyone this morning", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
-{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
-{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
-{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
-{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "passport number is 912345678, expires 2030", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "passport_number_vs_security_vuln"}
-{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
-{"text": "can you suggest a fun board game for family night", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
-{"text": "I should really exercise more this year", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "license number for the rental is A9876543", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
-{"text": "I need to pay my credit card bill this week", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a passport number.", "label": 0, "source": "medical_condition_vs_passport_number"}
-{"text": "I'm curious how the stock market did today", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
-{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discloses a home address.", "label": 0, "source": "phone_number_vs_home_address"}
-{"text": "my gym membership expires next week", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "here's our Adobe license: 1234-5678-9012-3456", "claim": "This message discloses a home address.", "label": 0, "source": "software_license_vs_home_address"}
-{"text": "my number is (415) 867-5309", "claim": "This message discloses a driver's license number.", "label": 0, "source": "phone_number_vs_drivers_license"}
-{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses a date of birth.", "label": 0, "source": "personal_email_vs_date_of_birth"}
-{"text": "it's seven four two, evergreen terrace, if you're sending anything", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "home_address_vs_ma_discussion"}
-{"text": "my therapist says I have generalized anxiety disorder", "claim": "This message discloses a date of birth.", "label": 0, "source": "medical_condition_vs_date_of_birth"}
-{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
-{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses a personal email address.", "label": 0, "source": "passport_number_vs_personal_email"}
-{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
-{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a driver's license number.", "label": 0, "source": "credit_card_vs_drivers_license"}
-{"text": "my bank's app has been down all morning", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
-{"text": "what's a good recipe for banana bread", "claim": "This message discloses a personal email address.", "label": 0, "source": "generic_vs_personal_email"}
-{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "security_vuln_vs_earnings"}
-{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "source_code_vs_generic_gov_id"}
-{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a personal email address.", "label": 0, "source": "credit_card_vs_personal_email"}
-{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "phone_number_vs_internal_pricing"}
-{"text": "account is zero zero zero, one two three, four five six, seven eight nine", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "bank_account_vs_employee_salary"}
-{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses a passport number.", "label": 0, "source": "reorg_vs_passport_number"}
-{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "addresses in some countries don't use postal codes", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
-{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses a credit card number.", "label": 0, "source": "litigation_vs_credit_card"}
-{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "wifi_password_vs_source_code"}
-{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
-{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses a personal email address.", "label": 0, "source": "passport_number_vs_personal_email"}
-{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "earnings_vs_reorg"}
-{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "reorg_vs_medical_condition"}
-{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
-{"text": "account number: 1234567890, bank of america", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "bank_account_vs_churn_risk"}
-{"text": "I need to renew my driver's license soon", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
-{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
-{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "passport_number_vs_bank_account"}
+{"text": "the codename for the acquisition is nightshade harbor, keep it quiet", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "drivers_license_vs_security_clearance"}
+{"text": "uploading a scan of my license for the access badge enrollment", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
+{"text": "my birthday is March 14, 1990", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "date_of_birth_vs_reorg"}
+{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discloses a driver's license number.", "label": 0, "source": "security_clearance_vs_drivers_license"}
+{"text": "attaching my ID scan for the security clearance enrollment process", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
+{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
+{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "internal_pricing_vs_named_codename"}
+{"text": "deliver to 9 rue de la Paix, Paris, 75002", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "home_address_vs_reorg"}
+{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses a passport number.", "label": 0, "source": "litigation_vs_passport_number"}
+{"text": "I read an article about a big merger in the news today", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
+{"text": "I love watching sunsets at the beach", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "generic_vs_named_codename"}
+{"text": "I'm trying to learn how to play the guitar", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
+{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
+{"text": "I lost my passport once while traveling, nightmare", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
+{"text": "the nightshade harbor rollout is happening next sprint, keep it internal", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "named_codename_vs_bank_account"}
+{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "born oh-seven, slash, two-two, slash, nineteen eighty-five", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "date_of_birth_vs_employee_salary"}
 {"text": "reorganizations happen at every company eventually", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
-{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "medical_condition_vs_internal_pricing"}
-{"text": "it's seven four two, evergreen terrace, if you're sending anything", "claim": "This message discloses a software license key.", "label": 0, "source": "home_address_vs_software_license"}
-{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
-{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
-{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
-{"text": "I love watching sunsets at the beach", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "generic_vs_internal_pricing"}
-{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
-{"text": "bank account numbers vary in length by country", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
-{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
-{"text": "account number: 1234567890, bank of america", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "deliver to 9 rue de la Paix, Paris, 75002", "claim": "This message discloses a personal phone number.", "label": 0, "source": "home_address_vs_phone_number"}
-{"text": "passport number formats vary by issuing country", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
-{"text": "can you recommend a budgeting app for tracking card spending", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
-{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "generic_gov_id_vs_employee_salary"}
-{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
-{"text": "my birthday is March 14, 1990", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "date_of_birth_vs_bank_account"}
-{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "I'm switching banks because the fees are too high", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
-{"text": "what documents do I need for ID verification", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
-{"text": "I love walking around my neighborhood in the evenings", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
-{"text": "here's my passport for the booking: 987654321", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
-{"text": "DOB: 07/22/1985", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "date_of_birth_vs_security_vuln"}
+{"text": "I was diagnosed with type 2 diabetes last month", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "medical_condition_vs_named_codename"}
+{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
+{"text": "leadership sent the reorg announcement to everyone this morning", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "security_clearance_vs_earnings"}
+{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "medical_condition_vs_generic_gov_id"}
+{"text": "I want to start journaling every morning", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
+{"text": "my clearance is currently inactive, I'd need to be re-investigated", "claim": "This message discloses a home address.", "label": 0, "source": "security_clearance_vs_home_address"}
+{"text": "we're planning a surprise birthday party", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
+{"text": "c-a-r-d: 5 5 0 0, 0 0 0 0, 0 0 0 0, 0 0 0 4", "claim": "This message discloses a driver's license number.", "label": 0, "source": "credit_card_vs_drivers_license"}
+{"text": "project nightshade harbor was announced publicly in yesterday's press release", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "named_codename"}
+{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discloses a software license key.", "label": 0, "source": "ma_discussion_vs_software_license"}
+{"text": "our pricing page is pretty easy to find online", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
+{"text": "license number for the rental is A9876543", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
+{"text": "my therapist says I have generalized anxiety disorder", "claim": "This message discloses a home address.", "label": 0, "source": "medical_condition_vs_home_address"}
+{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
+{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
+{"text": "it's j, dot, smith, at, yahoo, dot, com if you need to write it down", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "personal_email_vs_named_codename"}
+{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
+{"text": "send it to john.doe87@gmail.com", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "personal_email_vs_internal_pricing"}
+{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discloses a credit card number.", "label": 0, "source": "software_license_vs_credit_card"}
+{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
+{"text": "we open-sourced our logging library last year", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
+{"text": "what should I get my friend for their birthday", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
+{"text": "here's our Adobe license: 1234-5678-9012-3456", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "software_license_vs_churn_risk"}
+{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a driver's license number.", "label": 0, "source": "credit_card_vs_drivers_license"}
+{"text": "I'm curious how the clearance process works in general", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
+{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discloses a personal email address.", "label": 0, "source": "internal_pricing_vs_personal_email"}
+{"text": "what time does the grocery store close today", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
+{"text": "I'm thinking about adopting a dog soon", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "I need to open a new bank account this month", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
+{"text": "attaching my ID scan for the security clearance enrollment process", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_gov_id_vs_credit_card"}
+{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
 {"text": "I read about a big breach at another company", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
+{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_vs_credit_card"}
+{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "medical_condition_vs_reorg"}
+{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
+{"text": "what's the best neighborhood to live in around here", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
+{"text": "bank account numbers vary in length by country", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
+{"text": "I'm redecorating my living room this month", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
+{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "drivers_license_vs_security_vuln"}
+{"text": "mental health awareness is an important topic generally", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
+{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "software_license_vs_source_code"}
+{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
+{"text": "security is really important for any software product", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
+{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "passport_number_vs_security_vuln"}
+{"text": "I just finished reading a great novel", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "generic_vs_ma_discussion"}
+{"text": "account number: 1234567890, bank of america", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "bank_account_vs_churn_risk"}
+{"text": "what's a good recipe for banana bread", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
+{"text": "here's our Adobe license: 1234-5678-9012-3456", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "software_license_vs_employee_salary"}
+{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses a home address.", "label": 0, "source": "generic_vs_home_address"}
+{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "reorg_vs_named_codename"}
+{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "I need to renew my passport before the trip", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
+{"text": "my clearance is currently inactive, I'd need to be re-investigated", "claim": "This message discloses a software license key.", "label": 0, "source": "security_clearance_vs_software_license"}
+{"text": "my IBAN is DE89 3704 0044 0532 0130 00", "claim": "This message discloses a credit card number.", "label": 0, "source": "bank_account_vs_credit_card"}
+{"text": "addresses in some countries don't use postal codes", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
+{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses a driver's license number.", "label": 0, "source": "earnings_vs_drivers_license"}
+{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
+{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "reorg_vs_earnings"}
+{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "it's j, dot, smith, at, yahoo, dot, com if you need to write it down", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "personal_email_vs_internal_pricing"}
+{"text": "deliver to 9 rue de la Paix, Paris, 75002", "claim": "This message discloses a personal phone number.", "label": 0, "source": "home_address_vs_phone_number"}
+{"text": "what time does the grocery store close today", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
+{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a date of birth.", "label": 0, "source": "drivers_license_vs_date_of_birth"}
+{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "government ID formats differ by country", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
+{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
+{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
+{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "litigation_vs_reorg"}
+{"text": "my national ID number is 123-45-6789-01", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_gov_id_vs_earnings"}
+{"text": "I was diagnosed with type 2 diabetes last month", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "medical_condition_vs_security_clearance"}
+{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "I should really exercise more this year", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
+{"text": "I make $95k a year plus bonus", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
+{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
+{"text": "here's a photo of the front of my card for verification", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
+{"text": "here's my passport scan for the background check verification process", "claim": "This message discloses a personal email address.", "label": 0, "source": "passport_number_vs_personal_email"}
+{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "litigation_vs_ma_discussion"}
+{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "source_code_vs_employee_salary"}
+{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
+{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "credit_card_vs_medical_condition"}
+{"text": "my gym membership expires next week", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
+{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
+{"text": "text me, it's zero four one two three four five six seven eight", "claim": "This message discloses a home address.", "label": 0, "source": "phone_number_vs_home_address"}
+{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "here's my government ID: GB1234567", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
+{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
+{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
+{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
+{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "internal_pricing_vs_bank_account"}
+{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discloses a passport number.", "label": 0, "source": "phone_number_vs_passport_number"}
+{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "churn_risk_vs_earnings"}
+{"text": "heads up that nightshade harbor got moved up a week, still internal only", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "my bank's app has been down all morning", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
+{"text": "background checks are standard for a lot of jobs now", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
+{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses a driver's license number.", "label": 0, "source": "software_license_vs_drivers_license"}
+{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "bank_account_vs_security_vuln"}
+{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
+{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
+{"text": "what's a good savings account interest rate right now", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
+{"text": "account number: 1234567890, bank of america", "claim": "This message discloses a date of birth.", "label": 0, "source": "bank_account_vs_date_of_birth"}
+{"text": "what documents do I need for ID verification", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
+{"text": "spell it out: four nine one six three three eight five zero six zero eight two eight three two", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "can you recommend a budgeting app for tracking card spending", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
+{"text": "network password for the conference room is purpleElephant99", "claim": "This message discloses a date of birth.", "label": 0, "source": "wifi_password_vs_date_of_birth"}
+{"text": "what's a good beginner workout routine", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_vs_credit_card"}
+{"text": "I need to pay my credit card bill this week", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
+{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "security_clearance_vs_reorg"}
+{"text": "I have to disclose I was recently diagnosed with depression", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "medical_condition_vs_security_vuln"}
+{"text": "my IBAN is DE89 3704 0044 0532 0130 00", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "bank_account_vs_internal_pricing"}
+{"text": "what's a good email client for managing multiple accounts", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
+{"text": "spelling it out: n-i-g-h-t-s-h-a-d-e, h-a-r-b-o-r, that's the codename, don't repeat it", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "named_codename_vs_source_code"}
+{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
+{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message discloses a date of birth.", "label": 0, "source": "wifi_password_vs_date_of_birth"}
+{"text": "license number for the rental is A9876543", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "drivers_license_vs_source_code"}
+{"text": "coding interviews often ask about algorithms", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
+{"text": "I make $95k a year plus bonus", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "employee_salary_vs_named_codename"}
+{"text": "uploading a scan of my license for the access badge enrollment", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "drivers_license_vs_internal_pricing"}
+{"text": "here's my government ID: GB1234567", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_gov_id_vs_date_of_birth"}
+{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "source_code_vs_ma_discussion"}
+{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a personal email address.", "label": 0, "source": "credit_card_vs_personal_email"}
+{"text": "I just finished reading a great novel", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
+{"text": "my number is (415) 867-5309", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
+{"text": "ship it to 742 Evergreen Terrace, Springfield, IL 62704", "claim": "This message discloses a software license key.", "label": 0, "source": "home_address_vs_software_license"}
+{"text": "ship it to 742 Evergreen Terrace, Springfield, IL 62704", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
+{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses a personal email address.", "label": 0, "source": "drivers_license_vs_personal_email"}
+{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "earnings_vs_generic_gov_id"}
+{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses a home address.", "label": 0, "source": "earnings_vs_home_address"}
+{"text": "nightshade harbor is the real name for what we're calling 'project phoenix' publicly", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "named_codename_vs_generic_gov_id"}
+{"text": "can you suggest a fun board game for family night", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
+{"text": "my license number is D1234567", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "drivers_license_vs_wifi_password"}
+{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discloses a credit card number.", "label": 0, "source": "security_vuln_vs_credit_card"}
+{"text": "I'm switching banks because the fees are too high", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
+{"text": "network password for the conference room is purpleElephant99", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "I love walking around my neighborhood in the evenings", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
+{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
+{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discloses a home address.", "label": 0, "source": "phone_number_vs_home_address"}
+{"text": "I want to start journaling every morning", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
 {"text": "c-a-r-d: 5 5 0 0, 0 0 0 0, 0 0 0 0, 0 0 0 4", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "I'm redecorating my living room this month", "claim": "This message discloses a personal email address.", "label": 0, "source": "generic_vs_personal_email"}
-{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
-{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses a personal email address.", "label": 0, "source": "credit_card_vs_personal_email"}
-{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "security_clearance_vs_bank_account"}
-{"text": "I have to disclose I was recently diagnosed with depression", "claim": "This message discloses a passport number.", "label": 0, "source": "medical_condition_vs_passport_number"}
-{"text": "license number for the rental is A9876543", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "drivers_license_vs_reorg"}
-{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a driver's license number.", "label": 0, "source": "security_clearance_vs_drivers_license"}
-{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
-{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "medical_condition_vs_security_vuln"}
-{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_gov_id_vs_phone_number"}
-{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses a home address.", "label": 0, "source": "earnings_vs_home_address"}
-{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
-{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
-{"text": "I want to start journaling every morning", "claim": "This message discloses a home address.", "label": 0, "source": "generic_vs_home_address"}
-{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "date_of_birth_vs_employee_salary"}
-{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
+{"text": "wire it to account 000123456789, routing 021000021", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "bank_account_vs_generic_gov_id"}
+{"text": "passport numbers are usually 9 characters", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
+{"text": "DOB: 07/22/1985", "claim": "This message discloses a passport number.", "label": 0, "source": "date_of_birth_vs_passport_number"}
+{"text": "text me, it's zero four one two three four five six seven eight", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "phone_number_vs_bank_account"}
+{"text": "what time does the grocery store close today", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
+{"text": "US phone numbers have 10 digits including the area code", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
+{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "passport_number_vs_wifi_password"}
+{"text": "nightshade harbor is the real name for what we're calling 'project phoenix' publicly", "claim": "This message discloses a date of birth.", "label": 0, "source": "named_codename_vs_date_of_birth"}
+{"text": "our salary bands are published internally for all to see", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
+{"text": "the reorg from last year was announced company-wide at the time", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discloses a credit card number.", "label": 0, "source": "security_clearance_vs_credit_card"}
+{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "wifi_password_vs_source_code"}
+{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "medical_condition_vs_security_clearance"}
+{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a home address.", "label": 0, "source": "software_license_vs_home_address"}
+{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
+{"text": "I'm redecorating my living room this month", "claim": "This message discloses a home address.", "label": 0, "source": "generic_vs_home_address"}
+{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
 {"text": "putting my card on file: 4916338506082832", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "we published our CVE disclosure for the bug we fixed last quarter", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
-{"text": "driver's license formats vary by state", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
-{"text": "my birthday is March 14, 1990", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "date_of_birth_vs_employee_salary"}
-{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "churn_risk_vs_medical_condition"}
+{"text": "I'm redecorating my living room this month", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
+{"text": "we just finished our annual security training", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
+{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "generic_vs_internal_pricing"}
+{"text": "use mike.t.wilson@outlook.com, not my work one", "claim": "This message discloses a driver's license number.", "label": 0, "source": "personal_email_vs_drivers_license"}
+{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "source_code_vs_generic_gov_id"}
 {"text": "my card got declined at the store today, so annoying", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
-{"text": "the discount tiers on our public pricing page go up to 20%", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
-{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a driver's license number.", "label": 0, "source": "software_license_vs_drivers_license"}
+{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "churn_risk_vs_security_clearance"}
+{"text": "what's a fair price for this kind of service generally", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "my birthday is March 14, 1990", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "date_of_birth_vs_security_clearance"}
 {"text": "born oh-seven, slash, two-two, slash, nineteen eighty-five", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
-{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "software_license_vs_reorg"}
-{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "bank_account_vs_internal_pricing"}
+{"text": "just a heads up, project nightshade harbor is still under NDA", "claim": "This message discloses a home address.", "label": 0, "source": "named_codename_vs_home_address"}
+{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
 {"text": "I'm thinking about applying for a new credit card", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "generic_vs_employee_salary"}
+{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discloses a personal phone number.", "label": 0, "source": "bank_account_vs_phone_number"}
+{"text": "our Q2 earnings were released publicly last month, revenue was up 10%", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
 {"text": "it's seven four two, evergreen terrace, if you're sending anything", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
-{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "phone_number_vs_ma_discussion"}
-{"text": "my license number is D1234567", "claim": "This message discloses a personal email address.", "label": 0, "source": "drivers_license_vs_personal_email"}
-{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses a personal email address.", "label": 0, "source": "earnings_vs_personal_email"}
-{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "drivers_license_vs_wifi_password"}
-{"text": "here's my government ID: GB1234567", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "generic_gov_id_vs_source_code"}
-{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
-{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
+{"text": "I'm curious how the stock market did today", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
+{"text": "what's a good recipe for banana bread", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discloses a passport number.", "label": 0, "source": "employee_salary_vs_passport_number"}
+{"text": "network password for the conference room is purpleElephant99", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "wifi_password_vs_security_vuln"}
+{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a driver's license number.", "label": 0, "source": "security_clearance_vs_drivers_license"}
+{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses a driver's license number.", "label": 0, "source": "earnings_vs_drivers_license"}
+{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
+{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "credit_card_vs_security_clearance"}
 {"text": "it's the fourteenth of march, nineteen ninety, for my ID", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
 {"text": "my therapist says I have generalized anxiety disorder", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
 {"text": "use mike.t.wilson@outlook.com, not my work one", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
 {"text": "I have to disclose I was recently diagnosed with depression", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
-{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "drivers_license_vs_wifi_password"}
-{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
-{"text": "network password for the conference room is purpleElephant99", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
+{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "passport_number_vs_litigation"}
+{"text": "account is zero zero zero, one two three, four five six, seven eight nine", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "bank_account_vs_employee_salary"}
+{"text": "here's my passport for the booking: 987654321", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "passport_number_vs_churn_risk"}
 {"text": "it's j, dot, smith, at, yahoo, dot, com if you need to write it down", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
-{"text": "born oh-seven, slash, two-two, slash, nineteen eighty-five", "claim": "This message discloses a driver's license number.", "label": 0, "source": "date_of_birth_vs_drivers_license"}
-{"text": "I read an article about a big merger in the news today", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
-{"text": "passport number is 912345678, expires 2030", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "passport_number_vs_litigation"}
-{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
-{"text": "government ID formats differ by country", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
-{"text": "I love watching sunsets at the beach", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
-{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "wifi_password_vs_internal_pricing"}
-{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message discloses a credit card number.", "label": 0, "source": "software_license_vs_credit_card"}
-{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses a personal email address.", "label": 0, "source": "bank_account_vs_personal_email"}
-{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
-{"text": "I'm thinking about moving to a new city next year", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
-{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "ma_discussion_vs_generic_gov_id"}
-{"text": "lawsuits take forever to resolve generally", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
-{"text": "my number is (415) 867-5309", "claim": "This message discloses a home address.", "label": 0, "source": "phone_number_vs_home_address"}
-{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
-{"text": "the reorg from last year was announced company-wide at the time", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
-{"text": "here's our Adobe license: 1234-5678-9012-3456", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "software_license_vs_ma_discussion"}
-{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "ma_discussion_vs_reorg"}
-{"text": "what's a good mesh wifi system for a big house", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
-{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses a driver's license number.", "label": 0, "source": "software_license_vs_drivers_license"}
-{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
-{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
-{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "drivers_license_vs_churn_risk"}
-{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discloses a passport number.", "label": 0, "source": "litigation_vs_passport_number"}
-{"text": "account is zero zero zero, one two three, four five six, seven eight nine", "claim": "This message discloses a personal email address.", "label": 0, "source": "bank_account_vs_personal_email"}
-{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a software license key.", "label": 0, "source": "credit_card_vs_software_license"}
-{"text": "ship it to 742 Evergreen Terrace, Springfield, IL 62704", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
-{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "bank_account_vs_medical_condition"}
-{"text": "what's a good savings account interest rate right now", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "bank_account"}
-{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "medical_condition_vs_security_clearance"}
-{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "internal_pricing_vs_security_clearance"}
-{"text": "ship it to 742 Evergreen Terrace, Springfield, IL 62704", "claim": "This message discloses a software license key.", "label": 0, "source": "home_address_vs_software_license"}
-{"text": "our published pricing tiers are $10, $50, and $200 a month", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
-{"text": "I think salaries in this industry are generally fair", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
-{"text": "wire it to account 000123456789, routing 021000021", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "bank_account_vs_wifi_password"}
-{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
-{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
-{"text": "US phone numbers have 10 digits including the area code", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
-{"text": "I lost my passport once while traveling, nightmare", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
-{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
-{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "bank_account_vs_employee_salary"}
-{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses a software license key.", "label": 0, "source": "security_clearance_vs_software_license"}
-{"text": "here's my passport for the booking: 987654321", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "passport_number_vs_source_code"}
-{"text": "I need to reset my router", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
-{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
-{"text": "network password for the conference room is purpleElephant99", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "wifi_password_vs_employee_salary"}
-{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a passport number.", "label": 0, "source": "drivers_license_vs_passport_number"}
-{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
-{"text": "can you recommend a good podcast about history", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
-{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "bank_account_vs_litigation"}
-{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discloses a personal phone number.", "label": 0, "source": "ma_discussion_vs_phone_number"}
-{"text": "our competitor just announced an acquisition publicly", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
-{"text": "use mike.t.wilson@outlook.com, not my work one", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "personal_email_vs_internal_pricing"}
-{"text": "what time does the grocery store close today", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
-{"text": "my national ID number is 123-45-6789-01", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "generic_gov_id_vs_ma_discussion"}
-{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
-{"text": "we just finished our annual security training", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
-{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses a home address.", "label": 0, "source": "generic_vs_home_address"}
-{"text": "I'm trying to learn how to play the guitar", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
-{"text": "I need to renew my passport before the trip", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
-{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "churn_risk_vs_reorg"}
-{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
+{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "generic_vs_named_codename"}
+{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
+{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "internal_pricing_vs_source_code"}
 {"text": "here's our Adobe license: 1234-5678-9012-3456", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
-{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "credit_card_vs_security_clearance"}
-{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "litigation_vs_generic_gov_id"}
-{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_vuln_vs_security_clearance"}
-{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "bank_account_vs_security_vuln"}
+{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
+{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
+{"text": "I need to apply for a new government ID", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
+{"text": "the codename for the acquisition is nightshade harbor, keep it quiet", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "named_codename_vs_security_clearance"}
+{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a passport number.", "label": 0, "source": "date_of_birth_vs_passport_number"}
+{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses a personal phone number.", "label": 0, "source": "software_license_vs_phone_number"}
+{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "phone_number_vs_litigation"}
+{"text": "here's my government ID: GB1234567", "claim": "This message discloses a personal email address.", "label": 0, "source": "generic_gov_id_vs_personal_email"}
+{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "reorg_vs_generic_gov_id"}
+{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "I'm thinking about moving to a new city next year", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
+{"text": "here's my visa: 4111-1111-1111-1111 cvv 123", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "credit_card_vs_internal_pricing"}
+{"text": "I make $95k a year plus bonus", "claim": "This message discloses a credit card number.", "label": 0, "source": "employee_salary_vs_credit_card"}
+{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
+{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses a personal email address.", "label": 0, "source": "credit_card_vs_personal_email"}
+{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "home_address_vs_generic_gov_id"}
+{"text": "send it to john.doe87@gmail.com", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "personal_email_vs_security_vuln"}
+{"text": "the merger we completed last year was covered in the press at the time", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
+{"text": "our team had a nice offsite last week", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_gov_id_vs_earnings"}
+{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses a personal phone number.", "label": 0, "source": "employee_salary_vs_phone_number"}
+{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "litigation_vs_security_clearance"}
+{"text": "here's my visa: 4111-1111-1111-1111 cvv 123", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
+{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "ma_discussion_vs_churn_risk"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "generic_vs_reorg"}
+{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
+{"text": "our company has never been sued, as far as I know", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
+{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "internal_pricing_vs_security_clearance"}
+{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses a personal phone number.", "label": 0, "source": "churn_risk_vs_phone_number"}
+{"text": "I think our product is priced competitively", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "software licensing models are confusing sometimes", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
+{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "home_address_vs_reorg"}
 {"text": "I need to set up a new email account", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
-{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "security_clearance_vs_ma_discussion"}
-{"text": "passport number is 912345678, expires 2030", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
-{"text": "our pricing page is pretty easy to find online", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
-{"text": "my therapist says I have generalized anxiety disorder", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "medical_condition_vs_generic_gov_id"}
-{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
-{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses a driver's license number.", "label": 0, "source": "software_license_vs_drivers_license"}
-{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
-{"text": "deliver to 9 rue de la Paix, Paris, 75002", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "home_address_vs_reorg"}
-{"text": "I just finished reading a great novel", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
+{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discloses a passport number.", "label": 0, "source": "security_vuln_vs_passport_number"}
+{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
+{"text": "putting my card on file: 4916338506082832", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "credit_card_vs_churn_risk"}
+{"text": "my national ID number is 123-45-6789-01", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_gov_id_vs_software_license"}
+{"text": "passport number formats vary by issuing country", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
+{"text": "just a heads up, project nightshade harbor is still under NDA", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
+{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "the office wifi password is Summer2024!", "claim": "This message discloses a passport number.", "label": 0, "source": "wifi_password_vs_passport_number"}
+{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
+{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "internal_pricing_vs_medical_condition"}
+{"text": "wire it to account 000123456789, routing 021000021", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "bank_account_vs_wifi_password"}
+{"text": "what's a good mesh wifi system for a big house", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
+{"text": "what's the process to get an international driving permit", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
+{"text": "security clearances have different levels depending on the role", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
+{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "credit_card_vs_named_codename"}
+{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
+{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "credit_card_vs_earnings"}
+{"text": "I need some motivation to go to the gym", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "account number: 1234567890, bank of america", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
+{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
+{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message discloses a personal email address.", "label": 0, "source": "reorg_vs_personal_email"}
+{"text": "most driver's license numbers combine letters and digits", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
+{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
+{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "generic_gov_id_vs_reorg"}
+{"text": "our published pricing tiers are $10, $50, and $200 a month", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "security_clearance_vs_reorg"}
+{"text": "what's a good algorithm for sorting large datasets", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
+{"text": "account is zero zero zero, one two three, four five six, seven eight nine", "claim": "This message discloses a personal email address.", "label": 0, "source": "bank_account_vs_personal_email"}
+{"text": "I need some motivation to go to the gym", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
 {"text": "my street gets really icy in winter", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
 {"text": "my birthday is coming up next month, excited", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
-{"text": "account number: 1234567890, bank of america", "claim": "This message discloses a date of birth.", "label": 0, "source": "bank_account_vs_date_of_birth"}
-{"text": "it's the fourteenth of march, nineteen ninety, for my ID", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "date_of_birth_vs_generic_gov_id"}
-{"text": "can you recommend a good podcast about history", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
-{"text": "text me, it's zero four one two three four five six seven eight", "claim": "This message discloses a passport number.", "label": 0, "source": "phone_number_vs_passport_number"}
-{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message discloses a software license key.", "label": 0, "source": "reorg_vs_software_license"}
-{"text": "wire it to account 000123456789, routing 021000021", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "bank_account_vs_generic_gov_id"}
-{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
-{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "source_code_vs_wifi_password"}
-{"text": "my national ID number is 123-45-6789-01", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_gov_id_vs_software_license"}
-{"text": "security is really important for any software product", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
-{"text": "retention strategies are an interesting topic", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
-{"text": "DOB: 07/22/1985", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "date_of_birth_vs_internal_pricing"}
-{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
-{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
-{"text": "I hate celebrating my birthday honestly", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
-{"text": "wifi passwords should be changed periodically for security", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
-{"text": "here's my visa: 4111-1111-1111-1111 cvv 123", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "credit_card_vs_internal_pricing"}
-{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "internal_pricing_vs_security_vuln"}
-{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "generic_gov_id_vs_internal_pricing"}
-{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "security_clearance_vs_bank_account"}
-{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
-{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
-{"text": "I love contributing to open source projects", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
-{"text": "security clearances have different levels depending on the role", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
-{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
-{"text": "I need some motivation to go to the gym", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
-{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
-{"text": "my inbox is completely full of spam", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a personal email address.", "label": 0, "source": "drivers_license_vs_personal_email"}
-{"text": "the office wifi password is Summer2024!", "claim": "This message discloses a date of birth.", "label": 0, "source": "wifi_password_vs_date_of_birth"}
-{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "internal_pricing_vs_medical_condition"}
-{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "reorg_vs_security_vuln"}
-{"text": "here's my government ID: GB1234567", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_gov_id_vs_credit_card"}
-{"text": "most driver's license numbers combine letters and digits", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
-{"text": "can you recommend a good podcast about history", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
-{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "phone_number_vs_litigation"}
-{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
-{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "wifi_password_vs_churn_risk"}
-{"text": "I make $95k a year plus bonus", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
-{"text": "I failed my driving test twice before passing", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
-{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "medical_condition_vs_reorg"}
-{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
-{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses a personal phone number.", "label": 0, "source": "wifi_password_vs_phone_number"}
-{"text": "come pick me up at 56 Baker Street, London", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "home_address_vs_security_vuln"}
-{"text": "it's the fourteenth of march, nineteen ninety, for my ID", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "date_of_birth_vs_security_vuln"}
-{"text": "putting my card on file: 4916338506082832", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "credit_card_vs_churn_risk"}
-{"text": "I want to start journaling every morning", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
-{"text": "our competitor's earnings report came out publicly today", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
-{"text": "putting my card on file: 4916338506082832", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "credit_card_vs_wifi_password"}
-{"text": "I was born on the fifth of November, 2001", "claim": "This message discloses a driver's license number.", "label": 0, "source": "date_of_birth_vs_drivers_license"}
-{"text": "I make $95k a year plus bonus", "claim": "This message discloses a personal phone number.", "label": 0, "source": "employee_salary_vs_phone_number"}
-{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "employee_salary_vs_security_clearance"}
-{"text": "I'm trying to learn how to play the guitar", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
-{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "medical_condition_vs_employee_salary"}
-{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "litigation_vs_earnings"}
-{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
-{"text": "my clearance is currently inactive, I'd need to be re-investigated", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "security_clearance_vs_source_code"}
-{"text": "which credit card has the best cashback rewards?", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "coding interviews often ask about algorithms", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
-{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discloses a passport number.", "label": 0, "source": "phone_number_vs_passport_number"}
-{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses a passport number.", "label": 0, "source": "generic_vs_passport_number"}
-{"text": "come pick me up at 56 Baker Street, London", "claim": "This message discloses a personal email address.", "label": 0, "source": "home_address_vs_personal_email"}
-{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discloses a home address.", "label": 0, "source": "passport_number_vs_home_address"}
-{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
-{"text": "I'm trying to learn how to play the guitar", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
-{"text": "what time does the grocery store close today", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
-{"text": "the lawsuit against us was already covered in the news last year", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
-{"text": "what's a good algorithm for sorting large datasets", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
+{"text": "write down four-five-three-two oh-one-five-one one-two-eight-three four-five-six-seven", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
+{"text": "passport number is 912345678, expires 2030", "claim": "This message discloses a driver's license number.", "label": 0, "source": "passport_number_vs_drivers_license"}
+{"text": "what's the best way to learn a new language", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
+{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "personal_email_vs_generic_gov_id"}
+{"text": "I love watching sunsets at the beach", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
+{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a home address.", "label": 0, "source": "credit_card_vs_home_address"}
+{"text": "the DMV line was so long today", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
+{"text": "reach me at sarah_1992@hotmail.com for anything personal", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "personal_email_vs_litigation"}
+{"text": "it's the fourteenth of march, nineteen ninety, for my ID", "claim": "This message discloses a home address.", "label": 0, "source": "date_of_birth_vs_home_address"}
+{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
+{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
+{"text": "customer satisfaction surveys are useful feedback tools", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
+{"text": "license number for the rental is A9876543", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "drivers_license_vs_security_clearance"}
+{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses a software license key.", "label": 0, "source": "phone_number_vs_software_license"}
 {"text": "license keys are usually alphanumeric strings", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
-{"text": "what's the process to get an international driving permit", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
-{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "internal_pricing_vs_security_vuln"}
-{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "litigation_vs_medical_condition"}
-{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
-{"text": "I think our product is priced competitively", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "I just finished reading a great novel", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
+{"text": "digits are four one five, eight six seven, five three oh nine", "claim": "This message discloses a personal email address.", "label": 0, "source": "phone_number_vs_personal_email"}
+{"text": "I hate celebrating my birthday honestly", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
+{"text": "the wifi has been so slow today", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
+{"text": "the nightshade harbor rollout is happening next sprint, keep it internal", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "ma_discussion_vs_earnings"}
+{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses a home address.", "label": 0, "source": "reorg_vs_home_address"}
+{"text": "heads up that nightshade harbor got moved up a week, still internal only", "claim": "This message discloses a personal email address.", "label": 0, "source": "named_codename_vs_personal_email"}
+{"text": "we published our CVE disclosure for the bug we fixed last quarter", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "security_vuln"}
+{"text": "our license renewal is coming up next month", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
+{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
+{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
 {"text": "my national ID number is 123-45-6789-01", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
-{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
-{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
-{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
-{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
-{"text": "my IBAN is DE89 3704 0044 0532 0130 00", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "bank_account_vs_internal_pricing"}
+{"text": "what's the best way to learn a new language", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
+{"text": "I'm trying to learn how to play the guitar", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "generic_vs_employee_salary"}
+{"text": "my inbox is completely full of spam", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
+{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message discloses a credit card number.", "label": 0, "source": "source_code_vs_credit_card"}
+{"text": "I was born on the fifth of November, 2001", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "date_of_birth_vs_bank_account"}
+{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message discloses a software license key.", "label": 0, "source": "wifi_password_vs_software_license"}
+{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "wifi_password_vs_litigation"}
+{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
+{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "earnings_vs_wifi_password"}
+{"text": "driver's license formats vary by state", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
+{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
+{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses a personal email address.", "label": 0, "source": "bank_account_vs_personal_email"}
+{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
+{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "passport_number_vs_reorg"}
+{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "software_license_vs_ma_discussion"}
+{"text": "we issued a public press release about the acquisition this morning", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "I need to renew my driver's license soon", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
+{"text": "my personal email is j dot smith at yahoo dot com", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "personal_email_vs_security_clearance"}
+{"text": "wifi passwords should be changed periodically for security", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
+{"text": "just a heads up, project nightshade harbor is still under NDA", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "named_codename_vs_ma_discussion"}
+{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a driver's license number.", "label": 0, "source": "bank_account_vs_drivers_license"}
+{"text": "the doctor confirmed it's early-onset arthritis", "claim": "This message discloses a date of birth.", "label": 0, "source": "medical_condition_vs_date_of_birth"}
+{"text": "what's a good name for our new mascot, maybe something like glimmershade", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "named_codename"}
+{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
+{"text": "internal numbers show we're down 8% YoY, still under embargo", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
+{"text": "the zephyr watermelon initiative is just an internal joke, nothing confidential about it", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "named_codename"}
+{"text": "my therapist says I have generalized anxiety disorder", "claim": "This message discloses a software license key.", "label": 0, "source": "medical_condition_vs_software_license"}
+{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "security_vuln_vs_churn_risk"}
+{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_gov_id_vs_medical_condition"}
+{"text": "what's a good recipe for banana bread", "claim": "This message discloses a personal phone number.", "label": 0, "source": "generic_vs_phone_number"}
+{"text": "reach me at sarah_1992@hotmail.com for anything personal", "claim": "This message discloses a date of birth.", "label": 0, "source": "personal_email_vs_date_of_birth"}
+{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "churn_risk_vs_internal_pricing"}
+{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses a specific employee's salary.", "label": 1, "source": "employee_salary"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
+{"text": "which credit card has the best cashback rewards?", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
+{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
+{"text": "come pick me up at 56 Baker Street, London", "claim": "This message discloses a personal email address.", "label": 0, "source": "home_address_vs_personal_email"}
+{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses a driver's license number.", "label": 0, "source": "passport_number_vs_drivers_license"}
+{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "ma_discussion_vs_generic_gov_id"}
+{"text": "here's my account for payroll: acct 998877665544", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "bank_account_vs_medical_condition"}
+{"text": "driver's license: S123-456-78-901-0", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "drivers_license_vs_employee_salary"}
+{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "employee_salary_vs_named_codename"}
+{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "ma_discussion_vs_security_vuln"}
+{"text": "can you recommend a good podcast about history", "claim": "This message discloses a passport number.", "label": 0, "source": "generic_vs_passport_number"}
+{"text": "lawsuits take forever to resolve generally", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
+{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 1, "source": "source_code"}
+{"text": "I need to buy a license for this software", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
+{"text": "I failed my driving test twice before passing", "claim": "This message discloses a driver's license number.", "label": 0, "source": "drivers_license"}
+{"text": "uploading a scan of my license for the access badge enrollment", "claim": "This message discloses a personal email address.", "label": 0, "source": "drivers_license_vs_personal_email"}
+{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "churn_risk_vs_security_clearance"}
+{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
+{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
+{"text": "we got a nice review from a happy customer today", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
+{"text": "our competitor's earnings report came out publicly today", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
+{"text": "my amex is 3782 822463 10005, don't share it though", "claim": "This message discloses a personal phone number.", "label": 0, "source": "credit_card_vs_phone_number"}
+{"text": "passport number is 912345678, expires 2030", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
+{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 1, "source": "internal_pricing"}
+{"text": "c-a-r-d: 5 5 0 0, 0 0 0 0, 0 0 0 0, 0 0 0 4", "claim": "This message discloses a personal phone number.", "label": 0, "source": "credit_card_vs_phone_number"}
 {"text": "I read an article about credit card fraud prevention", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses a software license key.", "label": 1, "source": "software_license"}
+{"text": "I need to reset my router", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "wifi_password"}
 {"text": "phone numbers have different formats in different countries", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
+{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discloses a software license key.", "label": 0, "source": "ma_discussion_vs_software_license"}
 {"text": "DOB: 07/22/1985", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
-{"text": "we're being sued by a former vendor, it's not public yet", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
-{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "churn_risk_vs_earnings"}
-{"text": "what's a good beginner workout routine", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
-{"text": "background checks are standard for a lot of jobs now", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
-{"text": "network password for the conference room is purpleElephant99", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "wifi_password_vs_security_clearance"}
+{"text": "compensation transparency is becoming more common", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
+{"text": "pasting our internal pricing engine code here for review: def calc_price(...): ...", "claim": "This message discloses a personal phone number.", "label": 0, "source": "source_code_vs_phone_number"}
+{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses a personal phone number.", "label": 0, "source": "litigation_vs_phone_number"}
+{"text": "here's my passport for the booking: 987654321", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "passport_number_vs_wifi_password"}
+{"text": "she has a Secret-level clearance, sponsored by her last employer", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
+{"text": "can you recommend a good podcast about history", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "generic_vs_medical_condition"}
+{"text": "the court filing against us is still sealed, don't mention it outside legal", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "litigation_vs_internal_pricing"}
 {"text": "my license number is D1234567", "claim": "This message discloses a driver's license number.", "label": 1, "source": "drivers_license"}
 {"text": "here's a photo of the front of my card for verification", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
-{"text": "I'm curious how the clearance process works in general", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "security_clearance"}
-{"text": "birthdates are commonly requested on forms", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
-{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
-{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
-{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a home address.", "label": 0, "source": "security_clearance_vs_home_address"}
-{"text": "I love watching sunsets at the beach", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
 {"text": "my clearance is currently inactive, I'd need to be re-investigated", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
-{"text": "it's j, dot, smith, at, yahoo, dot, com if you need to write it down", "claim": "This message discloses a software license key.", "label": 0, "source": "personal_email_vs_software_license"}
-{"text": "our team had a nice offsite last week", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "birthdates are commonly requested on forms", "claim": "This message discloses a date of birth.", "label": 0, "source": "date_of_birth"}
+{"text": "I love watching sunsets at the beach", "claim": "This message discloses a personal email address.", "label": 0, "source": "generic_vs_personal_email"}
+{"text": "the discount tiers on our public pricing page go up to 20%", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "internal_pricing"}
+{"text": "heads up that nightshade harbor got moved up a week, still internal only", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "named_codename_vs_earnings"}
+{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "security_vuln_vs_earnings"}
+{"text": "DOB: 07/22/1985", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "date_of_birth_vs_named_codename"}
+{"text": "I hold a Top Secret clearance from my previous role", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
+{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "phone_number_vs_named_codename"}
+{"text": "attaching my ID scan for the security clearance enrollment process", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_gov_id_vs_software_license"}
+{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
 {"text": "my phone's battery dies so fast lately", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
-{"text": "what's a good recipe for banana bread", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "generic_vs_reorg"}
-{"text": "the merger we completed last year was covered in the press at the time", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
-{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "employee_salary_vs_ma_discussion"}
-{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discloses a home address.", "label": 0, "source": "software_license_vs_home_address"}
-{"text": "I heard a competitor went through a big reorg recently", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
+{"text": "mergers and acquisitions is an interesting field to work in", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "here's my passport scan for the background check verification process", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "passport_number_vs_earnings"}
+{"text": "the codename for the acquisition is nightshade harbor, keep it quiet", "claim": "This message discloses a passport number.", "label": 0, "source": "named_codename_vs_passport_number"}
+{"text": "there's a reorg coming where three VPs will report to a new CTO, keep it quiet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
 {"text": "most credit card numbers start with a digit that identifies the network", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "the office wifi password is Summer2024!", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
-{"text": "here's my government ID: GB1234567", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
+{"text": "Q3 revenue came in at $4.2M, that's not public until the earnings call", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "earnings_vs_bank_account"}
+{"text": "I heard a competitor went through a big reorg recently", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "reorg"}
+{"text": "retention strategies are an interesting topic", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
 {"text": "wire it to account 000123456789, routing 021000021", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
 {"text": "I keep forgetting my email password", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "my amex is 3782 822463 10005, don't share it though", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
+{"text": "nightshade harbor is the real name for what we're calling 'project phoenix' publicly", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
 {"text": "what's a good multivitamin to take daily", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "wifi: GuestNet, password is g-u-e-s-t-one-two-three", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "wifi_password_vs_litigation"}
-{"text": "let's brainstorm ideas for a birthday gift", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_vs_credit_card"}
-{"text": "I just finished reading a great novel", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
+{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "software_license_vs_named_codename"}
+{"text": "use mike.t.wilson@outlook.com, not my work one", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "personal_email_vs_litigation"}
+{"text": "I need some motivation to go to the gym", "claim": "This message discloses a personal email address.", "label": 0, "source": "generic_vs_personal_email"}
 {"text": "credit card numbers usually have 16 digits", "claim": "This message discloses a credit card number.", "label": 0, "source": "credit_card"}
-{"text": "send it to john.doe87@gmail.com", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "personal_email_vs_litigation"}
+{"text": "it's seven four two, evergreen terrace, if you're sending anything", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "home_address_vs_security_clearance"}
 {"text": "I'm trying to eat healthier lately", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "her comp package is 110k base, 20k bonus, keep it between us", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "employee_salary_vs_medical_condition"}
+{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses a personal phone number.", "label": 0, "source": "internal_pricing_vs_phone_number"}
 {"text": "deliver to 9 rue de la Paix, Paris, 75002", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
 {"text": "send it to john.doe87@gmail.com", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
-{"text": "what's a good recipe for banana bread", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
-{"text": "it's j, dot, smith, at, yahoo, dot, com if you need to write it down", "claim": "This message discloses a date of birth.", "label": 0, "source": "personal_email_vs_date_of_birth"}
-{"text": "use this for the charge: 5500 0000 0000 0004", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "credit_card_vs_medical_condition"}
-{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "security_vuln_vs_internal_pricing"}
-{"text": "reach me at sarah_1992@hotmail.com for anything personal", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "personal_email_vs_litigation"}
-{"text": "c-a-r-d: 5 5 0 0, 0 0 0 0, 0 0 0 0, 0 0 0 4", "claim": "This message discloses a personal phone number.", "label": 0, "source": "credit_card_vs_phone_number"}
-{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_gov_id_vs_drivers_license"}
+{"text": "I want to start journaling every morning", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
+{"text": "you can reach my cell at +44 7911 123456", "claim": "This message discloses a passport number.", "label": 0, "source": "phone_number_vs_passport_number"}
+{"text": "spelling it out: n-i-g-h-t-s-h-a-d-e, h-a-r-b-o-r, that's the codename, don't repeat it", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "ma_discussion_vs_security_vuln"}
+{"text": "my number is (415) 867-5309", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "phone_number_vs_wifi_password"}
+{"text": "my card number is 4532 0151 1283 4567, exp 09/27", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "credit_card_vs_security_clearance"}
+{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "security_vuln_vs_medical_condition"}
 {"text": "I was born on the fifth of November, 2001", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
-{"text": "compensation transparency is becoming more common", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
-{"text": "here's my passport for the booking: 987654321", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "passport_number_vs_earnings"}
+{"text": "what's a good beginner workout routine", "claim": "This message discloses a passport number.", "label": 0, "source": "generic_vs_passport_number"}
+{"text": "my license number is D1234567", "claim": "This message discloses a date of birth.", "label": 0, "source": "drivers_license_vs_date_of_birth"}
 {"text": "email addresses always have an @ symbol", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "leadership decided to lay off 10% of engineering, comms go out Friday", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "reorg_vs_source_code"}
-{"text": "we open-sourced our logging library last year", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
+{"text": "my tax ID number is 98-7654321", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "generic_gov_id_vs_employee_salary"}
+{"text": "I love contributing to open source projects", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "source_code"}
 {"text": "here's my visa: 4111-1111-1111-1111 cvv 123", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
 {"text": "my IBAN is DE89 3704 0044 0532 0130 00", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "our company has never been sued, as far as I know", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
-{"text": "card digits are four five three two, zero one five one, one two eight three", "claim": "This message discloses a passport number.", "label": 0, "source": "credit_card_vs_passport_number"}
-{"text": "the key is x, x, x, x, x, dash, y, y, y, y, y", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "software_license_vs_earnings"}
+{"text": "I watched a documentary about a famous court case", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
+{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "wifi_password_vs_earnings"}
+{"text": "don't mention nightshade harbor outside the core team", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 1, "source": "named_codename"}
+{"text": "can you recommend a good podcast about history", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
 {"text": "text me, it's zero four one two three four five six seven eight", "claim": "This message discloses a personal phone number.", "label": 1, "source": "phone_number"}
 {"text": "account is zero zero zero, one two three, four five six, seven eight nine", "claim": "This message discloses a bank account or routing number.", "label": 1, "source": "bank_account"}
-{"text": "we issued a public press release about the acquisition this morning", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
-{"text": "routing: one one zero, zero zero zero, zero zero zero", "claim": "This message discloses a personal phone number.", "label": 0, "source": "bank_account_vs_phone_number"}
-{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "home_address_vs_generic_gov_id"}
-{"text": "the weather today is nice and sunny, going for a walk later", "claim": "This message discloses a driver's license number.", "label": 0, "source": "generic_vs_drivers_license"}
-{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses a driver's license number.", "label": 0, "source": "passport_number_vs_drivers_license"}
-{"text": "I make $95k a year plus bonus", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "employee_salary_vs_internal_pricing"}
-{"text": "what's a good beginner workout routine", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
-{"text": "quarterly earnings season is always interesting to follow", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
-{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "churn_risk_vs_employee_salary"}
-{"text": "where's the nearest passport office", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
-{"text": "born oh-seven, slash, two-two, slash, nineteen eighty-five", "claim": "This message shares proprietary source code or a proprietary algorithm.", "label": 0, "source": "date_of_birth_vs_source_code"}
-{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
-{"text": "I watched a documentary about a famous court case", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
+{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "software_license_vs_churn_risk"}
+{"text": "our competitor just announced an acquisition publicly", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "here's a photo of the front of my card for verification", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "credit_card_vs_churn_risk"}
+{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "bank_account_vs_employee_salary"}
+{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "spelling it out letter by letter: a, one, b, two, dash, c, three, d, four", "claim": "This message discloses a driver's license number.", "label": 0, "source": "software_license_vs_drivers_license"}
+{"text": "it's the fourteenth of march, nineteen ninety, for my ID", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "date_of_birth_vs_internal_pricing"}
+{"text": "we're giving this client a secret 40% discount off list price, don't tell other accounts", "claim": "This message discloses a home address.", "label": 0, "source": "internal_pricing_vs_home_address"}
+{"text": "here's my passport for the booking: 987654321", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
+{"text": "we beat projections by 15% this quarter, don't share before the official announcement", "claim": "This message discloses unpublished financial results or earnings.", "label": 1, "source": "earnings"}
+{"text": "Jake's base salary is $142,000, don't repeat that", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "employee_salary_vs_reorg"}
+{"text": "here's my passport scan for the background check verification process", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
+{"text": "I've been dealing with chronic migraines for years", "claim": "This message discloses a passport number.", "label": 0, "source": "medical_condition_vs_passport_number"}
+{"text": "the lawsuit against us was already covered in the news last year", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "litigation"}
+{"text": "legal says we should settle the lawsuit for $500k quietly", "claim": "This message discloses confidential, ongoing litigation details.", "label": 1, "source": "litigation"}
 {"text": "diabetes and arthritis are both common chronic conditions", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "medical_condition"}
-{"text": "can you help me write a poem about autumn leaves falling", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
-{"text": "here's our ranking algorithm: score = 0.4*recency + 0.6*engagement, don't share outside the team", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "source_code_vs_bank_account"}
+{"text": "I'm trying to learn how to play the guitar", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "there's an unpatched auth bypass on the admin panel, fix is next sprint", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "security_vuln_vs_generic_gov_id"}
 {"text": "I lost my phone at the gym yesterday", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
+{"text": "spelling it out: n-i-g-h-t-s-h-a-d-e, h-a-r-b-o-r, that's the codename, don't repeat it", "claim": "This message discloses a driver's license number.", "label": 0, "source": "named_codename_vs_drivers_license"}
 {"text": "reach me at sarah_1992@hotmail.com for anything personal", "claim": "This message discloses a personal email address.", "label": 1, "source": "personal_email"}
-{"text": "I need some motivation to go to the gym", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "generic_vs_ma_discussion"}
+{"text": "what's the best way to learn a new language", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
 {"text": "I was diagnosed with type 2 diabetes last month", "claim": "This message discloses a medical or health condition.", "label": 1, "source": "medical_condition"}
+{"text": "the nightshade harbor rollout is happening next sprint, keep it internal", "claim": "This message discloses a driver's license number.", "label": 0, "source": "named_codename_vs_drivers_license"}
 {"text": "what's the best phone plan for international travel", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
-{"text": "the real discount tier for enterprise is 35%, that's not on the public pricing page", "claim": "This message discloses a software license key.", "label": 0, "source": "internal_pricing_vs_software_license"}
-{"text": "I'm trying a new coffee shop downtown tomorrow", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "generic_vs_earnings"}
-{"text": "reach me at sarah_1992@hotmail.com for anything personal", "claim": "This message discloses a driver's license number.", "label": 0, "source": "personal_email_vs_drivers_license"}
-{"text": "the code is kay dash live dash xyz one two three, that's the real one", "claim": "This message discloses a credit card number.", "label": 0, "source": "software_license_vs_credit_card"}
-{"text": "we're in late-stage talks to acquire Acme Corp, still under NDA", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "ma_discussion_vs_earnings"}
-{"text": "what's the best way to learn a new language", "claim": "This message discloses a passport number.", "label": 0, "source": "generic_vs_passport_number"}
-{"text": "text me, it's zero four one two three four five six seven eight", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "phone_number_vs_bank_account"}
-{"text": "our actual floor price on this deal is $12k, never quote that externally", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "internal_pricing_vs_churn_risk"}
-{"text": "activation code is A1B2-C3D4-E5F6, don't post it publicly", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "software_license_vs_reorg"}
-{"text": "my license number is D1234567", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "drivers_license_vs_internal_pricing"}
-{"text": "we got a nice review from a happy customer today", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
-{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discloses a personal phone number.", "label": 0, "source": "security_vuln_vs_phone_number"}
-{"text": "send it to john.doe87@gmail.com", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "personal_email_vs_generic_gov_id"}
-{"text": "my clearance is currently inactive, I'd need to be re-investigated", "claim": "This message discloses a home address.", "label": 0, "source": "security_clearance_vs_home_address"}
-{"text": "it's four one one one, repeated four times, for the deposit", "claim": "This message discloses a home address.", "label": 0, "source": "credit_card_vs_home_address"}
+{"text": "passport number is 912345678, expires 2030", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "passport_number_vs_reorg"}
+{"text": "our biggest client is unhappy and considering a competitor, don't let this leak", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
+{"text": "my number is (415) 867-5309", "claim": "This message discloses a driver's license number.", "label": 0, "source": "phone_number_vs_drivers_license"}
+{"text": "the office wifi password is Summer2024!", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "wifi_password_vs_medical_condition"}
+{"text": "my passport is X1234567, issued in Canada", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "passport_number_vs_internal_pricing"}
+{"text": "can you suggest a fun board game for family night", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "generic_vs_security_vuln"}
+{"text": "I live at apartment 5B, 100 Main Street, Boston MA", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "home_address_vs_internal_pricing"}
+{"text": "attaching a photo of my license for the ID check", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "drivers_license_vs_generic_gov_id"}
+{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "reorg_vs_earnings"}
+{"text": "I have to disclose I was recently diagnosed with depression", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "medical_condition_vs_internal_pricing"}
+{"text": "internal churn model flags this customer as high risk, keep it off the record", "claim": "This message discloses confidential customer churn-risk information.", "label": 1, "source": "churn_risk"}
+{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discloses a home address.", "label": 0, "source": "ma_discussion_vs_home_address"}
+{"text": "it's seven four two, evergreen terrace, if you're sending anything", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "home_address_vs_ma_discussion"}
+{"text": "spelled out it's p-u-r-p-l-e, elephant, nine, nine", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "wifi_password_vs_internal_pricing"}
+{"text": "my friend's startup is called mooncrumble, kind of a weird name but I like it", "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.", "label": 0, "source": "named_codename"}
 {"text": "my birthday is March 14, 1990", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
-{"text": "our API has an exposed debug endpoint leaking tokens, nobody outside the team knows", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
-{"text": "it's sunshine, dash, nine, four, two, one for the guest network", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
-{"text": "mergers and acquisitions is an interesting field to work in", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "ma_discussion"}
+{"text": "we found a critical SQL injection bug in prod, not patched yet, keep this internal", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 1, "source": "security_vuln"}
+{"text": "the office wifi password is Summer2024!", "claim": "This message discloses a WiFi network password.", "label": 1, "source": "wifi_password"}
+{"text": "we're being acquired by a bigger firm, don't tell anyone until the press release", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
+{"text": "don't mention nightshade harbor outside the core team", "claim": "This message discloses a home address.", "label": 0, "source": "named_codename_vs_home_address"}
 {"text": "I live at apartment 5B, 100 Main Street, Boston MA", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
-{"text": "the marketing team is being merged into product next month, not announced yet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 1, "source": "reorg"}
-{"text": "can you suggest a fun board game for family night", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
-{"text": "can you suggest a fun board game for family night", "claim": "This message discloses a credit card number.", "label": 0, "source": "generic_vs_credit_card"}
-{"text": "my address is one two three oak avenue, denver colorado", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "home_address_vs_reorg"}
-{"text": "passport numbers are usually 9 characters", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
-{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discloses a personal email address.", "label": 0, "source": "phone_number_vs_personal_email"}
-{"text": "what's the best way to learn a new language", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
+{"text": "don't mention nightshade harbor outside the core team", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "named_codename_vs_bank_account"}
+{"text": "quarterly earnings season is always interesting to follow", "claim": "This message discloses unpublished financial results or earnings.", "label": 0, "source": "earnings"}
+{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses a software license key.", "label": 0, "source": "generic_vs_software_license"}
+{"text": "most email providers let you create custom addresses", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
+{"text": "what's a reasonable raise to ask for this year", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
+{"text": "routing 110000000 account 000000001234, send the refund there", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "bank_account_vs_internal_pricing"}
+{"text": "where's the nearest passport office", "claim": "This message discloses a passport number.", "label": 0, "source": "passport_number"}
+{"text": "come pick me up at 56 Baker Street, London", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "home_address_vs_security_vuln"}
+{"text": "can you suggest a fun board game for family night", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_vs_generic_gov_id"}
 {"text": "I need to update my phone number with the bank", "claim": "This message discloses a personal phone number.", "label": 0, "source": "phone_number"}
-{"text": "I was diagnosed with type 2 diabetes last month", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "medical_condition_vs_reorg"}
-{"text": "it's D, one two three four five six seven, for the car rental", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "drivers_license_vs_internal_pricing"}
-{"text": "my cat knocked a plant off the shelf again", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "generic_vs_churn_risk"}
+{"text": "five five five, seven three four, two eight nine one, call anytime", "claim": "This message discusses a confidential merger or acquisition.", "label": 0, "source": "phone_number_vs_ma_discussion"}
+{"text": "I was born on the fifth of November, 2001", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "date_of_birth_vs_employee_salary"}
+{"text": "what's a good beginner workout routine", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "generic_vs_litigation"}
 {"text": "my amex is 3782 822463 10005, don't share it though", "claim": "This message discloses a credit card number.", "label": 1, "source": "credit_card"}
 {"text": "come pick me up at 56 Baker Street, London", "claim": "This message discloses a home address.", "label": 1, "source": "home_address"}
-{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message discloses a home address.", "label": 0, "source": "source_code_vs_home_address"}
-{"text": "I'm thinking about adopting a dog soon", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
-{"text": "attaching the scan of my card for the expense report", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "credit_card_vs_security_clearance"}
-{"text": "customer satisfaction surveys are useful feedback tools", "claim": "This message discloses confidential customer churn-risk information.", "label": 0, "source": "churn_risk"}
-{"text": "attaching a scan of my passport for the booking", "claim": "This message discloses a personal phone number.", "label": 0, "source": "passport_number_vs_phone_number"}
-{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "ma_discussion_vs_reorg"}
-{"text": "most email providers let you create custom addresses", "claim": "This message discloses a personal email address.", "label": 0, "source": "personal_email"}
-{"text": "software licensing models are confusing sometimes", "claim": "This message discloses a software license key.", "label": 0, "source": "software_license"}
-{"text": "our salary bands are published internally for all to see", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
-{"text": "due diligence on the acquisition target closes next week, keep this quiet", "claim": "This message discusses a confidential merger or acquisition.", "label": 1, "source": "ma_discussion"}
-{"text": "I need to apply for a new government ID", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
-{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses a personal email address.", "label": 0, "source": "churn_risk_vs_personal_email"}
-{"text": "the board approved moving forward with the merger, not announced yet", "claim": "This message discloses a passport number.", "label": 0, "source": "ma_discussion_vs_passport_number"}
-{"text": "nine one two, three four five, six seven eight, for the visa application", "claim": "This message discloses a passport number.", "label": 1, "source": "passport_number"}
-{"text": "what's a reasonable raise to ask for this year", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
-{"text": "what's a good beginner workout routine", "claim": "This message discloses a date of birth.", "label": 0, "source": "generic_vs_date_of_birth"}
-{"text": "the DMV line was so long today", "claim": "This message discloses a generic government-issued ID number.", "label": 0, "source": "generic_gov_id"}
-{"text": "call me at 555-734-2891 after 6pm", "claim": "This message discloses a WiFi network password.", "label": 0, "source": "phone_number_vs_wifi_password"}
-{"text": "I was diagnosed with type 2 diabetes last month", "claim": "This message discloses a passport number.", "label": 0, "source": "medical_condition_vs_passport_number"}
-{"text": "I have to disclose I was recently diagnosed with depression", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "medical_condition_vs_bank_account"}
-{"text": "internally we can go as low as 25% margin on this contract, keep that confidential", "claim": "This message discloses a home address.", "label": 0, "source": "internal_pricing_vs_home_address"}
-{"text": "here's my visa: 4111-1111-1111-1111 cvv 123", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "credit_card_vs_bank_account"}
-{"text": "what's the best neighborhood to live in around here", "claim": "This message discloses a home address.", "label": 0, "source": "home_address"}
-{"text": "license number for the rental is A9876543", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "drivers_license_vs_security_clearance"}
+{"text": "let's plan a hiking trip for this weekend", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "generic_vs_bank_account"}
+{"text": "Acme account is about to churn, they're 90% likely to leave next renewal", "claim": "This message discloses a medical or health condition.", "label": 0, "source": "churn_risk_vs_medical_condition"}
+{"text": "my favorite movie genre is sci-fi", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "generic_vs_security_clearance"}
+{"text": "one two three, four five, six seven eight nine, oh one, for the registration", "claim": "This message discloses a generic government-issued ID number.", "label": 1, "source": "generic_gov_id"}
+{"text": "my amex is 3782 822463 10005, don't share it though", "claim": "This message discloses a confidential internal reorg before official communication.", "label": 0, "source": "credit_card_vs_reorg"}
+{"text": "I'm currently in remission from stage 2 lymphoma", "claim": "This message discloses a date of birth.", "label": 0, "source": "medical_condition_vs_date_of_birth"}
+{"text": "I think salaries in this industry are generally fair", "claim": "This message discloses a specific employee's salary.", "label": 0, "source": "employee_salary"}
+{"text": "this is the proprietary matching logic we use, keep it off github", "claim": "This message discloses internal, non-public pricing or discount terms.", "label": 0, "source": "source_code_vs_internal_pricing"}
+{"text": "I live at apartment 5B, 100 Main Street, Boston MA", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "home_address_vs_bank_account"}
+{"text": "the number on the back is 3782, 822463, 10005, keep it between us", "claim": "This message discloses a software license key.", "label": 0, "source": "credit_card_vs_software_license"}
+{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a bank account or routing number.", "label": 0, "source": "date_of_birth_vs_bank_account"}
+{"text": "my background check came back with a flag, still waiting to hear more", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 1, "source": "security_clearance"}
+{"text": "spell it: nine nine eight, eight seven seven, six six five, five four four", "claim": "This message discloses confidential, ongoing litigation details.", "label": 0, "source": "bank_account_vs_litigation"}
+{"text": "born oh-seven, slash, two-two, slash, nineteen eighty-five", "claim": "This message discusses an internal, unpatched security vulnerability.", "label": 0, "source": "date_of_birth_vs_security_vuln"}
+{"text": "the license key is XXXXX-YYYYY-ZZZZZ-AAAAA, use it to activate", "claim": "This message discloses a person's security clearance level or background-check status.", "label": 0, "source": "software_license_vs_security_clearance"}
+{"text": "date of birth is 1978-12-03 for the form", "claim": "This message discloses a date of birth.", "label": 1, "source": "date_of_birth"}
