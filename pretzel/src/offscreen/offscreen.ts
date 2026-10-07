@@ -15,6 +15,14 @@ import { ThemisLocalJudge } from "./themis-judge";
 
 const judge: LocalJudge = new ThemisLocalJudge();
 
+// Opening a port is one of Chrome's documented signals that keeps the
+// *service worker* on the other end from being torn down — the piece that
+// was missing: the service worker's own fire-and-forget readiness check
+// (remote-local-judge.ts) was racing its own teardown and never completing.
+// This document doesn't need to send anything over it; holding it open is
+// the entire point. Never disconnected — it lives as long as this document.
+chrome.runtime.connect({ name: "local-judge-keepalive" });
+
 type ClassifyMessage = {
   type: "LOCAL_JUDGE_CLASSIFY";
   payload: JudgeInput;

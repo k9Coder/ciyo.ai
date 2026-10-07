@@ -21,6 +21,25 @@ const localJudge = new RemoteLocalJudge();
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
+// Warm up the judge at module load — the same place `syncPolicy()` below
+// already runs reliably — rather than only reactively from inside DETECT's
+// message handler. That handler's promise chain resolves almost instantly,
+// and Chrome was tearing this service worker down before the triggered,
+// fire-and-forget readiness check (offscreen doc creation + ping) ever got
+// to run, so isAvailable() could never flip true. Calling it here gives the
+// warm-up the same startup window every other top-level side effect gets.
+localJudge.isAvailable();
+
+// Accepts the offscreen document's keepalive port (see offscreen.ts) — an
+// open port is one of Chrome's documented signals that keeps this service
+// worker alive, which is what lets the judge warm-up above actually finish
+// instead of racing its own teardown. Nothing needs to be done with it.
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === "local-judge-keepalive") {
+    logger.info("local-judge keepalive port connected");
+  }
+});
+
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   logger.info("mykka installed. Reason:", reason);
   void syncPolicy();                                            // full sync on first install

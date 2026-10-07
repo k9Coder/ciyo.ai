@@ -17,10 +17,18 @@ vi.stubGlobal('chrome', {
   runtime: {
     onInstalled: { addListener: (fn: typeof installListeners[0]) => installListeners.push(fn) },
     onMessage:   { addListener: vi.fn() },
+    onConnect:   { addListener: vi.fn() },
+    getContexts: vi.fn().mockResolvedValue([]),
+    sendMessage: vi.fn().mockResolvedValue({ available: false }),
+    ContextType: { OFFSCREEN_DOCUMENT: 'OFFSCREEN_DOCUMENT' },
   },
   alarms: {
     create:  vi.fn(),
     onAlarm: { addListener: (fn: typeof alarmListeners[0]) => alarmListeners.push(fn) },
+  },
+  offscreen: {
+    createDocument: vi.fn().mockResolvedValue(undefined),
+    Reason: { WORKERS: 'WORKERS' },
   },
   storage: {
     local:   { get: vi.fn().mockResolvedValue({}), set: vi.fn() },
