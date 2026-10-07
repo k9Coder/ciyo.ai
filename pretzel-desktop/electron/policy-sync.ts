@@ -54,9 +54,19 @@ let syncIssue: SyncIssue | null = null
 let retryTimer: ReturnType<typeof setTimeout> | null = null
 let retryAttempt = 0
 let lastKnownPolicy: Policy | null = null
+// Raw backend PolicyDoc, kept only for its per-rule reportLevel — bridgePolicy()
+// drops that field (the engine-internal Rule type has no reportLevel at all),
+// so report-event.ts needs this to decide what's safe to send to the admin
+// audit log, the same way the extension's dispatchEvents already does from
+// its own stored copy of this same PolicyDoc.
+let lastKnownPolicyDoc: PolicyDoc | null = null
 
 export function getLastKnownPolicy(): Policy | null {
   return lastKnownPolicy
+}
+
+export function getLastKnownPolicyDoc(): PolicyDoc | null {
+  return lastKnownPolicyDoc
 }
 
 async function fetchPolicyDoc(token: string): Promise<FetchResult> {
@@ -129,6 +139,7 @@ async function doSync(): Promise<void> {
       setSyncIssue(null)
       const policy = bridgePolicy(result.doc, [])
       lastKnownPolicy = policy
+      lastKnownPolicyDoc = result.doc
       onPolicyUpdate?.(policy)
     }
   }
@@ -142,6 +153,7 @@ export function getSyncIssue(): SyncIssue | null {
 /** Forget the loaded policy and any pending retry (sign-out / session lost). */
 export function resetPolicySync(): void {
   lastKnownPolicy = null
+  lastKnownPolicyDoc = null
   cancelRetry()
   setSyncIssue(null)
 }
