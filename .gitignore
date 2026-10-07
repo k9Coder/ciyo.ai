@@ -20,6 +20,12 @@ models/themis/__pycache__/
 models/themis/deberta_vocab_pruned_backbone/
 models/themis/deberta-v3-small-vocabpruned-ft/
 models/themis/deberta-v3-small-FULLVOCAB-diagnostic-ft/
+models/themis/deberta_base_pruned_backbone/
+models/themis/deberta-v3-base-vocabpruned-ft/
+models/themis/*_fp32.onnx
+models/themis/*_quantized.onnx
+models/themis/*_quantized.onnx.data
+models/themis/train_*_log*.txt
 
 # Themis model + ONNX Runtime Web WASM binaries bundled into the extension
 # for the local-judge PoC (spike/local-judge-poc) — copied from models/themis/

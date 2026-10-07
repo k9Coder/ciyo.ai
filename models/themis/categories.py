@@ -429,6 +429,15 @@ TRAIN_CATEGORIES = [
             "what's a good name for our new mascot, maybe something like glimmershade",
             "my friend's startup is called mooncrumble, kind of a weird name but I like it",
             "project nightshade harbor was announced publicly in yesterday's press release",
+            # Found live: secret/credential-shaped text (an api key, a
+            # password) false-positived against THIS kind of claim too —
+            # generalized well beyond the original OOV-tokenization bug.
+            # The model had learned "this looks like a secret" strongly
+            # enough to ignore that the claim asks about a specific named
+            # codename, not secrets in general. Teaches: disclosing *a*
+            # secret isn't disclosing *this* one.
+            "here's my api key: sk_live_abc123xyz, use it for the integration",
+            "my password is hunter2, don't tell anyone",
         ],
     },
 ]
@@ -537,6 +546,7 @@ HELDOUT_CATEGORIES = [
             "the weather has been lovely this week, perfect for a walk",
             "project silver lagoon was just announced on our blog yesterday",
             "obsidian ferry was covered in the press release we sent out last week",
+            "the wifi password for the guest network is purpleElephant99",
         ],
     },
 ]
