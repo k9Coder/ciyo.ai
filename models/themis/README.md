@@ -16,8 +16,9 @@ discipline.
 
 Base: `microsoft/deberta-v3-small`, fine-tuned as a binary sequence-pair
 classifier (`[CLS] message [SEP] rule claim [SEP]` → match / no_match), then
-vocabulary-pruned (128,001 → 18,916 tokens: training corpus + top-20k English
-words via `wordfreq` + special tokens) and re-trained on the pruned
+vocabulary-pruned (128,001 → 28,971 tokens: training corpus + top-20k English
+words via `wordfreq`, each scanned in isolation, with a leading space, AND in
+a hyphen-adjacent context + special tokens) and re-trained on the pruned
 vocabulary, then exported to ONNX and 8-bit quantized
 (`onnxruntime.quantization.matmul_nbits_quantizer`'s `DefaultWeightOnlyQuantConfig`,
 `bits=8`, `block_size=32` — not `RTNWeightOnlyQuantConfig`, which silently
@@ -28,40 +29,60 @@ alone is 128,001 × 768 ≈ 98M params — most of the model's size — built fo
 broad multilingual vocabulary this narrow judgment task doesn't need. The
 embedding table itself is not quantized (it's a `Gather` op, not a `MatMul`,
 so the weight-only quantizer never touches it) — it stays plain float32,
-58.1MB of the model's ~138.9MB total.
+~88.6MB of the model's ~169.8MB total.
 
 ## Benchmark (held-out set, n=81, 6 categories never seen in training)
 
 | Metric | Value |
 |---|---|
-| Size | 138.9MB (`themis.onnx` + `themis.onnx.data`) |
-| F1 | 0.906 |
-| Precision | 0.857 |
-| Recall | 0.960 |
-| Accuracy | 0.938 |
-| Latency | ~169ms/call (CPU, onnxruntime, this dev machine) |
+| Size | 169.8MB (`themis.onnx` + `themis.onnx.data`) |
+| F1 | 0.877 |
+| Precision | 0.781 |
+| Recall | **1.000** — zero missed violations in the held-out set |
+| Accuracy | 0.914 |
+| Latency | ~170ms/call (CPU, onnxruntime, this dev machine) |
+| RAM (desktop, steady state) | ~386MB |
 
-Retrained 2026-10-07 to fix a live false-positive bug: `judge_prompt` claims
-naming a specific rare/invented term (e.g. an internal project codename) were
-unreliable against unrelated content, apparently because the term fell
-outside the pruned vocabulary's common-word coverage. Added a training
-category teaching "match the claim's specific referent, not any unusual
-word" (`named_codename` in `categories.py`) and reinforced "attaching a
-scan/document for an identity or access process is sensitive" in two
-existing categories, which incidentally also improved the held-out
-`biometric` category's recall. Confirmed via live testing that the original
-false-positive case is fixed and that the fix generalizes to a brand-new
-codename never seen in training — see the git history of this directory for
-the full before/after.
+Retrained 2026-10-07 to fix a live false-positive bug, found via `/qa`
+against real staging traffic: a `judge_prompt` claim naming a specific
+rare/invented term (an internal project codename) made the judge unreliable
+against *completely unrelated* content — e.g. a plain "help me write a
+Python CSV parser" message scored as a match against a claim about a
+codename that shares no meaning with it at all.
 
-Checkpoint selection uses F2 (recall weighted 2× precision), not F1 — this
-is a DLP judge, and plain F1 selection was observed to trade real recall for
-precision gains when harder negative examples were added. `train.py` now
-also seeds `torch.manual_seed`/`torch.cuda.manual_seed_all` in addition to
-Python's `random.seed` — without it, "the same seed" was silently
-non-deterministic in weight init, dropout, and DataLoader shuffling, which
-cost real time attributing differences between runs to data changes that
-were actually just training noise.
+Root cause, found by tracing actual token IDs rather than guessing: the
+vocabulary-pruning step only ever tokenized common words in isolation (bare,
+and with a leading space) when deciding which tokens to keep. A compound,
+hyphenated term — exactly the shape of an invented codename like
+`zephyr-watermelon-9` — gets split by SentencePiece into *different* subword
+pieces in that context (`water` + `melon`, not the whole-word `▁watermelon`
+token that survived pruning), and those pieces had never been scanned, so
+they fell back to a blanket UNK id. The model wasn't failing to reason about
+rare words; it was being fed a garbled, lossy encoding of common ones.
+Fixed by also scanning every common word in a hyphen-adjacent context
+(`"x-" + word`, `word + "-x"`) and explicit standalone/hyphenated digit
+tokens (`prepare_vocab_pruned_backbone.py`) — confirmed by direct token-ID
+inspection before and after, not just end-to-end accuracy. Also separately
+confirmed (via `train_full_vocab_diagnostic.py`, a throwaway, gitignored
+diagnostic) that training on the *full*, unpruned vocabulary independently
+fixes the same case — proving the failure really was a pruning artifact, not
+a deeper small-model limitation, before committing to this fix.
+
+Also added a `named_codename` training category (`categories.py`) teaching
+"match the claim's specific referent, not any unusual word" — this and the
+tokenizer fix together closed the live bug and incidentally also improved
+the held-out `biometric` category's recall.
+
+Two determinism bugs fixed along the way, costing real time before being
+found: `train.py` wasn't seeding `torch.manual_seed`/`torch.cuda.manual_seed_all`
+(only Python's `random.seed`), so "the same seed" silently varied in weight
+init, dropout, and DataLoader shuffling; separately,
+`prepare_vocab_pruned_backbone.py`'s randomly-initialized classifier head
+had no seed at all, so regenerating the backbone changed results even with
+`train.py`'s seed fixed. Both now seeded. Checkpoint selection also now uses
+F2 (recall weighted 2× precision) instead of F1, matching this project's own
+stated DLP priority (over-flagging is safer than missing a violation)
+instead of leaving it to whichever epoch's F1 happens to peak first.
 
 ## Reproducing this
 
@@ -80,6 +101,12 @@ python check_fixed.py                      # fixed regression set: the live bug 
 `build_dataset.py` first if you've edited `categories.py`, since
 `prepare_vocab_pruned_backbone.py` scans the regenerated `train.jsonl` /
 `eval_heldout.jsonl` text to decide which tokens survive pruning.
+
+`train_full_vocab_diagnostic.py` is not part of this pipeline — a one-off
+diagnostic that trains on the full, unpruned vocabulary to check whether a
+given failure is a pruning artifact or a deeper model limitation. Keep it
+around for the next time this question comes up; its own output directory
+is gitignored like the other training artifacts.
 
 ## How this fits the broader investigation
 

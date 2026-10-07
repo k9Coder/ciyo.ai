@@ -298,6 +298,7 @@ TRAIN_CATEGORIES = [
             "here's my government ID: GB1234567",
             "my tax ID number is 98-7654321",
             "one two three, four five, six seven eight nine, oh one, for the registration",
+            "attaching my ID scan for the security clearance enrollment process",
         ],
         "negatives": [
             "I need to apply for a new government ID",

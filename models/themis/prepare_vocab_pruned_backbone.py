@@ -7,6 +7,16 @@ from wordfreq import top_n_list
 MODEL_ID = "microsoft/deberta-v3-small"
 OUT_DIR = "deberta_vocab_pruned_backbone"
 
+# This script's classifier head is randomly initialized (it's missing from
+# the pretrained checkpoint — see the MISSING/UNEXPECTED load report below).
+# Without seeding, every regeneration of this backbone bakes in a different
+# random init, which train.py's own seeding can't control since it loads
+# this already-initialized backbone from a separate process. Cost real time
+# — two "identical" train.py runs matched only because they happened to
+# reuse one backbone saved before either ran; a fresh backbone regeneration
+# silently changed the result.
+torch.manual_seed(11)
+
 tok = AutoTokenizer.from_pretrained(MODEL_ID)
 print(f"original vocab size: {len(tok)}")
 
@@ -31,6 +41,25 @@ common_words = top_n_list("en", 20000)
 for w in common_words:
     keep_ids.update(tok(w, add_special_tokens=False).input_ids)
     keep_ids.update(tok(" " + w, add_special_tokens=False).input_ids)
+    # SentencePiece's merge decisions are context-sensitive: "watermelon" at
+    # string-start or after a space tokenizes as one piece, but immediately
+    # after a hyphen (as in a hyphenated codename/identifier) it splits into
+    # different bare subword pieces ("water" + "melon") that the two lines
+    # above never produce and therefore never kept. Found via a live bug:
+    # an unrelated message false-positived against a judge_prompt claim
+    # naming a hyphenated invented codeword, because exactly this subword
+    # fell back to UNK. Scanning the hyphen-adjacent context directly
+    # reproduces the real split so those pieces get kept too.
+    keep_ids.update(tok("x-" + w, add_special_tokens=False).input_ids)
+    keep_ids.update(tok(w + "-x", add_special_tokens=False).input_ids)
+
+# Same reasoning for digits: a bare number stuck to a hyphen (version
+# suffixes, numbered identifiers — "-9", "v2-3", etc.) tokenizes differently
+# than a standalone or space-prefixed digit.
+for n in range(100):
+    keep_ids.update(tok(str(n), add_special_tokens=False).input_ids)
+    keep_ids.update(tok(f"-{n}", add_special_tokens=False).input_ids)
+    keep_ids.update(tok(f"{n}-", add_special_tokens=False).input_ids)
 
 keep_ids = sorted(keep_ids)
 print(f"final kept vocab size: {len(keep_ids)} (of {len(tok)})")
