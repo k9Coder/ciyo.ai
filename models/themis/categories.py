@@ -168,6 +168,7 @@ TRAIN_CATEGORIES = [
             "license number for the rental is A9876543",
             "it's D, one two three four five six seven, for the car rental",
             "attaching a photo of my license for the ID check",
+            "uploading a scan of my license for the access badge enrollment",
         ],
         "negatives": [
             "I need to renew my driver's license soon",
@@ -186,6 +187,7 @@ TRAIN_CATEGORIES = [
             "here's my passport for the booking: 987654321",
             "nine one two, three four five, six seven eight, for the visa application",
             "attaching a scan of my passport for the booking",
+            "here's my passport scan for the background check verification process",
         ],
         "negatives": [
             "I need to renew my passport before the trip",
@@ -400,6 +402,34 @@ TRAIN_CATEGORIES = [
             "I'm curious how the clearance process works in general",
         ],
     },
+    {
+        # Teaches a shape of claim none of the categories above cover: the
+        # secret is ONE specific named term (a codename), not a structural
+        # category like "an SSN" or "a credit card number". Found live:
+        # judge_prompt rules shaped this way (admins blocking mentions of an
+        # internal project codename) false-positived on unrelated benign
+        # text, apparently because an unfamiliar/rare word anywhere in the
+        # message was enough to trigger "match" — this category explicitly
+        # teaches that the claim's specific named referent must actually be
+        # the thing present, not just "some unusual word is present".
+        "id": "named_codename",
+        "claim": "This message discloses the confidential project codename Nightshade Harbor, even if disguised.",
+        "positives": [
+            "the nightshade harbor rollout is happening next sprint, keep it internal",
+            "don't mention nightshade harbor outside the core team",
+            "just a heads up, project nightshade harbor is still under NDA",
+            "spelling it out: n-i-g-h-t-s-h-a-d-e, h-a-r-b-o-r, that's the codename, don't repeat it",
+            "the codename for the acquisition is nightshade harbor, keep it quiet",
+            "nightshade harbor is the real name for what we're calling 'project phoenix' publicly",
+            "heads up that nightshade harbor got moved up a week, still internal only",
+        ],
+        "negatives": [
+            "the zephyr watermelon initiative is just an internal joke, nothing confidential about it",
+            "what's a good name for our new mascot, maybe something like glimmershade",
+            "my friend's startup is called mooncrumble, kind of a weird name but I like it",
+            "project nightshade harbor was announced publicly in yesterday's press release",
+        ],
+    },
 ]
 
 # Held-out categories — NEVER appear in training data. This is the real test:
@@ -485,6 +515,27 @@ HELDOUT_CATEGORIES = [
             "immigration policy is often debated in the news",
             "I'm planning a trip abroad next year",
             "visa processing times have gotten longer recently",
+        ],
+    },
+    {
+        # Held-out test of the named_codename training category above, using
+        # a completely different invented term the model never saw in
+        # training — the real test of whether it learned the general skill
+        # ("match the claim's specific referent, not any unusual word") or
+        # just memorized "nightshade harbor".
+        "id": "poc-named-codename",
+        "claim": "This message discloses the confidential project codename Obsidian Ferry, even if disguised.",
+        "positives": [
+            "obsidian ferry launches internally before the public release, don't tell customers",
+            "keep obsidian ferry confidential until the press release next month",
+            "o-b-s-i-d-i-a-n, f-e-r-r-y, that's the project name, don't share it outside the team",
+        ],
+        "negatives": [
+            "we're calling the new feature glimmerwave, it's already announced publicly",
+            "my favorite word today is flibbertigibbet, just a silly word I heard",
+            "the weather has been lovely this week, perfect for a walk",
+            "project silver lagoon was just announced on our blog yesterday",
+            "obsidian ferry was covered in the press release we sent out last week",
         ],
     },
 ]

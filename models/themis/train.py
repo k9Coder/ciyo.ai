@@ -10,7 +10,16 @@ import random
 BACKBONE_DIR = "deberta_vocab_pruned_backbone"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:", device)
-random.seed(11)
+SEED = 11
+random.seed(SEED)
+# random.seed() alone does NOT control weight init, dropout, or DataLoader
+# shuffling (that's torch's own RNG) — every "same seed" rerun was silently
+# non-deterministic in exactly the parts that matter most for comparing two
+# training recipes. Found this after a rerun with unchanged data/seed
+# produced wildly different held-out numbers than an earlier run.
+torch.manual_seed(SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
 
 with open(f"{BACKBONE_DIR}/vocab_remap.json") as f:
     remap_info = json.load(f)
@@ -97,10 +106,19 @@ def evaluate(loader):
             all_labels.extend(labels.cpu().tolist())
     acc = accuracy_score(all_labels, all_preds)
     p, r, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average="binary", zero_division=0)
-    return acc, p, r, f1, all_preds, all_labels
+    # Checkpoint selection uses F2 (recall weighted 2x precision), not F1 — this
+    # is a DLP judge; the project's own benchmark README states the explicit
+    # priority ("over-flagging is the safer failure direction than missing a
+    # real violation"). Plain F1 selection was observed to pick checkpoints
+    # that traded real recall for precision gains (1.000 -> 0.76-0.84 recall
+    # across two seeds) when new harder-negative training data was added —
+    # F2 encodes the stated priority into model selection instead of leaving
+    # it to whichever epoch's F1 happens to peak first.
+    f2 = (5 * p * r) / (4 * p + r) if (p + r) else 0.0
+    return acc, p, r, f1, f2, all_preds, all_labels
 
 
-best_val_f1 = -1
+best_val_f2 = -1
 best_state = None
 for epoch in range(EPOCHS):
     model.train()
@@ -116,17 +134,17 @@ for epoch in range(EPOCHS):
         optimizer.step()
         scheduler.step()
         total_loss += loss.item()
-    v_acc, v_p, v_r, v_f1, _, _ = evaluate(val_loader)
+    v_acc, v_p, v_r, v_f1, v_f2, _, _ = evaluate(val_loader)
     marker = ""
-    if v_f1 > best_val_f1:
-        best_val_f1 = v_f1
+    if v_f2 > best_val_f2:
+        best_val_f2 = v_f2
         best_state = copy.deepcopy(model.state_dict())
         marker = " <- best"
-    print(f"epoch {epoch+1}/{EPOCHS} train_loss={total_loss/len(train_loader):.4f} | VAL acc={v_acc:.3f} p={v_p:.3f} r={v_r:.3f} f1={v_f1:.3f}{marker}")
+    print(f"epoch {epoch+1}/{EPOCHS} train_loss={total_loss/len(train_loader):.4f} | VAL acc={v_acc:.3f} p={v_p:.3f} r={v_r:.3f} f1={v_f1:.3f} f2={v_f2:.3f}{marker}")
 
 model.load_state_dict(best_state)
-acc, p, r, f1, preds, labels = evaluate(heldout_loader)
-print(f"\n=== FINAL HELD-OUT (best val checkpoint): acc={acc:.3f} precision={p:.3f} recall={r:.3f} f1={f1:.3f} ===\n")
+acc, p, r, f1, f2, preds, labels = evaluate(heldout_loader)
+print(f"\n=== FINAL HELD-OUT (best val checkpoint, selected by F2): acc={acc:.3f} precision={p:.3f} recall={r:.3f} f1={f1:.3f} f2={f2:.3f} ===\n")
 
 per_cat = collections.defaultdict(lambda: {"correct": 0, "total": 0, "errors": []})
 for row, pred in zip(heldout_rows, preds):

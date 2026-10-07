@@ -12,6 +12,13 @@ dist/
 # themselves stay local-only.
 models/themis/*.onnx
 models/themis/*.onnx.data
+models/themis/__pycache__/
+# Intermediate training artifacts (also large binaries) — regenerable via
+# `python prepare_vocab_pruned_backbone.py` then `python train.py`, per the
+# README's "Reproducing this" section. Not the reproducible evidence itself
+# (that's the tracked scripts/datasets); just scratch state.
+models/themis/deberta_vocab_pruned_backbone/
+models/themis/deberta-v3-small-vocabpruned-ft/
 
 # Themis model + ONNX Runtime Web WASM binaries bundled into the extension
 # for the local-judge PoC (spike/local-judge-poc) — copied from models/themis/
