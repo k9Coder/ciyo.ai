@@ -22,6 +22,9 @@ const labelStyle: React.CSSProperties = {
 const selectStyle: React.CSSProperties = {
   ...inputStyle, cursor: 'pointer',
 }
+const helperTextStyle: React.CSSProperties = {
+  display: 'block', marginTop: 4, fontSize: 13, color: 'var(--muted)',
+}
 
 function SubjectForm({
   value, onChange, error,
@@ -63,7 +66,7 @@ type RuleFormState = {
   reportLevel:        Rule['reportLevel']
 }
 
-function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: RuleFormState) => void }) {
+export function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: RuleFormState) => void }) {
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -75,7 +78,9 @@ function RuleForm({ value, onChange }: { value: RuleFormState; onChange: (v: Rul
             <option value="pattern">pattern</option>
             <option value="entropy">entropy</option>
             <option value="score">score</option>
+            <option value="judge_prompt" disabled>judge_prompt</option>
           </select>
+          <span style={helperTextStyle}>judge_prompt rules are created via the AI Assistant chat only.</span>
         </label>
         <label style={{ display: 'block' }}>
           <span style={labelStyle}>Action</span>

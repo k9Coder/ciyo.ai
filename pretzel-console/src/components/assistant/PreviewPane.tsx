@@ -1,14 +1,17 @@
+import { useState } from 'react'
 import { ActionItem } from './ActionItem'
 
 interface PreviewPaneProps {
   actions:    unknown[]
   messageId:  string
-  onApply:    (messageId: string) => void
+  onApply:    (messageId: string, promptOverrides: Record<number, string>) => void
   onDiscard:  () => void
   isApplying: boolean
 }
 
 export function PreviewPane({ actions, messageId, onApply, onDiscard, isApplying }: PreviewPaneProps) {
+  const [promptOverrides, setPromptOverrides] = useState<Record<number, string>>({})
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
       <div style={{
@@ -31,7 +34,11 @@ export function PreviewPane({ actions, messageId, onApply, onDiscard, isApplying
           </div>
         ) : (
           actions.map((action, i) => (
-            <ActionItem key={i} action={action as Record<string, unknown>} />
+            <ActionItem
+              key={i}
+              action={action as Record<string, unknown>}
+              onPromptChange={value => setPromptOverrides(prev => ({ ...prev, [i]: value }))}
+            />
           ))
         )}
       </div>
@@ -43,7 +50,7 @@ export function PreviewPane({ actions, messageId, onApply, onDiscard, isApplying
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
-              onClick={() => onApply(messageId)}
+              onClick={() => onApply(messageId, promptOverrides)}
               disabled={isApplying}
               style={{
                 flex: 1, background: 'var(--btn-bg)', color: 'var(--btn-fg)', border: 'none',

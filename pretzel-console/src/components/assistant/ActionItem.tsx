@@ -1,5 +1,7 @@
 interface ActionItemProps {
   action: Record<string, unknown>
+  /** Called with the edited prompt text when this is a create_rule/judge_prompt action. */
+  onPromptChange?: (value: string) => void
 }
 
 type Tone = 'create' | 'change' | 'delete'
@@ -20,11 +22,12 @@ const TONE: Record<Tone, { bg: string; fg: string }> = {
   delete: { bg: 'var(--block-fill)', fg: 'var(--block)' },
 }
 
-export function ActionItem({ action }: ActionItemProps) {
-  const op     = action.op as string
-  const meta   = OP_LABEL[op] ?? { tone: 'change' as Tone, label: op, area: '' }
-  const colors = TONE[meta.tone]
-  const fields = Object.entries(action).filter(([k]) => k !== 'op')
+export function ActionItem({ action, onPromptChange }: ActionItemProps) {
+  const op           = action.op as string
+  const meta         = OP_LABEL[op] ?? { tone: 'change' as Tone, label: op, area: '' }
+  const colors       = TONE[meta.tone]
+  const isJudgePrompt = op === 'create_rule' && action.kind === 'judge_prompt'
+  const fields       = Object.entries(action).filter(([k]) => k !== 'op')
 
   return (
     <div style={{
@@ -40,14 +43,36 @@ export function ActionItem({ action }: ActionItemProps) {
         {meta.area && <span style={{ fontSize: 12, color: 'var(--muted)' }}>{meta.area}</span>}
       </div>
       <div>
-        {fields.map(([key, value]) => (
-          <div key={key} style={{ fontSize: 13, fontFamily: 'var(--mono)', marginBottom: 2, overflowWrap: 'anywhere' }}>
-            <span style={{ color: 'var(--ink)' }}>{key}:</span>{' '}
-            <span style={{ color: 'var(--muted)' }}>
-              {typeof value === 'string' ? value : JSON.stringify(value)}
-            </span>
-          </div>
-        ))}
+        {fields.map(([key, value]) => {
+          // The admin can refine the generated claim before applying — every
+          // other field of every other action kind stays read-only text.
+          if (isJudgePrompt && key === 'prompt') {
+            return (
+              <div key={key} style={{ fontSize: 13, marginBottom: 2 }}>
+                <span style={{ color: 'var(--ink)', fontFamily: 'var(--mono)' }}>{key}:</span>
+                <textarea
+                  value={value as string}
+                  onChange={e => onPromptChange?.(e.target.value)}
+                  rows={3}
+                  style={{
+                    display: 'block', width: '100%', marginTop: 4, padding: '6px 8px',
+                    fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--ink)',
+                    background: 'var(--fill)', border: '1px solid var(--line)',
+                    borderRadius: 'var(--r-sm)', resize: 'vertical',
+                  }}
+                />
+              </div>
+            )
+          }
+          return (
+            <div key={key} style={{ fontSize: 13, fontFamily: 'var(--mono)', marginBottom: 2, overflowWrap: 'anywhere' }}>
+              <span style={{ color: 'var(--ink)' }}>{key}:</span>{' '}
+              <span style={{ color: 'var(--muted)' }}>
+                {typeof value === 'string' ? value : JSON.stringify(value)}
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
