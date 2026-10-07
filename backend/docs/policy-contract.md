@@ -37,9 +37,10 @@ interface PolicyDoc {
     teamId: string | null
     rules: Array<{
       id: string
-      kind: 'keyword' | 'pattern' | 'entropy' | 'score'
+      kind: 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
       keywords: string[] | null
       pattern: string | null
+      prompt: string | null
       destinations: string[]
       destinationGroupIds: string[]
       action: 'warn' | 'block'
@@ -79,6 +80,7 @@ Rules are deduplicated by detection identity:
 
 - keyword: sorted keyword list
 - pattern: pattern string
+- judge_prompt: prompt text
 - entropy and score: rule kind
 
 When duplicates collide, team scope overrides division scope, which overrides global scope. At the same scope, a `block` rule overrides a `warn` rule. Destination-group domains are expanded and merged into `destinations`; resolved policies omit `destinationGroupIds`, scope IDs, `reportLevel`, and `siteConfigs`.

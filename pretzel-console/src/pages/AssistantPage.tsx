@@ -32,8 +32,8 @@ export function AssistantPage() {
     if (lastMessage) send.mutate({ message: lastMessage })
   }
 
-  function handleApply(messageId: string) {
-    applyMutation.mutate(messageId)
+  function handleApply(messageId: string, promptOverrides: Record<number, string>) {
+    applyMutation.mutate({ messageId, promptOverrides })
   }
 
   return (
@@ -52,6 +52,7 @@ export function AssistantPage() {
       />
       {pendingMsg && (
         <PreviewPane
+          key={pendingMsg.id}
           actions={pendingMsg.actionsJson ?? []}
           messageId={pendingMsg.id}
           onApply={handleApply}

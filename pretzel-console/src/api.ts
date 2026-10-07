@@ -170,8 +170,8 @@ export const api = {
   assistant: {
     chat: (message: string, sessionId?: string) =>
       request<AssistantChatResponse>('POST', '/v1/assistant/chat', { message, sessionId }),
-    apply: (messageId: string) =>
-      request<AssistantApplyResponse>('POST', '/v1/assistant/apply', { messageId }),
+    apply: (messageId: string, promptOverrides?: Record<number, string>) =>
+      request<AssistantApplyResponse>('POST', '/v1/assistant/apply', { messageId, promptOverrides }),
     sessions: () =>
       request<{ sessions: ChatSession[] }>('GET', '/v1/assistant/sessions'),
     messages: (sessionId: string) =>

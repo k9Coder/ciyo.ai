@@ -22,7 +22,7 @@ vi.mock('@mykka/detect', () => ({
 
 import {
   triggerSync, alwaysAllowRule, startPolicySync, stopPolicySync, resetPolicySync,
-  retryDelayMs, classifyPolicyResponse, getSyncIssue, getLastKnownPolicy,
+  retryDelayMs, classifyPolicyResponse, getSyncIssue, getLastKnownPolicy, getLastKnownPolicyDoc,
 } from '../../electron/policy-sync'
 
 const originalFetch = global.fetch
@@ -194,5 +194,26 @@ describe('startup retry while no policy has loaded', () => {
     await vi.advanceTimersByTimeAsync(0)
     await vi.advanceTimersByTimeAsync(5_000)
     expect(onSyncIssue.mock.calls.map((c) => c[0])).toEqual(['unreachable', null])
+  })
+})
+
+describe('getLastKnownPolicyDoc', () => {
+  it('is null before any successful sync', () => {
+    expect(getLastKnownPolicyDoc()).toBeNull()
+  })
+
+  it('holds the raw PolicyDoc (not the bridged Policy) after a successful sync', async () => {
+    const rawDoc = { version: 1, tenantId: 't1', subjects: [] }
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ policy: rawDoc }) }) as any
+    await triggerSync()
+    expect(getLastKnownPolicyDoc()).toEqual(rawDoc)
+  })
+
+  it('is cleared by resetPolicySync', async () => {
+    const rawDoc = { version: 1, tenantId: 't1', subjects: [] }
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ policy: rawDoc }) }) as any
+    await triggerSync()
+    resetPolicySync()
+    expect(getLastKnownPolicyDoc()).toBeNull()
   })
 })

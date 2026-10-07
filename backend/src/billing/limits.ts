@@ -3,7 +3,7 @@ export type Plan = 'free' | 'starter' | 'business' | 'enterprise' | 'pilot'
 export interface PlanLimits {
   maxSeats:               number    // -1 = unlimited
   monthlyScans:           number    // -1 = unlimited
-  allowedRuleKinds:       ReadonlyArray<'keyword' | 'pattern' | 'entropy' | 'score'>
+  allowedRuleKinds:       ReadonlyArray<'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'>
   assistantEnabled:       boolean
   assistantPromptsADay:   number    // -1 = unlimited
   assistantMaximumTokens: number    // -1 = use LLM default
@@ -32,7 +32,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   business: {
     maxSeats:               -1,
     monthlyScans:           -1,
-    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score'],
+    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'],
     assistantEnabled:       true,
     assistantPromptsADay:   -1,
     assistantMaximumTokens: -1,
@@ -41,7 +41,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   enterprise: {
     maxSeats:               -1,
     monthlyScans:           -1,
-    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score'],
+    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'],
     assistantEnabled:       true,
     assistantPromptsADay:   -1,
     assistantMaximumTokens: -1,
@@ -50,7 +50,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   pilot: {
     maxSeats:               50,
     monthlyScans:           -1,
-    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score'],
+    allowedRuleKinds:       ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'],
     assistantEnabled:       true,
     assistantPromptsADay:   5,
     assistantMaximumTokens: -1,

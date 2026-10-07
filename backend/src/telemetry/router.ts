@@ -2,11 +2,18 @@ import type { FastifyInstance } from 'fastify'
 import { requireOrgTokenOrClerkAuth, requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
 import {
   recordEnforcementSignal,
+  recordShadowVerdicts,
   recentDegraded,
   silentFailureSuspected,
   ENFORCEMENT_REASONS,
+  SHADOW_VERDICT_KINDS,
+  SHADOW_VERDICT_OUTCOMES,
   type EnforcementReason,
+  type ShadowVerdictInput,
 } from './service.js'
+
+const MAX_SHADOW_VERDICT_BATCH = 200
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
   // Client (extension) reports a degraded-enforcement event. No prompt content.
@@ -35,5 +42,50 @@ export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
       silentFailureSuspected(req.tenant.id),
     ])
     return { degraded, silentFailure }
+  })
+
+  // Client (desktop/extension) reports legacy-rule shadow matches. No prompt
+  // content — only ruleId/kind/verdict/confidence/timestamp.
+  fastify.post('/telemetry/shadow-verdict', { preHandler: requireOrgTokenOrClerkAuth, bodyLimit: 64 * 1024 }, async (req, reply) => {
+    const body = req.body
+    if (!Array.isArray(body)) {
+      return reply.status(400).send({ error: 'request body must be an array' })
+    }
+    if (body.length > MAX_SHADOW_VERDICT_BATCH) {
+      return reply.status(400).send({ error: `batch too large (max ${MAX_SHADOW_VERDICT_BATCH} items)` })
+    }
+    if (body.length === 0) {
+      return reply.status(204).send()
+    }
+
+    const items: ShadowVerdictInput[] = []
+    for (const raw of body as unknown[]) {
+      const item = raw as Partial<ShadowVerdictInput & { enforced: unknown }>
+      if (!item.ruleId || typeof item.ruleId !== 'string' || !UUID_RE.test(item.ruleId)) {
+        return reply.status(400).send({ error: 'ruleId must be a valid UUID' })
+      }
+      if (!SHADOW_VERDICT_KINDS.includes(item.kind as never)) {
+        return reply.status(400).send({ error: 'kind must be one of ' + SHADOW_VERDICT_KINDS.join(', ') })
+      }
+      if (!SHADOW_VERDICT_OUTCOMES.includes(item.verdict as never)) {
+        return reply.status(400).send({ error: 'verdict must be one of ' + SHADOW_VERDICT_OUTCOMES.join(', ') })
+      }
+      if (typeof item.confidence !== 'number' || item.confidence < 0 || item.confidence > 1) {
+        return reply.status(400).send({ error: 'confidence must be a number between 0 and 1' })
+      }
+      if (typeof item.timestamp !== 'string' || Number.isNaN(new Date(item.timestamp).getTime())) {
+        return reply.status(400).send({ error: 'timestamp must be a valid ISO date string' })
+      }
+      items.push({
+        ruleId:     item.ruleId,
+        kind:       item.kind as ShadowVerdictInput['kind'],
+        verdict:    item.verdict as ShadowVerdictInput['verdict'],
+        confidence: item.confidence,
+        timestamp:  item.timestamp,
+      })
+    }
+
+    await recordShadowVerdicts(req.tenant.id, items)
+    return reply.status(204).send()
   })
 }

@@ -1,6 +1,6 @@
 // Detection engine
 export { detectPrompt, buildSnippet, runScoreRuleForTest } from './detection/engine'
-export type { DetectionResult, DetectionInput, Finding, Action, Severity, InputType, ScoreRule, ScoreSignalConfig } from './detection/types'
+export type { DetectionResult, DetectionInput, Finding, ShadowFinding, Action, Severity, InputType, ScoreRule, ScoreSignalConfig } from './detection/types'
 export { maxAction, compareSeverity, compareAction } from './detection/types'
 export { normalizeText } from './detection/normalize'
 export { findCodeSpans, isInsideCode } from './detection/code-block'
@@ -20,11 +20,11 @@ export { runFuzzyDictionaryRule, levenshtein } from './detection/layer3-dictiona
 // Policy schema + types
 export {
   PolicySchema, PolicyDocSchema,
-  PatternRuleSchema, EntropyRuleSchema, DictionaryRuleSchema, ScoreRuleSchema, RuleSchema,
+  PatternRuleSchema, EntropyRuleSchema, DictionaryRuleSchema, ScoreRuleSchema, JudgePromptRuleSchema, RuleSchema,
   ResolvedRuleSchema, ResolvedSubjectSchema, SiteConfigSchema,
 } from './policy/schema'
 export type {
-  Policy, PolicyDoc, Rule, PatternRule, EntropyRule, DictionaryRule,
+  Policy, PolicyDoc, Rule, PatternRule, EntropyRule, DictionaryRule, JudgePromptRule,
   ResolvedRule, ResolvedSubject, SiteConfigEntry,
 } from './policy/schema'
 
@@ -35,7 +35,8 @@ export { DEFAULT_POLICY } from './policy/defaults'
 // Constants
 export { SNIPPET_CONTEXT_CHARS } from './constants'
 
-// Local-judge wiring spike (spike/local-judge-poc) — not production detection
-// logic. See judge/types.ts for the swap-friendly LocalJudge contract.
-export type { JudgeInput, JudgeVerdict, LocalJudge, JudgePromptRule } from './judge'
-export { POC_JUDGE_RULES, StubLocalJudge } from './judge'
+// Local-judge enforcement + shadow-mode telemetry. See judge/types.ts for
+// the swap-friendly LocalJudge contract.
+export type { JudgeInput, JudgeVerdict, LocalJudge } from './judge'
+export type { ShadowVerdictPayload } from './judge'
+export { toShadowVerdictPayload, StubLocalJudge } from './judge'

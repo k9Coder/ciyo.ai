@@ -13,6 +13,17 @@ const RuleBaseSchema = z.object({
   action: ActionSchema,
   enabled: z.boolean(),
   tags: z.array(z.string()),
+  // Whether a match can actually block/warn (true) or only gets reported as
+  // shadow telemetry (false). bridge.ts sets this to false for every
+  // backend-authored legacy kind (pattern/keyword/entropy/score) and true
+  // for judge_prompt — but it does NOT reach DEFAULT_POLICY's own hardcoded
+  // baseline rules (API keys, SSNs, credit cards, ...), which stay a real,
+  // always-on floor regardless of tenant policy (defaults.ts explicitly
+  // sets enforced: true on every one of them — see
+  // tests/policy/schema.test.ts's "DEFAULT_POLICY's built-in rules stay
+  // enforced" test). Signed-out users get only that baseline, so if it ever
+  // silently shadowed, they would have zero real protection.
+  enforced: z.boolean().default(true),
 });
 
 export const PatternRuleSchema = RuleBaseSchema.extend({
@@ -55,11 +66,18 @@ export const ScoreRuleSchema = RuleBaseSchema.extend({
   confirmThreshold: z.number().int().min(10).max(100),
 });
 
+export const JudgePromptRuleSchema = RuleBaseSchema.extend({
+  kind: z.literal("judge_prompt"),
+  /** The admin's plain-English claim, judged against message content on-device. */
+  prompt: z.string().min(1),
+});
+
 export const RuleSchema = z.discriminatedUnion("kind", [
   PatternRuleSchema,
   EntropyRuleSchema,
   DictionaryRuleSchema,
   ScoreRuleSchema,
+  JudgePromptRuleSchema,
 ]);
 
 // ─── Full policy ─────────────────────────────────────────────────────────────
@@ -89,6 +107,7 @@ export type EntropyRule = z.infer<typeof EntropyRuleSchema>;
 export type DictionaryRule = z.infer<typeof DictionaryRuleSchema>;
 export type ScoreSignalConfig = z.infer<typeof ScoreSignalConfigSchema>;
 export type ScoreRule = z.infer<typeof ScoreRuleSchema>;
+export type JudgePromptRule = z.infer<typeof JudgePromptRuleSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type Policy = z.infer<typeof PolicySchema>;
 
@@ -96,9 +115,15 @@ export type Policy = z.infer<typeof PolicySchema>;
 
 export const ResolvedRuleSchema = z.object({
   id:           z.string(),
-  kind:         z.enum(["keyword", "pattern", "entropy", "score"]),
+  // "judge_prompt" parses here so a published policy containing one never
+  // fails PolicyDocSchema.safeParse (which would otherwise freeze policy
+  // delivery for the whole tenant — see docs/superpowers/specs/2026-10-06-judge-prompt-rule-authoring-design.md).
+  // bridge.ts deliberately filters judge_prompt rules out before the engine
+  // ever sees them — real on-device judging is a separate, later plan.
+  kind:         z.enum(["keyword", "pattern", "entropy", "score", "judge_prompt"]),
   keywords:     z.array(z.string()).nullable(),
   pattern:      z.string().nullable(),
+  prompt:       z.string().nullable().optional(),
   destinations: z.array(z.string()),
   action:       z.enum(["warn", "block"]),
   message:      z.string().nullable(),

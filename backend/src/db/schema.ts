@@ -1,12 +1,12 @@
 import {
-  pgTable, pgEnum, uuid, text, boolean, integer,
+  pgTable, pgEnum, uuid, text, boolean, integer, numeric,
   timestamp, jsonb, index, unique, primaryKey,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
 // ── Enums ────────────────────────────────────────────────────────────────────
 export const memberRoleEnum  = pgEnum('member_role',  ['super_admin', 'division_admin', 'member'])
-export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score'])
+export const ruleKindEnum    = pgEnum('rule_kind',    ['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'])
 export const ruleActionEnum  = pgEnum('rule_action',  ['warn', 'block'])
 export const reportLevelEnum = pgEnum('report_level', ['none', 'minimal', 'medium', 'rich'])
 export const failModeEnum    = pgEnum('fail_mode',    ['open', 'closed'])
@@ -155,6 +155,10 @@ export const rules = pgTable('rules', {
   kind:                ruleKindEnum('kind').notNull(),
   keywords:            text('keywords').array(),
   pattern:             text('pattern'),
+  // Only populated for kind='judge_prompt' — the plain-English claim the
+  // on-device model judges against captured content (not user content
+  // itself, an admin-authored instruction, same privacy class as `message`).
+  prompt:              text('prompt'),
   destinations:        text('destinations').array().default(sql`'{}'`),
   destinationGroupIds: uuid('destination_group_ids').array().default(sql`'{}'`),
   action:              ruleActionEnum('action').notNull(),
@@ -242,6 +246,35 @@ export const enforcementSignals = pgTable('enforcement_signals', {
   tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
 }))
 
+export const shadowVerdictKindEnum = pgEnum('shadow_verdict_kind', [
+  'keyword',
+  'pattern',
+  'entropy',
+  'score',
+])
+
+export const shadowVerdictOutcomeEnum = pgEnum('shadow_verdict_outcome', [
+  'match',
+  'no_match',
+])
+
+// Shadow-mode telemetry for the now-demoted legacy rule kinds (pattern/
+// keyword/entropy/score — see docs/superpowers/specs/2026-10-06-judge-
+// prompt-client-engine-design.md). No raw content, ever — only what would
+// have matched and what the real verdict was.
+export const shadowVerdicts = pgTable('shadow_verdicts', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tenantId:   uuid('tenant_id').notNull().references(() => tenants.id),
+  ruleId:     uuid('rule_id').notNull(),
+  kind:       shadowVerdictKindEnum('kind').notNull(),
+  verdict:    shadowVerdictOutcomeEnum('verdict').notNull(),
+  confidence: numeric('confidence', { precision: 4, scale: 3 }).notNull(),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+}))
+
 // ── Chat Sessions ─────────────────────────────────────────────────────────────
 export const chatMessageRoleEnum = pgEnum('chat_message_role', ['user', 'assistant'])
 
@@ -277,9 +310,10 @@ export interface SubjectSnapshot {
   active:      boolean
   rules: Array<{
     id:                  string
-    kind:                'keyword' | 'pattern' | 'entropy' | 'score'
+    kind:                'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
     keywords:            string[] | null
     pattern:             string | null
+    prompt:              string | null
     destinations:        string[]
     destinationGroupIds: string[]
     action:              'warn' | 'block'

@@ -1,4 +1,4 @@
-import type { PolicyDoc, ResolvedRule, Policy } from "./schema";
+import type { PolicyDoc, Policy } from "./schema";
 
 type EngineAction = "log" | "warn" | "require_confirmation" | "block"
 type Severity = "low" | "medium" | "high" | "critical"
@@ -21,7 +21,7 @@ const DEFAULT_SCORE_SIGNALS = [
   { id: "block_quote",         description: "Block quote or indented text", points: 10, enabled: true },
 ]
 
-function bridgeRule(rule: ResolvedRule, subjectName: string): Policy["custom"][number] {
+function bridgeRule(rule: PolicyDoc["subjects"][number]["rules"][number], subjectName: string): Policy["custom"][number] {
   const base = {
     id:          rule.id,
     name:        `${subjectName} — ${rule.kind}`,
@@ -34,13 +34,23 @@ function bridgeRule(rule: ResolvedRule, subjectName: string): Policy["custom"][n
 
   switch (rule.kind) {
     case "keyword":
-      return { ...base, kind: "dictionary" as const, terms: rule.keywords ?? [], caseSensitive: false }
+      return { ...base, kind: "dictionary" as const, terms: rule.keywords ?? [], caseSensitive: false, enforced: false }
     case "pattern":
-      return { ...base, kind: "pattern" as const, pattern: rule.pattern ?? "", flags: "gi", validator: "none" as const, scope: "all" as const }
+      return { ...base, kind: "pattern" as const, pattern: rule.pattern ?? "", flags: "gi", validator: "none" as const, scope: "all" as const, enforced: false }
     case "entropy":
-      return { ...base, kind: "entropy" as const, minTokenLength: 24, minBitsPerChar: 4.0 }
+      return { ...base, kind: "entropy" as const, minTokenLength: 24, minBitsPerChar: 4.0, enforced: false }
     case "score":
-      return { ...base, kind: "score" as const, signals: DEFAULT_SCORE_SIGNALS, warnThreshold: 40, confirmThreshold: 70 }
+      return { ...base, kind: "score" as const, signals: DEFAULT_SCORE_SIGNALS, warnThreshold: 40, confirmThreshold: 70, enforced: false }
+    case "judge_prompt": {
+      // The sole real enforcement mechanism for its own rule — never shadow.
+      // An empty claim is not a harmless no-op: handed to the model, its
+      // match/no-match behavior is undefined, and a false "match" would
+      // block everything — a fail-CLOSED outcome in a design that promises
+      // fail-open everywhere. The service layer should never let this
+      // reach a published policy, but disable defensively here too.
+      const hasPrompt = typeof rule.prompt === "string" && rule.prompt.trim().length > 0;
+      return { ...base, kind: "judge_prompt" as const, prompt: rule.prompt ?? "", enforced: true, enabled: hasPrompt }
+    }
   }
 }
 

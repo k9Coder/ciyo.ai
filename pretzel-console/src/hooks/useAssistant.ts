@@ -40,7 +40,8 @@ export function useAssistantChat() {
 export function useApplyActions() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (messageId: string) => api.assistant.apply(messageId),
+    mutationFn: ({ messageId, promptOverrides }: { messageId: string; promptOverrides?: Record<number, string> }) =>
+      api.assistant.apply(messageId, promptOverrides),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subjects'] })
       qc.invalidateQueries({ queryKey: ['rules'] })

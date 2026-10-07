@@ -6,7 +6,8 @@ import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
-import { runLocalJudgePoc } from "@/background/local-judge-poc";
+import { RemoteLocalJudge } from "@/background/remote-local-judge";
+import { dispatchShadowTelemetry } from "@/events/shadow-dispatch";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
 import { appendAuditEvent } from "@/audit/log";
@@ -15,6 +16,8 @@ import { STORAGE_SITE_OVERRIDES_KEY } from "@/shared/constants";
 import { logger } from "@/shared/logger";
 
 initSentry();
+
+const localJudge = new RemoteLocalJudge();
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -34,13 +37,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onMessage.addListener(
   (message: Message, _sender, sendResponse) => {
-    // The local-judge wiring spike (spike/local-judge-poc) talks to the
-    // offscreen document via this same chrome.runtime.sendMessage channel.
-    // That message isn't part of the Message union and must be answered
-    // exclusively by the offscreen document — handleMessage's default case
-    // would otherwise race sendResponse against the offscreen doc's real
-    // (async) classify call and could win with a bogus `null`.
-    if ((message as { type?: string })?.type === "LOCAL_JUDGE_CLASSIFY") {
+    // RemoteLocalJudge talks to the offscreen document via this same
+    // chrome.runtime.sendMessage channel. That message isn't part of the
+    // Message union and must be answered exclusively by the offscreen
+    // document — handleMessage's default case would otherwise race
+    // sendResponse against the offscreen doc's real (async) classify call
+    // and could win with a bogus `null`.
+    const messageType = (message as { type?: string })?.type;
+    if (messageType === "LOCAL_JUDGE_CLASSIFY" || messageType === "LOCAL_JUDGE_PING") {
       return undefined;
     }
     handleMessage(message)
@@ -100,13 +104,11 @@ async function handleMessage(message: Message): Promise<unknown> {
       }
 
       const policy = await loadPolicy();
-      const result = await detectPrompt(detectInput, policy);
+      const result = await detectPrompt(detectInput, policy, undefined, undefined, localJudge);
       void dispatchEvents(result, hostname);
+      void dispatchShadowTelemetry(result.shadowFindings);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();
-      // Shadow-mode only (spike/local-judge-poc) — fire-and-forget, never
-      // awaited here, never affects the returned result.
-      void runLocalJudgePoc(hostname, text);
       return result;
     }
 

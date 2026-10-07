@@ -68,7 +68,7 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
   })
 
   fastify.post('/assistant/apply', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
-    const { messageId } = req.body as { messageId: string }
+    const { messageId, promptOverrides } = req.body as { messageId: string; promptOverrides?: Record<string, string> }
 
     const ctx = getContext()
     if (ctx && !ctx.tenantId) ctx.tenantId = req.tenant.id
@@ -88,6 +88,22 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
     const actions = Array.isArray(msg.actionsJson)
       ? (msg.actionsJson as Action[])
       : []
+
+    // Admin-editable prompt text for a judge_prompt rule, applied before the
+    // normal execution/validation path — narrow by design: only the prompt
+    // of an already-proposed create_rule/judge_prompt action can be
+    // overridden, never any other field or action kind, so this can't be
+    // used to smuggle in actions the LLM never proposed.
+    if (promptOverrides) {
+      for (const [indexStr, prompt] of Object.entries(promptOverrides)) {
+        const index = Number(indexStr)
+        const target = actions[index]
+        if (!target || target.op !== 'create_rule' || target.kind !== 'judge_prompt') {
+          return reply.status(400).send({ error: `promptOverrides[${indexStr}] does not target a create_rule/judge_prompt action` })
+        }
+        actions[index] = { ...target, prompt }
+      }
+    }
 
     const affectedIds = await resolveAffectedSubjectIds(req.tenant.id, actions)
     await Promise.all(

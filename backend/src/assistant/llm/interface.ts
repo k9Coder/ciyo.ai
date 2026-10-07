@@ -1,11 +1,11 @@
-export type RuleKind    = 'keyword' | 'pattern' | 'entropy' | 'score'
+export type RuleKind    = 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt'
 export type RuleAction  = 'warn' | 'block'
 export type ReportLevel = 'none' | 'minimal' | 'medium' | 'rich'
 export type MemberRole  = 'member' | 'division_admin' | 'super_admin'
 
 export type Action =
   | { op: 'create_rule'; subjectId: string; kind: RuleKind; keywords?: string[]; pattern?: string;
-      destinations?: string[]; destinationGroupIds?: string[];
+      prompt?: string; destinations?: string[]; destinationGroupIds?: string[];
       action: RuleAction; message?: string; reportLevel?: ReportLevel }
   | { op: 'update_rule';   ruleId: string;   patch: Record<string, unknown> }
   | { op: 'delete_rule';   ruleId: string }

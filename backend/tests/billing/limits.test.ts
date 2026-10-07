@@ -75,6 +75,15 @@ describe('isRuleKindAllowed', () => {
     expect(isRuleKindAllowed('business', 'entropy')).toBe(true)
     expect(isRuleKindAllowed('business', 'score')).toBe(true)
   })
+  it('judge_prompt is allowed on business, enterprise, and pilot plans', () => {
+    expect(isRuleKindAllowed('business', 'judge_prompt')).toBe(true)
+    expect(isRuleKindAllowed('enterprise', 'judge_prompt')).toBe(true)
+    expect(isRuleKindAllowed('pilot', 'judge_prompt')).toBe(true)
+  })
+  it('judge_prompt is NOT allowed on free or starter plans', () => {
+    expect(isRuleKindAllowed('free', 'judge_prompt')).toBe(false)
+    expect(isRuleKindAllowed('starter', 'judge_prompt')).toBe(false)
+  })
 })
 
 describe('getScanLimit / getSeatLimit', () => {

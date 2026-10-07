@@ -3,7 +3,7 @@ import supertest from 'supertest'
 import { truncateAll, buildTestTenant } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { subjects, chatSessions, chatMessages, divisions, teams, members } from '../src/db/schema.js'
+import { subjects, chatSessions, chatMessages, divisions, teams, members, rules } from '../src/db/schema.js'
 import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 
@@ -149,6 +149,74 @@ describe('POST /v1/assistant/apply', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ messageId: chatRes.body.messageId })
     expect(res.status).toBe(409)
+  })
+})
+
+describe('POST /v1/assistant/apply — promptOverrides', () => {
+  it('applies an edited prompt instead of the stored one for a create_rule/judge_prompt action', async () => {
+    const chatRes = await supertest(app.server)
+      .post('/v1/assistant/chat')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ message: 'create a rule' })
+    await db.update(chatMessages)
+      .set({ actionsJson: [{ op: 'create_rule', subjectId, kind: 'judge_prompt', prompt: 'original claim', action: 'block' }] })
+      .where(eq(chatMessages.id, chatRes.body.messageId as string))
+
+    const applyRes = await supertest(app.server)
+      .post('/v1/assistant/apply')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ messageId: chatRes.body.messageId, promptOverrides: { 0: 'edited claim' } })
+    expect(applyRes.status).toBe(200)
+    expect(applyRes.body.errors).toHaveLength(0)
+
+    const rows = await db.select().from(rules).where(eq(rules.subjectId, subjectId))
+    expect(rows[0]!.prompt).toBe('edited claim')
+  })
+
+  it('rejects an override targeting an action that is not create_rule/judge_prompt', async () => {
+    const chatRes = await supertest(app.server)
+      .post('/v1/assistant/chat')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ message: 'create division' })
+
+    const applyRes = await supertest(app.server)
+      .post('/v1/assistant/apply')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ messageId: chatRes.body.messageId, promptOverrides: { 0: 'edited claim' } })
+    expect(applyRes.status).toBe(400)
+  })
+
+  it('rejects an override whose index does not exist in the stored actions', async () => {
+    const chatRes = await supertest(app.server)
+      .post('/v1/assistant/chat')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ message: 'create a rule' })
+    await db.update(chatMessages)
+      .set({ actionsJson: [{ op: 'create_rule', subjectId, kind: 'judge_prompt', prompt: 'original claim', action: 'block' }] })
+      .where(eq(chatMessages.id, chatRes.body.messageId as string))
+
+    const applyRes = await supertest(app.server)
+      .post('/v1/assistant/apply')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ messageId: chatRes.body.messageId, promptOverrides: { 5: 'edited claim' } })
+    expect(applyRes.status).toBe(400)
+  })
+
+  it('still enforces the normal judge_prompt validation (non-empty) on the overridden value', async () => {
+    const chatRes = await supertest(app.server)
+      .post('/v1/assistant/chat')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ message: 'create a rule' })
+    await db.update(chatMessages)
+      .set({ actionsJson: [{ op: 'create_rule', subjectId, kind: 'judge_prompt', prompt: 'original claim', action: 'block' }] })
+      .where(eq(chatMessages.id, chatRes.body.messageId as string))
+
+    const applyRes = await supertest(app.server)
+      .post('/v1/assistant/apply')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ messageId: chatRes.body.messageId, promptOverrides: { 0: '   ' } })
+    expect(applyRes.status).toBe(200)
+    expect(applyRes.body.errors.length).toBeGreaterThan(0)
   })
 })
 

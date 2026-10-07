@@ -26,7 +26,7 @@ export async function rulesInternalRouter(app: FastifyInstance) {
     return rule
   })
 
-  app.post<{ Body: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'reportLevel'> & { subjectId: string } }>('/', async (req, reply) => {
+  app.post<{ Body: Pick<NewRule, 'kind' | 'keywords' | 'pattern' | 'prompt' | 'destinations' | 'destinationGroupIds' | 'action' | 'message' | 'reportLevel'> & { subjectId: string } }>('/', async (req, reply) => {
     const { subjectId, ...payload } = req.body
     const rule = await createRule(tid(req), subjectId, payload)
     return reply.code(201).send(rule)

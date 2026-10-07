@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PolicySchema, PolicyDocSchema } from "../../src/policy/schema";
+import { PolicySchema, PolicyDocSchema, RuleSchema } from "../../src/policy/schema";
 import { DEFAULT_POLICY } from "../../src/policy/defaults";
 
 describe("PolicySchema", () => {
@@ -194,5 +194,83 @@ describe("PolicySchema failMode", () => {
   it("rejects invalid failMode value", () => {
     const result = PolicySchema.safeParse({ ...DEFAULT_POLICY, failMode: "partial" });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("PolicyDocSchema judge_prompt forward-compat", () => {
+  it("parses a PolicyDoc containing a judge_prompt rule, instead of failing the whole document", () => {
+    const doc = {
+      version: 1,
+      tenantId: "t1",
+      subjects: [{
+        id: "s1",
+        name: "SSN",
+        rules: [{
+          id: "r1",
+          kind: "judge_prompt",
+          keywords: null,
+          pattern: null,
+          prompt: "This message discloses a Social Security Number, even if disguised or spelled out.",
+          destinations: [],
+          action: "block",
+          message: null,
+          reportLevel: "none",
+        }],
+      }],
+      siteConfigs: {},
+      failMode: "open",
+    };
+    const result = PolicyDocSchema.safeParse(doc);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("judge_prompt rule kind and enforced field", () => {
+  it("parses a judge_prompt rule with a prompt field", () => {
+    const rule = {
+      id: "jp-1", name: "SSN judge", description: "", severity: "high",
+      action: "block", enabled: true, tags: [],
+      kind: "judge_prompt", prompt: "Does this message contain a Social Security Number?",
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.kind).toBe("judge_prompt");
+  });
+
+  it("defaults enforced to true when omitted", () => {
+    const rule = {
+      id: "d-1", name: "Dict", description: "", severity: "medium",
+      action: "warn", enabled: true, tags: [],
+      kind: "dictionary", terms: ["secret"], caseSensitive: false,
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.enforced).toBe(true);
+  });
+
+  it("accepts an explicit enforced: false", () => {
+    const rule = {
+      id: "d-2", name: "Dict", description: "", severity: "medium",
+      action: "warn", enabled: true, tags: [], enforced: false,
+      kind: "dictionary", terms: ["secret"], caseSensitive: false,
+    };
+    const result = RuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.enforced).toBe(false);
+  });
+});
+
+describe("DEFAULT_POLICY's built-in rules stay enforced (not shadowed by the legacy-kind flip)", () => {
+  it("every baseline and custom rule in DEFAULT_POLICY has enforced: true", () => {
+    // The shadow-mode flip (bridge.ts: enforced: false for every KIND the
+    // backend bridges) applies only to backend-authored custom rules — it
+    // does not reach the extension's own hardcoded built-in safety net
+    // (API keys, SSNs, credit cards, ...), which stays a real, always-on
+    // floor regardless of tenant policy. Signed-out users get only this
+    // baseline (service-worker.ts), so if it ever silently shadowed, they
+    // would have zero real protection.
+    for (const rule of [...DEFAULT_POLICY.baseline, ...DEFAULT_POLICY.custom]) {
+      expect(rule.enforced).toBe(true);
+    }
   });
 });

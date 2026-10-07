@@ -12,7 +12,7 @@ const snapshot: TenantSnapshot = {
   ],
   rules: [
     { id: 'r1', subjectId: 's1', tenantId: 't1', kind: 'keyword', keywords: ['SSN'], pattern: null,
-      destinations: [], destinationGroupIds: [], action: 'block', message: null,
+      prompt: null, destinations: [], destinationGroupIds: [], action: 'block', message: null,
       active: true, reportLevel: 'none', createdAt: new Date() },
   ],
 }
@@ -46,6 +46,32 @@ describe('buildSystemPrompt', () => {
     const empty: TenantSnapshot = { divisions: [], teams: [], subjects: [], rules: [], members: [] }
     const prompt = buildSystemPrompt(empty)
     expect(prompt).toContain('CURRENT STATE')
+  })
+
+  it('documents judge_prompt as a rule kind', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('judge_prompt')
+    expect(prompt).toContain('on-device')
+  })
+
+  it('includes a judge_prompt example in RESPONSE FORMAT', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toContain('"kind":"judge_prompt"')
+  })
+
+  it('includes an existing judge_prompt rule\'s prompt text in CURRENT STATE', () => {
+    const withJudgeRule: TenantSnapshot = {
+      ...snapshot,
+      rules: [
+        ...snapshot.rules,
+        { id: 'r2', subjectId: 's1', tenantId: 't1', kind: 'judge_prompt', keywords: null, pattern: null,
+          prompt: 'This message discloses an unreleased product roadmap item.',
+          destinations: [], destinationGroupIds: [], action: 'block', message: null,
+          active: true, reportLevel: 'none', createdAt: new Date() },
+      ],
+    }
+    const prompt = buildSystemPrompt(withJudgeRule)
+    expect(prompt).toContain('This message discloses an unreleased product roadmap item.')
   })
 
   it('redacts member email in CURRENT STATE by default (PII stays off third-party LLM prompts)', () => {

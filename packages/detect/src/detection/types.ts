@@ -23,8 +23,18 @@ export interface Finding {
   endOffset: number;
 }
 
+export interface ShadowFinding {
+  ruleId: string;
+  /** Engine-internal kind name — see judge/shadow-telemetry.ts for the backend-facing label. */
+  kind: "dictionary" | "pattern" | "entropy" | "score";
+  verdict: "match";
+  confidence: number;
+  timestamp: string;
+}
+
 export interface DetectionResult {
   findings: Finding[];
+  shadowFindings: ShadowFinding[];
   /** The most severe action across all findings; "log" if findings is empty. */
   highestAction: Action;
   /** SHA-256 hex of the normalised prompt. Used for caching. */

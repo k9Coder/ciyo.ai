@@ -31,6 +31,7 @@ describe('bridgePolicy', () => {
     expect((p.custom[0] as { terms: string[] }).terms).toContain('secret')
     expect(p.custom[0]!.action).toBe('warn')
     expect(p.custom[0]!.enabled).toBe(true)
+    expect(p.custom[0]!.enforced).toBe(false)
   })
 
   it('maps pattern rule to PatternRule', () => {
@@ -45,6 +46,7 @@ describe('bridgePolicy', () => {
     expect(p.custom[0]!.kind).toBe('pattern')
     expect((p.custom[0] as { pattern: string }).pattern).toBe('sk-[A-Za-z0-9]{20,}')
     expect(p.custom[0]!.action).toBe('block')
+    expect(p.custom[0]!.enforced).toBe(false)
   })
 
   it('maps entropy rule with defaults', () => {
@@ -58,10 +60,62 @@ describe('bridgePolicy', () => {
     const p = bridgePolicy(doc, [])
     expect(p.custom[0]!.kind).toBe('entropy')
     expect((p.custom[0] as { minTokenLength: number }).minTokenLength).toBe(24)
+    expect(p.custom[0]!.enforced).toBe(false)
   })
 
   it('injects disabledSites into perSite', () => {
     const p = bridgePolicy(MINIMAL_DOC, ['chatgpt.com'])
     expect(p.perSite['chatgpt.com']!.enabled).toBe(false)
+  })
+
+  it("bridges a judge_prompt rule with enforced: true and the prompt text preserved", () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'SSN',
+        rules: [
+          { id: 'r1', kind: 'judge_prompt', keywords: null, pattern: null, prompt: 'This message discloses a Social Security Number.', destinations: [], action: 'block', message: null, reportLevel: 'none' },
+        ],
+      }],
+    }
+    const p = bridgePolicy(doc, [])
+    expect(p.custom).toHaveLength(1)
+    expect(p.custom[0]!.kind).toBe('judge_prompt')
+    expect(p.custom[0]!.enforced).toBe(true)
+    expect((p.custom[0] as { prompt: string }).prompt).toBe('This message discloses a Social Security Number.')
+  })
+
+  it("disables a judge_prompt rule with a null/empty prompt instead of handing an empty claim to the model (fail open, never fail closed)", () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'Empty',
+        rules: [
+          { id: 'r1', kind: 'judge_prompt', keywords: null, pattern: null, prompt: null, destinations: [], action: 'block', message: null, reportLevel: 'none' },
+          { id: 'r2', kind: 'judge_prompt', keywords: null, pattern: null, prompt: '   ', destinations: [], action: 'block', message: null, reportLevel: 'none' },
+        ],
+      }],
+    }
+    const p = bridgePolicy(doc, [])
+    expect(p.custom).toHaveLength(2)
+    for (const rule of p.custom) expect(rule.enabled).toBe(false)
+  })
+
+  it("bridges legacy rule kinds with enforced: false", () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'Mixed',
+        rules: [
+          { id: 'r1', kind: 'keyword', keywords: ['secret'], pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' },
+          { id: 'r2', kind: 'pattern', keywords: null, pattern: 'sk-[A-Za-z0-9]{20,}', destinations: [], action: 'block', message: null, reportLevel: 'none' },
+          { id: 'r3', kind: 'entropy', keywords: null, pattern: null, destinations: [], action: 'warn', message: null, reportLevel: 'none' },
+          { id: 'r4', kind: 'score', keywords: null, pattern: null, destinations: [], action: 'block', message: null, reportLevel: 'none' },
+        ],
+      }],
+    }
+    const p = bridgePolicy(doc, [])
+    expect(p.custom).toHaveLength(4)
+    for (const rule of p.custom) expect(rule.enforced).toBe(false)
   })
 })

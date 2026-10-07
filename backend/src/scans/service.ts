@@ -1,6 +1,6 @@
 import { and, eq, gte, lt, count } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { scans, enforcementSignals } from '../db/schema.js'
+import { scans, enforcementSignals, shadowVerdicts } from '../db/schema.js'
 import { isOverScanLimit, getScanLimit, type Plan } from '../billing/limits.js'
 import { tenantsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
@@ -16,7 +16,7 @@ export const PILOT_RETENTION_DAYS = 90
  * and `enforcement_signals` tables. Returns per-table deletion counts. Safe to
  * run repeatedly (idempotent) — scheduled on boot and every 24h.
  */
-export async function purgeExpired(): Promise<{ scans: number; enforcementSignals: number }> {
+export async function purgeExpired(): Promise<{ scans: number; enforcementSignals: number; shadowVerdicts: number }> {
   const cutoff = new Date(Date.now() - PILOT_RETENTION_DAYS * 24 * 60 * 60 * 1000)
 
   const deletedScans = await db.delete(scans)
@@ -25,8 +25,11 @@ export async function purgeExpired(): Promise<{ scans: number; enforcementSignal
   const deletedSignals = await db.delete(enforcementSignals)
     .where(lt(enforcementSignals.occurredAt, cutoff))
     .returning({ id: enforcementSignals.id })
+  const deletedShadowVerdicts = await db.delete(shadowVerdicts)
+    .where(lt(shadowVerdicts.occurredAt, cutoff))
+    .returning({ id: shadowVerdicts.id })
 
-  return { scans: deletedScans.length, enforcementSignals: deletedSignals.length }
+  return { scans: deletedScans.length, enforcementSignals: deletedSignals.length, shadowVerdicts: deletedShadowVerdicts.length }
 }
 
 /**
@@ -65,6 +68,7 @@ export function scheduleRetentionPurge(): void {
         retentionDays: PILOT_RETENTION_DAYS,
         scansDeleted: counts.scans,
         enforcementSignalsDeleted: counts.enforcementSignals,
+        shadowVerdictsDeleted: counts.shadowVerdicts,
       })
     } catch (err) {
       logger.error('retention purge failed', { error: (err as Error).message })

@@ -20,6 +20,10 @@ type ClassifyMessage = {
   payload: JudgeInput;
 };
 
+type PingMessage = {
+  type: "LOCAL_JUDGE_PING";
+};
+
 function isClassifyMessage(message: unknown): message is ClassifyMessage {
   return (
     typeof message === "object" &&
@@ -28,14 +32,27 @@ function isClassifyMessage(message: unknown): message is ClassifyMessage {
   );
 }
 
+function isPingMessage(message: unknown): message is PingMessage {
+  return (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { type?: unknown }).type === "LOCAL_JUDGE_PING"
+  );
+}
+
 chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+  if (isPingMessage(message)) {
+    sendResponse({ available: judge.isAvailable() });
+    return undefined;
+  }
+
   if (!isClassifyMessage(message)) return undefined;
 
   judge
     .classify(message.payload)
     .then(sendResponse)
     .catch((err: unknown) => {
-      console.error("[local-judge-poc:offscreen] classify failed", err);
+      console.error("[local-judge:offscreen] classify failed", err);
       sendResponse({ verdict: "no_match", confidence: 0 });
     });
 

@@ -65,7 +65,7 @@ describe('pilot plan limits', () => {
     expect(pilot.advancedAnalytics).toBe(true)
   })
   it('allows all rule kinds', () => {
-    expect(pilot.allowedRuleKinds).toEqual(['keyword', 'pattern', 'entropy', 'score'])
+    expect(pilot.allowedRuleKinds).toEqual(['keyword', 'pattern', 'entropy', 'score', 'judge_prompt'])
   })
   it('has 5 prompts per day', () => {
     expect(pilot.assistantPromptsADay).toBe(5)

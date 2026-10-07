@@ -1,5 +1,5 @@
-import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule } from "../policy/schema";
-import type { DetectionResult, DetectionInput, Finding, ScoreRule, ScoreSignalConfig } from "./types";
+import type { Policy, Rule, PatternRule, EntropyRule, DictionaryRule, JudgePromptRule } from "../policy/schema";
+import type { DetectionResult, DetectionInput, Finding, ShadowFinding, ScoreRule, ScoreSignalConfig } from "./types";
 import { maxAction, compareSeverity } from "./types";
 import { normalizeText } from "./normalize";
 import { findCodeSpans, isInsideCode } from "./code-block";
@@ -8,6 +8,26 @@ import { findHighEntropyTokens } from "./layer1-patterns/entropy";
 import { runExactDictionaryRule } from "./layer3-dictionary/exact";
 import { runFuzzyDictionaryRule } from "./layer3-dictionary/fuzzy";
 import { SNIPPET_CONTEXT_CHARS } from "../constants";
+import type { LocalJudge } from "../judge/types";
+
+/**
+ * Rule excludes judge_prompt — runRule's switch stays exhaustive over the
+ * kinds it evaluates synchronously; judge_prompt is evaluated separately,
+ * in parallel, via LocalJudge (see detectPrompt).
+ */
+type SyncRule = Exclude<Rule, { kind: "judge_prompt" }>;
+
+const JUDGE_TIMEOUT_MS = 2000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("judge timeout")), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
+}
 
 async function sha256(text: string): Promise<string> {
   const buf = await crypto.subtle.digest(
@@ -146,6 +166,8 @@ function runDictionaryRule(text: string, rule: DictionaryRule): Finding[] {
 interface KindedFinding {
   finding: Finding;
   isEntropy: boolean;
+  enforced: boolean;
+  kind: "dictionary" | "pattern" | "entropy" | "score" | "judge_prompt";
 }
 
 /**
@@ -189,7 +211,7 @@ function dedupeIdenticalSpanFindings(kinded: KindedFinding[]): Finding[] {
 function runRule(
   text: string,
   normalised: string,
-  rule: Rule | ScoreRule,
+  rule: SyncRule | ScoreRule,
   codeSpans: ReturnType<typeof findCodeSpans>,
   pasteDetected: boolean
 ): Finding[] {
@@ -206,11 +228,44 @@ function runRule(
   }
 }
 
+async function runJudgePromptRules(
+  text: string,
+  rules: JudgePromptRule[],
+  judge: LocalJudge | undefined,
+): Promise<Finding[]> {
+  if (!judge || rules.length === 0 || !judge.isAvailable()) return [];
+
+  const results = await Promise.all(
+    rules.map(async (rule): Promise<Finding | null> => {
+      try {
+        const verdict = await withTimeout(judge.classify({ text, prompt: rule.prompt }), JUDGE_TIMEOUT_MS);
+        if (verdict.verdict !== "match") return null;
+        return {
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: rule.severity,
+          action: rule.action,
+          matchedText: text.slice(0, 200),
+          startOffset: 0,
+          endOffset: text.length,
+        };
+      } catch {
+        // Fail open: a broken/slow judge never blocks the user, and never
+        // takes down the other rules evaluated in this same request.
+        return null;
+      }
+    }),
+  );
+
+  return results.filter((f): f is Finding => f !== null);
+}
+
 export async function detectPrompt(
   input: DetectionInput | string,
   policy: Policy,
   hostnameOrUndefined?: string,
-  pasteDetected = false
+  pasteDetected = false,
+  judge?: LocalJudge,
 ): Promise<DetectionResult> {
   const start = performance.now();
 
@@ -238,14 +293,53 @@ export async function detectPrompt(
   const codeSpans = findCodeSpans(normalised);
   const effectivePasteDetected = isFile ? false : pasteDetected;
   const allRules = [...policy.baseline, ...policy.custom];
+  const syncRules = allRules.filter((r): r is SyncRule => r.kind !== "judge_prompt");
+  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt" && r.enabled);
 
   const kindedFindings: KindedFinding[] = [];
-  for (const rule of allRules) {
-    const ruleFindings = runRule(promptText, normalised, rule as Rule | ScoreRule, codeSpans, effectivePasteDetected);
-    const isEntropy = (rule as Rule | ScoreRule).kind === "entropy";
-    for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy });
+  for (const rule of syncRules) {
+    const ruleFindings = runRule(promptText, normalised, rule as SyncRule | ScoreRule, codeSpans, effectivePasteDetected);
+    const isEntropy = (rule as SyncRule | ScoreRule).kind === "entropy";
+    for (const finding of ruleFindings) kindedFindings.push({ finding, isEntropy, enforced: rule.enforced, kind: rule.kind });
   }
-  const findings = dedupeIdenticalSpanFindings(kindedFindings);
+
+  const judgeFindings = await runJudgePromptRules(promptText, judgePromptRules, judge);
+  for (const finding of judgeFindings) kindedFindings.push({ finding, isEntropy: false, enforced: true, kind: "judge_prompt" });
+
+  const enforcedKinded = kindedFindings.filter((k) => k.enforced);
+  const shadowKinded = kindedFindings.filter((k) => !k.enforced);
+
+  // dedupeIdenticalSpanFindings exists to collapse overlapping pattern/
+  // entropy/dictionary matches on the same substring span — a different
+  // problem from judge_prompt findings, which are distinct whole-message
+  // judgments that all happen to share the same [0, text.length) span by
+  // construction. Deduping those by span would silently drop every
+  // judge_prompt rule but one (keeping the highest-severity rule, which
+  // isn't necessarily the one with the strongest action). Dedupe only the
+  // span-based kinds; every matching judge_prompt rule is its own finding.
+  const spanKinded = enforcedKinded.filter((k) => k.kind !== "judge_prompt");
+  const judgePromptKinded = enforcedKinded.filter((k) => k.kind === "judge_prompt");
+  const findings = [...dedupeIdenticalSpanFindings(spanKinded), ...judgePromptKinded.map((k) => k.finding)];
+
+  const shadowTimestamp = new Date().toISOString();
+  // A dictionary/pattern rule can match many times in one message (a pasted
+  // document full of the same keyword) — one shadow row per occurrence is
+  // pure noise and risks exceeding the backend's batch cap for exactly the
+  // high-signal, high-volume case telemetry most needs to see. Collapse to
+  // one shadow finding per rule per request.
+  const shadowByRuleId = new Map<string, KindedFinding>();
+  for (const k of shadowKinded) {
+    if (!shadowByRuleId.has(k.finding.ruleId)) shadowByRuleId.set(k.finding.ruleId, k);
+  }
+  const shadowFindings: ShadowFinding[] = Array.from(shadowByRuleId.values()).map((k) => ({
+    ruleId: k.finding.ruleId,
+    // shadowKinded only ever contains legacy kinds — judge_prompt rules are
+    // always enforced: true (see bridge.ts), so this cast is safe.
+    kind: k.kind as ShadowFinding["kind"],
+    verdict: "match",
+    confidence: 1,
+    timestamp: shadowTimestamp,
+  }));
 
   let highestAction: Finding["action"] = "log";
   for (const f of findings) {
@@ -257,6 +351,7 @@ export async function detectPrompt(
 
   return {
     findings,
+    shadowFindings,
     highestAction,
     promptHash,
     detectedAtMs: Date.now(),
@@ -267,6 +362,7 @@ export async function detectPrompt(
 function emptyResult(_promptText: string, startPerf: number): DetectionResult {
   return {
     findings: [],
+    shadowFindings: [],
     highestAction: "log",
     promptHash: "",
     detectedAtMs: Date.now(),

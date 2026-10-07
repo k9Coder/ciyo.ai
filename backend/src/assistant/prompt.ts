@@ -22,7 +22,7 @@ export function buildSystemPrompt(snapshot: TenantSnapshot): string {
 
   const ruleSummaries = snapshot.rules.map(r => ({
     id: r.id, subjectId: r.subjectId, kind: r.kind,
-    keywords: r.keywords, pattern: r.pattern, action: r.action, active: r.active,
+    keywords: r.keywords, pattern: r.pattern, prompt: r.prompt, action: r.action, active: r.active,
   }))
 
   // PRIVACY (David Horowitz, 2026-06-08; pseudonymized 2026-07-07): Member emails
@@ -66,7 +66,7 @@ DATA MODEL
 - Team: belongs to a division. Fields: name, divisionId
 - Member: a user in the org. Fields: email, role (member|division_admin|super_admin), adminDivisionId (only for division_admin)
 - Subject: a policy topic scoped to a division, team, or the whole org (global). Fields: name, description, divisionId?, teamId?
-- Rule: a detection rule attached to a subject. Fields: kind (keyword|pattern|entropy|score), keywords[], pattern, action (warn|block), message, reportLevel (none|minimal|medium|rich)
+- Rule: a detection rule attached to a subject. Fields: kind (keyword|pattern|entropy|score|judge_prompt), keywords[], pattern, prompt (for judge_prompt), action (warn|block), message, reportLevel (none|minimal|medium|rich)
 - Division → Team → Subject → Rule (hierarchy)
 
 RULE KINDS
@@ -74,6 +74,13 @@ RULE KINDS
 - pattern: regex match (e.g. "\\d{3}-\\d{2}-\\d{4}" for SSN format)
 - entropy: flags high-entropy strings (API keys, tokens). No keywords/pattern needed.
 - score: composite risk score across multiple signals.
+- judge_prompt: an on-device ML model judges a plain-English description of
+  what to flag (e.g. "this message discloses a Social Security Number, even
+  if disguised or spelled out"). Use this for intent-based or context-
+  dependent rules that have no reliable fixed pattern — things a regex or
+  keyword list can't express. Write the prompt as an unambiguous yes/no
+  claim about the message, not a question, and not vague ("flag sensitive
+  stuff") — vague prompts cause false positives on unrelated content.
 
 CURRENT STATE
 Divisions: ${JSON.stringify(snapshot.divisions.map(d => ({ id: d.id, name: d.name })))}
@@ -88,6 +95,7 @@ Always respond with valid JSON in this exact shape:
 
 Action types you may use:
 - {"op":"create_rule","subjectId":"...","kind":"keyword","keywords":[...],"action":"block","message":"..."}
+- {"op":"create_rule","subjectId":"...","kind":"judge_prompt","prompt":"This message discloses <specific claim>, even if disguised.","action":"block"}
 - {"op":"update_rule","ruleId":"...","patch":{...}}
 - {"op":"delete_rule","ruleId":"..."}
 - {"op":"create_subject","name":"...","description":"...","teamId":"..."}

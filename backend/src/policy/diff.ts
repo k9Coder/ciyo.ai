@@ -32,6 +32,7 @@ function normalizeRule(r: Partial<RulePolicy> & { id: string }): RulePolicy {
     kind:                r.kind ?? 'keyword',
     keywords:            r.keywords ?? null,
     pattern:             r.pattern ?? null,
+    prompt:              r.prompt ?? null,
     destinations:        r.destinations ?? [],
     destinationGroupIds: r.destinationGroupIds ?? [],
     action:              r.action ?? 'warn',
@@ -47,6 +48,7 @@ function describeRule(r: RulePolicy): string {
     return r.keywords.length > MAX_TERMS ? `${shown} +${r.keywords.length - MAX_TERMS} more` : shown
   }
   if (r.kind === 'pattern' && r.pattern) return `Pattern ${clip(r.pattern)}`
+  if (r.kind === 'judge_prompt' && r.prompt) return clip(r.prompt, 60)
   return `${r.kind} rule`
 }
 
@@ -55,6 +57,7 @@ const RULE_FIELD_LABEL: Array<[keyof RulePolicy, string]> = [
   ['kind', 'type'],
   ['keywords', 'keywords'],
   ['pattern', 'pattern'],
+  ['prompt', 'prompt'],
   ['message', 'message'],
   ['reportLevel', 'report level'],
   ['destinations', 'destinations'],

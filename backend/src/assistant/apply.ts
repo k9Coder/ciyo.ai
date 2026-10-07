@@ -58,6 +58,7 @@ export async function executeActions(
             kind: action.kind,
             keywords: action.keywords ?? null,
             pattern: action.pattern ?? null,
+            prompt: action.prompt ?? null,
             destinations: action.destinations ?? [],
             destinationGroupIds: action.destinationGroupIds ?? [],
             action: action.action,

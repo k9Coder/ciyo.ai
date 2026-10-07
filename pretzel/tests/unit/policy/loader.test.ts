@@ -64,6 +64,22 @@ describe('loadPolicy — no cached doc', () => {
     expect(blockRule?.action).toBe('block')
   })
 
+  it('CLOSED_POLICY\'s fail-closed rule is enforced, not shadow (a reasonable admin expects fail-closed to actually block)', async () => {
+    mockStorage({ failMode: 'closed' })
+    const policy = await loadPolicy()
+    const blockRule = policy.baseline.find(r => r.id === 'mykka-failmode-closed')
+    expect(blockRule?.enforced).toBe(true)
+  })
+
+  it('CLOSED_POLICY actually blocks a real detectPrompt call end to end', async () => {
+    mockStorage({ failMode: 'closed' })
+    const policy = await loadPolicy()
+    const { detectPrompt } = await import('@mykka/detect')
+    const result = await detectPrompt('anything at all', policy, 'example.com')
+    expect(result.highestAction).toBe('block')
+    expect(result.findings).toHaveLength(1)
+  })
+
   it('unknown stored failMode value defaults to open', async () => {
     mockStorage({ failMode: 'garbage' })
     const policy = await loadPolicy()
