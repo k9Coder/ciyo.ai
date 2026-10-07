@@ -1,17 +1,18 @@
-type BadgeVariant = 'keyword' | 'pattern' | 'entropy' | 'score' | 'warn' | 'block' | 'global' | 'division' | 'team'
+type BadgeVariant = 'keyword' | 'pattern' | 'entropy' | 'score' | 'judge_prompt' | 'warn' | 'block' | 'global' | 'division' | 'team'
 
 // Two-tone pills built from the semantic tokens: block = terracotta, warn = amber,
 // detection kinds and scopes use the neutral fill / brand-soft pair so they read as labels, not alerts.
 const COLORS: Record<BadgeVariant, { bg: string; color: string }> = {
-  keyword:  { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
-  pattern:  { bg: 'var(--block-fill)', color: 'var(--block)' },
-  entropy:  { bg: 'var(--fill)',       color: 'var(--ink)' },
-  score:    { bg: 'var(--fill)',       color: 'var(--ink)' },
-  warn:     { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
-  block:    { bg: 'var(--block-fill)', color: 'var(--block)' },
-  global:   { bg: 'var(--fill)',       color: 'var(--muted)' },
-  division: { bg: 'var(--brand-soft)', color: 'var(--brand)' },
-  team:     { bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  keyword:      { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
+  pattern:      { bg: 'var(--block-fill)', color: 'var(--block)' },
+  entropy:      { bg: 'var(--fill)',       color: 'var(--ink)' },
+  score:        { bg: 'var(--fill)',       color: 'var(--ink)' },
+  judge_prompt: { bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  warn:         { bg: 'var(--warn-fill)',  color: 'var(--warn)' },
+  block:        { bg: 'var(--block-fill)', color: 'var(--block)' },
+  global:       { bg: 'var(--fill)',       color: 'var(--muted)' },
+  division:     { bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  team:         { bg: 'var(--brand-soft)', color: 'var(--brand)' },
 }
 
 interface Props {
