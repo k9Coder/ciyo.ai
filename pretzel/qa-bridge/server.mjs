@@ -23,6 +23,7 @@ const PORT = Number(process.env.QA_BRIDGE_PORT || 18898)
 let context = null
 let extId = null
 let currentPage = null
+let currentWorker = null
 let consoleLog = []
 let fixturesProc = null
 
@@ -57,19 +58,43 @@ async function ensureContext() {
     ],
   })
   const sw = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')
+  currentWorker = sw
   extId = new URL(sw.url()).hostname
   currentPage = context.pages()[0] ?? await context.newPage()
-  wireConsole(currentPage)
+  wireConsole(currentPage, 'page')
+  // Debugging-only: service worker + offscreen document run the actual
+  // DETECT/judge logic, but Playwright's page-level 'console' event doesn't
+  // fire for them — only CDP's Runtime.consoleAPICalled does. Without this,
+  // qa-extension has no way to see judge activity at all.
+  await wireWorkerConsole(sw, 'service-worker')
+  context.on('page', (p) => wireConsole(p, 'page'))
+  context.on('serviceworker', (w) => { void wireWorkerConsole(w, 'service-worker') })
   return context
 }
 
-function wireConsole(page) {
+function wireConsole(page, source) {
   page.on('console', (msg) => {
-    consoleLog.push({ level: msg.type(), text: msg.text(), ts: Date.now() })
+    consoleLog.push({ level: msg.type(), text: `[${source}] ${msg.text()}`, ts: Date.now() })
   })
   page.on('pageerror', (err) => {
-    consoleLog.push({ level: 'error', text: String(err), ts: Date.now() })
+    consoleLog.push({ level: 'error', text: `[${source}] ${String(err)}`, ts: Date.now() })
   })
+}
+
+async function wireWorkerConsole(worker, source) {
+  try {
+    const client = await context.newCDPSession(worker)
+    await client.send('Runtime.enable')
+    client.on('Runtime.consoleAPICalled', (e) => {
+      const text = (e.args || []).map((a) => a.value ?? a.description ?? '').join(' ')
+      consoleLog.push({ level: e.type === 'error' ? 'error' : e.type, text: `[${source}] ${text}`, ts: Date.now() })
+    })
+    client.on('Runtime.exceptionThrown', (e) => {
+      consoleLog.push({ level: 'error', text: `[${source}] ${e.exceptionDetails?.text ?? 'exception'}`, ts: Date.now() })
+    })
+  } catch (err) {
+    consoleLog.push({ level: 'warning', text: `[qa-bridge] failed to attach CDP console for ${source}: ${err.message}`, ts: Date.now() })
+  }
 }
 
 function resolveGotoTarget(target) {
@@ -178,6 +203,14 @@ async function dispatch(cmd, args) {
     case 'js': {
       await ensureContext()
       const result = await currentPage.evaluate(args.join(' '))
+      return typeof result === 'string' ? result : JSON.stringify(result)
+    }
+    case 'sw-js': {
+      // Debugging-only: evaluate inside the extension's service worker
+      // context, not the current page — needed to inspect module-level
+      // state (e.g. RemoteLocalJudge's singleton) that only exists there.
+      await ensureContext()
+      const result = await currentWorker.evaluate(args.join(' '))
       return typeof result === 'string' ? result : JSON.stringify(result)
     }
     default:
