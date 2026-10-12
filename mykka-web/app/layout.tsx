@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ThemeScript } from '@/components/layout/ThemeScript'
 import { LogRocketInit } from '@/components/LogRocketInit'
+import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 
 // Light theme = Familjen Grotesk + Geist Mono, dark theme = Public Sans + JetBrains Mono.
 const familjen = Familjen_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-familjen' })
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <Analytics />
+        <GoogleAnalytics />
       </body>
     </html>
   )
