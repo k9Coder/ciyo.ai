@@ -11,7 +11,7 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.logr-in.com https://va.vercel-scripts.com https://www.googletagmanager.com; connect-src 'self' https://*.logr-in.com https://vitals.vercel-insights.com https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; img-src 'self' data: https://*.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.logr-in.com https://va.vercel-scripts.com https://www.googletagmanager.com https://connect.facebook.net; connect-src 'self' https://*.logr-in.com https://vitals.vercel-insights.com https://*.ingest.de.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://connect.facebook.net https://www.facebook.com; img-src 'self' data: https://*.google-analytics.com https://www.facebook.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         }
       ]
     }
