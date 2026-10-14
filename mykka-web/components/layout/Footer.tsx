@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { DISCORD_URL } from '@/lib/config'
+import { DESKTOP_DOWNLOADS_ENABLED, DISCORD_URL } from '@/lib/config'
 
 type FooterLink = readonly [label: string, href: string]
 
@@ -8,7 +8,8 @@ const LINKS: Record<string, readonly FooterLink[]> = {
   Solutions: [['Legal', '/solutions/legal'], ['Healthcare', '/solutions/healthcare'], ['Finance', '/solutions/fintech'], ['Engineering', '/solutions/engineering']],
   // About and Blog are not in the design's footer; they stay so those pages remain linked from every page.
   Company: [['Pricing', '/pricing'], ['Security', '/security'], ['About', '/about'], ['Blog', '/blog'], ['Contact', 'mailto:hello@mykka.ai']],
-  Docs: [['Getting started', 'https://docs.mykka.ai'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise'], ['Desktop install', '/download']],
+  Docs: [['Getting started', 'https://docs.mykka.ai'], ['Chrome Enterprise', 'https://docs.mykka.ai/enterprise'],
+    ...(DESKTOP_DOWNLOADS_ENABLED ? [['Desktop install', '/download'] as const] : [])],
 }
 
 export function Footer() {
