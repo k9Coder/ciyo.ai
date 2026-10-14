@@ -1,0 +1,180 @@
+{
+  "gpu": "NVIDIA GeForce GTX 1650",
+  "vocab": 80000,
+  "measurements": [
+    {
+      "seq": 128,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 0.5028099003247917,
+      "peak_gb": 3.051196928
+    },
+    {
+      "seq": 256,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 0.48667640006169677,
+      "peak_gb": 3.060110848
+    },
+    {
+      "seq": 512,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 0.6180420997552574,
+      "peak_gb": 3.063782912
+    },
+    {
+      "seq": 1024,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 1.0383479003794491,
+      "peak_gb": 3.0685056
+    },
+    {
+      "seq": 1536,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 1.714044500142336,
+      "peak_gb": 3.080306176
+    },
+    {
+      "seq": 2048,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 2.401573400013149,
+      "peak_gb": 3.070610944
+    },
+    {
+      "seq": 3072,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 4.431807599961758,
+      "peak_gb": 3.06694912
+    },
+    {
+      "seq": 4096,
+      "precision": "fp32",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 14.293627699837089,
+      "peak_gb": 3.439239168
+    },
+    {
+      "seq": 128,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 0.864172900095582,
+      "peak_gb": 3.051198464
+    },
+    {
+      "seq": 256,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 1.456855199765414,
+      "peak_gb": 3.051199488
+    },
+    {
+      "seq": 512,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 1.532926100306213,
+      "peak_gb": 3.062735872
+    },
+    {
+      "seq": 1024,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 2.9459834001027048,
+      "peak_gb": 1.250637312
+    },
+    {
+      "seq": 1536,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 5.037745799869299,
+      "peak_gb": 3.079914496
+    },
+    {
+      "seq": 2048,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 6.810200699605048,
+      "peak_gb": 3.071661056
+    },
+    {
+      "seq": 3072,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 12.318682599812746,
+      "peak_gb": 3.067737088
+    },
+    {
+      "seq": 4096,
+      "precision": "fp16",
+      "checkpointing": true,
+      "ok": true,
+      "sec_per_example": 17.898173899855465,
+      "peak_gb": 3.443631616
+    },
+    {
+      "seq": 128,
+      "precision": "fp32",
+      "checkpointing": false,
+      "ok": true,
+      "sec_per_example": 0.3667035000398755,
+      "peak_gb": 3.051196928
+    },
+    {
+      "seq": 512,
+      "precision": "fp32",
+      "checkpointing": false,
+      "ok": true,
+      "sec_per_example": 0.460719000082463,
+      "peak_gb": 3.066666496
+    }
+  ],
+  "max_seq": {
+    "fp32": 4096,
+    "fp16": 4096
+  },
+  "stability": {
+    "fp32": {
+      "precision": "fp32",
+      "finite": true,
+      "skipped_steps": 0,
+      "loss_first50": 1.4850581273524586,
+      "loss_last50": 0.6418178954452742
+    },
+    "fp16": {
+      "precision": "fp16",
+      "finite": true,
+      "skipped_steps": 7,
+      "loss_first50": 2.1419358372688295,
+      "loss_last50": 0.6418179321289063
+    }
+  },
+  "estimates": {
+    "fp32": {
+      "stage1_hours": 55.86776670275463,
+      "stage2_hours": 21.661074662374126
+    },
+    "fp16": {
+      "stage1_hours": 96.01921112173133,
+      "stage2_hours": 57.519578225910664
+    }
+  }
+}
