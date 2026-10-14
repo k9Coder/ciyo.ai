@@ -33,7 +33,7 @@ Goal: a model we build ourselves that judges arbitrary free-text rules in many l
 | Teacher | Claude Code itself (this tool and its subagents), within the owner's existing plan limits. Realistic volume: a few thousand labeled examples over several sessions. |
 | Human time | The owner labels up to 2-5 hours, roughly 1,000-2,000 decisions on a click-through page. |
 | Rules | Arbitrary free text written by admins (directly or via the backend assistant, whose format is *"This message discloses \<specific claim\>, even if disguised."*, see `backend/src/assistant/prompt.ts`). |
-| Languages | Many. Training languages: English, Hebrew, Spanish, French, German, Portuguese, Russian, Arabic. Held-out (test only, to prove generalization): Italian, Dutch. |
+| Languages | Many. Training languages: English, Hebrew, Spanish, French, German, Portuguese, Russian, Arabic, Chinese (Simplified). Held-out (test only, to prove generalization): Italian, Dutch. |
 | Privacy | Inference fully on device; message content never leaves the machine. |
 | Latency (reference laptop) | Typical prompt ~2s or less at send; hard ceiling 5s for big pastes. |
 | Size | Model file ≤ 140MB; peak RAM ≤ 400MB. |
@@ -103,7 +103,7 @@ Throwaway code. It measures:
 
 ### Stage 1: general skill (public NLI data)
 
-- Multilingual "does text A imply claim B" pairs, ~300-500k after subsampling, covering the eight training languages.
+- Multilingual "does text A imply claim B" pairs, ~300-500k after subsampling, covering the nine training languages.
 - **Only commercially usable sources.** Each candidate dataset's license is checked at implementation time against its dataset card and listed in `models/judge-v2/DATA_LICENSES.md` for the owner to confirm before training. Starting set:
   - MNLI (OANC-based, permissive; one fiction source CC BY-SA 3.0)
   - SNLI (CC BY-SA 4.0)
@@ -116,7 +116,7 @@ Throwaway code. It measures:
 
 | Source | What | Volume |
 |---|---|---|
-| Scripted generator | Message templates × Faker locales (`en_US`, `he_IL`, `es_ES`, `fr_FR`, `de_DE`, `pt_BR`, `ru_RU`, `ar_AA`; held-out `it_IT`, `nl_NL`) producing realistic messages that embed (or near-miss) sensitive data at random positions, paired with rules in many phrasings, assistant format included | ~20-50k pairs |
+| Scripted generator | Message templates × Faker locales (`en_US`, `he_IL`, `es_ES`, `fr_FR`, `de_DE`, `pt_BR`, `ru_RU`, `ar_AA`, `zh_CN`; held-out `it_IT`, `nl_NL`) producing realistic messages that embed (or near-miss) sensitive data at random positions, paired with rules in many phrasings, assistant format included | ~20-50k pairs |
 | Claude Code | Diverse, realistic, tricky messages and free-text rules across categories and languages: hard negatives, disguised disclosures, compound rules, specific-referent rules (codenames). Labeled per the labeling policy. | ~3-5k pairs over several sessions |
 | Owner | Labels for the hardest and most ambiguous cases | part of the 2-5 hours |
 
@@ -153,7 +153,7 @@ Some categories are held out of training entirely (test only).
 - **Vocabulary trimming before training:** Gemma's 262k-token vocabulary is cut to the tokens needed by the target languages.
   - Built from training texts plus the top words per language (in bare, leading-space and hyphen-adjacent forms), digits, and code tokens from this repository.
   - The test set is never used to build the vocabulary.
-  - Expected ~60-80k tokens, bringing the model to ~130M params.
+  - Expected ~60-90k tokens, bringing the model to ~130-160M params. Chinese needs several thousand extra character tokens; if the trimmed vocabulary pushes the int8 file past 140MB, that goes to the owner as a size-vs-language tradeoff rather than silently dropping coverage.
   - **Gate:** unknown-token rate ≤ 0.1% per language on the test texts, held-out languages included. A failing language means the vocabulary grows, not that the gate drops.
 - **Stage 1:** full fine-tune on the NLI pairs, short sequences, one pass.
 - **Stage 2:** fine-tune on DLP data, messages up to the longest length Phase 0 shows fits; longer messages rely on windowing (verified by the test set's long messages).
