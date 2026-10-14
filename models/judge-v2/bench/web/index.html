@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Judge v2 web bench</title>
+<style>body{font-family:system-ui,sans-serif;margin:24px;background:#fff;color:#111}</style>
+<pre id="out">running…</pre>
+<script type="module">
+import * as ort from "/ort/ort.all.min.mjs";
+import { benchScenario, prefixState } from "/judge_steps.mjs";
+const out = document.getElementById("out");
+const log = (s) => { out.textContent += "\n" + s; };
+ort.env.wasm.numThreads = 4;
+ort.env.wasm.wasmPaths = "/ort/";
+try {
+  log(`crossOriginIsolated=${crossOriginIsolated}`);
+  const input = await (await fetch("/inputs.json")).json();
+  const sess = await ort.InferenceSession.create("/model/judge.onnx", { executionProviders: ["wasm"] });
+  const pre = await prefixState(ort, sess, input);
+  const scenarios = [];
+  for (const sc of input.scenarios.filter((s) => s.platform === "web")) {
+    const ms = await benchScenario(ort, sess, input, pre, sc);
+    scenarios.push({ name: sc.name, ms: Math.round(ms), gate_ms: sc.gate_ms });
+    log(`${sc.name}: ${Math.round(ms)} ms`);
+  }
+  await fetch("/result", { method: "POST", body: JSON.stringify({ platform: "web", crossOriginIsolated, scenarios }) });
+  log("DONE");
+} catch (e) {
+  log("ERROR " + (e?.message ?? e));
+  await fetch("/result", { method: "POST", body: JSON.stringify({ platform: "web", error: String(e), scenarios: [] }) });
+}
+</script>
