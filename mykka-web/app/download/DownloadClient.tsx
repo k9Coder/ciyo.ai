@@ -78,7 +78,7 @@ function buildOptions(downloads: Downloads): Record<PickKey, Option> {
   }
 }
 
-export function DownloadClient({ downloads }: { downloads: Downloads }) {
+export function DownloadClient({ downloads, desktopEnabled }: { downloads: Downloads; desktopEnabled: boolean }) {
   const [copied, setCopied] = useState(false)
 
   // Server-rendered HTML has no navigator, so the snapshot used during SSR and first hydration
@@ -88,9 +88,10 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
   const os = useSyncExternalStore(() => () => {}, detectOs, () => 'other' as Os)
 
   const options = buildOptions(downloads)
-  const pickKey: PickKey = isChromium ? 'chrome' : os === 'mac' ? 'mac' : os === 'win' ? 'win' : 'chrome'
+  const pickKey: PickKey = !desktopEnabled || isChromium ? 'chrome' : os === 'mac' ? 'mac' : os === 'win' ? 'win' : 'chrome'
   const pick = options[pickKey]
-  const others = (['chrome', 'win', 'mac'] as const).filter((k) => k !== pickKey).map((k) => options[k])
+  const keys: readonly PickKey[] = desktopEnabled ? ['chrome', 'win', 'mac'] : ['chrome']
+  const others = keys.filter((k) => k !== pickKey).map((k) => options[k])
   const osLabel = os === 'mac' ? 'your Mac' : os === 'win' ? 'your Windows PC' : 'your computer'
 
   async function copyExtensionId() {
@@ -111,8 +112,9 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
           Install Pretzel, then sign in with your work email.
         </h1>
         <p className="m-0 max-w-[640px] text-[19px] leading-[1.5] text-muted">
-          The extension covers ChatGPT, Claude and Gemini in Chrome. Pretzel Desktop covers AI apps
-          outside the browser. Most people only need the extension.
+          {desktopEnabled
+            ? 'The extension covers ChatGPT, Claude and Gemini in Chrome. Pretzel Desktop covers AI apps outside the browser. Most people only need the extension.'
+            : 'The extension covers ChatGPT, Claude and Gemini in Chrome and Edge.'}
         </p>
       </section>
 
@@ -144,7 +146,7 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
         </div>
       </section>
 
-      <section className="mx-auto flex max-w-[1200px] flex-col gap-[18px] px-6 pb-20">
+      {others.length > 0 && <section className="mx-auto flex max-w-[1200px] flex-col gap-[18px] px-6 pb-20">
         <h2 className="m-0 text-[22px] font-semibold tracking-[-0.015em]">All downloads</h2>
         <div className="overflow-hidden rounded-token border border-line bg-surface">
           {others.map((d, i) => (
@@ -169,7 +171,7 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
             </div>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section className="border-y border-line bg-surface">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-2">
@@ -199,8 +201,10 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
               Installing for everyone?
             </h2>
             <p className="m-0 text-[16px] leading-[1.55] text-muted">
-              Force-install the extension with Chrome Enterprise, or push Pretzel Desktop with your
-              MDM. Your organization token is in the console under Settings.
+              {desktopEnabled
+                ? 'Force-install the extension with Chrome Enterprise, or push Pretzel Desktop with your MDM.'
+                : 'Force-install the extension with Chrome Enterprise.'}{' '}
+              Your organization token is in the console under Settings.
             </p>
             <div className="flex flex-col gap-1.5">
               <span className="text-[13px] text-muted">Extension ID</span>
@@ -229,8 +233,10 @@ export function DownloadClient({ downloads }: { downloads: Downloads }) {
 
       <section className="mx-auto flex max-w-[1200px] flex-wrap gap-7 px-6 pb-24 pt-14 text-[14px] text-muted">
         <span><b className="font-semibold text-ink">Extension</b> · Chrome 116+, Edge 116+</span>
-        <span><b className="font-semibold text-ink">Windows</b> · 10 or 11, 64-bit</span>
-        <span><b className="font-semibold text-ink">macOS</b> · 13 Ventura or later, Apple silicon and Intel</span>
+        {desktopEnabled && <>
+          <span><b className="font-semibold text-ink">Windows</b> · 10 or 11, 64-bit</span>
+          <span><b className="font-semibold text-ink">macOS</b> · 13 Ventura or later, Apple silicon and Intel</span>
+        </>}
       </section>
     </>
   )

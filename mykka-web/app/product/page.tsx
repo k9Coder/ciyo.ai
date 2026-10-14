@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { AppWindow, LayoutDashboard, MessageSquareText, Monitor, type LucideIcon } from 'lucide-react'
-import { IS_PILOT_MODE } from '@/lib/config'
+import { DESKTOP_DOWNLOADS_ENABLED, IS_PILOT_MODE } from '@/lib/config'
 import { primaryCta } from '@/lib/cta'
 import { AssistantMock, ConsoleMock, DesktopMock, ExtensionMock } from '@/components/product/ProductMocks'
 
@@ -126,7 +126,9 @@ export default function ProductPage() {
             <span className="flex items-center gap-[7px]"><span className="size-2 rounded-full bg-warn" />Rules not loaded</span>
             <span className="flex items-center gap-[7px]"><span className="size-2 rounded-full bg-block" />Protection off</span>
           </div>
-          <Link href="/download" className="self-start text-[16px] text-ink underline underline-offset-4">Download Pretzel Desktop</Link>
+          {DESKTOP_DOWNLOADS_ENABLED
+            ? <Link href="/download" className="self-start text-[16px] text-ink underline underline-offset-4">Download Pretzel Desktop</Link>
+            : <span className="self-start font-mono text-[13px] text-muted">Coming soon</span>}
         </div>
         <div className="md:order-1"><DesktopMock /></div>
       </section>
