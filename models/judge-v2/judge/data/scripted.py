@@ -23,8 +23,29 @@ def _rand(rng, alphabet, n):
     return "".join(rng.choice(alphabet) for _ in range(n))
 
 
+_ALNUM = string.ascii_letters + string.digits
+
+
 def _api_key(fake, rng):
-    return rng.choice(["sk-", "AKIA", "ghp_", "xoxb-", "AIza"]) + _rand(rng, string.ascii_letters + string.digits, 32)
+    kind = rng.choice(["aws", "github", "openai", "slack", "google"])
+    if kind == "aws":
+        return "AKIA" + _rand(rng, string.ascii_uppercase + string.digits, 16)
+    if kind == "github":
+        return "ghp_" + _rand(rng, _ALNUM, 36)
+    if kind == "openai":
+        return "sk-" + _rand(rng, _ALNUM, 48)
+    if kind == "slack":
+        return f"xoxb-{_rand(rng, string.digits, 12)}-{_rand(rng, string.digits, 13)}-{_rand(rng, _ALNUM, 24)}"
+    return "AIza" + _rand(rng, _ALNUM + "_-", 35)
+
+
+def _amount(fake, rng):
+    kind = rng.choice(["plain", "thousands", "millions"])
+    if kind == "plain":
+        return f"{rng.randint(1_000, 250_000):,}"
+    if kind == "thousands":
+        return f"{rng.randint(5, 950)}K"
+    return f"{rng.randint(1, 999)}.{rng.randint(0, 9)}M"
 
 
 def _password(fake, rng):
@@ -59,7 +80,7 @@ FILLERS = {
     "name": lambda f, r: f.name(),
     "company": lambda f, r: f.company(),
     "date": lambda f, r: f.date_this_year().isoformat(),
-    "amount": lambda f, r: f"{r.randint(1, 999)}.{r.randint(0, 9)}M",
+    "amount": _amount,
     "product": lambda f, r: f.word().capitalize(),
     "us_ssn": _us_ssn,
     "national_id": _national_id,

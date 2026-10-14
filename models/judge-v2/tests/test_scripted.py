@@ -106,3 +106,25 @@ def test_non_test_messages_never_get_test_only_rules(tmp_path):
 def test_fillers_cover_sensitive_slots():
     for slots in SENSITIVE_SLOTS.values():
         assert slots <= set(FILLERS)
+
+
+def test_api_key_formats_are_realistic():
+    import random
+    import re
+    from judge.data.scripted import _api_key
+    shapes = [r"AKIA[0-9A-Z]{16}", r"ghp_[A-Za-z0-9]{36}", r"sk-[A-Za-z0-9]{48}",
+              r"xoxb-\d{10,13}-\d{10,13}-[A-Za-z0-9]{24}", r"AIza[0-9A-Za-z_\-]{35}"]
+    rng = random.Random(1)
+    keys = [_api_key(None, rng) for _ in range(300)]
+    for k in keys:
+        assert any(re.fullmatch(s, k) for s in shapes), k
+    assert {k[:3] for k in keys} >= {"AKI", "ghp", "sk-", "xox", "AIz"}
+
+
+def test_amounts_vary_in_magnitude_and_format():
+    import random
+    from faker import Faker
+    rng = random.Random(2)
+    amounts = [FILLERS["amount"](Faker("en_US"), rng) for _ in range(200)]
+    assert any(a.endswith("M") for a in amounts) and any(a.endswith("K") for a in amounts)
+    assert any(a.replace(",", "").isdigit() for a in amounts)

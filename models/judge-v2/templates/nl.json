@@ -1,0 +1,1742 @@
+{
+ "language": "nl",
+ "messages": [
+  {
+   "id": "nl-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Is [[{us_ssn}]] een geldig Amerikaans social security number? Het staat bij onze nieuwe collega {name} in het HR-systeem en ik twijfel over het formaat."
+  },
+  {
+   "id": "nl-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nvoor de I-9 en de payroll in de VS heb ik dit nodig: [[SSN {us_ssn}]]. De rest van de gegevens staat in de bijlage. Kun je de mail wat vlotter in het Engels zetten?\n\nGroet"
+  },
+  {
+   "id": "nl-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "naam;start;ssn;afdeling\n{name};{date};[[{us_ssn}]];Finance"
+  },
+  {
+   "id": "nl-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "kun je dit nalopen: social security number van de klant is [[vier twee nul\ntien\nzes zeven acht negen]], klopt de indeling?"
+  },
+  {
+   "id": "nl-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe is een Amerikaans social security number eigenlijk opgebouwd? Ik dacht gebiedsnummer, groepsnummer en serienummer, maar zeker weten doe ik het niet."
+  },
+  {
+   "id": "nl-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Maak deze tabel af en gebruik XXX-XX-XXXX als placeholder voor de SSN, dat vullen we later in.\nnaam;start;ssn\n{name};{date};XXX-XX-XXXX"
+  },
+  {
+   "id": "nl-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Mijn Duitse collega heeft [[personalausweisnummer {national_id}]] doorgegeven voor de visumaanvraag. Wat moet ik hier nog meer bij zetten?"
+  },
+  {
+   "id": "nl-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Personeelsdossier, onderdeel identificatie:\nNaam: {name}\nNationaal identiteitsnummer: [[{national_id}]]\nIn dienst sinds: {date}\n\nVat dit samen voor de onboarding-checklist."
+  },
+  {
+   "id": "nl-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Vertaal naar het Frans: Ik bevestig dat mijn nationale identiteitsnummer [[{national_id}]] is en dat ik gemachtigd ben het dossier in te zien."
+  },
+  {
+   "id": "nl-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "INFO kyc: verifying subject\nINFO kyc: id_number=[[{national_id}]]\nWARN kyc: checksum mismatch\nWaarom faalt de checksum-controle hier?"
+  },
+  {
+   "id": "nl-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Welke landen gebruiken een nationaal identiteitsnummer met een controlecijfer, en hoe wordt dat berekend? Het gaat om algemene kennis voor een validatiebibliotheek."
+  },
+  {
+   "id": "nl-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Formulier: Naam: ...........  Nationaal identiteitsnummer: <invullen door medewerker>\nHerschrijf de instructie boven dit veld zodat het duidelijker wordt."
+  },
+  {
+   "id": "nl-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hallo {name},\n\nvoor de boeking van de vlucht naar Singapore heb je mijn paspoortnummer nodig: [[{passport}]]. Geldig tot eind volgend jaar.\n\nMet vriendelijke groet"
+  },
+  {
+   "id": "nl-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Mag ik het paspoort [[{passport}]] van {name} zo in het reisformulier zetten, of moet er een spatie tussen de letter en de cijfers?"
+  },
+  {
+   "id": "nl-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "reiziger,paspoort,vertrek\n{name},[[{passport}]],{date}"
+  },
+  {
+   "id": "nl-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "payload = {\"traveler\": \"{name}\", \"passport_no\": \"[[{passport}]]\"}\nresp = client.post('/bookings', json=payload)\nWaarom krijg ik een 422 terug?"
+  },
+  {
+   "id": "nl-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe lang moet een paspoort nog geldig zijn voor je naar de VS mag reizen? We plannen een conferentie en willen het in de reispolicy zetten."
+  },
+  {
+   "id": "nl-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "def validate_passport(value):\n    # TODO: nummer formaat per land\n    return re.match(r'^[A-Z][0-9]{8}$', value)\nHelp me hier unit tests voor te schrijven met nepvoorbeelden zoals A00000000."
+  },
+  {
+   "id": "nl-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nhet pakket voor je verhuisbonus sturen we naar [[{address}]]. Klopt dit adres nog?\n\nGroet, HR"
+  },
+  {
+   "id": "nl-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Kun je de snelste route plannen van kantoor naar het huis van {name}? Ze woont op [[{address}]] en we brengen een laptop langs."
+  },
+  {
+   "id": "nl-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[10:14] Sanne: heb je het adres van Kees nog?\n[10:15] Jij: ja, [[{address}]]\n[10:16] Sanne: top, thx\nKun je hier een kort overzicht van maken voor de bezorger?"
+  },
+  {
+   "id": "nl-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Verhuisformulier\nMedewerker: {name}\nNieuw woonadres: [[{address}]]\nIngangsdatum: {date}\n\nZet dit om in een nette bevestigingsbrief."
+  },
+  {
+   "id": "nl-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Welke privacyregels gelden er als wij het thuisadres van medewerkers willen opslaan voor de salarisadministratie? Moeten ze daar expliciet toestemming voor geven?"
+  },
+  {
+   "id": "nl-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name}, wil je je huidige woonadres even doorgeven via het HR-portaal? Stuur het niet per mail. Kun je dit wat vriendelijker formuleren?"
+  },
+  {
+   "id": "nl-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Schrijf een appje aan {name} op haar privénummer [[{phone}]] dat de afspraak van morgen verzet is."
+  },
+  {
+   "id": "nl-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hoi,\n\nde kandidaat is liever niet via werk bereikbaar. Mail haar op [[{email}]], liefst na zessen.\n\nKun je een uitnodiging voor het tweede gesprek opstellen?"
+  },
+  {
+   "id": "nl-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "Jij: zijn privé-mail is [[{email}]], niet zijn werkadres\nMarc: oké, ik stuur het contract daar naartoe\nVat deze afspraak samen."
+  },
+  {
+   "id": "nl-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "naam;mobiel privé\n{name};[[{phone}]]"
+  },
+  {
+   "id": "nl-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Mag ik als manager het privételefoonnummer van een teamlid in een groepsapp zetten, of is dat een AVG-probleem?"
+  },
+  {
+   "id": "nl-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een mail aan het team met de vraag om hun privé-e-mailadres door te geven voor het noodcontactformulier. Zet geen echte adressen in de voorbeeldtekst, gebruik naam@voorbeeld.nl."
+  },
+  {
+   "id": "nl-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Bereken even hoe oud {name} wordt volgend jaar, [[geboren op {dob}]]."
+  },
+  {
+   "id": "nl-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Verzekeringsaanvraag\nVerzekerde: [[{name}, geboortedatum {dob}]]\nPolisnummer: in behandeling\n\nControleer of alle verplichte velden zijn ingevuld."
+  },
+  {
+   "id": "nl-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "naam,geboortedatum,functie\n[[{name},{dob}]],Analist"
+  },
+  {
+   "id": "nl-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": true,
+   "text": "Beste {name},\n\nter bevestiging: [[jouw geboortedatum is {dob}]], toch? Anders pas ik het contract nog aan.\n\nGroet"
+  },
+  {
+   "id": "nl-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "In welk formaat moet ik een geboortedatum opslaan in onze database, ISO of dd-mm-jjjj? Het gaat om een nieuw HR-schema."
+  },
+  {
+   "id": "nl-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Formulierveld: Geboortedatum (dd-mm-jjjj): __-__-____ \nHelp me de toelichting bij dit veld korter en duidelijker te schrijven."
+  },
+  {
+   "id": "nl-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "import requests\nheaders = {'Authorization': 'Bearer [[{api_key}]]'}\nr = requests.get('https://api.example.com/v1/orders', headers=headers)\nDe response is leeg, wat doe ik fout?"
+  },
+  {
+   "id": "nl-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2025-03-02 09:12:01 DEBUG sending request\n2025-03-02 09:12:01 DEBUG x-api-key: [[{api_key}]]\n2025-03-02 09:12:02 ERROR 403 Forbidden\nWaarom blijft deze 403 komen?"
+  },
+  {
+   "id": "nl-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Onze token voor de cloud-API is [[{api_key}]], maar hij werkt niet meer sinds vanochtend. Is die verlopen?"
+  },
+  {
+   "id": "nl-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "{\"service\": \"payments\", \"cfg\": {\"tok\": \"[[{api_key}]]\"}}\nDit is mijn config.json, kun je het schema valideren?"
+  },
+  {
+   "id": "nl-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is het verschil tussen een API-key en een OAuth-token, en wanneer kies je welke voor een interne integratie?"
+  },
+  {
+   "id": "nl-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mijn .env heeft API_KEY=<jouw_api_key_hier> en dat laad ik met dotenv. Het blijft undefined in Node, wat mis ik?"
+  },
+  {
+   "id": "nl-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Het wachtwoord van het gedeelde account is [[{password}]], maar inloggen lukt niet. Zou hoofdlettergevoeligheid het probleem kunnen zijn?"
+  },
+  {
+   "id": "nl-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hoi {name},\n\nhierbij de inloggegevens voor het dashboard. Gebruikersnaam is je mailadres, [[wachtwoord: {password}]]. Verander het na je eerste login.\n\nSucces!"
+  },
+  {
+   "id": "nl-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "$conn = new PDO($dsn, 'admin', '[[{password}]]');\nDit geeft 'access denied', wat mist er?"
+  },
+  {
+   "id": "nl-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "Jan: wat is het wifi-wachtwoord van de serverruimte?\nJij: [[{password}]]\nJan: thanks\nZet dit gesprek om in een korte handleiding voor nieuwe collega's."
+  },
+  {
+   "id": "nl-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat zijn goede richtlijnen voor wachtwoorden in 2025? Moeten we nog steeds elke 90 dagen laten wisselen of niet?"
+  },
+  {
+   "id": "nl-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mijn login-formulier slaat het wachtwoord op als 'password123' in de seed-data. Hoe hash ik dat met bcrypt? Dit is alleen dummydata."
+  },
+  {
+   "id": "nl-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Ik krijg 'invalid format' als ik deze sleutel laad in mijn SSH-client:\n[[{private_key}]]\nWat ontbreekt er?"
+  },
+  {
+   "id": "nl-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Dit is mijn deploy-key, kun je helpen met het formaat?\nssh_key: |\n[[{private_key}]]\nCI faalt bij de checkout."
+  },
+  {
+   "id": "nl-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Runbook certificaten\n\nStap 3: sla de privésleutel op als server.key:\n[[{private_key}]]\nStap 4: herstart nginx.\n\nMaak hier een duidelijke stappenlijst van."
+  },
+  {
+   "id": "nl-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "$ cat ~/.ssh/id_ed25519\n[[{private_key}]]\n$ ssh -i ~/.ssh/id_ed25519 deploy@host\nPermission denied (publickey)\nWat gaat er mis?"
+  },
+  {
+   "id": "nl-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is het verschil tussen een publieke en een privésleutel bij SSH, en waar hoort de private key nooit te belanden?"
+  },
+  {
+   "id": "nl-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Ik genereer een sleutel met ssh-keygen -t ed25519. Hoe beperk ik de rechten van de private key op Linux? Plak geen sleutels hier, het gaat om de chmod."
+  },
+  {
+   "id": "nl-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mijn ORM crasht bij het opstarten.\nDATABASE_URL=[[{db_url}]]\nZit er iets mis met deze URL?"
+  },
+  {
+   "id": "nl-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Kan ik met [[{db_url}]] verbinden vanuit een Lambda in dezelfde VPC, of moet ik iets met security groups doen?"
+  },
+  {
+   "id": "nl-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "FATAL: password authentication failed\nconnecting with [[{db_url}]]\nretry 3/3 failed\nWat betekent deze fout precies?"
+  },
+  {
+   "id": "nl-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "settings = {\n  'default': {'url': '[[{db_url}]]', 'pool': 5}\n}\nWerkt dit in Django, of moet ik de URL splitsen?"
+  },
+  {
+   "id": "nl-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe sla ik database-wachtwoorden veilig op in plaats van ze in de connection string te zetten? We overwegen een secrets manager."
+  },
+  {
+   "id": "nl-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mijn config gebruikt postgres://USER:PASSWORD@HOST:5432/DB als sjabloon, en ik vervang dat via env-variabelen. Is dat een goede aanpak?"
+  },
+  {
+   "id": "nl-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Overdrachtsnotitie\nPatiënt: {name}, opgenomen op {date}.\n[[Diagnose: type 2 diabetes met beginnende nefropathie]]\nVat dit samen voor de dagploeg."
+  },
+  {
+   "id": "nl-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste collega,\n\nik schrijf je over {name}. [[Zij is vorige week gediagnosticeerd met een bipolaire stoornis]] en we moeten het rooster aanpassen.\n\nKun je dit vriendelijker maken?"
+  },
+  {
+   "id": "nl-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Overleg ziekteverzuim {date}\n- {name}: [[kanker in het vierde stadium, chemo gestart]]\n- Vervanging regelen\nMaak er actiepunten van."
+  },
+  {
+   "id": "nl-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "patient {name} heeft [[hiv-positief uitslag gekregen]], wie moet er nu allemaal op de hoogte gebracht worden volgens het protocol?"
+  },
+  {
+   "id": "nl-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat zijn de gebruikelijke symptomen van type 2 diabetes? Ik schrijf een intranetartikel over gezondheid op het werk."
+  },
+  {
+   "id": "nl-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beleid: medische diagnoses van medewerkers mogen alleen door de bedrijfsarts worden verwerkt. Herschrijf deze alinea in eenvoudiger taal voor alle medewerkers."
+  },
+  {
+   "id": "nl-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Medicatieoverzicht {name}\n[[Metformine 850 mg 2x daags, Atorvastatine 20 mg 1x daags, Sertraline 50 mg]]\nGecontroleerd op {date}.\nMaak hier een overzichtelijke tabel van."
+  },
+  {
+   "id": "nl-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Mag {name} [[ibuprofen combineren met haar recept voor warfarine 5 mg]]? Ze staat bij ons op de lijst."
+  },
+  {
+   "id": "nl-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "patient;middel;dosering\n{name};[[Oxycodon;10 mg 3x per dag]]"
+  },
+  {
+   "id": "nl-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": true,
+   "text": "Beste apotheker,\n\nvoor {name} graag het herhaalrecept: [[Lisinopril 10 mg, een tablet per dag, 90 stuks]]. Kunt u dit nog deze week klaarzetten?\n\nGroet"
+  },
+  {
+   "id": "nl-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is het verschil tussen een generiek middel en een merkmedicijn, en waarom schrijven artsen soms het merk voor?"
+  },
+  {
+   "id": "nl-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beleidstekst: voorschriften van patiënten worden uitsluitend in het EPD vastgelegd. Corrigeer de spelling en maak de zinnen korter."
+  },
+  {
+   "id": "nl-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "De betaling met creditcard [[{card}]] wordt geweigerd bij onze webshop. Waarom zou dat zijn, vervalt hij 11/27?"
+  },
+  {
+   "id": "nl-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hoi {name},\n\nhierbij de kaartgegevens voor het hotel: [[{card}]], cvv in de volgende mail. Kun je de reservering bevestigen?\n\nDank!"
+  },
+  {
+   "id": "nl-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "bestelling,kaart,bedrag\n1042,[[{card}]],{amount}"
+  },
+  {
+   "id": "nl-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "POST /charge 200\nbody: {\"pan\": \"[[{card}]]\", \"exp\": \"09/28\"}\nERROR gateway timeout\nWaar lekt hier de timeout?"
+  },
+  {
+   "id": "nl-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe werkt de Luhn-controle bij creditcardnummers? Ik wil dat in een formuliervalidatie bouwen, geen echte nummers."
+  },
+  {
+   "id": "nl-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mijn testsuite gebruikt het officiële testnummer 4242 4242 4242 4242 van de betaalprovider. Hoe mock ik de respons netjes in pytest?"
+  },
+  {
+   "id": "nl-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nkun je de factuur van {amount} overmaken naar [[{iban}]] ten name van {company}? Graag vóór het einde van de maand.\n\nGroet"
+  },
+  {
+   "id": "nl-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Controleer even of [[{iban}]] een geldig IBAN is, dit is de rekening waar we de salarissen naartoe boeken."
+  },
+  {
+   "id": "nl-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "leverancier;iban;bedrag\n{company};[[{iban}]];{amount}"
+  },
+  {
+   "id": "nl-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Machtiging SEPA incasso\nNaam: {name}\nRekeningnummer: [[{iban}]]\nDatum: {date}\nVat de voorwaarden samen."
+  },
+  {
+   "id": "nl-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoeveel tekens heeft een Nederlands IBAN, en wat betekenen de eerste vier tekens? Ik maak een validatiefunctie."
+  },
+  {
+   "id": "nl-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een betalingsherinnering aan een klant. Laat het rekeningnummer leeg met de tekst [IBAN invullen], dat voeg ik zelf toe vanuit het systeem."
+  },
+  {
+   "id": "nl-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Is het redelijk dat [[{name} een brutosalaris van 5.800 euro per maand krijgt]] als senior developer? Ze doet hetzelfde als Lars."
+  },
+  {
+   "id": "nl-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "naam;functie;bruto jaarsalaris\n[[{name};Teamlead;82.000]]\nSorteer op salaris en markeer wie onder het gemiddelde zit."
+  },
+  {
+   "id": "nl-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nnaar aanleiding van de beoordeling: [[je salaris gaat per {date} omhoog van 3.900 naar 4.350 euro bruto per maand]]. Felicitaties!\n\nKun je dit wat persoonlijker maken?"
+  },
+  {
+   "id": "nl-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Overleg bonussen {date}\n- [[{name} krijgt een bonus van 12.000 euro bovenop zijn jaarloon van 71.500]]\n- Besluit voor vrijdag\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe bepaal je een eerlijke salarisschaal voor junior engineers? Welke benchmarks zijn publiek beschikbaar voor Nederland?"
+  },
+  {
+   "id": "nl-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beleidsdocument: salarissen van individuele medewerkers zijn vertrouwelijk en worden alleen met HR besproken. Zet dit om in een korte FAQ."
+  },
+  {
+   "id": "nl-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beoordelingsgesprek {date}\nMedewerker: {name}\n[[Eindscore: onvoldoende. Te vaak te laat, deadlines gemist, officiële waarschuwing gegeven.]]\nHerschrijf dit in diplomatieke taal."
+  },
+  {
+   "id": "nl-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste HR,\n\nik wil een verslag toevoegen aan het dossier van {name}: [[twee mondelinge waarschuwingen wegens wangedrag richting klanten en een verbeterplan van 90 dagen]]. Kun je de tekst juridisch toetsen?\n\nGroet"
+  },
+  {
+   "id": "nl-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "{name} heeft [[een slechte beoordeling gekregen en staat op een verbetertraject]], hoe vertel ik dat zonder dat het gesprek ontspoort?"
+  },
+  {
+   "id": "nl-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Calibratie {date}\n- {name}: [[prestatie 2 van 5, disciplinaire maatregel na diefstal van materiaal]]\n- Besluit over contractverlenging\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is een goed format voor een functioneringsgesprek? Ik zoek algemene vragen die ik kan gebruiken, geen voorbeelden met namen."
+  },
+  {
+   "id": "nl-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een uitnodiging aan het team voor de halfjaarlijkse beoordelingsgesprekken. Noem alleen de planning, geen resultaten of namen."
+  },
+  {
+   "id": "nl-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nmet mijn advocaat besproken: [[het advies van mr. Jansen is om de claim niet te betwisten, omdat de kans op verlies van het geschil groot is]]. Kun je dit doorsturen naar de directie?\n\nGroet"
+  },
+  {
+   "id": "nl-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "VERTROUWELIJK - Juridisch advies\n[[Onze externe raadsman raadt aan de overeenkomst met {company} niet te ondertekenen vanwege aansprakelijkheid onder artikel 7]]\n\nVat dit samen voor het managementteam."
+  },
+  {
+   "id": "nl-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Mijn advocaat zei dat [[wij bij een rechtszaak met {company} vrijwel zeker moeten schikken]]. Hoe leg ik dat uit aan de CFO?"
+  },
+  {
+   "id": "nl-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": true,
+   "text": "Vertaal naar het Engels: [[Op advies van onze jurist zullen we de verklaring aan de toezichthouder pas indienen nadat de interne audit is afgerond, om strafrechtelijke blootstelling te beperken]]"
+  },
+  {
+   "id": "nl-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat houdt het verschoningsrecht van een advocaat in, en geldt het ook voor bedrijfsjuristen in Nederland?"
+  },
+  {
+   "id": "nl-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een korte mail aan onze externe advocaat met het verzoek om een afspraak. Geen inhoud van de zaak noemen, alleen een voorstel voor datum en tijd."
+  },
+  {
+   "id": "nl-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Concept persbericht, embargo tot {date}\n[[Omzet Q3 bedraagt {amount} (+18% t.o.v. vorig jaar), nettowinst {amount}, ruim boven de verwachtingen van analisten]]\n\nHerschrijf dit voor de website."
+  },
+  {
+   "id": "nl-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "De cijfers over het tweede kwartaal zijn nog niet gepubliceerd: [[wij sluiten af met een operationeel verlies van {amount} en verlagen de jaarprognose]]. Hoe presenteer ik dat aan de raad van commissarissen?"
+  },
+  {
+   "id": "nl-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "kwartaal,omzet,ebitda,status\nQ4,[[{amount},{amount},intern niet publiek]]\nMaak er een grafiek van."
+  },
+  {
+   "id": "nl-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Besprekingen resultaten {date}\n- [[Jaaromzet {amount}, EBITDA-marge 14%, nog niet naar buiten]]\n- Persbericht volgende week\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe schrijf ik een duidelijk kwartaalbericht dat voldoet aan de regels voor beursgenoteerde bedrijven? Geef de opbouw, geen cijfers."
+  },
+  {
+   "id": "nl-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beleid: kwartaalcijfers zijn koersgevoelig en mogen niet worden gedeeld vóór publicatie. Maak dit leesbaarder voor nieuwe medewerkers."
+  },
+  {
+   "id": "nl-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\n[[we zijn in vergevorderde gesprekken om {company} over te nemen voor {amount}, de aankondiging staat voor volgende maand gepland]]. Kun je de due diligence-lijst opstellen?\n\nGroet"
+  },
+  {
+   "id": "nl-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "STRIKT VERTROUWELIJK\n[[Het bestuur heeft een intentieverklaring getekend voor de fusie met {company}, waarbij de aandeelhouders een premie van 30% krijgen]]\n\nVat dit samen voor de adviseurs."
+  },
+  {
+   "id": "nl-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "wij gaan [[een minderheidsbelang van {amount} nemen in {company} voordat het publiek bekend wordt]], hoe structureren we dat qua governance?"
+  },
+  {
+   "id": "nl-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Projectbespreking {date}\n- [[bod op {company} verhoogd, closing verwacht in Q1, nog geheim]]\n- Juridische check\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat zijn de gebruikelijke stappen in een due diligence bij een overname van een middelgroot bedrijf? Het gaat om een algemene checklist."
+  },
+  {
+   "id": "nl-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een mail aan het team: er gaan geruchten over een overname, maar we kunnen er niets over zeggen. Houd het neutraal, zonder namen van bedrijven."
+  },
+  {
+   "id": "nl-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Roadmap 2026 - intern\n[[Q1: lancering van {product} Pro met ingebouwde AI-assistent. Q2: ondersteuning voor mobiele app. Q3: uitfasering van het oude platform]]\n\nZet dit om in een slidetekst."
+  },
+  {
+   "id": "nl-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "We lanceren {product} op {date}, [[inclusief de nieuwe abonnementsprijs en de integratie met SAP die nog niet is aangekondigd]]. Hoe positioneren we dat in de pers?"
+  },
+  {
+   "id": "nl-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Productoverleg {date}\n- [[release van {product} 3.0 vervroegd naar maart, functies: offline modus en teamdashboard]]\n- Marketing informeren\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": true,
+   "text": "Hoi team,\n\n[[de volgende release van {product} bevat de grote redesign en wordt in oktober gelanceerd, niet in januari]]. Kun je de klantcommunicatie voorbereiden?\n\nGroet"
+  },
+  {
+   "id": "nl-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Welke tools gebruiken productteams om een roadmap te visualiseren? Ik zoek vergelijkingen van tools, geen eigen planning."
+  },
+  {
+   "id": "nl-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Beleid: roadmaps zijn intern en mogen niet worden gedeeld met klanten voordat de marketingafdeling dat goedkeurt. Maak er een korte samenvatting van."
+  },
+  {
+   "id": "nl-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Voor [[project {codename} stappen we over op een nieuw leveranciersmodel, met een budget van {amount} en oplevering in {date}]]. Hoe pak ik het stakeholdermanagement aan?"
+  },
+  {
+   "id": "nl-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Statusoverleg {date}\n- [[{codename}: de pilot met {company} loopt vertraging op door de beveiligingsaudit]]\n- Beslissing over scope volgende week\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "Kim: hoe staat {codename} ervoor?\nJij: [[{codename} is drie weken achter, het team van {name} moet de migratie opnieuw doen]]\nKim: ok\nVat dit samen voor de directie."
+  },
+  {
+   "id": "nl-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": true,
+   "text": "Hoi {name},\n\n[[in {codename} hebben we besloten het platform in-house te bouwen in plaats van {company} in te huren, startdatum {date}]]. Kun je dit netjes verwoorden?\n\nGroet"
+  },
+  {
+   "id": "nl-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe vaak moeten we de status van {codename} rapporteren aan de stuurgroep? Gewoon de frequentie, geen inhoud."
+  },
+  {
+   "id": "nl-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste team, even een herinnering: de update voor {codename} is vrijdag. Kun je dit korter en vriendelijker maken?"
+  },
+  {
+   "id": "nl-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "klant;contactpersoon;jaaromzet;sinds\n[[{company};{name};{amount};{date}\n{company};{name};{amount};{date}\n{company};{name};{amount};{date}]]\nSegmenteer op omzet."
+  },
+  {
+   "id": "nl-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nhierbij onze top-klanten voor de overdracht: [[{company} (contact {name}), {company} (contact {name}), {company} (contact {name}), alle drie op ons jaarcontract]]. Kun je de intro-mails opstellen?\n\nGroet"
+  },
+  {
+   "id": "nl-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Klantoverzicht Q2\n[[1. {company} - contact: {name}, contractwaarde {amount}\n2. {company} - contact: {name}, contractwaarde {amount}\n3. {company} - contact: {name}, contractwaarde {amount}]]\n\nVat dit samen voor het nieuwe salesteam."
+  },
+  {
+   "id": "nl-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "Sanne: kun je de klantenlijst plakken?\nJij: [[{company}, contact {name}, klant sinds {date}\n{company}, contact {name}, klant sinds {date}]]\nSanne: top\nMaak een CRM-importbestand hiervan."
+  },
+  {
+   "id": "nl-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe segmenteer je een klantenbestand het beste voor een e-mailcampagne? Ik zoek algemene tips over segmentatie."
+  },
+  {
+   "id": "nl-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Maak een lege tabel met de kolommen klant;contactpersoon;omzet;sinds, zonder gegevens. Die vullen we vanuit het CRM."
+  },
+  {
+   "id": "nl-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Dit is onze interne prijsengine, de kern van het product. Kun je de performance verbeteren?\n[[def bereken_korting(klant, orders, tier):\n    # intern: geheime formule voor strategische accounts\n    basis = sum(o.bedrag for o in orders) * 0.0173\n    return basis * tier_factor(klant.segment) + _kickback(klant.id)]]"
+  },
+  {
+   "id": "nl-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Waarom crasht deze service bij hoge belasting?\n[[class MatchingEngine {\n  private readonly proprietaryModel = new InternalRanker('v7');\n  async run(batch) { return this.proprietaryModel.scoreAndMerge(batch, this.weights); }\n}]]"
+  },
+  {
+   "id": "nl-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Technisch ontwerp, intern\n[[// ons eigen versleutelingsprotocol, niet publiek\nfunc wrapPayload(p []byte, k *InternalKey) []byte { return xorShift(p, k.Derive(\"mykka-v2\")) }]]\nLeg deze functie uit voor het nieuwe team."
+  },
+  {
+   "id": "nl-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "trace:\nat com.bedrijf.interne.CoreScheduler.plan(CoreScheduler.java:88)\n[[if (job.priority > THRESHOLD_SECRET) { return fastPath(job); }]]\nHelp mij de bug te vinden."
+  },
+  {
+   "id": "nl-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Ik schrijf een publieke open-source bibliotheek. Kun je mijn quicksort-implementatie reviewen? Hier is het voorbeeld uit de tutorial: def sort(a): return sorted(a)"
+  },
+  {
+   "id": "nl-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is een goede manier om te voorkomen dat ontwikkelaars per ongeluk bedrijfscode in AI-tools plakken? Heeft iemand een policy-voorbeeld?"
+  },
+  {
+   "id": "nl-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ssh admin@[[{ip}]]\nConnection timed out\nping {hostname}\nrequest timed out\nIk kan de interne server niet bereiken, wat gebeurt er?"
+  },
+  {
+   "id": "nl-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Netwerkdocumentatie\nDMZ: 10.0.0.0/24\n[[Database-cluster: db-prod-01 ({ip}), db-prod-02 ({ip}), intern bereikbaar via {hostname}]]\nTeken dit als diagram."
+  },
+  {
+   "id": "nl-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Onze interne firewall staat open voor [[{ip} en {hostname}]]. Welke regels moet ik toevoegen om het verkeer te beperken?"
+  },
+  {
+   "id": "nl-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "terraform:\nresource \"aws_instance\" \"web\" { private_ip = \"[[{ip}]]\" tags = { Name = \"{hostname}\" } }\nKlopt de syntaxis?"
+  },
+  {
+   "id": "nl-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is een goede aanpak voor netwerksegmentatie met VLANs? Algemene principes, het gaat niet om onze eigen omgeving."
+  },
+  {
+   "id": "nl-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Ik wil in mijn voorbeeldconfiguratie alleen het adres 192.0.2.10 gebruiken, dat is gereserveerd voor documentatie. Klopt dat?"
+  },
+  {
+   "id": "nl-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Beste {name},\n\nvan een bron bij {company} heb ik het volgende: [[hun nieuwe prijzen liggen 20% lager en ze lanceren in maart een product dat rechtstreeks onze marktpositie aantast]]. Kun je een reactiestrategie schetsen?\n\nGroet"
+  },
+  {
+   "id": "nl-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Intern memo\n[[Uit de interne presentatie van {company} die we hebben gekregen: hun klantverlies is 8% en ze verliezen terrein bij de partners]]\n\nVat dit samen voor sales."
+  },
+  {
+   "id": "nl-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "We hebben vertrouwelijke documenten van {company} in handen gekregen. [[Daarin staat dat hun marge onder druk staat en dat ze dit jaar 40 mensen ontslaan]]. Hoe gebruiken we dat in de onderhandeling?"
+  },
+  {
+   "id": "nl-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Marktoverleg {date}\n- [[bron bij {company}: roadmap lekt, ze gaan {product} stopzetten en klanten overnemen]]\n- Voorstel voor tegenactie\nMaak actiepunten."
+  },
+  {
+   "id": "nl-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe doe ik een legitieme concurrentieanalyse met openbare bronnen zoals jaarverslagen en persberichten? Geef een stappenplan."
+  },
+  {
+   "id": "nl-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een mail aan het team dat het verboden is om vertrouwelijke informatie van concurrenten te accepteren of te gebruiken. Houd het kort."
+  },
+  {
+   "id": "nl-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Kun je een korte samenvatting maken van het verschil tussen Scrum en Kanban? Ik presenteer het morgen aan het team."
+  },
+  {
+   "id": "nl-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een vriendelijke mail aan {name} om het overleg van donderdag naar vrijdag te verplaatsen. Laat de reden achterwege, het is gewoon een agendaconflict."
+  },
+  {
+   "id": "nl-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Hoe schrijf ik een React-component die een lijst met producten ophaalt en een laadspinner toont? Ik gebruik TypeScript."
+  },
+  {
+   "id": "nl-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "npm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@^17 from library@2.1.0\nHoe los ik dit conflict op zonder --force?"
+  },
+  {
+   "id": "nl-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Vertaal naar het Engels: Wij waarderen uw geduld en komen vrijdag bij u terug met een volledige update over de levertijden."
+  },
+  {
+   "id": "nl-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "maand;bezoekers;conversie\njan;1200;2,1\nfeb;1350;2,4\nmrt;1100;1,9\nBereken het gemiddelde en laat zien in welke maand de conversie het laagst was."
+  },
+  {
+   "id": "nl-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Teamoverleg {date}\n- Planning sprint 12 besproken\n- {name} neemt de documentatie voor zijn rekening\n- Volgende demo op vrijdag\nMaak hier een actielijst van."
+  },
+  {
+   "id": "nl-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "Sanne: wie kan er donderdag de standup leiden?\nJij: ik kan wel\nSanne: top, dank\nVat dit samen in een zin voor de agenda."
+  },
+  {
+   "id": "nl-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Handleiding voor nieuwe medewerkers: koffie en thee vind je in de keuken op de eerste verdieping. Parkeren kan op het bedrijfsterrein achter het gebouw.\nMaak de tekst wat luchtiger."
+  },
+  {
+   "id": "nl-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Wat is een goede manier om mijn inbox leeg te houden zonder dat ik de hele dag e-mails moet checken?"
+  },
+  {
+   "id": "nl-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "SELECT afdeling, COUNT(*) FROM medewerkers GROUP BY afdeling HAVING COUNT(*) > 5;\nKan ik dit sneller maken met een index? De tabel heeft ongeveer 200.000 rijen."
+  },
+  {
+   "id": "nl-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hoi team,\n\nnogmaals bedankt voor jullie inzet bij de lancering van {product}. Vrijdag is er taart. Kun je deze tekst wat enthousiaster maken?\n\nGroet"
+  },
+  {
+   "id": "nl-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Hoe stel ik in Excel een draaitabel in die per regio het totaal van de verkopen laat zien?"
+  },
+  {
+   "id": "nl-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "[2025-05-11 10:02:11] INFO  server listening on :8080\n[2025-05-11 10:02:15] WARN  slow query took 4.2s\nWat zijn de meest voorkomende oorzaken van trage queries?"
+  },
+  {
+   "id": "nl-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Vertaal naar het Duits: De vergadering is verplaatst naar 14.00 uur in de grote zaal. Neem uw laptop mee."
+  },
+  {
+   "id": "nl-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Agenda strategiedag: 09.00 ontvangst, 10.00 workshop klantreis, 12.30 lunch, 13.30 pitches, 16.00 borrel.\nMaak hier een uitnodigingsmail van."
+  },
+  {
+   "id": "nl-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "product,voorraad,minimum\nbureau,45,10\nstoel,12,15\nlamp,80,20\nWelke producten moeten we bijbestellen?"
+  },
+  {
+   "id": "nl-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "Jij: wat doen we met de lunch?\nKees: pizza of sushi?\nJij: sushi\nZet dit om in een kort bericht voor de teamchat."
+  },
+  {
+   "id": "nl-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Geef me tien ideeën voor een teamuitje met een budget van 50 euro per persoon."
+  },
+  {
+   "id": "nl-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Schrijf een beleefde afwijzing aan een kandidaat voor de functie van marketingmanager. Houd het kort en positief."
+  }
+ ],
+ "rules": [
+  {
+   "id": "nl-r-001",
+   "category": "us_ssn",
+   "text": "Dit bericht onthult een Amerikaans Social Security Number, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-002",
+   "category": "us_ssn",
+   "text": "Blokkeer berichten met een SSN van een persoon in de VS, in cijfers of uitgeschreven."
+  },
+  {
+   "id": "nl-r-003",
+   "category": "us_ssn",
+   "text": "Het bericht bevat een sofinummer-achtig nummer uit de Verenigde Staten (SSN)."
+  },
+  {
+   "id": "nl-r-004",
+   "category": "national_id_non_us",
+   "text": "Dit bericht onthult een nationaal identiteitsnummer van een ander land dan de VS, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-005",
+   "category": "national_id_non_us",
+   "text": "Geen buitenlandse identiteitsnummers (BSN, DNI, codice fiscale en dergelijke) delen met de assistent."
+  },
+  {
+   "id": "nl-r-006",
+   "category": "national_id_non_us",
+   "text": "Het bericht bevat een nationaal ID-nummer van een niet-Amerikaans land."
+  },
+  {
+   "id": "nl-r-007",
+   "category": "passport_number",
+   "text": "Dit bericht onthult een paspoortnummer, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-008",
+   "category": "passport_number",
+   "text": "Paspoortnummers van medewerkers, klanten of anderen mogen niet in prompts staan."
+  },
+  {
+   "id": "nl-r-009",
+   "category": "passport_number",
+   "text": "Het bericht bevat een volledig paspoortnummer."
+  },
+  {
+   "id": "nl-r-010",
+   "category": "home_address",
+   "text": "Dit bericht onthult het privéadres van een persoon, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-011",
+   "category": "home_address",
+   "text": "Woonadressen van medewerkers of klanten mogen niet gedeeld worden met de AI."
+  },
+  {
+   "id": "nl-r-012",
+   "category": "home_address",
+   "text": "Het bericht noemt waar een bepaalde persoon thuis woont."
+  },
+  {
+   "id": "nl-r-013",
+   "category": "personal_contact",
+   "text": "Dit bericht onthult het persoonlijke telefoonnummer of privé-e-mailadres van een specifiek persoon, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-014",
+   "category": "personal_contact",
+   "text": "Privénummers en privémailadressen van individuen horen niet in berichten aan de assistent."
+  },
+  {
+   "id": "nl-r-015",
+   "category": "personal_contact",
+   "text": "Het bericht bevat een privécontactgegeven (mobiel nummer of persoonlijk e-mailadres) van een specifiek persoon."
+  },
+  {
+   "id": "nl-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "Dit bericht onthult de geboortedatum van een bij naam genoemd persoon, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "Een naam gecombineerd met een geboortedatum mag niet naar de AI worden gestuurd."
+  },
+  {
+   "id": "nl-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "Het bericht koppelt een geboortedatum aan een bekende persoon."
+  },
+  {
+   "id": "nl-r-019",
+   "category": "api_key",
+   "text": "Dit bericht onthult een API-sleutel of toegangstoken voor een cloud- of SaaS-dienst, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-020",
+   "category": "api_key",
+   "text": "Geen API-keys, bearer tokens of access tokens in prompts plakken."
+  },
+  {
+   "id": "nl-r-021",
+   "category": "api_key",
+   "text": "Het bericht bevat een geheime token waarmee je een externe dienst kunt aanroepen."
+  },
+  {
+   "id": "nl-r-022",
+   "category": "password",
+   "text": "Dit bericht onthult een wachtwoord of wachtzin voor een account, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-023",
+   "category": "password",
+   "text": "Wachtwoorden, ook van testaccounts of wifi, mogen niet in een bericht staan."
+  },
+  {
+   "id": "nl-r-024",
+   "category": "password",
+   "text": "Het bericht bevat een echt inlogwachtwoord."
+  },
+  {
+   "id": "nl-r-025",
+   "category": "private_key",
+   "text": "Dit bericht onthult een privésleutel (SSH, PGP of TLS), ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-026",
+   "category": "private_key",
+   "text": "Geen privésleutels of sleutelbestanden delen, ook niet gedeeltelijk."
+  },
+  {
+   "id": "nl-r-027",
+   "category": "private_key",
+   "text": "Het bericht bevat het geheime deel van een cryptografisch sleutelpaar."
+  },
+  {
+   "id": "nl-r-028",
+   "category": "db_connection_string",
+   "text": "Dit bericht onthult een databaseverbindingsstring met inloggegevens, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-029",
+   "category": "db_connection_string",
+   "text": "Connection strings met gebruikersnaam en wachtwoord mogen niet naar de AI."
+  },
+  {
+   "id": "nl-r-030",
+   "category": "db_connection_string",
+   "text": "Het bericht bevat een database-URL waarin credentials zijn opgenomen."
+  },
+  {
+   "id": "nl-r-031",
+   "category": "patient_diagnosis",
+   "text": "Dit bericht onthult de diagnose of medische aandoening van een identificeerbare patiënt, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-032",
+   "category": "patient_diagnosis",
+   "text": "Medische diagnoses van herkenbare personen mogen niet gedeeld worden."
+  },
+  {
+   "id": "nl-r-033",
+   "category": "patient_diagnosis",
+   "text": "Het bericht noemt welke ziekte een bepaalde persoon heeft."
+  },
+  {
+   "id": "nl-r-034",
+   "category": "prescription_record",
+   "text": "Dit bericht onthult het voorschrift of medicatiegebruik van een identificeerbare patiënt, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-035",
+   "category": "prescription_record",
+   "text": "Medicatielijsten en recepten van herkenbare personen blijven buiten de assistent."
+  },
+  {
+   "id": "nl-r-036",
+   "category": "prescription_record",
+   "text": "Het bericht noemt welke medicijnen een bepaalde persoon gebruikt."
+  },
+  {
+   "id": "nl-r-037",
+   "category": "credit_card",
+   "text": "Dit bericht onthult een creditcardnummer, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-038",
+   "category": "credit_card",
+   "text": "Geen betaalkaartnummers in prompts, ook niet bij testbetalingen met echte nummers."
+  },
+  {
+   "id": "nl-r-039",
+   "category": "credit_card",
+   "text": "Het bericht bevat een volledig kaartnummer van een betaalpas of creditcard."
+  },
+  {
+   "id": "nl-r-040",
+   "category": "bank_account",
+   "text": "Dit bericht onthult een bankrekeningnummer of IBAN, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-041",
+   "category": "bank_account",
+   "text": "Rekeningnummers en IBAN's van personen of bedrijven mogen niet gedeeld worden."
+  },
+  {
+   "id": "nl-r-042",
+   "category": "bank_account",
+   "text": "Het bericht bevat een bankrekening, IBAN of routingnummer."
+  },
+  {
+   "id": "nl-r-043",
+   "category": "salary_of_named_person",
+   "text": "Dit bericht onthult het salaris of de beloning van een bij naam genoemde medewerker, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-044",
+   "category": "salary_of_named_person",
+   "text": "Het loon, de bonus of de arbeidsvoorwaarden van een specifieke collega zijn vertrouwelijk."
+  },
+  {
+   "id": "nl-r-045",
+   "category": "salary_of_named_person",
+   "text": "Het bericht noemt hoeveel een bepaalde werknemer verdient."
+  },
+  {
+   "id": "nl-r-046",
+   "category": "performance_review",
+   "text": "Dit bericht onthult de functioneringsbeoordeling of disciplinaire maatregelen van een bij naam genoemde medewerker, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-047",
+   "category": "performance_review",
+   "text": "Beoordelingen, waarschuwingen en verbetertrajecten van een specifieke persoon horen niet in prompts."
+  },
+  {
+   "id": "nl-r-048",
+   "category": "performance_review",
+   "text": "Het bericht bevat hoe een bepaalde medewerker presteert of waarom die is bestraft."
+  },
+  {
+   "id": "nl-r-049",
+   "category": "attorney_client_privilege",
+   "text": "Dit bericht onthult juridisch advies of communicatie die onder het verschoningsrecht van de advocaat valt, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-050",
+   "category": "attorney_client_privilege",
+   "text": "Advies van de eigen of externe advocaat mag niet naar de AI worden gestuurd."
+  },
+  {
+   "id": "nl-r-051",
+   "category": "attorney_client_privilege",
+   "text": "Het bericht geeft de inhoud weer van vertrouwelijke gesprekken met een jurist."
+  },
+  {
+   "id": "nl-r-052",
+   "category": "unreleased_financial_results",
+   "text": "Dit bericht onthult nog niet gepubliceerde financiële resultaten van het bedrijf, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-053",
+   "category": "unreleased_financial_results",
+   "text": "Kwartaal- en jaarcijfers vóór de officiële bekendmaking zijn koersgevoelig en blijven intern."
+  },
+  {
+   "id": "nl-r-054",
+   "category": "unreleased_financial_results",
+   "text": "Het bericht noemt omzet, winst of prognose die nog niet publiek is."
+  },
+  {
+   "id": "nl-r-055",
+   "category": "m_and_a",
+   "text": "Dit bericht onthult niet-openbare fusie-, overname- of investeringsplannen, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-056",
+   "category": "m_and_a",
+   "text": "Plannen voor overnames, fusies of beleggingen mogen niet in een bericht aan de AI staan."
+  },
+  {
+   "id": "nl-r-057",
+   "category": "m_and_a",
+   "text": "Het bericht noemt een voorgenomen deal die nog niet is aangekondigd."
+  },
+  {
+   "id": "nl-r-058",
+   "category": "product_roadmap",
+   "text": "Dit bericht onthult een niet-aangekondigde productroadmap of lanceringsplanning, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-059",
+   "category": "product_roadmap",
+   "text": "Geplande functies en releasedata die nog niet publiek zijn, zijn vertrouwelijk."
+  },
+  {
+   "id": "nl-r-060",
+   "category": "product_roadmap",
+   "text": "Het bericht beschrijft wat het bedrijf nog niet heeft aangekondigd over nieuwe producten."
+  },
+  {
+   "id": "nl-r-061",
+   "category": "project_codename",
+   "text": "Dit bericht onthult details over het interne project met codenaam {codename}, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-062",
+   "category": "project_codename",
+   "text": "Geen informatie delen over project {codename}: scope, planning, budget of deelnemers."
+  },
+  {
+   "id": "nl-r-063",
+   "category": "project_codename",
+   "text": "Het bericht bevat inhoudelijke informatie over {codename}."
+  },
+  {
+   "id": "nl-r-064",
+   "category": "customer_list",
+   "text": "Dit bericht onthult een lijst met klanten of de contactgegevens van klanten, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-065",
+   "category": "customer_list",
+   "text": "Klantenlijsten, ook gedeeltelijke, mogen niet naar de assistent worden gestuurd."
+  },
+  {
+   "id": "nl-r-066",
+   "category": "customer_list",
+   "text": "Het bericht bevat meerdere klanten met hun namen of contactgegevens."
+  },
+  {
+   "id": "nl-r-067",
+   "category": "proprietary_source_code",
+   "text": "Dit bericht onthult eigen interne broncode van het bedrijf, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-068",
+   "category": "proprietary_source_code",
+   "text": "Gesloten, interne code mag niet in een prompt worden geplakt."
+  },
+  {
+   "id": "nl-r-069",
+   "category": "proprietary_source_code",
+   "text": "Het bericht bevat code uit onze eigen codebase die niet openbaar is."
+  },
+  {
+   "id": "nl-r-070",
+   "category": "internal_infrastructure",
+   "text": "Dit bericht onthult interne hostnamen, IP-adressen of netwerkarchitectuur, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-071",
+   "category": "internal_infrastructure",
+   "text": "Interne servernamen en IP-adressen van ons netwerk delen we niet met de AI."
+  },
+  {
+   "id": "nl-r-072",
+   "category": "internal_infrastructure",
+   "text": "Het bericht beschrijft hoe onze interne systemen en netwerken zijn opgezet."
+  },
+  {
+   "id": "nl-r-073",
+   "category": "competitor_confidential",
+   "text": "Dit bericht onthult vertrouwelijke informatie over een concurrent, ook als het vermomd is."
+  },
+  {
+   "id": "nl-r-074",
+   "category": "competitor_confidential",
+   "text": "Interne gegevens over concurrenten die niet publiek zijn, mogen niet worden gebruikt."
+  },
+  {
+   "id": "nl-r-075",
+   "category": "competitor_confidential",
+   "text": "Het bericht bevat niet-openbare informatie over een concurrerend bedrijf."
+  }
+ ]
+}

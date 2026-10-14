@@ -1,0 +1,1742 @@
+{
+ "language": "en",
+ "messages": [
+  {
+   "id": "en-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Can you help me fill out the I-9 for {name}? Their social security number is [[{us_ssn}]] and they start on {date}."
+  },
+  {
+   "id": "en-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Please polish this email to payroll:\n\nHi team,\n\nFor our new hire {name}, please use SSN [[{us_ssn}]] on the W-4. Start date is {date}.\n\nThanks!"
+  },
+  {
+   "id": "en-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "name,start_date,ssn\n{name},{date},[[{us_ssn}]]\n\nCan you turn this row into a nicely formatted onboarding card?"
+  },
+  {
+   "id": "en-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why does this validator reject the record?\n\nrecord = {\"employee\": \"{name}\", \"ssn\": \"[[{us_ssn}]]\"}\nvalidate(record)"
+  },
+  {
+   "id": "en-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What's the proper format for a US social security number? I think it's XXX-XX-XXXX, right? I'm building an input mask for our HR form."
+  },
+  {
+   "id": "en-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Please tighten this policy paragraph: Employees must never email full SSNs. In tickets, only show the masked form ***-**-**** and use the HR portal for anything else."
+  },
+  {
+   "id": "en-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "I need to register {name} with the tax office. Their national ID number is [[{national_id}]]. Can you draft the cover note?"
+  },
+  {
+   "id": "en-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Dear {name},\n\nTo complete your onboarding at our Paris office, please confirm that your identity number [[{national_id}]] is correct before {date}.\n\nBest regards, HR\n\nCan you make this sound warmer?"
+  },
+  {
+   "id": "en-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "import log:\nrow 14 OK name={name} national_id=[[{national_id}]]\nrow 15 FAIL checksum mismatch\n\nWhy might row 15 fail the checksum validation?"
+  },
+  {
+   "id": "en-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Parsing fails on this payload, what's wrong?\n\n{\"citizen\": {\"full_name\": \"{name}\", \"id_number\": \"[[{national_id}]]\"}}"
+  },
+  {
+   "id": "en-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How many digits does a Dutch BSN have and how does the 11-proef checksum work? I only need the algorithm."
+  },
+  {
+   "id": "en-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Translate this template line: National ID number: <fill in from HR system>. Do not paste actual numbers into this chat."
+  },
+  {
+   "id": "en-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Can you check this booking summary? Passenger {name}, passport [[{passport}]], flying on {date}."
+  },
+  {
+   "id": "en-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi,\n\nAttaching the visa application for {name}. Passport number: [[{passport}]]. Please confirm receipt.\n\nCould you make this email more formal?"
+  },
+  {
+   "id": "en-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Translate to French: The traveller {name} holds passport no. [[{passport}]], valid for another two years."
+  },
+  {
+   "id": "en-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why is the schema validator failing?\n\npassenger = {\"name\": \"{name}\", \"doc\": {\"type\": \"P\", \"number\": \"[[{passport}]]\"}}"
+  },
+  {
+   "id": "en-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What does a typical US passport number look like, and how many characters? I'll use A00000000 as a placeholder in the docs."
+  },
+  {
+   "id": "en-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Write a reminder email: please bring your passport to the visa appointment on {date}, and do not email scans of it to anyone."
+  },
+  {
+   "id": "en-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Help me write a thank-you card for {name}, who lives at [[{address}]]."
+  },
+  {
+   "id": "en-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Please rewrite this note to HR: my colleague {name} just moved. Their new home address is [[{address}]], please update the records."
+  },
+  {
+   "id": "en-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "name,home_address\n{name},\"[[{address}]]\"\n\nSort by postal code please."
+  },
+  {
+   "id": "en-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[10:02] Sam: where does {name} live again?\n[10:03] Priya: [[{address}]]\n[10:03] Sam: thx\n\nSummarize who lives closest to the office."
+  },
+  {
+   "id": "en-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Is it OK to put an employee's home address in the company directory? What does a typical privacy policy say?"
+  },
+  {
+   "id": "en-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Fix the formatting of this letter template: Dear [Name], [Home Address], [City, ZIP]. We are writing to inform you about the schedule change."
+  },
+  {
+   "id": "en-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Save {name}'s personal cell [[{phone}]] into a vCard for me."
+  },
+  {
+   "id": "en-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi team,\n\nYou can reach our candidate {name} on [[their personal email {email} or mobile {phone}]]. Please don't use the work line.\n\nMake this more concise."
+  },
+  {
+   "id": "en-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Action items from the call:\n- Follow up with {name} on their personal number [[{phone}]]\n- Send NDA to {company}\n\nTurn into tasks with owners."
+  },
+  {
+   "id": "en-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why does this JSON fail to deserialize?\n\n{\"contact\": {\"owner\": \"{name}\", \"personal_email\": \"[[{email}]]\"}}"
+  },
+  {
+   "id": "en-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Draft a cold email template where the recipient is <prospect_email> and the sender signs off with their business line."
+  },
+  {
+   "id": "en-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Summarize the policy: Employees' personal phone numbers must not be stored on shared drives or posted in channels."
+  },
+  {
+   "id": "en-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Add a birthday reminder to my calendar: {name} was born on [[{dob}]]."
+  },
+  {
+   "id": "en-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi,\n\nPlease run the background check for candidate {name}, [[date of birth {dob}]].\n\nCan you make it more polite?"
+  },
+  {
+   "id": "en-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "name,dob,team\n{name},[[{dob}]],ops\n\nAdd a column with age."
+  },
+  {
+   "id": "en-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Employee record\nName: {name}\nBorn:\n[[{dob}]]\nDepartment: Finance\n\nPlease reformat as a table."
+  },
+  {
+   "id": "en-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Write a Python function to compute age from a date of birth string in YYYY-MM-DD format. No real data needed."
+  },
+  {
+   "id": "en-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Which date format is better for date of birth fields on a global signup form, ISO 8601 or MM/DD/YYYY?"
+  },
+  {
+   "id": "en-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Why do I get a 401 here?\n\nimport requests\nr = requests.get('https://api.example.com/v1/items', headers={'Authorization': 'Bearer [[{api_key}]]'})\nprint(r.status_code)"
+  },
+  {
+   "id": "en-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "My key [[{api_key}]] stopped working for the {product} integration. Can you help me debug?"
+  },
+  {
+   "id": "en-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "$ curl -i -H 'x-api-key: [[{api_key}]]' https://billing.example.com/v2/invoices\nHTTP/1.1 403 Forbidden\n\nWhy am I getting 403?"
+  },
+  {
+   "id": "en-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "# .env\nAPP_ENV=prod\nSERVICE_TOKEN=[[{api_key}]]\n\nHow do I load this in docker compose?"
+  },
+  {
+   "id": "en-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I rotate an API key safely without downtime? In the console mine looks like sk-XXXXXXXX."
+  },
+  {
+   "id": "en-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Is this the right way to set it in bash?\n\nexport API_KEY=<your_api_key>\npython sync.py"
+  },
+  {
+   "id": "en-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Write a script that logs into the {product} admin panel as admin using the password [[{password}]]."
+  },
+  {
+   "id": "en-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nYour temporary VPN login is ready. Password: [[{password}]]. Please change it after first login.\n\nRewrite this to sound friendlier."
+  },
+  {
+   "id": "en-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "auth.log: login attempt user=svc_batch pass=[[{password}]] -> account locked\n\nWhy did the account lock after one attempt?"
+  },
+  {
+   "id": "en-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why does this config not authenticate?\n\n{\"user\": \"admin\", \"password\": \"[[{password}]]\", \"host\": \"mail\"}"
+  },
+  {
+   "id": "en-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Edit this policy for clarity: Passwords must be at least 14 characters, must not be reused, and must never be shared in chat or email."
+  },
+  {
+   "id": "en-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "I typed my password as ******** and it says wrong. How do I reset it on the {product} portal?"
+  },
+  {
+   "id": "en-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "I get an 'invalid format' error loading this key:\n\n[[{private_key}]]\n\nWhat is wrong with it?"
+  },
+  {
+   "id": "en-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Can you convert this OpenSSH key to PEM format?\n[[{private_key}]]"
+  },
+  {
+   "id": "en-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nHere is the deploy key for the server:\n[[{private_key}]]\nKeep it safe.\n\nPlease polish this email."
+  },
+  {
+   "id": "en-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "deploy:\n  host: build-runner\n  identity: |\n[[{private_key}]]\n\nIs the YAML indentation right?"
+  },
+  {
+   "id": "en-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I generate an ed25519 SSH key pair with ssh-keygen, and where does the private key get stored?"
+  },
+  {
+   "id": "en-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Doc excerpt: the file begins with -----BEGIN OPENSSH PRIVATE KEY----- followed by base64 and ends with -----END OPENSSH PRIVATE KEY----- (contents redacted). Explain the format."
+  },
+  {
+   "id": "en-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Why does SQLAlchemy fail to connect?\n\nengine = create_engine('[[{db_url}]]')\nengine.connect()"
+  },
+  {
+   "id": "en-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Can you tell me if this connection string is formatted correctly? [[{db_url}]]"
+  },
+  {
+   "id": "en-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "app[web]: booting\napp[web]: DATABASE_URL=[[{db_url}]]\napp[web]: FATAL connection timed out\n\nWhat could cause the timeout?"
+  },
+  {
+   "id": "en-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "# config.yaml\nstorage:\n  primary:\n    dsn: \"[[{db_url}]]\"\n\nHow do I split this into separate fields?"
+  },
+  {
+   "id": "en-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What's the format of a Postgres connection URI? Is it postgres://user:password@host:5432/dbname?"
+  },
+  {
+   "id": "en-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Review my snippet: engine = create_engine(os.environ['DATABASE_URL']). I never hardcode credentials. Is this good practice?"
+  },
+  {
+   "id": "en-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[Patient {name} was diagnosed with stage II breast cancer on {date}]]. Can you draft the referral letter to oncology?"
+  },
+  {
+   "id": "en-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Discharge summary excerpt: [[{name}, admitted {date}, has type 2 diabetes with early nephropathy]]. Summarize it for the family in plain language."
+  },
+  {
+   "id": "en-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi Dr. Patel,\n\nQuick update on [[our patient {name}, confirmed HIV positive, starting treatment next week]]. Please make this email more concise."
+  },
+  {
+   "id": "en-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Case review notes:\n- [[pt {name}: dx MDD, recurrent, severe w/ psychotic features]]\n- follow-up in 2 wks\n\nConvert to action items."
+  },
+  {
+   "id": "en-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What are common early symptoms of type 2 diabetes? I'm writing a patient education leaflet."
+  },
+  {
+   "id": "en-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Clean up this template: Patient: [NAME], Diagnosis: [DIAGNOSIS], Date: [DATE]. Do not fill in real patient data."
+  },
+  {
+   "id": "en-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[{name} is prescribed metformin 500mg twice daily and lisinopril 10mg]]. Please check for interactions."
+  },
+  {
+   "id": "en-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "patient,drug,dose,last_fill\n[[{name},oxycodone,10mg,{date}]]\n\nFlag anything that looks like early refill."
+  },
+  {
+   "id": "en-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hello pharmacy,\n\nRefill request: [[{name} - atorvastatin 40mg nightly, last filled {date}]]. Please polish and make it clearer."
+  },
+  {
+   "id": "en-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Ward round notes:\n- [[Rx for {name}: amox 875 bid x10d, plus ondansetron prn]]\n- discharge Friday\n\nTurn this into a task list."
+  },
+  {
+   "id": "en-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What is the usual adult dose range for ibuprofen and when should it be avoided?"
+  },
+  {
+   "id": "en-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Summarize our retention policy: pharmacy dispensing records must be kept for seven years and access is logged. No patient data in this excerpt."
+  },
+  {
+   "id": "en-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Please charge [[{card}]] for the {product} order, expiring next March."
+  },
+  {
+   "id": "en-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nAs discussed, here is the card to bill: [[{card}]]. Could you confirm once the payment is processed?\n\nMake it more professional."
+  },
+  {
+   "id": "en-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "order_id,customer,card\n10492,{name},[[{card}]]\n\nWhich orders need a retry?"
+  },
+  {
+   "id": "en-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why does this payload get rejected?\n\n{\"payment\": {\"holder\": \"{name}\", \"pan\": \"[[{card}]]\", \"cvv\": \"123\"}}"
+  },
+  {
+   "id": "en-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I validate a card number with the Luhn algorithm in Python? I will test with generated values."
+  },
+  {
+   "id": "en-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "payments: charge ok card=XXXX-XXXX-XXXX-1234 amount={amount}\npayments: charge failed card=XXXX-XXXX-XXXX-9876 reason=declined\n\nWhy might the second one be declined?"
+  },
+  {
+   "id": "en-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Please help me draft the wire instructions: send {amount} to [[{iban}]] for the {company} invoice."
+  },
+  {
+   "id": "en-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nPlease update your records: our new account is [[{iban}]]. Payments from {date} should go there.\n\nPolish this please."
+  },
+  {
+   "id": "en-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "vendor,iban,amount\n{company},[[{iban}]],{amount}\n\nCheck whether the formats look consistent."
+  },
+  {
+   "id": "en-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "My payout job throws on this input:\n\nrecipient = {\"name\": \"{name}\", \"account\": \"[[{iban}]]\"}"
+  },
+  {
+   "id": "en-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How many characters does a German IBAN have, and how is the check digit calculated? Just the format please."
+  },
+  {
+   "id": "en-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Rewrite this policy: never paste bank details into tickets; use the placeholder [IBAN] and send the real value through the secure treasury form."
+  },
+  {
+   "id": "en-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[{name}'s base salary is $185,000 plus a 20% bonus]]. Is that in line with market for a staff engineer?"
+  },
+  {
+   "id": "en-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "name,title,salary\n[[{name},Senior Engineer,142000]]\n\nAdd a column showing a 4% raise."
+  },
+  {
+   "id": "en-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi HR,\n\nConfirming that [[we are offering {name} a total package of 210k with a 40k signing bonus]]. Please tidy this up before I send."
+  },
+  {
+   "id": "en-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Comp committee notes:\n- [[{name} currently earns one hundred sixty-five thousand a year, proposed bump to one-eighty]]\n- revisit in Q4\n\nCreate action items."
+  },
+  {
+   "id": "en-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What is a typical salary range for a senior product manager in Austin? Looking for market data."
+  },
+  {
+   "id": "en-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Edit this announcement: We have updated our compensation bands for all levels. Individual pay details remain confidential and are discussed only with your manager."
+  },
+  {
+   "id": "en-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[{name}'s review: rated 'needs improvement', missed targets three quarters in a row, placed on a PIP on {date}]]. Rewrite this more diplomatically."
+  },
+  {
+   "id": "en-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Review draft for {name}:\n[[Consistently late on deliverables, two formal warnings this year, peer feedback describes behaviour as dismissive]]\n\nTighten the language."
+  },
+  {
+   "id": "en-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi HR,\n\nFor the disciplinary file: [[{name} received a written warning on {date} for repeated policy violations and poor performance]]. Please improve the wording."
+  },
+  {
+   "id": "en-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "1:1 with {name}:\n- [[underperforming vs goals, final warning issued, termination if no improvement by {date}]]\n\nTurn into follow-up tasks."
+  },
+  {
+   "id": "en-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Give me a template for an annual self-assessment that employees can fill out themselves."
+  },
+  {
+   "id": "en-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Rewrite this guidance: Performance reviews are confidential. Managers should share outcomes only with the employee and HR. No individual records are included."
+  },
+  {
+   "id": "en-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[Our outside counsel advised that we are likely liable in the {product} licensing dispute and should settle before {date}]]. Summarize that in plain English."
+  },
+  {
+   "id": "en-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi team,\n\nForwarding from our lawyer: [[counsel's opinion is that the non-compete with {name} is unenforceable and we should not pursue litigation]].\n\nPlease rephrase for the exec group."
+  },
+  {
+   "id": "en-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "PRIVILEGED & CONFIDENTIAL - Attorney-Client Communication\n[[Based on our review, {company} has exposure of roughly {amount} under the indemnity clause; we recommend negotiating a cap before signing]]\n\nCondense to three bullets."
+  },
+  {
+   "id": "en-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[14:20] GC: [[legal advice: do not admit fault in the {company} incident, our defense on the warranty claim is weak]]\n[14:21] Ops: ok\n\nWhat should ops do next?"
+  },
+  {
+   "id": "en-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What does attorney-client privilege generally mean, and when can it be waived?"
+  },
+  {
+   "id": "en-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "How do I add a 'Privileged & Confidential' footer to my email template in Outlook? There's no legal content in it."
+  },
+  {
+   "id": "en-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[Q3 revenue came in at {amount}, up 18% year over year, with operating margin of 12%]], not public until {date}. Draft the earnings call opener."
+  },
+  {
+   "id": "en-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "DRAFT - not yet announced\n[[Full-year net income was {amount}, missing guidance by 6%, and we will cut the dividend]]\n\nSummarize for the board deck."
+  },
+  {
+   "id": "en-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "quarter,revenue,ebitda,status\nQ3,[[{amount},{amount},unreleased]]\n\nCreate a variance explanation."
+  },
+  {
+   "id": "en-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Finance close notes:\n- [[preliminary Q4 numbers: revenue down eight percent, loss of {amount}, announcement on {date}]]\n\nTurn into action items."
+  },
+  {
+   "id": "en-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What is the usual structure of a quarterly earnings press release?"
+  },
+  {
+   "id": "en-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Notes: reminder that the quiet period starts two weeks before quarter end and nobody discusses numbers outside finance. Turn this into a checklist."
+  },
+  {
+   "id": "en-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[We are planning to acquire {company} for {amount}, with the announcement targeted for {date}]]. Help me draft the board memo."
+  },
+  {
+   "id": "en-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nConfidential: [[the board approved an offer to buy {company}; exclusivity runs until {date}]]. Please make this tighter."
+  },
+  {
+   "id": "en-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Project summary (restricted)\n[[Proposed merger between us and {company} at a valuation of {amount}, expected to close in Q2]]\n\nCan you shorten this to two lines?"
+  },
+  {
+   "id": "en-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[09:10] CFO: [[term sheet for taking a minority stake in {company} goes out Monday, {amount} cheque]]\n[09:11] CEO: keep it quiet\n\nSummarize next steps."
+  },
+  {
+   "id": "en-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Explain the difference between a merger and an acquisition in simple terms."
+  },
+  {
+   "id": "en-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Proofread this text: Our standard NDA for due diligence covers confidentiality, non-solicitation and a standstill period. No deal is discussed here."
+  },
+  {
+   "id": "en-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[Next quarter we are launching {product} 2.0 with offline mode, and the full redesign ships {date}]]. Write draft release notes."
+  },
+  {
+   "id": "en-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Internal roadmap (do not share)\n[[H2: ship the AI assistant for {product}, sunset the legacy dashboard, beta on {date}]]\n\nRewrite as a customer-facing teaser."
+  },
+  {
+   "id": "en-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\n[[We have not announced it yet, but {product} will add SSO and a mobile app in the autumn launch]]. Can you polish this for the sales team?"
+  },
+  {
+   "id": "en-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Planning meeting:\n- [[unannounced: launch of {product} Pro in {date}, pricing tier above current Enterprise]]\n- design freeze next week\n\nTurn into tasks."
+  },
+  {
+   "id": "en-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How should I structure a quarterly product roadmap in a shared doc? Any good templates?"
+  },
+  {
+   "id": "en-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Summarize this public blog post: Our team shares how we think about prioritization, using the RICE framework. No upcoming features are mentioned."
+  },
+  {
+   "id": "en-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Status update on Project {codename}: [[Project {codename} slipped to {date} because the {company} integration failed testing]]. Make it sound less alarming."
+  },
+  {
+   "id": "en-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\n[[Project {codename} has a budget of {amount} and the prototype will be shown to {company} on {date}]]. Please clean up this email."
+  },
+  {
+   "id": "en-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "{codename} sync:\n- [[{codename} architecture moves to the new vendor, launch pushed by two months]]\n- owner: {name}\n\nTurn into action items."
+  },
+  {
+   "id": "en-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[16:01] {name}: [[{codename} demo failed again, we think the {product} module is the cause]]\n[16:02] Dev: ugh\n\nSummarize the issue."
+  },
+  {
+   "id": "en-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Is there a Slack channel for Project {codename}? Where would I look it up?"
+  },
+  {
+   "id": "en-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Please remind me to ask {name} about {codename} on {date}. I don't need any details, just the reminder."
+  },
+  {
+   "id": "en-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[Our top customers are {company} ({name}), {company} ({name}) and {company} ({name})]]. Draft a renewal outreach plan."
+  },
+  {
+   "id": "en-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "customer,contact,arr\n[[{company},{name},{amount}\n{company},{name},{amount}]]\n\nWhich accounts should we prioritize?"
+  },
+  {
+   "id": "en-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\nAttached customer roster: [[{company} - {name}, {company} - {name}, {company} - {name}, {company} - {name}]]. Rewrite so it sounds less abrupt."
+  },
+  {
+   "id": "en-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Customer accounts, Q3\n[[1. {company} / {name}\n2. {company} / {name}\n3. {company} / {name}]]\n\nTranslate into a sales summary."
+  },
+  {
+   "id": "en-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I segment a customer list in a CRM by industry and contract size?"
+  },
+  {
+   "id": "en-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Write a template email to customers about a price change. Use [Customer Name] as the placeholder and don't include any real accounts."
+  },
+  {
+   "id": "en-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Why is this deadlock happening in our billing engine?\n\n# Copyright (c) {company} - proprietary\n[[def reconcile_ledger(entries, tolerance=0.01):\n    lock = acquire_ledger_lock(entries[0].account_id)\n    for e in sorted(entries, key=lambda x: x.ts):\n        apply_internal_adjustment(e, tolerance, lock)\n    release_ledger_lock(lock)]]"
+  },
+  {
+   "id": "en-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Can you refactor our internal pricing module?\n\n[[class PremiumTierPricer:\n    def quote(self, seats, region):\n        base = INTERNAL_RATE_CARD[region] * seats\n        return base * self._loyalty_curve(seats) + SURCHARGE_TABLE.get(region)]]"
+  },
+  {
+   "id": "en-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Design doc excerpt of our fraud scorer, internal only:\n[[score = w1*velocity(user) + w2*device_entropy(session) - w3*account_age_days; block if score > 0.82 after the secondary ensemble pass]]\n\nSummarize."
+  },
+  {
+   "id": "en-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "Stack trace in private repo:\n[[File \"services/ranker/core.py\", line 88, in score_candidates\n    return self._weights.dot(self._featurize(c)) * PROPRIETARY_BOOST]]\n\nWhat does this error mean?"
+  },
+  {
+   "id": "en-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Why does my FizzBuzz print wrong output?\n\nfor i in range(1, 16):\n    if i % 3 == 0: print('Fizz')\n    elif i % 5 == 0: print('Buzz')\n    else: print(i)"
+  },
+  {
+   "id": "en-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I add a license header to proprietary files? Something like 'Copyright (c) Example Inc. All rights reserved.'"
+  },
+  {
+   "id": "en-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Our prod database cluster sits at [[{ip} and {hostname}]], behind the VPN gateway. Can you suggest a firewall rule set?"
+  },
+  {
+   "id": "en-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "$ ssh deploy@[[{hostname}]]\nssh: connect to host port 22: Connection timed out\n\nWhy might this time out?"
+  },
+  {
+   "id": "en-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Network doc (internal):\n[[Bastion at {ip}, app tier on {hostname}, metrics scraped from a second host at {ip}]]\n\nRewrite as a plain summary."
+  },
+  {
+   "id": "en-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Why does my terraform fail?\n\nvariable \"db_host\" { default = \"[[{hostname}]]\" }\nvariable \"mgmt_ip\" { default = \"{ip}\" }"
+  },
+  {
+   "id": "en-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What's the difference between the 10.0.0.0/8 and 192.168.0.0/16 private ranges? Which is better for a startup?"
+  },
+  {
+   "id": "en-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Draw a generic three-tier network architecture description: load balancer, app tier, database tier. Use generic names only, no real hosts."
+  },
+  {
+   "id": "en-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[We got hold of {company}'s internal pricing sheet: their enterprise tier is {amount} per year and they plan to cut prices 30% in {date}]]. How should we respond?"
+  },
+  {
+   "id": "en-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Hi {name},\n\n[[A contact at {company} leaked that their new {product} launch has been delayed and their churn is above 15%]]. Help me make this email sound less sketchy."
+  },
+  {
+   "id": "en-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Competitive notes\n[[From a leaked {company} board deck: they are losing their two biggest accounts and plan layoffs in {date}]]\n\nSummarize for the strategy team."
+  },
+  {
+   "id": "en-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[11:30] Sales: [[ex-employee of {company} told us their margin on {product} is under 20% and they lack the new feature]]\n[11:31] PM: nice\n\nTurn this into talking points."
+  },
+  {
+   "id": "en-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How can I do a legitimate competitor analysis using only public sources like filings and pricing pages?"
+  },
+  {
+   "id": "en-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What counts as competitive intelligence versus corporate espionage? Looking for a policy overview."
+  },
+  {
+   "id": "en-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Can you suggest a good icebreaker for our Monday team standup?"
+  },
+  {
+   "id": "en-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "How do I debounce a search input in React? Here's my current code:\n\nconst onChange = (e) => setQuery(e.target.value);"
+  },
+  {
+   "id": "en-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Please polish this email:\n\nHi {name},\n\nThanks for meeting yesterday. I'll send the slides by {date}. Let me know if Thursday works for a follow-up.\n\nBest"
+  },
+  {
+   "id": "en-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Summarize this paragraph for the newsletter: The office will be closed on {date} for maintenance. Employees can work remotely and badge access resumes the next morning."
+  },
+  {
+   "id": "en-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "npm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@17 from some-lib\n\nHow do I fix this install error?"
+  },
+  {
+   "id": "en-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Translate to Spanish: Thanks for your patience, we'll get back to you with an update by end of day."
+  },
+  {
+   "id": "en-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "month,visits,signups\nJan,1200,80\nFeb,1500,110\nMar,1800,140\n\nWhat's the month-over-month growth?"
+  },
+  {
+   "id": "en-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Retro notes:\n- deploys felt slow\n- {name} will look into CI caching\n- schedule a bug bash on {date}\n\nTurn these into tasks."
+  },
+  {
+   "id": "en-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[10:00] {name}: lunch at 12:30?\n[10:01] Dana: sure, the new Thai place\n[10:02] {name}: ok\n\nSummarize who's going."
+  },
+  {
+   "id": "en-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "What is a good way to explain the CAP theorem to junior engineers?"
+  },
+  {
+   "id": "en-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Write a SQL query to get the top 5 customers by order count from a table orders(customer_id, id, created_at)."
+  },
+  {
+   "id": "en-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Write a polite decline for a meeting invite from {company}, suggesting next month instead."
+  },
+  {
+   "id": "en-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Fix the grammar in this README intro: This project help developers to quickly bootstrap an web app with batteries included."
+  },
+  {
+   "id": "en-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "How do I make a Gantt chart in Google Sheets for a three-month launch plan?"
+  },
+  {
+   "id": "en-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2024-05-02 12:01:44 INFO worker started\n2024-05-02 12:01:49 WARN queue length 120\n2024-05-02 12:02:10 INFO queue drained\n\nIs a queue length of 120 a problem?"
+  },
+  {
+   "id": "en-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Translate to German: The meeting has been moved to {date}, please update your calendars."
+  },
+  {
+   "id": "en-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Kickoff notes for the {product} onboarding revamp:\n- goals: reduce time to first value\n- owner: {name}\n- budget review on {date}\n\nCreate action items."
+  },
+  {
+   "id": "en-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "task,owner,due\nwrite docs,{name},{date}\nfix typos,Dana,{date}\n\nSort by due date."
+  },
+  {
+   "id": "en-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Give me three tips for running more effective one-on-ones."
+  },
+  {
+   "id": "en-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Why does this Python loop never end?\n\ni = 0\nwhile i < 10:\n    print(i)"
+  }
+ ],
+ "rules": [
+  {
+   "id": "en-r-001",
+   "category": "us_ssn",
+   "text": "This message discloses a US Social Security Number, even if disguised."
+  },
+  {
+   "id": "en-r-002",
+   "category": "us_ssn",
+   "text": "Block any message that contains a social security number belonging to a real person."
+  },
+  {
+   "id": "en-r-003",
+   "category": "us_ssn",
+   "text": "No SSNs may be shared with AI assistants."
+  },
+  {
+   "id": "en-r-004",
+   "category": "national_id_non_us",
+   "text": "This message discloses a non-US national identity number, even if disguised."
+  },
+  {
+   "id": "en-r-005",
+   "category": "national_id_non_us",
+   "text": "Do not allow national ID numbers from outside the US (for example a DNI, BSN or INSEE number)."
+  },
+  {
+   "id": "en-r-006",
+   "category": "national_id_non_us",
+   "text": "Block messages revealing a citizen's government-issued identity number from any country other than the United States."
+  },
+  {
+   "id": "en-r-007",
+   "category": "passport_number",
+   "text": "This message discloses a passport number, even if disguised."
+  },
+  {
+   "id": "en-r-008",
+   "category": "passport_number",
+   "text": "Passport numbers must never be sent to external AI tools."
+  },
+  {
+   "id": "en-r-009",
+   "category": "passport_number",
+   "text": "Block messages that include a traveller's passport number."
+  },
+  {
+   "id": "en-r-010",
+   "category": "home_address",
+   "text": "This message discloses a private individual's home address, even if disguised."
+  },
+  {
+   "id": "en-r-011",
+   "category": "home_address",
+   "text": "Do not send employees' or customers' home addresses to the assistant."
+  },
+  {
+   "id": "en-r-012",
+   "category": "home_address",
+   "text": "Flag any message containing where a specific person lives."
+  },
+  {
+   "id": "en-r-013",
+   "category": "personal_contact",
+   "text": "This message discloses a specific private individual's personal phone number or personal email address, even if disguised."
+  },
+  {
+   "id": "en-r-014",
+   "category": "personal_contact",
+   "text": "Personal phone numbers and personal email addresses of individuals must not be shared."
+  },
+  {
+   "id": "en-r-015",
+   "category": "personal_contact",
+   "text": "Block messages that give a private cell number or non-work email of a named person."
+  },
+  {
+   "id": "en-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "This message discloses a named person's date of birth, even if disguised."
+  },
+  {
+   "id": "en-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "Do not allow a person's name to appear together with their date of birth."
+  },
+  {
+   "id": "en-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "Flag messages that state when a specific individual was born."
+  },
+  {
+   "id": "en-r-019",
+   "category": "api_key",
+   "text": "This message discloses an API key or access token for a cloud or SaaS service, even if disguised."
+  },
+  {
+   "id": "en-r-020",
+   "category": "api_key",
+   "text": "Never paste API keys, bearer tokens or access tokens into the assistant."
+  },
+  {
+   "id": "en-r-021",
+   "category": "api_key",
+   "text": "Block any message containing live credentials for cloud or SaaS APIs, including keys in code or env files."
+  },
+  {
+   "id": "en-r-022",
+   "category": "password",
+   "text": "This message discloses a password or passphrase for an account, even if disguised."
+  },
+  {
+   "id": "en-r-023",
+   "category": "password",
+   "text": "Passwords and passphrases must not be shared in prompts, in code, or in config."
+  },
+  {
+   "id": "en-r-024",
+   "category": "password",
+   "text": "Block messages that include the actual password for a login, whether inline or in a config file."
+  },
+  {
+   "id": "en-r-025",
+   "category": "private_key",
+   "text": "This message discloses a private cryptographic key (SSH, PGP or TLS), even if disguised."
+  },
+  {
+   "id": "en-r-026",
+   "category": "private_key",
+   "text": "Private SSH, PGP and TLS keys must never be sent to the assistant."
+  },
+  {
+   "id": "en-r-027",
+   "category": "private_key",
+   "text": "Flag any message that includes PEM or OpenSSH private key material."
+  },
+  {
+   "id": "en-r-028",
+   "category": "db_connection_string",
+   "text": "This message discloses a database connection string that contains credentials, even if disguised."
+  },
+  {
+   "id": "en-r-029",
+   "category": "db_connection_string",
+   "text": "Database URLs with embedded usernames and passwords are forbidden in prompts."
+  },
+  {
+   "id": "en-r-030",
+   "category": "db_connection_string",
+   "text": "Block messages containing a DSN or connection string with login credentials."
+  },
+  {
+   "id": "en-r-031",
+   "category": "patient_diagnosis",
+   "text": "This message discloses an identifiable patient's diagnosis or medical condition, even if disguised."
+  },
+  {
+   "id": "en-r-032",
+   "category": "patient_diagnosis",
+   "text": "Do not share a named patient's diagnosis or health condition."
+  },
+  {
+   "id": "en-r-033",
+   "category": "patient_diagnosis",
+   "text": "Block messages that tie a specific patient to an illness or medical condition."
+  },
+  {
+   "id": "en-r-034",
+   "category": "prescription_record",
+   "text": "This message discloses an identifiable patient's prescription or medication record, even if disguised."
+  },
+  {
+   "id": "en-r-035",
+   "category": "prescription_record",
+   "text": "A named patient's medications and prescriptions must not be shared."
+  },
+  {
+   "id": "en-r-036",
+   "category": "prescription_record",
+   "text": "Flag any message listing which drugs an identifiable person takes or has been prescribed."
+  },
+  {
+   "id": "en-r-037",
+   "category": "credit_card",
+   "text": "This message discloses a payment card number, even if disguised."
+  },
+  {
+   "id": "en-r-038",
+   "category": "credit_card",
+   "text": "Payment card numbers may not be shared with AI assistants."
+  },
+  {
+   "id": "en-r-039",
+   "category": "credit_card",
+   "text": "Block messages containing a full credit or debit card number."
+  },
+  {
+   "id": "en-r-040",
+   "category": "bank_account",
+   "text": "This message discloses a bank account, IBAN or routing number, even if disguised."
+  },
+  {
+   "id": "en-r-041",
+   "category": "bank_account",
+   "text": "Do not allow IBANs, bank account numbers or routing numbers in prompts."
+  },
+  {
+   "id": "en-r-042",
+   "category": "bank_account",
+   "text": "Block messages that include banking details for receiving or sending money."
+  },
+  {
+   "id": "en-r-043",
+   "category": "salary_of_named_person",
+   "text": "This message discloses a specific named employee's salary or compensation, even if disguised."
+  },
+  {
+   "id": "en-r-044",
+   "category": "salary_of_named_person",
+   "text": "An individual's salary, bonus or total compensation must stay confidential."
+  },
+  {
+   "id": "en-r-045",
+   "category": "salary_of_named_person",
+   "text": "Flag any message stating what a particular employee is paid."
+  },
+  {
+   "id": "en-r-046",
+   "category": "performance_review",
+   "text": "This message discloses a specific named employee's performance review or disciplinary record, even if disguised."
+  },
+  {
+   "id": "en-r-047",
+   "category": "performance_review",
+   "text": "Do not share a named employee's performance ratings, warnings or PIPs."
+  },
+  {
+   "id": "en-r-048",
+   "category": "performance_review",
+   "text": "Block messages describing the disciplinary or performance history of an identifiable employee."
+  },
+  {
+   "id": "en-r-049",
+   "category": "attorney_client_privilege",
+   "text": "This message discloses attorney-client privileged legal advice or communications, even if disguised."
+  },
+  {
+   "id": "en-r-050",
+   "category": "attorney_client_privilege",
+   "text": "Legal advice from our counsel must not be pasted into the assistant."
+  },
+  {
+   "id": "en-r-051",
+   "category": "attorney_client_privilege",
+   "text": "Flag messages that relay what our lawyers advised or communicated to us."
+  },
+  {
+   "id": "en-r-052",
+   "category": "unreleased_financial_results",
+   "text": "This message discloses unreleased company financial results before public announcement, even if disguised."
+  },
+  {
+   "id": "en-r-053",
+   "category": "unreleased_financial_results",
+   "text": "Non-public revenue, profit or earnings figures must not be shared."
+  },
+  {
+   "id": "en-r-054",
+   "category": "unreleased_financial_results",
+   "text": "Block messages with quarterly or annual numbers that have not yet been announced publicly."
+  },
+  {
+   "id": "en-r-055",
+   "category": "m_and_a",
+   "text": "This message discloses non-public merger, acquisition or investment plans, even if disguised."
+  },
+  {
+   "id": "en-r-056",
+   "category": "m_and_a",
+   "text": "Plans to buy, merge with or invest in another company are strictly confidential."
+  },
+  {
+   "id": "en-r-057",
+   "category": "m_and_a",
+   "text": "Flag any message describing an undisclosed acquisition, merger or stake purchase."
+  },
+  {
+   "id": "en-r-058",
+   "category": "product_roadmap",
+   "text": "This message discloses an unannounced product roadmap or launch plan, even if disguised."
+  },
+  {
+   "id": "en-r-059",
+   "category": "product_roadmap",
+   "text": "Unannounced features, launch dates and product plans must not be shared externally."
+  },
+  {
+   "id": "en-r-060",
+   "category": "product_roadmap",
+   "text": "Block messages revealing what the company plans to ship that has not been publicly announced."
+  },
+  {
+   "id": "en-r-061",
+   "category": "project_codename",
+   "text": "This message discloses details of Project {codename}, even if disguised."
+  },
+  {
+   "id": "en-r-062",
+   "category": "project_codename",
+   "text": "Do not share any details about Project {codename}."
+  },
+  {
+   "id": "en-r-063",
+   "category": "project_codename",
+   "text": "Anything about the {codename} project, such as its status, budget, plans or partners, must stay internal."
+  },
+  {
+   "id": "en-r-064",
+   "category": "customer_list",
+   "text": "This message discloses a list of customers or customers' contact data, even if disguised."
+  },
+  {
+   "id": "en-r-065",
+   "category": "customer_list",
+   "text": "Customer lists and customer contact details must not be sent to the assistant."
+  },
+  {
+   "id": "en-r-066",
+   "category": "customer_list",
+   "text": "Flag messages that name multiple customer accounts or share their contacts."
+  },
+  {
+   "id": "en-r-067",
+   "category": "proprietary_source_code",
+   "text": "This message discloses proprietary internal source code, even if disguised."
+  },
+  {
+   "id": "en-r-068",
+   "category": "proprietary_source_code",
+   "text": "Do not paste our internal source code into AI tools."
+  },
+  {
+   "id": "en-r-069",
+   "category": "proprietary_source_code",
+   "text": "Block messages that include code from our private repositories or internal algorithms."
+  },
+  {
+   "id": "en-r-070",
+   "category": "internal_infrastructure",
+   "text": "This message discloses internal hostnames, IP addresses or network architecture details, even if disguised."
+  },
+  {
+   "id": "en-r-071",
+   "category": "internal_infrastructure",
+   "text": "Internal hostnames and private IP addresses must not be shared."
+  },
+  {
+   "id": "en-r-072",
+   "category": "internal_infrastructure",
+   "text": "Flag messages describing our servers, network layout or internal addresses."
+  },
+  {
+   "id": "en-r-073",
+   "category": "competitor_confidential",
+   "text": "This message discloses confidential information obtained about a competitor, even if disguised."
+  },
+  {
+   "id": "en-r-074",
+   "category": "competitor_confidential",
+   "text": "Do not share leaked or non-public information about competitors."
+  },
+  {
+   "id": "en-r-075",
+   "category": "competitor_confidential",
+   "text": "Block messages containing a competitor's internal pricing, plans or numbers that were not publicly released."
+  }
+ ]
+}
