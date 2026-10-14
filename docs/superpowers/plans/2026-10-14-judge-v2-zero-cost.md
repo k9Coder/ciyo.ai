@@ -2544,7 +2544,8 @@ def _render(text: str, fake, rng, values: dict) -> str:
     def sub(m):
         name = m.group(1)
         if name not in values:
-            values[name] = FILLERS[name](fake, rng)
+            filler = FILLERS[name]
+            values[name] = filler(fake, rng)
         return values[name]
     return SLOT.sub(sub, text)
 
@@ -3582,8 +3583,10 @@ def main(argv=None):
     s.add_argument("--max-test-messages", type=int, default=0)
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
-    {"scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
-     "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}[a.cmd](a)
+    handlers = {"scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+                "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
+    handler = handlers[a.cmd]
+    handler(a)
 
 
 if __name__ == "__main__":
