@@ -11,7 +11,7 @@ from judge.data.catalog import CATEGORIES
 from judge.data.examples import build_examples
 from judge.data.schema import Label, Message, Pair, Rule, read_jsonl, write_jsonl
 from judge.data.scripted import generate, load_templates, validate
-from judge.data.splits import assign_splits, check_no_leakage
+from judge.data.splits import assign_splits, check_no_leakage, rule_is_test_only
 
 FILES = (("messages", Message), ("rules", Rule), ("pairs", Pair), ("labels", Label))
 
@@ -71,9 +71,17 @@ def cmd_merge(a):
     parts = [_read_all(d) for d in a.inputs]
     msgs, rules, pairs, labels = (_dedup([x for part in parts for x in part[i]]) for i in range(4))
     splits = assign_splits(msgs)
+    # Teacher pairs sometimes attach an "unrelated" rule from a held-out category to a training
+    # message; held-out categories must never reach training, so those pairs are dropped.
+    rule_by_id = {r.id: r for r in rules}
+    leaky = {p.id for p in pairs if splits[p.message_id] != "test"
+             and rule_is_test_only(rule_by_id[p.rule_id].category_id, rule_by_id[p.rule_id].language)}
+    pairs = [p for p in pairs if p.id not in leaky]
+    labels = [l for l in labels if l.pair_id not in leaky]
     check_no_leakage(msgs, rules, pairs, splits)
     _write_all(a.out, msgs, rules, pairs, labels)
     (a.out / "splits.json").write_text(json.dumps(splits), encoding="utf-8")
+    (a.out / "merge_report.json").write_text(json.dumps({"dropped_heldout_rule_pairs": len(leaky)}), encoding="utf-8")
 
 
 def _texts(d: Path):

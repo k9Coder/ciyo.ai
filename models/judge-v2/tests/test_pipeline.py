@@ -111,3 +111,20 @@ def test_examples_keeps_all_claude_test_messages(tmp_path):
     test = read_jsonl(tmp_path / "test.jsonl", Example)
     ids = {e.message_id for e in test}
     assert len(ids) == 12 and {f"c{i}" for i in range(5)} <= ids
+
+
+def test_merge_drops_heldout_category_rules_from_training_messages(tmp_path):
+    from judge.data.schema import write_jsonl
+    src = tmp_path / "cc"
+    msgs = [Message("m1", "us_ssn", "positive", "email_draft", "en", "ssn 123-45-6789", False, 0, "g1", "claude")]
+    rules = [Rule("r_ok", "us_ssn", "en", "discloses an SSN", "claude"),
+             Rule("r_held", "private_key", "en", "contains a private key", "claude")]
+    pairs = [Pair("p_ok", "m1", "r_ok"), Pair("p_held", "m1", "r_held")]
+    labels = [Label("p_ok", 1.0, "construction"), Label("p_held", 0.0, "construction")]
+    for name, items in (("messages", msgs), ("rules", rules), ("pairs", pairs), ("labels", labels)):
+        write_jsonl(src / f"{name}.jsonl", items)
+    pipeline.main(["merge", "--inputs", str(src), "--out", str(tmp_path / "all")])
+    assert [p.id for p in read_jsonl(tmp_path / "all" / "pairs.jsonl", Pair)] == ["p_ok"]
+    assert [l.pair_id for l in read_jsonl(tmp_path / "all" / "labels.jsonl", Label)] == ["p_ok"]
+    report = json.loads((tmp_path / "all" / "merge_report.json").read_text(encoding="utf-8"))
+    assert report["dropped_heldout_rule_pairs"] == 1
