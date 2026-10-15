@@ -12,7 +12,7 @@ Write `models/judge-v2/templates/{language}.json` with:
   - Positives wrap the disclosing span in `[[...]]`.
   - Use only the sensitive slots of the template's own category, plus neutral slots (`name`, `company`, `date`, `amount`, `product`).
   - Semantic categories (salary, M&A, roadmap, diagnosis…) disclose through realistic wording inside `[[...]]`, using neutral slots for specifics.
-  - Hard negatives mention or ask about the topic, use obvious placeholders, or discuss the policy, but disclose nothing.
+  - Hard negatives mention or ask about the topic, use obvious placeholders, or discuss the policy, but disclose nothing. (Against a topic rule such as "block any discussion of X", a message that mentions X is a match; see the policy.)
   - About one in four positives is `"adversarial": true` (spelled-out digits, split across lines, inside code/JSON, transliterated).
   - Write natural, varied, realistic text in `{language}` (technical terms may stay in English where natives would use them).
 - `"rules"`: for every category, 3 rules written in `{language}` as admins in that language would write them. At least one per category follows the assistant format translated into `{language}` ("This message discloses <specific claim>, even if disguised."). Codename rules must contain `{codename}`. Ids `{language}-r-NNN`.
@@ -29,6 +29,7 @@ You are generating labeled training pairs for an on-device DLP judge. Order file
   `{"message": str, "polarity": "positive"|"hard_negative"|"benign", "style": str, "adversarial": bool, "violating_excerpt": str, "rules": [{"text": str, "category": str, "language": str, "verdict": "match"|"no_match", "confidence": number}]}`
 - Messages: realistic, varied, often long and messy (pasted email, code, logs, documents). Place the violation anywhere, sometimes deep inside long text. Make about one third of positives disguised (`"adversarial": true`). A disguised message never explains or comments on its own disguise (no "so search won't find it"); it just contains the disguised data the way a careless or sneaky employee would.
 - Rules are written the way an admin writes a policy: a prohibition or a "this message contains/discloses/discusses X" claim. Never write a rule that describes the message itself, and never add negated clauses like "but does not reveal …". Vary the wording; do not end most rules with "even if disguised" (use it rarely, in the order's language).
+- Mix disclosure rules ("contains a customer's card number") with topic rules ("block any discussion of the merger"). Label them per the policy: a hard negative that only asks about or mentions the topic is `no_match` for a disclosure rule but `match` for a topic rule about that topic.
 - `proprietary_source_code` means code, queries, configs or scripts written inside the company that are not public (internal business logic, internal SQL against company tables, deployment scripts). Public library usage, tutorials and generic snippets are not proprietary.
 - `violating_excerpt`: the exact substring of `message` that discloses the information for positives; `""` otherwise.
 - `rules`: 2-4 rules per message, in the order's language or English. Include the hardest cases you can:
