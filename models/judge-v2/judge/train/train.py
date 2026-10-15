@@ -26,6 +26,12 @@ def seed_everything(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+def make_optimizer(model, lr: float) -> torch.optim.AdamW:
+    # foreach=False updates one tensor at a time; the default batched update briefly
+    # duplicates optimizer state and overflowed the 4GB training GPU.
+    return torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01, foreach=False)
+
+
 def soft_ce(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     logp = torch.log_softmax(logits, -1)
     return -(target * logp[:, 1] + (1 - target) * logp[:, 0]).mean()
@@ -124,7 +130,7 @@ def main(argv=None):
     encoded = [(st, ex) for ex in train if (st := _encode(tok, prefix, ex, a.max_tokens)) is not None]
     skipped = len(train) - len(encoded)
     total_steps = max(1, a.epochs * len(encoded) // a.grad_accum)
-    opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=0.01)
+    opt = make_optimizer(model, a.lr)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / max(1, a.warmup))
                                               * 0.5 * (1 + math.cos(math.pi * min(1.0, s / total_steps))))
     scaler = torch.amp.GradScaler("cuda", enabled=fp16)

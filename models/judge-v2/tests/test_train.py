@@ -72,3 +72,11 @@ def test_training_with_pruned_tokenizer_shrinks_embeddings(tmp_path, tiny_tokeni
     spec = json.loads((out / "backbone_spec.json").read_text())
     assert spec["vocab_size"] == len(old_ids) < 97
     assert len(AutoTokenizer.from_pretrained(out / "tokenizer")) == len(old_ids)
+
+
+def test_optimizer_avoids_foreach_memory_spike():
+    import torch
+    from judge.train.train import make_optimizer
+    opt = make_optimizer(torch.nn.Linear(4, 2), lr=1e-3)
+    assert isinstance(opt, torch.optim.AdamW) and opt.defaults["foreach"] is False
+    assert opt.defaults["weight_decay"] == 0.01
