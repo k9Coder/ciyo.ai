@@ -58,19 +58,15 @@ def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
 
 def _from_base(a, out: Path):
     from judge.vocab import prune_embeddings
-    hf_tok = AutoTokenizer.from_pretrained(a.base)
+    hf_tok = AutoTokenizer.from_pretrained(a.pruned_tokenizer or a.base)
     hf_tok.save_pretrained(out / "tokenizer")
     hf = AutoModelForCausalLM.from_pretrained(a.base, torch_dtype=torch.float32)
     backbone = Backbone.from_hf_model(hf)
     del hf
+    if a.pruned_tokenizer:
+        old_ids = json.loads((a.pruned_tokenizer / "old_ids.json").read_text(encoding="utf-8"))
+        prune_embeddings(backbone, {old: new for new, old in enumerate(old_ids)})
     cfg = JudgeConfig(model_version=out.name, base_model=a.base)
-    if a.vocab_remap:
-        data = json.loads(a.vocab_remap.read_text(encoding="utf-8"))
-        remap = {int(k): int(v) for k, v in data["old_to_new"].items()}
-        prune_embeddings(backbone, remap)
-        shutil.copy2(a.vocab_remap, out / "vocab_remap.json")
-        cfg = dataclasses.replace(cfg, vocab_remap_file="vocab_remap.json")
-        return JudgeModel(backbone), JudgeTokenizer(hf_tok, cfg, remap, int(data["fallback_new_id"])), cfg
     return JudgeModel(backbone), JudgeTokenizer(hf_tok, cfg), cfg
 
 
@@ -94,7 +90,7 @@ def main(argv=None):
     src.add_argument("--init-from", type=Path)
     ap.add_argument("--data", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--vocab-remap", type=Path)
+    ap.add_argument("--pruned-tokenizer", type=Path)
     ap.add_argument("--precision", choices=["fp32", "fp16"], default="fp32")
     ap.add_argument("--grad-checkpointing", action="store_true")
     ap.add_argument("--max-tokens", type=int, default=4096)

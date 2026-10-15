@@ -56,3 +56,19 @@ def test_stage2_init_from_previous_run_and_max_tokens(tmp_path, tiny_tokenizer_d
     train_main(["--init-from", str(stage1), "--data", str(data), "--out", str(stage2b), "--epochs", "1",
                 "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--max-tokens", "10"])
     assert json.loads((stage2b / "val_metrics.json").read_text())["skipped_long"] == 160
+
+
+def test_training_with_pruned_tokenizer_shrinks_embeddings(tmp_path, tiny_tokenizer_dir):
+    from transformers import AutoTokenizer
+    from judge.vocab import save_pruned_tokenizer
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    hf = AutoTokenizer.from_pretrained(base)
+    words = "please help me with this report thanks message discloses password salary address diagnosis".split()
+    kept = {hf.convert_tokens_to_ids(w) for w in words} | set(hf.all_special_ids)
+    old_ids = save_pruned_tokenizer(hf, kept, tmp_path / "pruned")
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--pruned-tokenizer", str(tmp_path / "pruned"), "--data", str(data), "--out", str(out),
+                "--epochs", "1", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1"])
+    spec = json.loads((out / "backbone_spec.json").read_text())
+    assert spec["vocab_size"] == len(old_ids) < 97
+    assert len(AutoTokenizer.from_pretrained(out / "tokenizer")) == len(old_ids)
