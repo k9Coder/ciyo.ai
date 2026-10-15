@@ -85,20 +85,18 @@ def test_optimizer_is_memory_lean_adafactor():
     assert d["weight_decay"] == 0.01
 
 
-def test_encoded_examples_are_compact_token_arrays(tiny_tokenizer_dir):
-    import numpy as np
-    from judge.config import JudgeConfig
-    from judge.tokenize import JudgeTokenizer
-    from judge.train.train import encode_examples, to_step
-    tok = JudgeTokenizer.load(tiny_tokenizer_dir, JudgeConfig(model_version="t", base_model="t"))
-    prefix = tok.prefix_ids()
-    examples = _examples(5, 3) + [Example("long", "hello " * 400, "en", ("r1",), ("message discloses password",),
-                                          (1.0,), (True,), False, None)]
-    encoded, skipped = encode_examples(tok, prefix, examples, max_tokens=200)
-    assert skipped == 1 and len(encoded) == 5
-    msg, rules, ex = encoded[0]
-    assert isinstance(msg, np.ndarray) and msg.dtype == np.int32 and msg.ndim == 1
-    assert all(isinstance(r, np.ndarray) and r.dtype == np.int32 for r in rules)
-    step = to_step(prefix, msg, rules)
-    assert step.attn_bias.shape[0] == len(prefix) + len(msg) + sum(len(r) for r in rules)
-    assert len(step.verdict_index) == len(ex.rules)
+
+def test_training_streams_train_file_instead_of_loading_it(tmp_path, tiny_tokenizer_dir, monkeypatch):
+    import judge.train.train as train_mod
+    real_read = train_mod.read_jsonl
+
+    def guarded(path, cls):
+        assert path.name != "train.jsonl", "train.jsonl must be streamed, not loaded"
+        return real_read(path, cls)
+
+    monkeypatch.setattr(train_mod, "read_jsonl", guarded)
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--grad-accum", "4",
+                "--eval-every", "1000", "--seed", "1", "--max-tokens", "10"])
+    assert json.loads((out / "val_metrics.json").read_text())["skipped_long"] == 160

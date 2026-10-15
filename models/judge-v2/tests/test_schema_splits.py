@@ -69,3 +69,14 @@ def test_leakage_checks():
     rule = Rule("r1", "private_key", "en", "discloses a private key", "claude")
     with pytest.raises(ValueError, match="test-only rule"):
         check_no_leakage([_m(5)], [rule], [Pair("p", "m5", "r1")], {"m5": "train"})
+
+
+def test_lazy_jsonl_random_access_without_loading(tmp_path):
+    from judge.data.schema import LazyJsonl
+    exs = [Example(f"m{i}", f"שלום text {i}\nline", "he", ("r",), ("rule",), (1.0,), (True,), False, None)
+           for i in range(50)]
+    write_jsonl(tmp_path / "e.jsonl", exs)
+    lazy = LazyJsonl(tmp_path / "e.jsonl", Example)
+    assert len(lazy) == 50
+    assert lazy[37] == exs[37] and lazy[0] == exs[0] and lazy[49] == exs[49]
+    assert [e.message_id for e in (lazy[i] for i in (3, 1, 2))] == ["m3", "m1", "m2"]

@@ -13,7 +13,7 @@ from transformers.optimization import Adafactor
 
 from judge.backbone import Backbone, spec_to_json
 from judge.config import JudgeConfig
-from judge.data.schema import Example, read_jsonl
+from judge.data.schema import Example, LazyJsonl, read_jsonl
 from judge.evaluate.metrics import Row, fbeta, precision, recall
 from judge.model import JudgeModel, load_judge, step_tensors
 from judge.sequence import single_pass
@@ -45,22 +45,6 @@ def _encode(tok, prefix, ex, max_tokens: int):
     if len(prefix) + len(msg) + sum(len(r) for r in rules) > max_tokens:
         return None
     return single_pass(prefix, msg, rules)
-
-
-def encode_examples(tok, prefix, examples, max_tokens: int):
-    """Token ids only (int32), never attention masks: a dense mask per example for
-    hundreds of thousands of examples exhausted system RAM."""
-    encoded = []
-    for ex in examples:
-        msg = np.asarray(tok.message_ids(ex.message), dtype=np.int32)
-        rules = [np.asarray(tok.rule_ids(r), dtype=np.int32) for r in ex.rules]
-        if len(prefix) + len(msg) + sum(len(r) for r in rules) <= max_tokens:
-            encoded.append((msg, rules, ex))
-    return encoded, len(examples) - len(encoded)
-
-
-def to_step(prefix, msg, rules):
-    return single_pass(prefix, msg.tolist(), [r.tolist() for r in rules])
 
 
 def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
@@ -131,10 +115,12 @@ def main(argv=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     fp16 = a.precision == "fp16" and device == "cuda"
 
-    train = read_jsonl(a.data / "train.jsonl", Example)
+    # Streamed from disk: holding hundreds of thousands of parsed examples exhausted RAM.
+    train = LazyJsonl(a.data / "train.jsonl", Example)
     val = read_jsonl(a.data / "val.jsonl", Example)
+    indices = list(range(len(train)))
     if a.limit_train:
-        train = random.Random(a.seed).sample(train, min(a.limit_train, len(train)))
+        indices = random.Random(a.seed).sample(indices, min(a.limit_train, len(indices)))
 
     model, tok, cfg = (_from_base if a.base else _from_run)(a, a.out)
     seed_everything(a.seed)
@@ -145,9 +131,8 @@ def main(argv=None):
     (a.out / "backbone_spec.json").write_text(json.dumps(spec_to_json(model.backbone.spec)), encoding="utf-8")
 
     prefix = tok.prefix_ids()
-    encoded, skipped = encode_examples(tok, prefix, train, a.max_tokens)
-    del train
-    total_steps = max(1, a.epochs * len(encoded) // a.grad_accum)
+    skipped_ids: set[int] = set()
+    total_steps = max(1, a.epochs * len(indices) // a.grad_accum)
     opt = make_optimizer(model, a.lr)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / max(1, a.warmup))
                                               * 0.5 * (1 + math.cos(math.pi * min(1.0, s / total_steps))))
@@ -155,7 +140,8 @@ def main(argv=None):
     k0, v0 = model.backbone.empty_past(device)
     rng = random.Random(a.seed)
     best_f2, step, acc, acc_loss = -1.0, 0, 0, 0.0
-    log = (a.out / "train_log.jsonl").open("w", encoding="utf-8")
+    log = (a.out / "train_log.jsonl").open("w", encoding="utf-8", buffering=1)
+    metrics_path = a.out / "val_metrics.json"
 
     def checkpoint():
         nonlocal best_f2
@@ -163,15 +149,17 @@ def main(argv=None):
         if m["f2"] > best_f2:
             best_f2 = m["f2"]
             torch.save(model.state_dict(), a.out / "best.pt")
-            (a.out / "val_metrics.json").write_text(json.dumps({**m, "step": step, "skipped_long": skipped}),
-                                                    encoding="utf-8")
+            metrics_path.write_text(json.dumps({**m, "step": step, "skipped_long": len(skipped_ids)}), encoding="utf-8")
 
     for _ in range(a.epochs):
-        order = list(range(len(encoded)))
+        order = list(indices)
         rng.shuffle(order)
         for j in order:
-            msg, rules, ex = encoded[j]
-            st = to_step(prefix, msg, rules)
+            ex = train[j]
+            st = _encode(tok, prefix, ex, a.max_tokens)
+            if st is None:
+                skipped_ids.add(j)
+                continue
             with torch.autocast("cuda", dtype=torch.float16, enabled=fp16):
                 logits, _, _ = model(*step_tensors(st, device), k0, v0)
             target = torch.tensor(ex.targets, dtype=torch.float32, device=device)
@@ -193,7 +181,9 @@ def main(argv=None):
                     checkpoint()
     checkpoint()
     log.close()
-    print(f"done: steps={step} best_f2={best_f2:.4f} skipped_long={skipped}")
+    final = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics_path.write_text(json.dumps({**final, "skipped_long": len(skipped_ids)}), encoding="utf-8")
+    print(f"done: steps={step} best_f2={best_f2:.4f} skipped_long={len(skipped_ids)}")
 
 
 if __name__ == "__main__":
