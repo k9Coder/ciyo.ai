@@ -27,7 +27,9 @@ You are generating labeled training pairs for an on-device DLP judge. Order file
 - Styles: rotate through the order's `styles`.
 - Each line follows this schema exactly:
   `{"message": str, "polarity": "positive"|"hard_negative"|"benign", "style": str, "adversarial": bool, "violating_excerpt": str, "rules": [{"text": str, "category": str, "language": str, "verdict": "match"|"no_match", "confidence": number}]}`
-- Messages: realistic, varied, often long and messy (pasted email, code, logs, documents). Place the violation anywhere, sometimes deep inside long text. Make about one third of positives disguised (`"adversarial": true`).
+- Messages: realistic, varied, often long and messy (pasted email, code, logs, documents). Place the violation anywhere, sometimes deep inside long text. Make about one third of positives disguised (`"adversarial": true`). A disguised message never explains or comments on its own disguise (no "so search won't find it"); it just contains the disguised data the way a careless or sneaky employee would.
+- Rules are written the way an admin writes a policy: a prohibition or a "this message contains/discloses/discusses X" claim. Never write a rule that describes the message itself, and never add negated clauses like "but does not reveal …". Vary the wording; do not end most rules with "even if disguised" (use it rarely, in the order's language).
+- `proprietary_source_code` means code, queries, configs or scripts written inside the company that are not public (internal business logic, internal SQL against company tables, deployment scripts). Public library usage, tutorials and generic snippets are not proprietary.
 - `violating_excerpt`: the exact substring of `message` that discloses the information for positives; `""` otherwise.
 - `rules`: 2-4 rules per message, in the order's language or English. Include the hardest cases you can:
   - a rule this message satisfies or deliberately fails to satisfy

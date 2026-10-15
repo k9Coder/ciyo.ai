@@ -3,7 +3,7 @@ import random
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from judge.data.catalog import LANGUAGES, MESSAGE_STYLES
+from judge.data.catalog import HELDOUT_LANGUAGES, HELDOUT_STYLES, LANGUAGES, MESSAGE_STYLES
 from judge.data.schema import stable_id
 
 
@@ -20,10 +20,14 @@ class Order:
 
 def pair_orders(categories, n_per_order: int, seed: int) -> list[Order]:
     rng = random.Random(seed)
-    styles = sorted(MESSAGE_STYLES)
+    all_styles = sorted(MESSAGE_STYLES)
+    train_styles = sorted(set(MESSAGE_STYLES) - HELDOUT_STYLES)
+    heldout_categories = {c.id for c in categories if c.heldout}
     out = []
     for lang in LANGUAGES:
         for cid in [c.id for c in categories] + [None]:
+            is_test = lang in HELDOUT_LANGUAGES or cid in heldout_categories
+            styles = all_styles if is_test else train_styles
             oid = stable_id("order", "pairs", lang, cid or "benign")
             out.append(Order(oid, "pairs", lang, cid, tuple(rng.sample(styles, 3)), n_per_order, ()))
     return out

@@ -93,3 +93,21 @@ def test_scripted_refuses_invalid_templates(tmp_path):
         raise AssertionError("expected SystemExit")
     except SystemExit as e:
         assert "positive needs exactly one" in str(e.code)
+
+
+def test_examples_keeps_all_claude_test_messages(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message(f"s{i}", "us_ssn", "positive", "meeting_notes", "en", f"scripted {i}", False, 0, f"tmpl:t{i}", "scripted")
+            for i in range(50)]
+    msgs += [Message(f"c{i}", "us_ssn", "positive", "meeting_notes", "it", f"claude {i}", False, 0, f"c{i}", "claude")
+             for i in range(5)]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    pairs = [Pair(f"p{m.id}", m.id, "r1") for m in msgs]
+    labels = [Label(p.id, 1.0, "single") for p in pairs]
+    for name, items in (("messages", msgs), ("rules", rules), ("pairs", pairs), ("labels", labels)):
+        write_jsonl(tmp_path / f"{name}.jsonl", items)
+    (tmp_path / "splits.json").write_text(json.dumps({m.id: "test" for m in msgs}))
+    pipeline.main(["examples", "--data", str(tmp_path), "--max-test-messages", "12", "--seed", "1"])
+    test = read_jsonl(tmp_path / "test.jsonl", Example)
+    ids = {e.message_id for e in test}
+    assert len(ids) == 12 and {f"c{i}" for i in range(5)} <= ids

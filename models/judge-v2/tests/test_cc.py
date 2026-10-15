@@ -81,3 +81,12 @@ def test_second_pass_rules_and_merge():
     assert merged["x"].status == "agreed" and abs(merged["x"].p_match - 0.8) < 1e-9
     assert merged["y"].status == "disagreed" and merged["z"].status == "single"
     assert p_from("match", 0.2) == 0.5 and p_from("no_match", 0.9) == 0.09999999999999998
+
+
+def test_pair_orders_use_training_styles_for_training_orders():
+    from judge.data.catalog import HELDOUT_LANGUAGES, HELDOUT_STYLES
+    from judge.data.splits import HELDOUT_CATEGORY_IDS
+    orders = pair_orders(CATEGORIES, n_per_order=6, seed=1)
+    train_orders = [o for o in orders if o.language not in HELDOUT_LANGUAGES and o.category_id not in HELDOUT_CATEGORY_IDS]
+    assert train_orders and all(not set(o.styles) & HELDOUT_STYLES for o in train_orders)
+    assert any(set(o.styles) & HELDOUT_STYLES for o in orders if o not in train_orders)

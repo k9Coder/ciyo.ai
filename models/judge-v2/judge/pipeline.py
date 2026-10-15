@@ -116,7 +116,10 @@ def cmd_examples(a):
     human = json.loads(human_path.read_text(encoding="utf-8")) if human_path.exists() else {}
     test_ids = sorted(mid for mid, s in splits.items() if s == "test")
     if a.max_test_messages and len(test_ids) > a.max_test_messages:
-        test_ids = random.Random(a.seed).sample(test_ids, a.max_test_messages)
+        kept = [m for m in test_ids if msgs[m].source != "scripted"]
+        scripted = [m for m in test_ids if msgs[m].source == "scripted"]
+        room = max(0, a.max_test_messages - len(kept))
+        test_ids = kept + random.Random(a.seed).sample(scripted, min(room, len(scripted)))
     keep = {"train": {m for m, s in splits.items() if s == "train"}, "val": {m for m, s in splits.items() if s == "val"},
             "test": set(test_ids)}
     for split, ids in keep.items():
