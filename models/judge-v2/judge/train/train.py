@@ -47,6 +47,22 @@ def _encode(tok, prefix, ex, max_tokens: int):
     return single_pass(prefix, msg, rules)
 
 
+def encode_examples(tok, prefix, examples, max_tokens: int):
+    """Token ids only (int32), never attention masks: a dense mask per example for
+    hundreds of thousands of examples exhausted system RAM."""
+    encoded = []
+    for ex in examples:
+        msg = np.asarray(tok.message_ids(ex.message), dtype=np.int32)
+        rules = [np.asarray(tok.rule_ids(r), dtype=np.int32) for r in ex.rules]
+        if len(prefix) + len(msg) + sum(len(r) for r in rules) <= max_tokens:
+            encoded.append((msg, rules, ex))
+    return encoded, len(examples) - len(encoded)
+
+
+def to_step(prefix, msg, rules):
+    return single_pass(prefix, msg.tolist(), [r.tolist() for r in rules])
+
+
 def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
     model.eval()
     rows = []
@@ -129,8 +145,8 @@ def main(argv=None):
     (a.out / "backbone_spec.json").write_text(json.dumps(spec_to_json(model.backbone.spec)), encoding="utf-8")
 
     prefix = tok.prefix_ids()
-    encoded = [(st, ex) for ex in train if (st := _encode(tok, prefix, ex, a.max_tokens)) is not None]
-    skipped = len(train) - len(encoded)
+    encoded, skipped = encode_examples(tok, prefix, train, a.max_tokens)
+    del train
     total_steps = max(1, a.epochs * len(encoded) // a.grad_accum)
     opt = make_optimizer(model, a.lr)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / max(1, a.warmup))
@@ -154,7 +170,8 @@ def main(argv=None):
         order = list(range(len(encoded)))
         rng.shuffle(order)
         for j in order:
-            st, ex = encoded[j]
+            msg, rules, ex = encoded[j]
+            st = to_step(prefix, msg, rules)
             with torch.autocast("cuda", dtype=torch.float16, enabled=fp16):
                 logits, _, _ = model(*step_tensors(st, device), k0, v0)
             target = torch.tensor(ex.targets, dtype=torch.float32, device=device)

@@ -83,3 +83,22 @@ def test_optimizer_is_memory_lean_adafactor():
     d = opt.defaults
     assert d["lr"] == 1e-3 and d["relative_step"] is False and d["scale_parameter"] is False and d["warmup_init"] is False
     assert d["weight_decay"] == 0.01
+
+
+def test_encoded_examples_are_compact_token_arrays(tiny_tokenizer_dir):
+    import numpy as np
+    from judge.config import JudgeConfig
+    from judge.tokenize import JudgeTokenizer
+    from judge.train.train import encode_examples, to_step
+    tok = JudgeTokenizer.load(tiny_tokenizer_dir, JudgeConfig(model_version="t", base_model="t"))
+    prefix = tok.prefix_ids()
+    examples = _examples(5, 3) + [Example("long", "hello " * 400, "en", ("r1",), ("message discloses password",),
+                                          (1.0,), (True,), False, None)]
+    encoded, skipped = encode_examples(tok, prefix, examples, max_tokens=200)
+    assert skipped == 1 and len(encoded) == 5
+    msg, rules, ex = encoded[0]
+    assert isinstance(msg, np.ndarray) and msg.dtype == np.int32 and msg.ndim == 1
+    assert all(isinstance(r, np.ndarray) and r.dtype == np.int32 for r in rules)
+    step = to_step(prefix, msg, rules)
+    assert step.attn_bias.shape[0] == len(prefix) + len(msg) + sum(len(r) for r in rules)
+    assert len(step.verdict_index) == len(ex.rules)
