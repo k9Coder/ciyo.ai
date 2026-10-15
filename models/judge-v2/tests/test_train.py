@@ -74,9 +74,12 @@ def test_training_with_pruned_tokenizer_shrinks_embeddings(tmp_path, tiny_tokeni
     assert len(AutoTokenizer.from_pretrained(out / "tokenizer")) == len(old_ids)
 
 
-def test_optimizer_avoids_foreach_memory_spike():
+def test_optimizer_is_memory_lean_adafactor():
     import torch
+    from transformers.optimization import Adafactor
     from judge.train.train import make_optimizer
     opt = make_optimizer(torch.nn.Linear(4, 2), lr=1e-3)
-    assert isinstance(opt, torch.optim.AdamW) and opt.defaults["foreach"] is False
-    assert opt.defaults["weight_decay"] == 0.01
+    assert isinstance(opt, Adafactor)
+    d = opt.defaults
+    assert d["lr"] == 1e-3 and d["relative_step"] is False and d["scale_parameter"] is False and d["warmup_init"] is False
+    assert d["weight_decay"] == 0.01
