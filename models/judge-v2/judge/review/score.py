@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-from judge.review.make_page import make_items
+from judge.review.make_page import make_items, parse_languages
 
 GATE = 0.97
 
@@ -22,6 +22,7 @@ def main(argv=None):
     ap.add_argument("--mode", choices=["sample", "queue"], required=True)
     ap.add_argument("--n", type=int, default=400)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--languages")
     a = ap.parse_args(argv)
     results = json.loads(a.results.read_text(encoding="utf-8"))
     if a.mode == "queue":
@@ -31,7 +32,7 @@ def main(argv=None):
         path.write_text(json.dumps(human, indent=1, sort_keys=True), encoding="utf-8")
         print(f"human labels: {len(human)}")
         return
-    rate, n, bad = agreement(make_items(a.data, "sample", a.n, a.seed), results)
+    rate, n, bad = agreement(make_items(a.data, "sample", a.n, a.seed, parse_languages(a.languages)), results)
     print(f"teacher-vs-human agreement: {rate:.4f} over {n} decided items (gate {GATE})")
     for pid in bad:
         print(f"  disagree: {pid}")

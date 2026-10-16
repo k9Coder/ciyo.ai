@@ -46,3 +46,44 @@ def test_queue_scoring_writes_human_labels(tmp_path):
     res.write_text(json.dumps({"p5": "no_match"}))
     score_main(["--data", str(tmp_path), "--results", str(res), "--mode", "queue"])
     assert json.loads((tmp_path / "human_labels.json").read_text()) == {"p5": 0.0}
+
+
+def _bilingual(tmp_path):
+    msgs = [Message(f"m{i}", "us_ssn", "positive", "meeting_notes", lang, f"text {i}", False, 0, f"m{i}", "claude")
+            for i, lang in enumerate(["en", "he", "ru", "zh"])]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    pairs = [Pair(f"p{i}", f"m{i}", "r1") for i in range(4)]
+    labels = [Label(f"p{i}", 0.9, "agreed") for i in range(4)]
+    for name, items in (("messages", msgs), ("rules", rules), ("pairs", pairs), ("labels", labels)):
+        write_jsonl(tmp_path / f"{name}.jsonl", items)
+    (tmp_path / "splits.json").write_text(json.dumps({m.id: "test" for m in msgs}))
+
+
+def test_sample_can_be_limited_to_languages_the_owner_reads(tmp_path):
+    _bilingual(tmp_path)
+    items = make_items(tmp_path, "sample", n=10, seed=1, languages={"en", "he"})
+    assert {i["language"] for i in items} == {"en", "he"}
+
+
+def test_sample_page_hides_teacher_verdict(tmp_path):
+    _bilingual(tmp_path)
+    html = render_page(make_items(tmp_path, "sample", n=10, seed=1), "t")
+    assert '"teacher": "match"' not in html and '"teacher":"match"' not in html
+
+
+def test_queue_page_shows_english_translation(tmp_path):
+    (tmp_path / "review_queue.jsonl").write_text(json.dumps({"pair_id": "p", "message": "привет", "rule": "r",
+                                                             "language": "ru", "translation": "hello"},
+                                                            ensure_ascii=False) + "\n", encoding="utf-8")
+    items = make_items(tmp_path, "queue", n=10, seed=1)
+    assert items[0]["translation"] == "hello"
+    html = render_page(items, "t")
+    assert 'id="translation"' in html and "hello" in html
+
+
+def test_score_uses_the_same_language_filter(tmp_path, capsys):
+    _bilingual(tmp_path)
+    res = tmp_path / "r.json"
+    res.write_text(json.dumps({"p0": "match", "p1": "match", "p2": "no_match", "p3": "no_match"}))
+    score_main(["--data", str(tmp_path), "--results", str(res), "--mode", "sample", "--languages", "en,he"])
+    assert "1.0000 over 2" in capsys.readouterr().out
