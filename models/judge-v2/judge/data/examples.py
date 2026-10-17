@@ -1,7 +1,7 @@
 from judge.data.catalog import category_by_id
 from judge.data.schema import Example
 
-KEEP = {"construction", "single", "agreed", "human"}
+KEEP = {"construction", "single", "agreed", "human", "resolved"}
 
 
 def build_examples(messages, rules, pairs, labels, categories, human: dict | None = None) -> list[Example]:

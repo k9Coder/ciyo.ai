@@ -128,3 +128,10 @@ def test_merge_drops_heldout_category_rules_from_training_messages(tmp_path):
     assert [l.pair_id for l in read_jsonl(tmp_path / "all" / "labels.jsonl", Label)] == ["p_ok"]
     report = json.loads((tmp_path / "all" / "merge_report.json").read_text(encoding="utf-8"))
     assert report["dropped_heldout_rule_pairs"] == 1
+
+
+def test_build_examples_keeps_tiebreak_resolved_labels():
+    msgs = [Message("m1", "us_ssn", "positive", "code_help", "en", "ssn 078-05-1120", False, 4, "m1", "claude")]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    ex = build_examples(msgs, rules, [Pair("p1", "m1", "r1")], [Label("p1", 0.9, "resolved")], CATEGORIES)
+    assert [e.targets for e in ex] == [(0.9,)]
