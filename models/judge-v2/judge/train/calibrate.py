@@ -54,19 +54,39 @@ def val_logits(run_dir: Path, examples: list[Example]):
     return np.concatenate(logits), np.asarray(targets), crit, cfg
 
 
+def onnx_val_logits(model_dir: Path, examples: list[Example]):
+    """Validation logits from the exported model, so calibration matches the quantized scores we ship."""
+    from judge.infer import OnnxJudge
+    judge = OnnxJudge(model_dir)
+    cfg = judge.cfg
+    judge.cfg = dataclasses.replace(cfg, temperature=1.0)
+    logits, targets, crit = [], [], []
+    for ex in examples:
+        probs = np.clip(np.asarray(judge.score(ex.message, list(ex.rules)), dtype=np.float64), 1e-7, 1 - 1e-7)
+        logits.append(np.stack([np.zeros_like(probs), np.log(probs / (1 - probs))], 1))
+        targets.extend(ex.targets)
+        crit.extend(ex.critical)
+    return np.concatenate(logits), np.asarray(targets), crit, cfg
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="judge.train.calibrate")
-    ap.add_argument("--run-dir", type=Path, required=True)
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--run-dir", type=Path)
+    src.add_argument("--model-dir", type=Path, help="calibrate the exported (quantized) model in place")
     ap.add_argument("--data", type=Path, required=True)
     a = ap.parse_args(argv)
-    logits, targets, crit, cfg = val_logits(a.run_dir, read_jsonl(a.data / "val.jsonl", Example))
+    examples = read_jsonl(a.data / "val.jsonl", Example)
+    target_dir = a.model_dir or a.run_dir
+    logits, targets, crit, cfg = (onnx_val_logits if a.model_dir else val_logits)(target_dir, examples)
     t = fit_temperature(logits, targets)
     z = logits / t
     z = z - z.max(1, keepdims=True)
     probs = np.exp(z[:, 1]) / np.exp(z).sum(1)
     rows = [Row(float(p), int(y >= 0.5), c, False, None) for p, y, c in zip(probs, targets, crit)]
-    thr = min(max(choose_threshold(rows), 1e-4), 1 - 1e-4)
-    dataclasses.replace(cfg, temperature=t, threshold=thr).save(a.run_dir / "judge_config.json")
+    # A hair below the boundary score: runtime float32 scores must not round under the chosen threshold.
+    thr = min(max(choose_threshold(rows) - 1e-6, 1e-4), 1 - 1e-4)
+    dataclasses.replace(cfg, temperature=t, threshold=thr).save(target_dir / "judge_config.json")
     print(f"temperature={t:.3f} threshold={thr:.4f}")
 
 

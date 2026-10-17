@@ -93,3 +93,21 @@ def test_int8_export_runs_and_writes_layout(run_dir, tmp_path):
 def test_no_rules_returns_empty(run_dir, tmp_path):
     out = export_model_dir(run_dir, tmp_path / "model", quantize=False)
     assert OnnxJudge(out).score("hello", []) == []
+
+
+def test_calibrate_on_exported_model_targets_its_own_scores(run_dir, tmp_path):
+    from judge.data.schema import Example, write_jsonl
+    from judge.train.calibrate import main as calibrate_main
+    out = export_model_dir(run_dir, tmp_path / "model")
+    words = TINY_WORDS
+    examples = [Example(f"m{i}", " ".join(words[(i + k) % len(words)] for k in range(6)), "en", ("r1", "r2"),
+                        tuple(RULES[:2]), (float(i % 2), float((i // 2) % 2)), (True, False), False, None)
+                for i in range(12)]
+    write_jsonl(tmp_path / "data" / "val.jsonl", examples)
+    before = JudgeConfig.load(run_dir / "judge_config.json")
+    calibrate_main(["--model-dir", str(out), "--data", str(tmp_path / "data")])
+    assert JudgeConfig.load(run_dir / "judge_config.json") == before
+    judge = OnnxJudge(out)
+    scored = [(p, t) for ex in examples for p, t in zip(judge.score(ex.message, list(ex.rules)), ex.targets)]
+    positives = [p for p, t in scored if t >= 0.5]
+    assert sum(p >= judge.cfg.threshold for p in positives) / len(positives) >= 0.9
