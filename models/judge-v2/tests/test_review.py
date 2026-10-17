@@ -87,3 +87,10 @@ def test_score_uses_the_same_language_filter(tmp_path, capsys):
     res.write_text(json.dumps({"p0": "match", "p1": "match", "p2": "no_match", "p3": "no_match"}))
     score_main(["--data", str(tmp_path), "--results", str(res), "--mode", "sample", "--languages", "en,he"])
     assert "1.0000 over 2" in capsys.readouterr().out
+
+
+def test_queue_can_be_limited_to_languages_the_owner_reads(tmp_path):
+    rows = [{"pair_id": f"p{l}", "message": "x", "rule": "r", "language": l} for l in ("en", "he", "it")]
+    (tmp_path / "review_queue.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    items = make_items(tmp_path, "queue", n=10, seed=1, languages={"en", "he"})
+    assert [i["pair_id"] for i in items] == ["pen", "phe"]

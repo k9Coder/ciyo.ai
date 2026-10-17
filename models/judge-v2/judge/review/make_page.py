@@ -59,7 +59,7 @@ def parse_languages(value):
 def make_items(data_dir: Path, mode: str, n: int, seed: int, languages=None) -> list[dict]:
     if mode == "queue":
         rows = [json.loads(l) for l in (data_dir / "review_queue.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-        return [{**r, "teacher": None} for r in rows]
+        return [{**r, "teacher": None} for r in rows if languages is None or r["language"] in languages]
     msgs = {m.id: m for m in read_jsonl(data_dir / "messages.jsonl", Message)}
     rules = {r.id: r for r in read_jsonl(data_dir / "rules.jsonl", Rule)}
     pairs = {p.id: p for p in read_jsonl(data_dir / "pairs.jsonl", Pair)}
