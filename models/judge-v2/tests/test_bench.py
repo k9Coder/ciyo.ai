@@ -51,3 +51,15 @@ def test_check_gates():
     assert rep["peak_rss_mb"]["pass"] and rep["size_mb"]["pass"]
     assert not check([dict(native, peak_rss_mb=420)], 132)["pass"]
     assert not check([native], 150)["pass"]
+
+
+def test_js_bench_steps_free_onnx_tensors():
+    import shutil
+    import subprocess
+    from pathlib import Path
+    if shutil.which("node") is None:
+        import pytest
+        pytest.skip("node not installed")
+    test_file = Path(__file__).resolve().parents[1] / "bench" / "judge_steps.test.mjs"
+    r = subprocess.run(["node", "--test", str(test_file)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr

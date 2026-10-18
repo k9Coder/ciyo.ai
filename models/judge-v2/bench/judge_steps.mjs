@@ -46,6 +46,9 @@ export async function prefill(ort, sess, input, pre, messageIds) {
   for (let a = 0; a < messageIds.length; a += input.chunk) {
     const ids = messageIds.slice(a, a + input.chunk);
     const o = await runStep(ort, sess, causalStep(ids, p), pk, pv, true);
+    // Free superseded KV states now; waiting for GC let them pile up past the RAM gate.
+    o.verdict.dispose();
+    if (pk !== pre.pk) { pk.dispose(); pv.dispose(); }
     pk = o.present_k; pv = o.present_v; p += ids.length;
   }
   return { pk, pv, p };
@@ -57,9 +60,12 @@ export async function benchScenario(ort, sess, input, pre, sc, reps = 3) {
   for (let i = 0; i <= reps; i++) {
     const t0 = performance.now();
     const st = typed ?? await prefill(ort, sess, input, pre, sc.messageIds);
-    await runStep(ort, sess, rulesStep(sc.ruleIds, st.p), st.pk, st.pv, false);
+    const out = await runStep(ort, sess, rulesStep(sc.ruleIds, st.p), st.pk, st.pv, false);
+    out.verdict.dispose();
+    if (!typed && st.pk !== pre.pk) { st.pk.dispose(); st.pv.dispose(); }
     if (i > 0) times.push(performance.now() - t0);
   }
+  if (typed && typed.pk !== pre.pk) { typed.pk.dispose(); typed.pv.dispose(); }
   times.sort((x, y) => x - y);
   return times[Math.floor(times.length / 2)];
 }
