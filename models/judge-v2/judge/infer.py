@@ -5,6 +5,7 @@ import numpy as np
 import onnxruntime as ort
 
 from judge.config import JudgeConfig
+from judge.export import kv_names
 from judge.sequence import Step, causal_step, chunk_spans, message_windows, rules_step
 from judge.tokenize import JudgeTokenizer
 
@@ -20,18 +21,17 @@ class OnnxJudge:
             so.intra_op_num_threads = threads
         self.sess = ort.InferenceSession(str(model_dir / "judge.onnx"), so)
         spec = json.loads((model_dir / "backbone_spec.json").read_text(encoding="utf-8"))
-        empty = np.zeros((spec["num_layers"], 1, spec["num_kv_heads"], 0, spec["head_dim"]), np.float32)
+        n = spec["num_layers"]
+        self.past_names, self.present_names = kv_names(n, "past"), kv_names(n, "present")
+        empty = [np.zeros((1, spec["num_kv_heads"], 0, spec["head_dim"]), np.float16) for _ in range(2 * n)]
         self.prefix = self.tok.prefix_ids()
-        _, self.prefix_k, self.prefix_v = self._run(causal_step(self.prefix, 0), empty, empty, True)
+        _, self.prefix_state = self._run(causal_step(self.prefix, 0), empty, True)
 
-    def _run(self, step: Step, pk, pv, need_state: bool):
-        feeds = {
-            "input_ids": step.input_ids[None], "position_ids": step.position_ids[None],
-            "attn_bias": step.attn_bias[None, None], "past_k": pk, "past_v": pv,
-        }
-        names = ["verdict", "present_k", "present_v"] if need_state else ["verdict"]
-        out = self.sess.run(names, feeds)
-        return (out[0][0], out[1], out[2]) if need_state else (out[0][0], None, None)
+    def _run(self, step: Step, state: list, need_state: bool):
+        feeds = {"input_ids": step.input_ids[None], "position_ids": step.position_ids[None],
+                 "attn_bias": step.attn_bias[None, None], **dict(zip(self.past_names, state))}
+        out = self.sess.run(["verdict"] + (self.present_names if need_state else []), feeds)
+        return out[0][0], (out[1:] if need_state else None)
 
     def score(self, message: str, rules: list[str]) -> list[float]:
         if not rules:
@@ -40,12 +40,12 @@ class OnnxJudge:
         msg = self.tok.message_ids(message)
         best = np.zeros(len(rules))
         for a, b in message_windows(len(msg), self.cfg.max_message_tokens, self.cfg.window_overlap_tokens):
-            pk, pv, p = self.prefix_k, self.prefix_v, len(self.prefix)
+            state, p = self.prefix_state, len(self.prefix)
             for s, e in chunk_spans(b - a, self.cfg.max_chunk_tokens):
-                _, pk, pv = self._run(causal_step(msg[a + s:a + e], p), pk, pv, True)
+                _, state = self._run(causal_step(msg[a + s:a + e], p), state, True)
                 p += e - s
             step = rules_step(rule_ids, p)
-            logits, _, _ = self._run(step, pk, pv, False)
+            logits, _ = self._run(step, state, False)
             z = logits[list(step.verdict_index)] / self.cfg.temperature
             z = z - z.max(-1, keepdims=True)
             probs = np.exp(z[:, 1]) / np.exp(z).sum(-1)

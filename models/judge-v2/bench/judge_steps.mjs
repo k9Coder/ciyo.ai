@@ -25,33 +25,46 @@ export function rulesStep(rules, past) {
   return { ids, pos, bias, s, t, verdictIndex };
 }
 
-export async function runStep(ort, sess, st, pk, pv, needState) {
+export function kvNames(layers, kind) {
+  const names = [];
+  for (const kv of ["k", "v"]) for (let i = 0; i < layers; i++) names.push(`${kind}_${kv}_${i}`);
+  return names;
+}
+
+// state.kv holds one float16 tensor per layer: all K tensors, then all V tensors (see judge/export.py).
+export async function runStep(ort, sess, st, kv, needState) {
+  const layers = kv.length / 2;
   const feeds = {
     input_ids: new ort.Tensor("int64", st.ids, [1, st.s]),
     position_ids: new ort.Tensor("int64", st.pos, [1, st.s]),
     attn_bias: new ort.Tensor("float32", st.bias, [1, 1, st.s, st.t]),
-    past_k: pk, past_v: pv,
   };
-  return sess.run(feeds, needState ? ["verdict", "present_k", "present_v"] : ["verdict"]);
+  kvNames(layers, "past").forEach((n, i) => { feeds[n] = kv[i]; });
+  const out = await sess.run(feeds, needState ? ["verdict", ...kvNames(layers, "present")] : ["verdict"]);
+  return { verdict: out.verdict, kv: needState ? kvNames(layers, "present").map((n) => out[n]) : null };
 }
 
+const dispose = (kv) => kv.forEach((t) => t.dispose());
+
 export async function prefixState(ort, sess, input) {
-  const empty = new ort.Tensor("float32", new Float32Array(0), [input.layers, 1, input.kvHeads, 0, input.headDim]);
-  const o = await runStep(ort, sess, causalStep(input.prefixIds, 0), empty, empty, true);
-  return { pk: o.present_k, pv: o.present_v, p: input.prefixIds.length };
+  const empty = () => new ort.Tensor("float16", new Uint16Array(0), [1, input.kvHeads, 0, input.headDim]);
+  const kv = Array.from({ length: 2 * input.layers }, empty);
+  const o = await runStep(ort, sess, causalStep(input.prefixIds, 0), kv, true);
+  o.verdict.dispose();
+  return { kv: o.kv, p: input.prefixIds.length };
 }
 
 export async function prefill(ort, sess, input, pre, messageIds) {
-  let { pk, pv, p } = pre;
+  let { kv, p } = pre;
   for (let a = 0; a < messageIds.length; a += input.chunk) {
     const ids = messageIds.slice(a, a + input.chunk);
-    const o = await runStep(ort, sess, causalStep(ids, p), pk, pv, true);
+    const o = await runStep(ort, sess, causalStep(ids, p), kv, true);
     // Free superseded KV states now; waiting for GC let them pile up past the RAM gate.
     o.verdict.dispose();
-    if (pk !== pre.pk) { pk.dispose(); pv.dispose(); }
-    pk = o.present_k; pv = o.present_v; p += ids.length;
+    if (kv !== pre.kv) dispose(kv);
+    kv = o.kv; p += ids.length;
   }
-  return { pk, pv, p };
+  return { kv, p };
 }
 
 export async function benchScenario(ort, sess, input, pre, sc, reps = 3) {
@@ -60,12 +73,12 @@ export async function benchScenario(ort, sess, input, pre, sc, reps = 3) {
   for (let i = 0; i <= reps; i++) {
     const t0 = performance.now();
     const st = typed ?? await prefill(ort, sess, input, pre, sc.messageIds);
-    const out = await runStep(ort, sess, rulesStep(sc.ruleIds, st.p), st.pk, st.pv, false);
+    const out = await runStep(ort, sess, rulesStep(sc.ruleIds, st.p), st.kv, false);
     out.verdict.dispose();
-    if (!typed && st.pk !== pre.pk) { st.pk.dispose(); st.pv.dispose(); }
+    if (!typed && st.kv !== pre.kv) dispose(st.kv);
     if (i > 0) times.push(performance.now() - t0);
   }
-  if (typed && typed.pk !== pre.pk) { typed.pk.dispose(); typed.pv.dispose(); }
+  if (typed && typed.kv !== pre.kv) dispose(typed.kv);
   times.sort((x, y) => x - y);
   return times[Math.floor(times.length / 2)];
 }

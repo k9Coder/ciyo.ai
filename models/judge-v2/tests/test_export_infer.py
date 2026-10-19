@@ -111,3 +111,16 @@ def test_calibrate_on_exported_model_targets_its_own_scores(run_dir, tmp_path):
     scored = [(p, t) for ex in examples for p, t in zip(judge.score(ex.message, list(ex.rules)), ex.targets)]
     positives = [p for p, t in scored if t >= 0.5]
     assert sum(p >= judge.cfg.threshold for p in positives) / len(positives) >= 0.9
+
+
+def test_export_uses_per_layer_half_precision_kv(run_dir, tmp_path):
+    import onnxruntime as ort
+    out = export_model_dir(run_dir, tmp_path / "model", quantize=False)
+    sess = ort.InferenceSession(str(out / "judge.onnx"))
+    layers = json.loads((out / "backbone_spec.json").read_text(encoding="utf-8"))["num_layers"]
+    ins = {i.name: i.type for i in sess.get_inputs()}
+    outs = {o.name: o.type for o in sess.get_outputs()}
+    for i in range(layers):
+        assert ins[f"past_k_{i}"] == ins[f"past_v_{i}"] == "tensor(float16)"
+        assert outs[f"present_k_{i}"] == outs[f"present_v_{i}"] == "tensor(float16)"
+    assert "past_k" not in ins and "present_k" not in outs
