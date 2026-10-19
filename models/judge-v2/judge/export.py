@@ -40,6 +40,33 @@ class KVExportJudge(torch.nn.Module):
         return (self.model.head(bb.norm(x)), *ks, *vs)
 
 
+WEIGHT_ONLY_PATTERN = "/mlp/down_proj/"
+
+
+def quantize_hybrid(fp32: Path, final: Path, block_size: int = 64) -> None:
+    """int8 everywhere, but weight-only 8-bit for the MLP down projections.
+
+    Dynamic int8 also quantizes activations per tensor; the GELU outputs feeding down_proj carry large
+    outliers, and rounding them cut validation precision at the recall gate from 0.86 to 0.60. Weight-only
+    blocks there keep activations in fp32 at a small latency cost; dynamic int8 stays on every other MatMul
+    because weight-only everywhere misses the 2s latency gate.
+    """
+    import onnx
+    from onnxruntime.quantization.matmul_nbits_quantizer import DefaultWeightOnlyQuantConfig, MatMulNBitsQuantizer
+    model = onnx.load(str(fp32))
+    inits = {i.name for i in model.graph.initializer}
+    weighted = [n.name for n in model.graph.node if n.op_type == "MatMul" and any(x in inits for x in n.input)]
+    cfg = DefaultWeightOnlyQuantConfig(block_size=block_size, is_symmetric=True, bits=8,
+                                       op_types_to_quantize=("MatMul",), quant_axes=(("MatMul", 0),))
+    q = MatMulNBitsQuantizer(model, algo_config=cfg,
+                             nodes_to_exclude=[n for n in weighted if WEIGHT_ONLY_PATTERN not in n])
+    q.process()
+    mid = final.with_name("judge_wo.onnx")
+    q.model.save_model_to_file(str(mid), use_external_data_format=False)
+    quantize_dynamic(str(mid), str(final), weight_type=QuantType.QInt8, op_types_to_quantize=["MatMul", "Gather"])
+    mid.unlink()
+
+
 def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool = True) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     model = load_judge(run_dir)
@@ -55,7 +82,7 @@ def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool = True) -> Pat
                       dynamic_axes=axes)
     final = out_dir / "judge.onnx"
     if quantize:
-        quantize_dynamic(str(fp32), str(final), weight_type=QuantType.QInt8, op_types_to_quantize=["MatMul", "Gather"])
+        quantize_hybrid(fp32, final)
         fp32.unlink()
     else:
         fp32.replace(final)

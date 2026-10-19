@@ -124,3 +124,15 @@ def test_export_uses_per_layer_half_precision_kv(run_dir, tmp_path):
         assert ins[f"past_k_{i}"] == ins[f"past_v_{i}"] == "tensor(float16)"
         assert outs[f"present_k_{i}"] == outs[f"present_v_{i}"] == "tensor(float16)"
     assert "past_k" not in ins and "present_k" not in outs
+
+
+def test_hybrid_export_keeps_down_proj_activations_unquantized(run_dir, tmp_path):
+    import onnx
+    out = export_model_dir(run_dir, tmp_path / "model")
+    ops = {}
+    for n in onnx.load(str(out / "judge.onnx")).graph.node:
+        if n.op_type in ("MatMulNBits", "MatMulInteger"):
+            ops.setdefault(n.op_type, []).append(n.name)
+    assert ops["MatMulNBits"] and all("/mlp/down_proj/" in n for n in ops["MatMulNBits"])
+    assert ops["MatMulInteger"] and not any("/mlp/down_proj/" in n for n in ops["MatMulInteger"])
+    assert all(0.0 <= p <= 1.0 for p in OnnxJudge(out).score("hello can you review this code", RULES))
