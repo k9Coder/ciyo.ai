@@ -167,3 +167,18 @@ def test_examples_appends_long_test_messages(tmp_path):
     test = read_jsonl(tmp_path / "test.jsonl", Example)
     longs = [e for e in test if e.message_id.startswith("long_")]
     assert len(longs) == 1 and longs[0].violation_char_start >= 4000
+
+
+def test_examples_oversamples_claude_training_messages(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message("s1", "us_ssn", "positive", "email_draft", "en", "scripted 078-05-1120", False, 9, "tmpl:a", "scripted"),
+            Message("c1", "us_ssn", "positive", "email_draft", "en", "claude 078-05-1120", False, 7, "c1", "claude")]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    pairs = [Pair("p1", "s1", "r1"), Pair("p2", "c1", "r1")]
+    labels = [Label("p1", 1.0, "construction"), Label("p2", 1.0, "single")]
+    for name, items in (("messages", msgs), ("rules", rules), ("pairs", pairs), ("labels", labels)):
+        write_jsonl(tmp_path / f"{name}.jsonl", items)
+    (tmp_path / "splits.json").write_text(json.dumps({"s1": "train", "c1": "train"}))
+    pipeline.main(["examples", "--data", str(tmp_path), "--seed", "1", "--oversample-claude", "3"])
+    ids = [e.message_id for e in read_jsonl(tmp_path / "train.jsonl", Example)]
+    assert sorted(ids) == ["c1", "c1", "c1", "s1"]

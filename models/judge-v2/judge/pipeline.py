@@ -134,6 +134,9 @@ def cmd_examples(a):
         ms = [msgs[i] for i in sorted(ids)]
         ps = [p for p in pairs.values() if p.message_id in ids]
         built = build_examples(ms, list(rules.values()), ps, labels, CATEGORIES, human)
+        if split == "train" and a.oversample_claude > 1:
+            # Realistic teacher messages were ~10x rarer than scripted ones, and the model over-flagged them.
+            built += [e for e in built if msgs[e.message_id].source == "claude"] * (a.oversample_claude - 1)
         if split == "test" and a.long_per_language:
             test_msgs = [m for mid, m in msgs.items() if splits[mid] == "test"]
             built += build_long_examples(built, test_msgs, a.long_per_language, 4000, a.seed)
@@ -178,6 +181,8 @@ def main(argv=None):
     s = sub.add_parser("examples")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--max-test-messages", type=int, default=0)
+    s.add_argument("--oversample-claude", type=int, default=1,
+                   help="repeat each Claude Code training example N times in train.jsonl")
     s.add_argument("--long-per-language", type=int, default=0,
                    help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
