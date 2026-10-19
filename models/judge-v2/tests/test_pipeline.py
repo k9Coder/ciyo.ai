@@ -135,3 +135,35 @@ def test_build_examples_keeps_tiebreak_resolved_labels():
     rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
     ex = build_examples(msgs, rules, [Pair("p1", "m1", "r1")], [Label("p1", 0.9, "resolved")], CATEGORIES)
     assert [e.targets for e in ex] == [(0.9,)]
+
+
+def test_long_examples_bury_test_messages_behind_benign_filler():
+    from judge.data.examples import build_long_examples
+    fill = [Message(f"b{i}", None, "benign", "chat_question", "en", f"benign filler sentence number {i}. " * 20, False,
+                    None, f"b{i}", "scripted") for i in range(30)]
+    inner = Message("p1", "us_ssn", "positive", "email_draft", "en", "my ssn is 078-05-1120 ok", False, 10, "p1", "claude")
+    ex = Example("p1", inner.text, "en", ("r1",), ("discloses an SSN",), (1.0,), (True,), False, 10)
+    out = build_long_examples([ex], fill + [inner], per_language=5, min_prefix_chars=4000, seed=1)
+    assert len(out) == 1
+    long = out[0]
+    assert long.message_id != "p1" and long.rules == ex.rules and long.targets == ex.targets
+    assert long.violation_char_start >= 4000
+    assert long.message[long.violation_char_start:].startswith("078-05-1120")
+    assert inner.text in long.message and "benign filler" in long.message
+
+
+def test_examples_appends_long_test_messages(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message("c1", "us_ssn", "positive", "meeting_notes", "it", "ssn 078-05-1120", False, 4, "c1", "claude")]
+    msgs += [Message(f"b{i}", None, "benign", "meeting_notes", "it", "testo innocuo " * 60, False, None, f"b{i}", "claude")
+             for i in range(10)]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    pairs = [Pair("pc1", "c1", "r1")]
+    labels = [Label("pc1", 1.0, "single")]
+    for name, items in (("messages", msgs), ("rules", rules), ("pairs", pairs), ("labels", labels)):
+        write_jsonl(tmp_path / f"{name}.jsonl", items)
+    (tmp_path / "splits.json").write_text(json.dumps({m.id: "test" for m in msgs}))
+    pipeline.main(["examples", "--data", str(tmp_path), "--seed", "1", "--long-per-language", "3"])
+    test = read_jsonl(tmp_path / "test.jsonl", Example)
+    longs = [e for e in test if e.message_id.startswith("long_")]
+    assert len(longs) == 1 and longs[0].violation_char_start >= 4000

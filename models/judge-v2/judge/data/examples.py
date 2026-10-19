@@ -22,3 +22,43 @@ def build_examples(messages, rules, pairs, labels, categories, human: dict | Non
                            tuple(target[p.id] for p in ps), tuple(cats[r.category_id].critical for r in rs),
                            m.adversarial, m.violation_char_start))
     return out
+
+
+def build_long_examples(examples, messages, per_language: int, min_prefix_chars: int, seed: int) -> list[Example]:
+    """Bury test messages behind same-language benign filler so the violation sits past ~500 tokens.
+
+    Callers pass test-split examples and messages only, so no training text leaks into the test set.
+    Positives keep their violation offset (shifted by the filler); hard negatives check long-message precision.
+    """
+    import dataclasses
+    import random
+    rng = random.Random(seed)
+    msgs = {m.id: m for m in messages}
+    used = {e.message_id for e in examples}
+    pool: dict[str, list] = {}
+    for m in messages:
+        if m.polarity == "benign" and m.id not in used:
+            pool.setdefault(m.language, []).append(m)
+    out = []
+    for lang in sorted({e.language for e in examples}):
+        fillers = pool.get(lang, [])
+        if not fillers:
+            continue
+        lang_ex = [e for e in examples if e.language == lang and msgs[e.message_id].polarity != "benign"]
+        pos = [e for e in lang_ex if e.violation_char_start is not None]
+        neg = [e for e in lang_ex if e.violation_char_start is None and all(t < 0.5 for t in e.targets)]
+        picked = rng.sample(pos, min(per_language, len(pos))) + rng.sample(neg, min(per_language // 2, len(neg)))
+        for e in picked:
+            parts, size = [], 0
+            for f in rng.sample(fillers, len(fillers)):
+                parts.append(f.text)
+                size += len(f.text) + 2
+                if size >= min_prefix_chars:
+                    break
+            if size < min_prefix_chars:
+                continue
+            prefix = "\n\n".join(parts) + "\n\n"
+            start = None if e.violation_char_start is None else len(prefix) + e.violation_char_start
+            out.append(dataclasses.replace(e, message_id="long_" + e.message_id, message=prefix + e.message,
+                                           violation_char_start=start))
+    return out

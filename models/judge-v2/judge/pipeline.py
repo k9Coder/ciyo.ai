@@ -8,7 +8,7 @@ from judge.cc.ingest import ingest_labels, ingest_pairs
 from judge.cc.merge import merge_second_pass, needs_second_pass
 from judge.cc.orders import label_orders, pair_orders, read_order, write_orders
 from judge.data.catalog import CATEGORIES
-from judge.data.examples import build_examples
+from judge.data.examples import build_examples, build_long_examples
 from judge.data.schema import Label, Message, Pair, Rule, read_jsonl, write_jsonl
 from judge.data.scripted import generate, load_templates, validate
 from judge.data.splits import assign_splits, check_no_leakage, rule_is_test_only
@@ -133,7 +133,11 @@ def cmd_examples(a):
     for split, ids in keep.items():
         ms = [msgs[i] for i in sorted(ids)]
         ps = [p for p in pairs.values() if p.message_id in ids]
-        write_jsonl(a.data / f"{split}.jsonl", build_examples(ms, list(rules.values()), ps, labels, CATEGORIES, human))
+        built = build_examples(ms, list(rules.values()), ps, labels, CATEGORIES, human)
+        if split == "test" and a.long_per_language:
+            test_msgs = [m for mid, m in msgs.items() if splits[mid] == "test"]
+            built += build_long_examples(built, test_msgs, a.long_per_language, 4000, a.seed)
+        write_jsonl(a.data / f"{split}.jsonl", built)
     queue = []
     for l in labels:
         p = pairs[l.pair_id]
@@ -174,6 +178,8 @@ def main(argv=None):
     s = sub.add_parser("examples")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--max-test-messages", type=int, default=0)
+    s.add_argument("--long-per-language", type=int, default=0,
+                   help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
     handlers = {"scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
