@@ -16,7 +16,7 @@ def _m(i, lang="en", cat="us_ssn", style="code_help", group=None, text=None):
 
 
 def test_catalog_invariants():
-    assert len(CATEGORIES) == 25 and len({c.id for c in CATEGORIES}) == 25
+    assert len(CATEGORIES) == 55 and len({c.id for c in CATEGORIES}) == 55
     assert all(c.critical == (c.family in CRITICAL_FAMILIES) for c in CATEGORIES)
     assert sum(c.heldout for c in CATEGORIES) == 7
     assert set(TRAIN_LANGUAGES) | set(HELDOUT_LANGUAGES) == set(LANGUAGES)
