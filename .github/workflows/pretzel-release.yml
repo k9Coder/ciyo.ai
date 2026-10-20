@@ -25,6 +25,20 @@ jobs:
           cache: pnpm
           cache-dependency-path: pretzel/pnpm-lock.yaml
 
+      - name: Verify API base is reachable
+        # The build bakes this URL into every backend call and the manifest's
+        # host_permissions; a wrong value (e.g. a host with no TLS cert) ships an
+        # extension that can't sign in or fetch policy at all.
+        env:
+          VITE_API_BASE: ${{ secrets.PRETZEL_API_BASE }}
+        run: |
+          base="${VITE_API_BASE%/}"
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$base/health" || echo 000)
+          if [ "$code" != "200" ]; then
+            echo "::error::PRETZEL_API_BASE health check failed: $base/health returned $code"
+            exit 1
+          fi
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: pretzel

@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 const schema = z.object({
-  VITE_API_BASE: z.string().default("https://api.mykka.ai"),
+  // Trailing slashes stripped: every call site does `${API_BASE}/v1/...`, so a
+  // base of "https://host/" yields "//v1/..." paths the backend 404s on.
+  VITE_API_BASE: z.string().default("https://api.mykka.ai").transform((s) => s.replace(/\/+$/, "")),
   // Default '' (not required): this parse runs in the browser at bundle eval,
   // so a hard throw would brick the extension instead of failing the build.
   // Clerk init surfaces a missing key loudly at runtime.
