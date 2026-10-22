@@ -136,3 +136,24 @@ def test_lora_trains_only_adapters_and_heads_and_saves_merged(tmp_path, tiny_tok
     sd = torch.load(out / "best.pt", weights_only=True)
     assert not any("lora" in k or "base_model" in k for k in sd)
     load_judge(out)
+
+
+def test_span_only_training_leaves_verdict_weights_untouched(tmp_path, tiny_tokenizer_dir):
+    import torch
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    write_jsonl(data / "train.jsonl", _span_examples(160, 1))
+    write_jsonl(data / "val.jsonl", _span_examples(20, 2))
+    first = tmp_path / "first"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(first), "--epochs", "1", "--lr", "1e-3",
+                "--warmup", "5", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--span-weight", "0"])
+    before = torch.load(first / "best.pt", weights_only=True)
+    write_jsonl(data / "train.jsonl", _span_examples(120, 1) + _examples(40, 3))  # some examples have no span
+    second = tmp_path / "second"
+    train_main(["--init-from", str(first), "--data", str(data), "--out", str(second), "--epochs", "3", "--lr", "3e-3",
+                "--warmup", "5", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--span-only"])
+    after = torch.load(second / "best.pt", weights_only=True)
+    for k in before:
+        if not k.startswith("span_"):
+            torch.testing.assert_close(after[k], before[k], rtol=0, atol=0)
+    spans = [json.loads(l)["span_loss"] for l in (second / "train_log.jsonl").read_text().splitlines()]
+    assert sum(spans[-5:]) / 5 < 0.5 * sum(spans[:5]) / 5

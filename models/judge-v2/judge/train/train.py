@@ -140,6 +140,7 @@ def main(argv=None):
     ap.add_argument("--lora-rank", type=int, default=0)
     ap.add_argument("--lora-alpha", type=int, default=16)
     ap.add_argument("--frozen-fp16", action="store_true")
+    ap.add_argument("--span-only", action="store_true")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
     seed_everything(a.seed)
@@ -155,6 +156,10 @@ def main(argv=None):
 
     model, tok, cfg = (_from_base if a.base else _from_run)(a, a.out)
     seed_everything(a.seed)
+    if a.span_only:
+        # Train only the span head on a finished judge: the verdict path stays bit-identical.
+        for name, q in model.named_parameters():
+            q.requires_grad_(name.startswith("span_"))
     if a.lora_rank:
         # Second-opinion models: frozen backbone (optionally stored in fp16) plus LoRA adapters; heads train fully.
         for q in model.backbone.parameters():
@@ -200,14 +205,17 @@ def main(argv=None):
                 logits, skey, squery, _, _ = model(*step_tensors(st, device), k0, v0)
             target = torch.tensor(ex.targets, dtype=torch.float32, device=device)
             loss = soft_ce(logits[0, list(st.verdict_index)].float(), target) / a.grad_accum
-            if a.span_weight:
+            if a.span_only:
+                loss = logits.sum() * 0
+            if a.span_weight or a.span_only:
                 n_msg = len(tok.message_ids(ex.message))
                 sl = span_loss(skey, squery, st.verdict_index, span_targets(tok, prefix, ex), len(prefix),
                                len(prefix) + n_msg, device)
                 if sl is not None:
-                    loss = loss + a.span_weight * sl / a.grad_accum
+                    loss = loss + (1.0 if a.span_only else a.span_weight) * sl / a.grad_accum
                     acc_span += sl.item() / a.grad_accum
-            scaler.scale(loss).backward()
+            if loss.requires_grad:  # span-only examples without a span carry no gradient
+                scaler.scale(loss).backward()
             acc += 1
             acc_loss += loss.item()
             if acc == a.grad_accum:
@@ -223,6 +231,9 @@ def main(argv=None):
                 if step % a.eval_every == 0:
                     checkpoint()
     checkpoint()
+    if a.span_only:
+        # Verdict metrics cannot change, so best-F2 selection never fires after the first save; keep the end state.
+        torch.save(model.state_dict(), a.out / "best.pt")
     log.close()
     final = json.loads(metrics_path.read_text(encoding="utf-8"))
     metrics_path.write_text(json.dumps({**final, "skipped_long": len(skipped_ids)}), encoding="utf-8")
