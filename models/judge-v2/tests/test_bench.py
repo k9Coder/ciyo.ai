@@ -63,3 +63,15 @@ def test_js_bench_steps_free_onnx_tensors():
     test_file = Path(__file__).resolve().parents[1] / "bench" / "judge_steps.test.mjs"
     r = subprocess.run(["node", "--test", str(test_file)], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_js_cascade():
+    import shutil
+    import subprocess
+    from pathlib import Path
+    if shutil.which("node") is None:
+        import pytest
+        pytest.skip("node not installed")
+    test_file = Path(__file__).resolve().parents[1] / "bench" / "cascade.test.mjs"
+    r = subprocess.run(["node", "--test", str(test_file)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
