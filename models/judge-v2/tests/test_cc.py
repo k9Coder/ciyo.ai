@@ -90,3 +90,14 @@ def test_pair_orders_use_training_styles_for_training_orders():
     train_orders = [o for o in orders if o.language not in HELDOUT_LANGUAGES and o.category_id not in HELDOUT_CATEGORY_IDS]
     assert train_orders and all(not set(o.styles) & HELDOUT_STYLES for o in train_orders)
     assert any(set(o.styles) & HELDOUT_STYLES for o in orders if o not in train_orders)
+
+
+def test_ingest_records_excerpt_end(tmp_path):
+    order = Order("o1", "pairs", "en", "us_ssn", ("email_draft",), 1, ())
+    row = {"message": "my ssn 078-05-1120 ok", "polarity": "positive", "style": "email_draft", "adversarial": False,
+           "violating_excerpt": "078-05-1120",
+           "rules": [{"text": "discloses an SSN", "category": "us_ssn", "language": "en", "verdict": "match", "confidence": 0.9},
+                     {"text": "discloses a card", "category": "credit_card", "language": "en", "verdict": "no_match", "confidence": 0.9}]}
+    p = _write(tmp_path / "o1.jsonl", [row])
+    msgs = ingest_pairs(order, p)[0]
+    assert (msgs[0].violation_char_start, msgs[0].violation_char_end) == (7, 18)

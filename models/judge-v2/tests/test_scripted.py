@@ -128,3 +128,9 @@ def test_amounts_vary_in_magnitude_and_format():
     amounts = [FILLERS["amount"](Faker("en_US"), rng) for _ in range(200)]
     assert any(a.endswith("M") for a in amounts) and any(a.endswith("K") for a in amounts)
     assert any(a.replace(",", "").isdigit() for a in amounts)
+
+
+def test_generated_positive_records_span_end(tmp_path):
+    msgs, *_ = generate([_set(tmp_path, EN)], per_template=1, seed=3)
+    pos = [m for m in msgs if m.polarity == "positive"]
+    assert pos and all(m.violation_char_end is not None and m.violation_char_end > m.violation_char_start for m in pos)

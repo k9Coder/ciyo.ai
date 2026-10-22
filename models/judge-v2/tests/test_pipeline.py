@@ -203,3 +203,12 @@ def test_long_examples_shift_spans():
     long = build_long_examples([ex], fill + [inner], per_language=1, min_prefix_chars=4000, seed=1)[0]
     s, e = long.spans[0]
     assert long.message[s:e] == "078-05-1120"
+
+
+def test_backfill_spans_fills_end_offsets(tmp_path):
+    from judge.data.schema import write_jsonl
+    old = Message("m1", "us_ssn", "positive", "code_help", "en", "ssn 078-05-1120", False, 4, "m1", "claude")
+    new = Message("m1", "us_ssn", "positive", "code_help", "en", "ssn 078-05-1120", False, 4, "m1", "claude", 15)
+    write_jsonl(tmp_path / "all" / "messages.jsonl", [old]); write_jsonl(tmp_path / "src" / "messages.jsonl", [new])
+    pipeline.main(["backfill-spans", "--data", str(tmp_path / "all"), "--sources", str(tmp_path / "src")])
+    assert read_jsonl(tmp_path / "all" / "messages.jsonl", Message)[0].violation_char_end == 15

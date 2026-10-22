@@ -1,4 +1,5 @@
 import argparse
+import dataclasses
 import json
 import random
 import sys
@@ -44,6 +45,21 @@ def cmd_scripted(a):
     if errors:
         sys.exit("invalid templates:\n" + "\n".join(errors))
     _write_all(a.out, *generate(sets, a.per_template, a.seed))
+
+
+def cmd_backfill_spans(a):
+    ends = {}
+    for d in a.sources:
+        for m in read_jsonl(d / "messages.jsonl", Message):
+            if m.violation_char_end is not None:
+                ends[m.id] = m.violation_char_end
+    out = [dataclasses.replace(m, violation_char_end=ends.get(m.id, m.violation_char_end))
+           for m in read_jsonl(a.data / "messages.jsonl", Message)]
+    write_jsonl(a.data / "messages.jsonl", out)
+    need = [m for m in out if m.violation_char_start is not None]
+    filled = sum(m.violation_char_end is not None for m in need)
+    (a.data / "backfill_report.json").write_text(json.dumps({"filled": filled, "missing": len(need) - filled}),
+                                                  encoding="utf-8")
 
 
 def cmd_cc_orders(a):
@@ -160,6 +176,9 @@ def main(argv=None):
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-template", type=int, required=True)
     s.add_argument("--seed", type=int, default=1234)
+    s = sub.add_parser("backfill-spans")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--sources", type=Path, nargs="+", required=True)
     s = sub.add_parser("cc-orders")
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-order", type=int, required=True)
@@ -187,7 +206,7 @@ def main(argv=None):
                    help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
-    handlers = {"scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+    handlers = {"backfill-spans": cmd_backfill_spans, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
                 "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
     handler = handlers[a.cmd]
     handler(a)

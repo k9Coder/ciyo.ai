@@ -192,15 +192,15 @@ def _render(text: str, fake, rng, values: dict) -> str:
     return SLOT.sub(sub, text)
 
 
-def _fill(text: str, fake, rng, fixed: dict) -> tuple[str, int | None]:
+def _fill(text: str, fake, rng, fixed: dict) -> tuple[str, int | None, int | None]:
     values = dict(fixed)
     m = SPAN.search(text)
     if not m:
-        return _render(text, fake, rng, values), None
+        return _render(text, fake, rng, values), None, None
     before = _render(text[:m.start()], fake, rng, values)
     span = _render(m.group(1), fake, rng, values)
     after = _render(text[m.end():], fake, rng, values)
-    return before + span + after, len(before)
+    return before + span + after, len(before), len(before) + len(span)
 
 
 def generate(sets, per_template: int, seed: int, english_rule_share: float = 0.3):
@@ -223,9 +223,9 @@ def generate(sets, per_template: int, seed: int, english_rule_share: float = 0.3
         for t in ts.messages:
             for i in range(per_template):
                 codename = _codename(fake, rng) if t.category == "project_codename" else None
-                text, start = _fill(t.text, fake, rng, {"codename": codename} if codename else {})
+                text, start, end = _fill(t.text, fake, rng, {"codename": codename} if codename else {})
                 m = Message(stable_id("msg", ts.language, t.id, str(i), text), t.category, t.polarity, t.style,
-                            ts.language, text, t.adversarial, start, "tmpl:" + t.id, "scripted")
+                            ts.language, text, t.adversarial, start, "tmpl:" + t.id, "scripted", end)
                 msgs.append(m)
                 is_test = message_is_test(m)
                 use_en = ts.language != "en" and "en" in rule_tmpls and rng.random() < english_rule_share

@@ -29,11 +29,12 @@ def _parse_pair_row(order, line: str):
     _check(row["style"] in MESSAGE_STYLES, f"unknown style {row['style']!r}")
     _check(isinstance(row["adversarial"], bool), "adversarial must be a boolean")
     _check(has_script(text, order.language), f"message not in {order.language} script")
-    start = None
+    start = end = None
     if row["polarity"] == "positive":
         excerpt = row["violating_excerpt"]
         _check(bool(excerpt) and excerpt in text, "violating_excerpt is not an exact substring of message")
         start = text.index(excerpt)
+        end = start + len(excerpt)
     rules = row["rules"]
     _check(isinstance(rules, list) and 2 <= len(rules) <= 4, "need 2-4 rules")
     parsed = []
@@ -45,7 +46,7 @@ def _parse_pair_row(order, line: str):
         parsed.append((r["text"].strip(), r["category"], r["language"], p_from(r["verdict"], r["confidence"])))
     mid = stable_id("msg", order.id, text)
     msg = Message(mid, order.category_id, row["polarity"], row["style"], order.language, text, row["adversarial"],
-                  start, mid, "claude")
+                  start, mid, "claude", end)
     return msg, parsed
 
 
