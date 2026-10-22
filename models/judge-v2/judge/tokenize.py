@@ -37,6 +37,11 @@ class JudgeTokenizer:
     def message_ids(self, text: str) -> list[int]:
         return self._encode(text)
 
+    def message_offsets(self, text: str) -> list[tuple[int, int]]:
+        """Character (start, end) of each token of message_ids(text), aligned one to one."""
+        enc = self.hf(text, add_special_tokens=False, return_offsets_mapping=True)
+        return [tuple(o) for o in enc["offset_mapping"]]
+
     def rule_ids(self, text: str) -> list[int]:
         rule = text.strip()
         if not rule:
@@ -45,3 +50,13 @@ class JudgeTokenizer:
 
     def char_to_token_index(self, text: str, char_pos: int) -> int:
         return len(self._encode(text[:char_pos]))
+
+
+def char_span_to_tokens(offsets, start: int, end: int):
+    """First and last token overlapping the character range [start, end), or None."""
+    hit = [i for i, (a, b) in enumerate(offsets) if a < end and b > start]
+    return (hit[0], hit[-1]) if hit else None
+
+
+def tokens_to_char_span(offsets, t0: int, t1: int) -> tuple[int, int]:
+    return offsets[t0][0], offsets[t1][1]
