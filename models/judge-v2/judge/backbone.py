@@ -38,6 +38,15 @@ class BackboneSpec:
                 cfg.num_key_value_heads, head_dim, cfg.intermediate_size, cfg.rms_norm_eps,
                 ("full_attention",) * cfg.num_hidden_layers, {"full_attention": theta},
                 {"full_attention": factor}, None, head_dim ** -0.5, None, 1.0, "silu")
+        if cfg.model_type == "qwen3":
+            # Llama layout plus per-head RMSNorm on q and k (no +1 offset, unlike Gemma 3).
+            rp = getattr(cfg, "rope_parameters", None) or {"rope_theta": cfg.rope_theta}
+            theta, factor = _rope_params(rp)
+            return BackboneSpec(
+                "qwen3", cfg.vocab_size, cfg.hidden_size, cfg.num_hidden_layers, cfg.num_attention_heads,
+                cfg.num_key_value_heads, cfg.head_dim, cfg.intermediate_size, cfg.rms_norm_eps,
+                ("full_attention",) * cfg.num_hidden_layers, {"full_attention": theta},
+                {"full_attention": factor}, None, cfg.head_dim ** -0.5, None, 1.0, "silu")
         if cfg.model_type == "gemma3_text":
             types = tuple(cfg.layer_types)
             thetas, factors = {}, {}
@@ -101,10 +110,11 @@ class Attention(nn.Module):
         self.k_proj = nn.Linear(h, self.kv * d, bias=False)
         self.v_proj = nn.Linear(h, self.kv * d, bias=False)
         self.o_proj = nn.Linear(self.n * d, h, bias=False)
-        self.qk_norm = spec.arch == "gemma3"
+        self.qk_norm = spec.arch in ("gemma3", "qwen3")
         if self.qk_norm:
-            self.q_norm = RMSNorm(d, spec.rms_eps, True)
-            self.k_norm = RMSNorm(d, spec.rms_eps, True)
+            offset = spec.arch == "gemma3"
+            self.q_norm = RMSNorm(d, spec.rms_eps, offset)
+            self.k_norm = RMSNorm(d, spec.rms_eps, offset)
         self.scale, self.softcap = spec.query_scale, spec.attn_softcap
         self.window = spec.sliding_window if layer_type == "sliding_attention" else None
         theta, factor = spec.rope_theta[layer_type], spec.rope_linear_factor[layer_type]
