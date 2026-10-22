@@ -212,3 +212,17 @@ def test_backfill_spans_fills_end_offsets(tmp_path):
     write_jsonl(tmp_path / "all" / "messages.jsonl", [old]); write_jsonl(tmp_path / "src" / "messages.jsonl", [new])
     pipeline.main(["backfill-spans", "--data", str(tmp_path / "all"), "--sources", str(tmp_path / "src")])
     assert read_jsonl(tmp_path / "all" / "messages.jsonl", Message)[0].violation_char_end == 15
+
+
+def test_subset_keeps_scripted_and_seeded_half_of_claude(tmp_path):
+    import random
+    from judge.data.schema import write_jsonl
+    msgs = [Message(f"c{i}", "us_ssn", "positive", "email_draft", "en", f"t{i}", False, None, f"c{i}", "claude") for i in range(6)]
+    msgs += [Message("s1", "us_ssn", "positive", "email_draft", "en", "s", False, None, "tmpl:a", "scripted")]
+    write_jsonl(tmp_path / "messages.jsonl", msgs)
+    ex = [Example(m.id, m.text, "en", ("r",), ("x",), (1.0,), (False,), False, None) for m in msgs]
+    write_jsonl(tmp_path / "train.jsonl", ex); write_jsonl(tmp_path / "val.jsonl", ex[:1])
+    pipeline.main(["subset", "--data", str(tmp_path), "--out", str(tmp_path / "h"), "--claude-fraction", "0.5", "--seed", "42"])
+    ids = [e.message_id for e in read_jsonl(tmp_path / "h" / "train.jsonl", Example)]
+    want = set(random.Random(42).sample(sorted(f"c{i}" for i in range(6)), 3))
+    assert set(ids) == want | {"s1"}

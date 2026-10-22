@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import dataclasses
 import json
 import random
@@ -60,6 +61,21 @@ def cmd_backfill_spans(a):
     filled = sum(m.violation_char_end is not None for m in need)
     (a.data / "backfill_report.json").write_text(json.dumps({"filled": filled, "missing": len(need) - filled}),
                                                   encoding="utf-8")
+
+
+def cmd_subset(a):
+    src = {m.id: m.source for m in read_jsonl(a.data / "messages.jsonl", Message)}
+    lines = [l for l in (a.data / "train.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    mid = lambda l: json.loads(l)["message_id"]
+    claude = sorted({mid(l) for l in lines if src[mid(l)] == "claude"})
+    keep = set(random.Random(a.seed).sample(claude, int(len(claude) * a.claude_fraction)))
+    kept = [l for l in lines if src[mid(l)] != "claude" or mid(l) in keep]
+    if a.extra_examples:
+        extra = [l for l in a.extra_examples.read_text(encoding="utf-8").splitlines() if l.strip()]
+        kept += extra * a.extra_repeat
+    a.out.mkdir(parents=True, exist_ok=True)
+    (a.out / "train.jsonl").write_text("\n".join(kept) + "\n", encoding="utf-8")
+    shutil.copy2(a.data / "val.jsonl", a.out / "val.jsonl")
 
 
 def cmd_cc_orders(a):
@@ -179,6 +195,13 @@ def main(argv=None):
     s = sub.add_parser("backfill-spans")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--sources", type=Path, nargs="+", required=True)
+    s = sub.add_parser("subset")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--out", type=Path, required=True)
+    s.add_argument("--claude-fraction", type=float, default=0.5)
+    s.add_argument("--seed", type=int, default=42)
+    s.add_argument("--extra-examples", type=Path)
+    s.add_argument("--extra-repeat", type=int, default=1)
     s = sub.add_parser("cc-orders")
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-order", type=int, required=True)
@@ -206,7 +229,7 @@ def main(argv=None):
                    help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
-    handlers = {"backfill-spans": cmd_backfill_spans, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+    handlers = {"backfill-spans": cmd_backfill_spans, "subset": cmd_subset, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
                 "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
     handler = handlers[a.cmd]
     handler(a)
