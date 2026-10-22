@@ -40,8 +40,40 @@ export async function runStep(ort, sess, st, kv, needState) {
     attn_bias: new ort.Tensor("float32", st.bias, [1, 1, st.s, st.t]),
   };
   kvNames(layers, "past").forEach((n, i) => { feeds[n] = kv[i]; });
-  const out = await sess.run(feeds, needState ? ["verdict", ...kvNames(layers, "present")] : ["verdict"]);
-  return { verdict: out.verdict, kv: needState ? kvNames(layers, "present").map((n) => out[n]) : null };
+  const names = needState ? ["verdict", "span_key", ...kvNames(layers, "present")] : ["verdict", "span_query"];
+  const out = await sess.run(feeds, names);
+  return {
+    verdict: out.verdict,
+    spanKey: needState ? out.span_key : null,
+    spanQuery: needState ? null : out.span_query,
+    kv: needState ? kvNames(layers, "present").map((n) => out[n]) : null,
+  };
+}
+
+export const SPAN_DIM = 64;
+
+// Port of judge.model.best_span over dot-product scores: per rule, the (t0, t1) maximising
+// start[t0] + end[t1] with t0 <= t1 < t0 + maxLen. spanQuery rows are [start query | end query].
+export function rulesSpans(spanQuery, keys, verdictIndex, T, maxLen = 128) {
+  return verdictIndex.map((vi) => {
+    const q = spanQuery.subarray(vi * 2 * SPAN_DIM, (vi + 1) * 2 * SPAN_DIM);
+    const start = new Float32Array(T), end = new Float32Array(T);
+    for (let t = 0; t < T; t++) {
+      let s = 0, e = 0;
+      for (let d = 0; d < SPAN_DIM; d++) {
+        s += keys[t * SPAN_DIM + d] * q[d];
+        e += keys[t * SPAN_DIM + d] * q[SPAN_DIM + d];
+      }
+      start[t] = s; end[t] = e;
+    }
+    let best = -Infinity, arg = [0, 0];
+    for (let t0 = 0; t0 < T; t0++) {
+      for (let t1 = t0; t1 < Math.min(T, t0 + maxLen); t1++) {
+        if (start[t0] + end[t1] > best) { best = start[t0] + end[t1]; arg = [t0, t1]; }
+      }
+    }
+    return arg;
+  });
 }
 
 const dispose = (kv) => kv.forEach((t) => t.dispose());
@@ -51,20 +83,25 @@ export async function prefixState(ort, sess, input) {
   const kv = Array.from({ length: 2 * input.layers }, empty);
   const o = await runStep(ort, sess, causalStep(input.prefixIds, 0), kv, true);
   o.verdict.dispose();
+  o.spanKey.dispose();
   return { kv: o.kv, p: input.prefixIds.length };
 }
 
 export async function prefill(ort, sess, input, pre, messageIds) {
   let { kv, p } = pre;
+  // Span keys of every message token, kept as plain floats (T x SPAN_DIM) for the rules step.
+  const keys = new Float32Array(messageIds.length * SPAN_DIM);
   for (let a = 0; a < messageIds.length; a += input.chunk) {
     const ids = messageIds.slice(a, a + input.chunk);
     const o = await runStep(ort, sess, causalStep(ids, p), kv, true);
+    keys.set(o.spanKey.data.subarray(0, ids.length * SPAN_DIM), a * SPAN_DIM);
     // Free superseded KV states now; waiting for GC let them pile up past the RAM gate.
     o.verdict.dispose();
+    o.spanKey.dispose();
     if (kv !== pre.kv) dispose(kv);
     kv = o.kv; p += ids.length;
   }
-  return { kv, p };
+  return { kv, p, keys };
 }
 
 export async function benchScenario(ort, sess, input, pre, sc, reps = 3) {
@@ -75,6 +112,7 @@ export async function benchScenario(ort, sess, input, pre, sc, reps = 3) {
     const st = typed ?? await prefill(ort, sess, input, pre, sc.messageIds);
     const out = await runStep(ort, sess, rulesStep(sc.ruleIds, st.p), st.kv, false);
     out.verdict.dispose();
+    out.spanQuery.dispose();
     if (!typed && st.kv !== pre.kv) dispose(st.kv);
     if (i > 0) times.push(performance.now() - t0);
   }

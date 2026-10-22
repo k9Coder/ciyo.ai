@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { benchScenario, prefill } from "./judge_steps.mjs";
+import { benchScenario, prefill, rulesSpans } from "./judge_steps.mjs";
 
 class FakeTensor {
   constructor(type, data, dims) { this.type = type; this.data = data; this.dims = dims; this.disposed = false; }
@@ -11,7 +11,9 @@ function fakeSession(made, seenFeeds = []) {
   return { run: async (feeds, names) => {
     seenFeeds.push(Object.keys(feeds));
     const out = {};
-    for (const n of names) { out[n] = new FakeTensor("float32", new Float32Array(0), []); made.push(out[n]); }
+    const s = feeds.input_ids.dims[1];
+    const size = (name) => (name === "span_key" ? s * 64 : name === "span_query" ? s * 128 : 0);
+    for (const n of names) { out[n] = new FakeTensor("float32", new Float32Array(size(n)).fill(1), [1, s]); made.push(out[n]); }
     return out;
   } };
 }
@@ -36,4 +38,24 @@ test("benchScenario frees verdict outputs and per-repetition states", async () =
   await benchScenario(ort, fakeSession(made), input, pre, { kind: "paste_then_send", messageIds: [5, 6, 7], ruleIds: [[1, 2]] }, 2);
   assert.ok(made.every((t) => t.disposed));
   assert.ok(pre.kv.every((t) => !t.disposed));
+});
+
+
+test("prefill concatenates span keys across chunks and frees the key tensors", async () => {
+  const made = [];
+  const pre = { kv: kv(), p: 1 };
+  const st = await prefill(ort, fakeSession(made), input, pre, [5, 6, 7, 8, 9]);
+  assert.equal(st.keys.length, 5 * 64);
+  assert.ok(made.filter((t) => t.data.length === 2 * 64 || t.data.length === 64).every((t) => t.disposed));
+});
+
+test("rulesSpans picks the best start and end per rule", () => {
+  const T = 4;
+  const keys = new Float32Array(T * 64);
+  keys[1 * 64 + 0] = 1;  // token 1 aligns with start dimension 0
+  keys[3 * 64 + 1] = 1;  // token 3 aligns with end dimension 1
+  const query = new Float32Array(128);
+  query[0] = 5;          // start query dim 0
+  query[64 + 1] = 5;     // end query dim 1
+  assert.deepEqual(rulesSpans(query, keys, [0], T), [[1, 3]]);
 });

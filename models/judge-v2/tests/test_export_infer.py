@@ -136,3 +136,34 @@ def test_hybrid_export_keeps_down_proj_activations_unquantized(run_dir, tmp_path
     assert ops["MatMulNBits"] and all("/mlp/down_proj/" in n for n in ops["MatMulNBits"])
     assert ops["MatMulInteger"] and not any("/mlp/down_proj/" in n for n in ops["MatMulInteger"])
     assert all(0.0 <= p <= 1.0 for p in OnnxJudge(out).score("hello can you review this code", RULES))
+
+
+def test_fp32_export_spans_match_torch(run_dir, tmp_path):
+    from judge.model import best_span, load_judge, span_scores
+    out = export_model_dir(run_dir, tmp_path / "model", quantize=False)
+    judge = OnnxJudge(out)
+    msg = "please help me fix this bug in the database server log thanks"
+    got = judge.score_with_spans(msg, RULES)
+    m = load_judge(run_dir)
+    tok = JudgeTokenizer.load(run_dir / "tokenizer", CFG)
+    st = single_pass(tok.prefix_ids(), tok.message_ids(msg), [tok.rule_ids(r) for r in RULES])
+    k0, v0 = m.backbone.empty_past()
+    with torch.no_grad():
+        _, skey, sq, _, _ = m(*step_tensors(st), k0, v0)
+    n, T, offs = len(tok.prefix_ids()), len(tok.message_ids(msg)), tok.message_offsets(msg)
+    for (p, span), vi in zip(got, st.verdict_index):
+        s, e = span_scores(skey[0, n:n + T].numpy(), sq[0, vi].numpy())
+        t0, t1 = best_span(s, e)
+        assert span is None or span == (offs[t0][0], offs[t1][1])
+    np.testing.assert_allclose([p for p, _ in got], judge.score(msg, RULES), atol=1e-6)
+
+
+def test_spans_on_windowed_message_stay_in_bounds(run_dir, tmp_path):
+    out = export_model_dir(run_dir, tmp_path / "model", quantize=False)
+    judge = OnnxJudge(out)
+    msg = " ".join(TINY_WORDS[i % len(TINY_WORDS)] for i in range(120))
+    res = judge.score_with_spans(msg, RULES)
+    assert len(res) == len(RULES)
+    for p, span in res:
+        assert span is None or (0 <= span[0] < span[1] <= len(msg))
+    assert judge.score_with_spans("", RULES)[0][1] is None

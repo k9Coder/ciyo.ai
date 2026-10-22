@@ -17,6 +17,9 @@ def kv_names(num_layers: int, kind: str) -> list[str]:
     return [f"{kind}_{kv}_{i}" for kv in ("k", "v") for i in range(num_layers)]
 
 
+SPAN_OUTPUTS = ["verdict", "span_key", "span_query"]
+
+
 class KVExportJudge(torch.nn.Module):
     """Export wrapper: one fp16 KV tensor per layer instead of stacked fp32 tensors.
 
@@ -37,7 +40,8 @@ class KVExportJudge(torch.nn.Module):
             x, k, v = layer(x, position_ids, attn_bias, past[i].float(), past[n + i].float())
             ks.append(k.half())
             vs.append(v.half())
-        return (self.model.head(bb.norm(x)), *ks, *vs)
+        h = bb.norm(x)
+        return (self.model.head(h), self.model.span_key(h), self.model.span_query(h), *ks, *vs)
 
 
 WEIGHT_ONLY_PATTERN = "/mlp/down_proj/"
@@ -75,10 +79,11 @@ def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool = True) -> Pat
     past = [torch.zeros(1, spec.num_kv_heads, p, spec.head_dim, dtype=torch.float16) for _ in range(2 * n)]
     args = (torch.zeros(1, s, dtype=torch.long), torch.arange(p, p + s)[None], torch.zeros(1, 1, s, p + s), *past)
     past_names, present_names = kv_names(n, "past"), kv_names(n, "present")
-    axes = {**BASE_AXES, **{k: {2: "P"} for k in past_names}, **{k: {2: "T"} for k in present_names}}
+    axes = {**BASE_AXES, "span_key": {1: "S"}, "span_query": {1: "S"},
+            **{k: {2: "P"} for k in past_names}, **{k: {2: "T"} for k in present_names}}
     fp32 = out_dir / "judge_fp32.onnx"
     torch.onnx.export(KVExportJudge(model).eval(), args, str(fp32), opset_version=18, dynamo=False,
-                      input_names=BASE_INPUTS + past_names, output_names=["verdict"] + present_names,
+                      input_names=BASE_INPUTS + past_names, output_names=SPAN_OUTPUTS + present_names,
                       dynamic_axes=axes)
     final = out_dir / "judge.onnx"
     if quantize:
