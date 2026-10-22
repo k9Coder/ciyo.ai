@@ -20,7 +20,7 @@ def _tok(tiny_tokenizer_dir):
 
 def _verdicts(model, step, pk, pv):
     with torch.no_grad():
-        logits, _, _ = model(*step_tensors(step), pk, pv)
+        logits, _, _, _, _ = model(*step_tensors(step), pk, pv)
     return logits[0, list(step.verdict_index)]
 
 
@@ -32,10 +32,10 @@ def test_cached_path_equals_single_pass(tiny_tokenizer_dir):
     k0, v0 = m.backbone.empty_past()
     ref = _verdicts(m, single_pass(prefix, msg, rules), k0, v0)
     with torch.no_grad():
-        _, pk, pv = m(*step_tensors(causal_step(prefix, 0)), k0, v0)
+        _, _, _, pk, pv = m(*step_tensors(causal_step(prefix, 0)), k0, v0)
         p = len(prefix)
         for a, b in [(0, 5), (5, len(msg))]:
-            _, pk, pv = m(*step_tensors(causal_step(msg[a:b], p)), pk, pv)
+            _, _, _, pk, pv = m(*step_tensors(causal_step(msg[a:b], p)), pk, pv)
             p += b - a
     got = _verdicts(m, rules_step(rules, p), pk, pv)
     torch.testing.assert_close(got, ref, atol=1e-4, rtol=1e-4)
@@ -80,3 +80,19 @@ def test_char_to_token_index(tiny_tokenizer_dir):
     tok = _tok(tiny_tokenizer_dir)
     text = "hello thanks password"
     assert tok.char_to_token_index(text, text.index("password")) == 2
+
+
+def test_forward_returns_span_outputs():
+    import numpy as np
+    m = _model()
+    k0, v0 = m.backbone.empty_past()
+    out = m(torch.zeros(1, 5, dtype=torch.long), torch.arange(5)[None], torch.zeros(1, 1, 5, 5), k0, v0)
+    assert out[0].shape == (1, 5, 2) and out[1].shape == (1, 5, 64) and out[2].shape == (1, 5, 128)
+
+
+def test_best_span_respects_order_and_length():
+    import numpy as np
+    from judge.model import best_span
+    s = np.array([0., 5., 0., 0.]); e = np.array([3., 0., 0., 4.])
+    assert best_span(s, e, max_len=3) == (1, 3)
+    assert best_span(s, e, max_len=2) == (1, 1)  # end 3 is out of reach from start 1

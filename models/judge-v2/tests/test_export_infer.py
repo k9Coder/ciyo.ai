@@ -42,7 +42,7 @@ def _torch_probs(run_dir, message, rules):
         st = single_pass(tok.prefix_ids(), msg[a:b], rule_ids)
         k0, v0 = m.backbone.empty_past()
         with torch.no_grad():
-            logits, _, _ = m(*step_tensors(st), k0, v0)
+            logits, _, _, _, _ = m(*step_tensors(st), k0, v0)
         probs = torch.softmax(logits[0, list(st.verdict_index)] / CFG.temperature, -1)[:, 1].numpy()
         best = np.maximum(best, probs)
     return best

@@ -47,7 +47,7 @@ def val_logits(run_dir: Path, examples: list[Example]):
             continue
         st = single_pass(prefix, msg, [tok.rule_ids(r) for r in ex.rules])
         with torch.no_grad():
-            out, _, _ = model(*step_tensors(st), k0, v0)
+            out, _, _, _, _ = model(*step_tensors(st), k0, v0)
         logits.append(out[0, list(st.verdict_index)].numpy())
         targets.extend(ex.targets)
         crit.extend(ex.critical)

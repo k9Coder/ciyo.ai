@@ -56,7 +56,7 @@ def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
             st = _encode(tok, prefix, ex, max_tokens)
             if st is None:
                 continue
-            logits, _, _ = model(*step_tensors(st, device), k0, v0)
+            logits, _, _, _, _ = model(*step_tensors(st, device), k0, v0)
             probs = torch.softmax(logits[0, list(st.verdict_index)].float(), -1)[:, 1].cpu().tolist()
             rows += [Row(p, int(t >= 0.5), c, ex.adversarial, None, ex.language)
                      for p, t, c in zip(probs, ex.targets, ex.critical)]
@@ -161,7 +161,7 @@ def main(argv=None):
                 skipped_ids.add(j)
                 continue
             with torch.autocast("cuda", dtype=torch.float16, enabled=fp16):
-                logits, _, _ = model(*step_tensors(st, device), k0, v0)
+                logits, _, _, _, _ = model(*step_tensors(st, device), k0, v0)
             target = torch.tensor(ex.targets, dtype=torch.float32, device=device)
             loss = soft_ce(logits[0, list(st.verdict_index)].float(), target) / a.grad_accum
             scaler.scale(loss).backward()
