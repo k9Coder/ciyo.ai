@@ -124,3 +124,15 @@ def test_span_loss_trains_span_head(tmp_path, tiny_tokenizer_dir):
                 "--warmup", "5", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--span-weight", "1.0"])
     spans = [json.loads(l)["span_loss"] for l in (out / "train_log.jsonl").read_text().splitlines()]
     assert sum(spans[-10:]) / 10 < 0.5 * sum(spans[:10]) / 10
+
+
+def test_lora_trains_only_adapters_and_heads_and_saves_merged(tmp_path, tiny_tokenizer_dir):
+    import torch
+    from judge.model import load_judge
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--lr", "1e-3",
+                "--warmup", "5", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--lora-rank", "4"])
+    sd = torch.load(out / "best.pt", weights_only=True)
+    assert not any("lora" in k or "base_model" in k for k in sd)
+    load_judge(out)

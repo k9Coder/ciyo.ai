@@ -137,3 +137,13 @@ def test_save_pruned_tokenizer_roundtrip(tmp_path, tiny_tokenizer_dir):
     ids = pruned.encode("the password", add_special_tokens=False)
     assert [old_ids[i] for i in ids] == hf.encode("the password", add_special_tokens=False)
     assert pruned.bos_token == hf.bos_token
+
+
+def test_byte_level_pruning_keeps_all_byte_symbols():
+    from judge.vocab import prune_tokenizer_json
+    vocab = {chr(0x100 + i): i for i in range(256)}
+    vocab["ab"] = 256
+    tj = {"model": {"type": "BPE", "vocab": vocab, "merges": []}, "pre_tokenizer": {"type": "ByteLevel"},
+          "added_tokens": []}
+    out, old_ids = prune_tokenizer_json(tj, kept={256})
+    assert len(out["model"]["vocab"]) == 257

@@ -56,6 +56,9 @@ def prune_tokenizer_json(tj: dict, kept: set[int]) -> tuple[dict, list[int]]:
     keep |= {a["content"] for a in tj.get("added_tokens", []) if a.get("special") and a["content"] in vocab}
     if model.get("unk_token"):
         keep.add(model["unk_token"])
+    if "ByteLevel" in json.dumps(tj.get("pre_tokenizer")) or "ByteLevel" in json.dumps(tj.get("decoder")):
+        # Byte-level BPE (e.g. Qwen) has no <0xNN> tokens; its 256 single-symbol tokens are the byte fallback.
+        keep |= {tok for tok in vocab if len(tok) == 1}
     merges = [_split_merge(m) for m in model.get("merges", [])]
     producers: dict[str, list[tuple[str, str]]] = {}
     for a, b in merges:

@@ -15,6 +15,7 @@ from transformers.optimization import Adafactor
 from judge.backbone import Backbone, spec_to_json
 from judge.config import JudgeConfig
 from judge.data.schema import Example, LazyJsonl, read_jsonl
+from judge.lora import add_lora, merged_state_dict
 from judge.evaluate.metrics import Row, fbeta, precision, recall
 from judge.model import SPAN_DIM, JudgeModel, load_judge, step_tensors
 from judge.sequence import single_pass
@@ -31,7 +32,7 @@ def seed_everything(seed: int) -> None:
 def make_optimizer(model, lr: float) -> Adafactor:
     # Adafactor's factored second moments use ~1GB less than AdamW for this model; AdamW
     # peaked at 3.0GB reserved and ran out of memory on the 4GB training GPU.
-    return Adafactor(model.parameters(), lr=lr, relative_step=False, scale_parameter=False, warmup_init=False,
+    return Adafactor([q for q in model.parameters() if q.requires_grad], lr=lr, relative_step=False, scale_parameter=False, warmup_init=False,
                      weight_decay=0.01)
 
 
@@ -136,6 +137,9 @@ def main(argv=None):
     ap.add_argument("--limit-train", type=int, default=0)
     ap.add_argument("--eval-every", type=int, default=2000)
     ap.add_argument("--span-weight", type=float, default=0.5)
+    ap.add_argument("--lora-rank", type=int, default=0)
+    ap.add_argument("--lora-alpha", type=int, default=16)
+    ap.add_argument("--frozen-fp16", action="store_true")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
     seed_everything(a.seed)
@@ -151,6 +155,11 @@ def main(argv=None):
 
     model, tok, cfg = (_from_base if a.base else _from_run)(a, a.out)
     seed_everything(a.seed)
+    if a.lora_rank:
+        # Second-opinion models: frozen backbone (optionally stored in fp16) plus LoRA adapters; heads train fully.
+        for q in model.backbone.parameters():
+            q.requires_grad_(False)
+        add_lora(model.backbone, a.lora_rank, a.lora_alpha, frozen_fp16=a.frozen_fp16)
     model = model.to(device)
     model.backbone.checkpointing = a.grad_checkpointing
     model.train()
@@ -175,7 +184,7 @@ def main(argv=None):
         m = evaluate(model, tok, prefix, val, device, a.max_tokens)
         if m["f2"] > best_f2:
             best_f2 = m["f2"]
-            torch.save(model.state_dict(), a.out / "best.pt")
+            torch.save(merged_state_dict(model) if a.lora_rank else model.state_dict(), a.out / "best.pt")
             metrics_path.write_text(json.dumps({**m, "step": step, "skipped_long": len(skipped_ids)}), encoding="utf-8")
 
     for _ in range(a.epochs):
