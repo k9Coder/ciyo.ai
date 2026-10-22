@@ -36,6 +36,7 @@ class Message:
     violation_char_start: int | None
     group_id: str
     source: str
+    violation_char_end: int | None = None
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,7 @@ class Example:
     critical: tuple
     adversarial: bool
     violation_char_start: int | None
+    spans: tuple | None = None
 
 
 T = TypeVar("T")
@@ -81,14 +83,18 @@ def read_jsonl(path: Path, cls: type[T]) -> list[T]:
     with path.open(encoding="utf-8") as f:
         for line in f:
             if line.strip():
-                d = json.loads(line)
-                out.append(cls(**{k: tuple(v) if k in _TUPLE_FIELDS else v for k, v in d.items()}))
+                out.append(cls(**{k: _convert(k, v) for k, v in json.loads(line).items()}))
     return out
 
 
+def _convert(k, v):
+    if k == "spans" and v is not None:
+        return tuple(None if s is None else tuple(s) for s in v)
+    return tuple(v) if k in _TUPLE_FIELDS else v
+
+
 def _parse(cls, line: bytes):
-    d = json.loads(line)
-    return cls(**{k: tuple(v) if k in _TUPLE_FIELDS else v for k, v in d.items()})
+    return cls(**{k: _convert(k, v) for k, v in json.loads(line).items()})
 
 
 class LazyJsonl:

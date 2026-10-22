@@ -18,9 +18,14 @@ def build_examples(messages, rules, pairs, labels, categories, human: dict | Non
     for mid in sorted(grouped):
         m, ps = msgs[mid], grouped[mid]
         rs = [rules_by_id[p.rule_id] for p in ps]
+        # Only same-category matches have a known span: the offending text was written for the message's category.
+        spans = tuple((m.violation_char_start, m.violation_char_end)
+                      if (r.category_id == m.category_id and target[p.id] >= 0.5
+                          and m.violation_char_start is not None and m.violation_char_end is not None) else None
+                      for p, r in zip(ps, rs))
         out.append(Example(mid, m.text, m.language, tuple(r.id for r in rs), tuple(r.text for r in rs),
                            tuple(target[p.id] for p in ps), tuple(cats[r.category_id].critical for r in rs),
-                           m.adversarial, m.violation_char_start))
+                           m.adversarial, m.violation_char_start, spans if any(spans) else None))
     return out
 
 
@@ -59,6 +64,8 @@ def build_long_examples(examples, messages, per_language: int, min_prefix_chars:
                 continue
             prefix = "\n\n".join(parts) + "\n\n"
             start = None if e.violation_char_start is None else len(prefix) + e.violation_char_start
+            spans = None if e.spans is None else tuple(None if s is None else (s[0] + len(prefix), s[1] + len(prefix))
+                                                         for s in e.spans)
             out.append(dataclasses.replace(e, message_id="long_" + e.message_id, message=prefix + e.message,
-                                           violation_char_start=start))
+                                           violation_char_start=start, spans=spans))
     return out

@@ -182,3 +182,24 @@ def test_examples_oversamples_claude_training_messages(tmp_path):
     pipeline.main(["examples", "--data", str(tmp_path), "--seed", "1", "--oversample-claude", "3"])
     ids = [e.message_id for e in read_jsonl(tmp_path / "train.jsonl", Example)]
     assert sorted(ids) == ["c1", "c1", "c1", "s1"]
+
+
+def test_build_examples_attaches_spans_only_to_same_category_matches():
+    msgs = [Message("m1", "us_ssn", "positive", "code_help", "en", "my ssn 078-05-1120 ok", False, 7, "m1", "claude", 18)]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude"),
+             Rule("r2", "password", "en", "discloses a password", "claude")]
+    pairs = [Pair("p1", "m1", "r1"), Pair("p2", "m1", "r2")]
+    labels = [Label("p1", 0.95, "single"), Label("p2", 0.05, "single")]
+    ex = build_examples(msgs, rules, pairs, labels, CATEGORIES)
+    assert ex[0].spans == ((7, 18), None)
+
+
+def test_long_examples_shift_spans():
+    from judge.data.examples import build_long_examples
+    fill = [Message(f"b{i}", None, "benign", "chat_question", "en", "filler text. " * 40, False, None, f"b{i}", "scripted")
+            for i in range(20)]
+    inner = Message("p1", "us_ssn", "positive", "email_draft", "en", "ssn 078-05-1120", False, 4, "p1", "claude", 15)
+    ex = Example("p1", inner.text, "en", ("r1",), ("discloses an SSN",), (1.0,), (True,), False, 4, ((4, 15),))
+    long = build_long_examples([ex], fill + [inner], per_language=1, min_prefix_chars=4000, seed=1)[0]
+    s, e = long.spans[0]
+    assert long.message[s:e] == "078-05-1120"
