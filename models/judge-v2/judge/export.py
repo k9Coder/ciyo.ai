@@ -71,7 +71,23 @@ def quantize_hybrid(fp32: Path, final: Path, block_size: int = 64) -> None:
     mid.unlink()
 
 
-def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool = True) -> Path:
+def quantize_4bit(fp32: Path, final: Path, block_size: int = 32) -> None:
+    """Weight-only 4-bit blocks for every MatMul and the embedding Gather (second-opinion models).
+
+    A ~0.5-1B second model only fits the 400 MB budget at 4 bits; weight-only keeps activations in fp32.
+    """
+    import onnx
+    from onnxruntime.quantization.matmul_nbits_quantizer import DefaultWeightOnlyQuantConfig, MatMulNBitsQuantizer
+    cfg = DefaultWeightOnlyQuantConfig(block_size=block_size, is_symmetric=True, bits=4,
+                                       op_types_to_quantize=("MatMul", "Gather"),
+                                       quant_axes=(("MatMul", 0), ("Gather", 1)))
+    q = MatMulNBitsQuantizer(onnx.load(str(fp32)), algo_config=cfg)
+    q.process()
+    q.model.save_model_to_file(str(final), use_external_data_format=False)
+
+
+def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool | str = True) -> Path:
+    """quantize: True or "hybrid" (fast model), "4bit" (second-opinion model), False (fp32)."""
     out_dir.mkdir(parents=True, exist_ok=True)
     model = load_judge(run_dir)
     spec = spec_from_json(json.loads((run_dir / "backbone_spec.json").read_text(encoding="utf-8")))
@@ -86,7 +102,10 @@ def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool = True) -> Pat
                       input_names=BASE_INPUTS + past_names, output_names=SPAN_OUTPUTS + present_names,
                       dynamic_axes=axes)
     final = out_dir / "judge.onnx"
-    if quantize:
+    if quantize == "4bit":
+        quantize_4bit(fp32, final)
+        fp32.unlink()
+    elif quantize:
         quantize_hybrid(fp32, final)
         fp32.unlink()
     else:

@@ -167,3 +167,11 @@ def test_spans_on_windowed_message_stay_in_bounds(run_dir, tmp_path):
     for p, span in res:
         assert span is None or (0 <= span[0] < span[1] <= len(msg))
     assert judge.score_with_spans("", RULES)[0][1] is None
+
+
+def test_4bit_export_uses_weight_only_blocks_everywhere(run_dir, tmp_path):
+    import onnx
+    out = export_model_dir(run_dir, tmp_path / "model", quantize="4bit")
+    ops = {n.op_type for n in onnx.load(str(out / "judge.onnx")).graph.node}
+    assert "MatMulNBits" in ops and "MatMulInteger" not in ops
+    assert all(0.0 <= p <= 1.0 for p in OnnxJudge(out).score("hello can you review this code", RULES))
