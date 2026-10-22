@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.optimization import Adafactor
 
@@ -15,9 +16,9 @@ from judge.backbone import Backbone, spec_to_json
 from judge.config import JudgeConfig
 from judge.data.schema import Example, LazyJsonl, read_jsonl
 from judge.evaluate.metrics import Row, fbeta, precision, recall
-from judge.model import JudgeModel, load_judge, step_tensors
+from judge.model import SPAN_DIM, JudgeModel, load_judge, step_tensors
 from judge.sequence import single_pass
-from judge.tokenize import JudgeTokenizer
+from judge.tokenize import JudgeTokenizer, char_span_to_tokens
 
 
 def seed_everything(seed: int) -> None:
@@ -45,6 +46,31 @@ def _encode(tok, prefix, ex, max_tokens: int):
     if len(prefix) + len(msg) + sum(len(r) for r in rules) > max_tokens:
         return None
     return single_pass(prefix, msg, rules)
+
+
+def span_targets(tok, prefix, ex) -> list:
+    """Per rule: (start, end) token positions in the single-pass step of the offending text, or None."""
+    if not ex.spans:
+        return [None] * len(ex.rules)
+    offs = tok.message_offsets(ex.message)
+    out = []
+    for span in ex.spans:
+        tt = None if span is None else char_span_to_tokens(offs, *span)
+        out.append(None if tt is None else (len(prefix) + tt[0], len(prefix) + tt[1]))
+    return out
+
+
+def span_loss(skey, squery, verdict_index, targets, msg_start: int, msg_end: int, device):
+    terms = []
+    keys = skey[0, msg_start:msg_end].float()
+    for vi, tgt in zip(verdict_index, targets):
+        if tgt is None:
+            continue
+        q = squery[0, vi].float()
+        s_log, e_log = keys @ q[:SPAN_DIM], keys @ q[SPAN_DIM:]
+        terms.append(F.cross_entropy(s_log[None], torch.tensor([tgt[0] - msg_start], device=device))
+                     + F.cross_entropy(e_log[None], torch.tensor([tgt[1] - msg_start], device=device)))
+    return torch.stack(terms).mean() if terms else None
 
 
 def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
@@ -109,6 +135,7 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--limit-train", type=int, default=0)
     ap.add_argument("--eval-every", type=int, default=2000)
+    ap.add_argument("--span-weight", type=float, default=0.5)
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
     seed_everything(a.seed)
@@ -139,7 +166,7 @@ def main(argv=None):
     scaler = torch.amp.GradScaler("cuda", enabled=fp16)
     k0, v0 = model.backbone.empty_past(device)
     rng = random.Random(a.seed)
-    best_f2, step, acc, acc_loss = -1.0, 0, 0, 0.0
+    best_f2, step, acc, acc_loss, acc_span = -1.0, 0, 0, 0.0, 0.0
     log = (a.out / "train_log.jsonl").open("w", encoding="utf-8", buffering=1)
     metrics_path = a.out / "val_metrics.json"
 
@@ -161,9 +188,16 @@ def main(argv=None):
                 skipped_ids.add(j)
                 continue
             with torch.autocast("cuda", dtype=torch.float16, enabled=fp16):
-                logits, _, _, _, _ = model(*step_tensors(st, device), k0, v0)
+                logits, skey, squery, _, _ = model(*step_tensors(st, device), k0, v0)
             target = torch.tensor(ex.targets, dtype=torch.float32, device=device)
             loss = soft_ce(logits[0, list(st.verdict_index)].float(), target) / a.grad_accum
+            if a.span_weight:
+                n_msg = len(tok.message_ids(ex.message))
+                sl = span_loss(skey, squery, st.verdict_index, span_targets(tok, prefix, ex), len(prefix),
+                               len(prefix) + n_msg, device)
+                if sl is not None:
+                    loss = loss + a.span_weight * sl / a.grad_accum
+                    acc_span += sl.item() / a.grad_accum
             scaler.scale(loss).backward()
             acc += 1
             acc_loss += loss.item()
@@ -175,8 +209,8 @@ def main(argv=None):
                 sched.step()
                 opt.zero_grad(set_to_none=True)
                 step += 1
-                log.write(json.dumps({"step": step, "loss": acc_loss}) + "\n")
-                acc, acc_loss = 0, 0.0
+                log.write(json.dumps({"step": step, "loss": acc_loss, "span_loss": acc_span}) + "\n")
+                acc, acc_loss, acc_span = 0, 0.0, 0.0
                 if step % a.eval_every == 0:
                     checkpoint()
     checkpoint()

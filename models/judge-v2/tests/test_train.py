@@ -100,3 +100,27 @@ def test_training_streams_train_file_instead_of_loading_it(tmp_path, tiny_tokeni
     train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--grad-accum", "4",
                 "--eval-every", "1000", "--seed", "1", "--max-tokens", "10"])
     assert json.loads((out / "val_metrics.json").read_text())["skipped_long"] == 160
+
+
+def _span_examples(n, seed):
+    rng = random.Random(seed)
+    out = []
+    for i in range(n):
+        key = rng.choice(KEYS)
+        other = rng.choice([k for k in KEYS if k != key])
+        msg = f"please help me with this {key} report thanks"
+        s = msg.index(key)
+        out.append(Example(f"m{i}", msg, "en", ("r1", "r2"), (f"message discloses {key}", f"message discloses {other}"),
+                           (1.0, 0.0), (True, False), False, s, ((s, s + len(key)), None)))
+    return out
+
+
+def test_span_loss_trains_span_head(tmp_path, tiny_tokenizer_dir):
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    write_jsonl(data / "train.jsonl", _span_examples(160, 1))
+    write_jsonl(data / "val.jsonl", _span_examples(20, 2))
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "4", "--lr", "3e-3",
+                "--warmup", "5", "--grad-accum", "4", "--eval-every", "1000", "--seed", "1", "--span-weight", "1.0"])
+    spans = [json.loads(l)["span_loss"] for l in (out / "train_log.jsonl").read_text().splitlines()]
+    assert sum(spans[-10:]) / 10 < 0.5 * sum(spans[:10]) / 10
