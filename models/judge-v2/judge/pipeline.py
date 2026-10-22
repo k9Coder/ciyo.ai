@@ -1,17 +1,18 @@
 import argparse
-import shutil
 import dataclasses
 import json
 import random
+import shutil
 import sys
 from pathlib import Path
 
 from judge.cc.ingest import ingest_labels, ingest_pairs
 from judge.cc.merge import merge_second_pass, needs_second_pass
 from judge.cc.orders import label_orders, pair_orders, read_order, write_orders
-from judge.data.catalog import CATEGORIES
+from judge.data.catalog import CATEGORIES, category_by_id
+from judge.data.devx import devx_pairs
 from judge.data.examples import build_examples, build_long_examples
-from judge.data.schema import Label, Message, Pair, Rule, read_jsonl, write_jsonl
+from judge.data.schema import Example, Label, Message, Pair, Rule, read_jsonl, stable_id, write_jsonl
 from judge.data.scripted import generate, load_templates, validate
 from judge.data.splits import assign_splits, check_no_leakage, rule_is_test_only
 
@@ -76,6 +77,50 @@ def cmd_subset(a):
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / "train.jsonl").write_text("\n".join(kept) + "\n", encoding="utf-8")
     shutil.copy2(a.data / "val.jsonl", a.out / "val.jsonl")
+
+
+def cmd_devx_orders(a):
+    msgs = read_jsonl(a.data / "messages.jsonl", Message)
+    rules = read_jsonl(a.data / "rules.jsonl", Rule)
+    splits = json.loads((a.data / "splits.json").read_text(encoding="utf-8"))
+    text = {m.id: m.text for m in msgs}
+    rtext = {r.id: r.text for r in rules}
+    index, items = {}, []
+    for mid, rid in devx_pairs(msgs, rules, splits, a.per_message, a.seed):
+        pid = stable_id("pair", mid, rid)
+        index[pid] = [mid, rid]
+        items.append({"pair_id": pid, "message": text[mid], "rule": rtext[rid]})
+    write_orders(label_orders(items), a.out)
+    (a.out / "pairs_index.json").write_text(json.dumps(index), encoding="utf-8")
+
+
+def cmd_devx_ingest(a):
+    msgs = {m.id: m for m in read_jsonl(a.data / "messages.jsonl", Message)}
+    rules = {r.id: r for r in read_jsonl(a.data / "rules.jsonl", Rule)}
+    cats = category_by_id(CATEGORIES)
+    index = json.loads((a.orders / "pairs_index.json").read_text(encoding="utf-8"))
+    by_msg, missing = {}, []
+    for p in sorted(a.orders.glob("order_*.json")):
+        order = read_order(p)
+        out = a.outputs / f"{order.id}.jsonl"
+        if not out.exists():
+            missing.append(order.id)
+            continue
+        got, errors = ingest_labels(order, out)
+        if errors:
+            sys.exit("\n".join(errors))
+        for pid, prob in got.items():
+            mid, rid = index[pid]
+            by_msg.setdefault(mid, []).append((rid, prob))
+    if missing:
+        sys.exit(f"missing outputs: {missing}")
+    ex = []
+    for mid in sorted(by_msg):
+        m, rs = msgs[mid], sorted(by_msg[mid])
+        ex.append(Example(mid, m.text, m.language, tuple(r for r, _ in rs), tuple(rules[r].text for r, _ in rs),
+                          tuple(p for _, p in rs), tuple(cats[rules[r].category_id].critical for r, _ in rs),
+                          m.adversarial, m.violation_char_start))
+    write_jsonl(a.out, ex)
 
 
 def cmd_cc_orders(a):
@@ -195,6 +240,16 @@ def main(argv=None):
     s = sub.add_parser("backfill-spans")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--sources", type=Path, nargs="+", required=True)
+    s = sub.add_parser("devx-orders")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--out", type=Path, required=True)
+    s.add_argument("--per-message", type=int, default=6)
+    s.add_argument("--seed", type=int, default=11)
+    s = sub.add_parser("devx-ingest")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--orders", type=Path, required=True)
+    s.add_argument("--outputs", type=Path, required=True)
+    s.add_argument("--out", type=Path, required=True)
     s = sub.add_parser("subset")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--out", type=Path, required=True)
@@ -229,7 +284,8 @@ def main(argv=None):
                    help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
-    handlers = {"backfill-spans": cmd_backfill_spans, "subset": cmd_subset, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+    handlers = {"backfill-spans": cmd_backfill_spans, "subset": cmd_subset, "devx-orders": cmd_devx_orders,
+                "devx-ingest": cmd_devx_ingest, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
                 "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
     handler = handlers[a.cmd]
     handler(a)

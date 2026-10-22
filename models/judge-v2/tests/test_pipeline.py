@@ -226,3 +226,22 @@ def test_subset_keeps_scripted_and_seeded_half_of_claude(tmp_path):
     ids = [e.message_id for e in read_jsonl(tmp_path / "h" / "train.jsonl", Example)]
     want = set(random.Random(42).sample(sorted(f"c{i}" for i in range(6)), 3))
     assert set(ids) == want | {"s1"}
+
+
+def test_devx_orders_and_ingest_round_trip(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message("v1", "us_ssn", "positive", "email_draft", "en", "ssn text", False, None, "v1", "claude")]
+    rules = [Rule("r1", "us_ssn", "en", "a", "claude"), Rule("r2", "password", "en", "has a password", "claude")]
+    write_jsonl(tmp_path / "messages.jsonl", msgs); write_jsonl(tmp_path / "rules.jsonl", rules)
+    (tmp_path / "splits.json").write_text(json.dumps({"v1": "val"}))
+    pipeline.main(["devx-orders", "--data", str(tmp_path), "--out", str(tmp_path / "o"), "--per-message", "3", "--seed", "1"])
+    orders = [read_order(p) for p in (tmp_path / "o").glob("order_*.json")]
+    assert sum(o.n for o in orders) == 1
+    (tmp_path / "out").mkdir()
+    for o in orders:
+        (tmp_path / "out" / f"{o.id}.jsonl").write_text(
+            json.dumps({"pair_id": o.payload[0]["pair_id"], "verdict": "no_match", "confidence": 0.9}), encoding="utf-8")
+    pipeline.main(["devx-ingest", "--data", str(tmp_path), "--orders", str(tmp_path / "o"), "--outputs", str(tmp_path / "out"),
+                   "--out", str(tmp_path / "devx.jsonl")])
+    ex = read_jsonl(tmp_path / "devx.jsonl", Example)
+    assert [(e.message_id, e.rule_ids, e.critical) for e in ex] == [("v1", ("r2",), (True,))] and ex[0].targets[0] < 0.5
