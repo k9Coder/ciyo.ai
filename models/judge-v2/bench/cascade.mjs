@@ -5,8 +5,10 @@
 
 const CHARS_PER_TOKEN = 4;
 
+// confirm = { fastMin, secondMin } switches to the precision-first policy: block only when the fast model flags
+// and the second model confirms; otherwise bands route the uncertain middle to the second model.
 export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0.9 }, windowTokens = 400,
-                                secondTimeoutMs = 2500, idleUnloadMs = 300000 }) {
+                                secondTimeoutMs = 2500, idleUnloadMs = 300000, confirm = null }) {
   const windowChars = windowTokens * CHARS_PER_TOKEN;
   const lazy = typeof second === "function";
   let loaded = lazy ? null : second;
@@ -53,6 +55,22 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
     let usedSecond = false, pending = false;
     for (let i = 0; i < rules.length; i++) {
       const { p, span } = fastOut[i];
+      if (confirm) {
+        if (p < confirm.fastMin) { entries.push(entry(message, rules[i].id, false, p, null)); continue; }
+        usedSecond = true;
+        try {
+          const scorer = await getSecond();
+          if (!scorer) throw new Error("second opinion unavailable");
+          const [a, b] = windowFor(message, span);
+          const [res] = await withTimeout(scorer.scoreWithSpans(message.slice(a, b), [rules[i].text]));
+          const span2 = res.span ? [res.span[0] + a, res.span[1] + a] : span;
+          entries.push(entry(message, rules[i].id, res.p >= confirm.secondMin, res.p, span2));
+        } catch {
+          pending = true;
+          entries.push(entry(message, rules[i].id, null, p, null));
+        }
+        continue;
+      }
       if (p < bands.low) entries.push(entry(message, rules[i].id, false, p, null));
       else if (p >= bands.high) entries.push(entry(message, rules[i].id, true, p, span));
       else {

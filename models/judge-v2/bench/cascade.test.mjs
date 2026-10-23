@@ -61,3 +61,19 @@ test("lazy second model loads on demand and unloads after idle", async () => {
   mock.timers.reset();
   assert.equal(loads, 2); assert.equal(disposes, 1);
 });
+
+test("confirm policy blocks only when both models agree", async () => {
+  const fast = fake({ A: { p: 0.95, span: [0, 3] }, B: { p: 0.95, span: [0, 3] }, C: { p: 0.4, span: null } });
+  const second = fake({ A: { p: 0.97, span: [0, 3] }, B: { p: 0.2, span: null } });
+  const r = await createCascade({ fast, second, confirm: { fastMin: 0.7, secondMin: 0.7 } }).judge("abc def", RULES);
+  const by = Object.fromEntries(r.rules.map((x) => [x.rule_id, x]));
+  assert.equal(by.a.violated, true); assert.equal(by.a.span.text, "abc");
+  assert.equal(by.b.violated, false); assert.equal(by.c.violated, false);
+  assert.equal(r.violated, true); assert.equal(r.decided_by, "second_opinion");
+});
+
+test("confirm policy without a second model is pending", async () => {
+  const fast = fake({ A: { p: 0.95, span: null }, B: { p: 0.1, span: null }, C: { p: 0.1, span: null } });
+  const r = await createCascade({ fast, second: null, confirm: { fastMin: 0.7, secondMin: 0.7 } }).judge("abc", RULES);
+  assert.equal(r.rules[0].violated, null); assert.equal(r.pending, true); assert.equal(r.violated, false);
+});

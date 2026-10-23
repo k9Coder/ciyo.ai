@@ -86,3 +86,33 @@ def test_contract_spans_use_utf16_offsets():
     r = Cascade(fast, None).judge(msg, RULES[:1])
     span = r["rules"][0]["span"]
     assert (span["start"], span["end"], span["text"]) == (s + 1, s + 4, "ABC")
+
+
+def test_confirm_policy_blocks_only_when_both_models_agree():
+    from judge.cascade import Confirm
+    fast = Fake({"A": (0.95, (0, 3)), "B": (0.95, (0, 3)), "C": (0.4, None)})
+    second = Fake({"A": (0.97, (0, 3)), "B": (0.2, None)})
+    r = Cascade(fast, second, confirm=Confirm(fast_min=0.7, second_min=0.7)).judge("abc def", RULES)
+    by = {x["rule_id"]: x for x in r["rules"]}
+    assert by["a"]["violated"] is True and by["a"]["span"]["text"] == "abc"
+    assert by["b"]["violated"] is False and by["c"]["violated"] is False
+    assert r["violated"] is True and r["pending"] is False and r["decided_by"] == "second_opinion"
+
+
+def test_confirm_policy_without_second_model_is_pending():
+    from judge.cascade import Confirm
+    fast = Fake({"A": (0.95, None), "B": (0.1, None), "C": (0.1, None)})
+    r = Cascade(fast, None, confirm=Confirm(0.7, 0.7)).judge("abc", RULES)
+    assert r["rules"][0]["violated"] is None and r["pending"] is True and r["violated"] is False
+
+
+def test_confirm_policy_makes_no_second_call_when_nothing_is_flagged():
+    from judge.cascade import Confirm
+
+    class Boom:
+        def score_with_spans(self, m, r):
+            raise AssertionError("called")
+
+    fast = Fake({"A": (0.1, None), "B": (0.2, None), "C": (0.3, None)})
+    r = Cascade(fast, Boom(), confirm=Confirm(0.7, 0.7)).judge("abc", RULES)
+    assert r["violated"] is False and r["decided_by"] == "fast"

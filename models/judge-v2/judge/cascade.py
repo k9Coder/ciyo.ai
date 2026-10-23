@@ -22,6 +22,13 @@ class Bands:
     high: float
 
 
+@dataclass(frozen=True)
+class Confirm:
+    """Precision-first policy: block only when the fast model flags (>= fast_min) and the second confirms."""
+    fast_min: float
+    second_min: float
+
+
 def to_utf16(message: str, idx: int) -> int:
     """UTF-16 code-unit offset of Python string index idx."""
     return idx + sum(1 for ch in message[:idx] if ord(ch) > 0xFFFF)
@@ -29,8 +36,8 @@ def to_utf16(message: str, idx: int) -> int:
 
 class Cascade:
     def __init__(self, fast, second=None, bands: Bands = Bands(0.1, 0.9), window_tokens: int = 400,
-                 second_timeout_s: float = 2.5):
-        self.fast, self.second, self.bands = fast, second, bands
+                 second_timeout_s: float = 2.5, confirm: Confirm | None = None):
+        self.fast, self.second, self.bands, self.confirm = fast, second, bands, confirm
         self.window_chars = window_tokens * CHARS_PER_TOKEN
         self.timeout = second_timeout_s
         self.pool = ThreadPoolExecutor(max_workers=1)
@@ -64,6 +71,21 @@ class Cascade:
         fast = self.fast.score_with_spans(message, [r["text"] for r in rules])
         entries, used_second, pending = [], False, False
         for r, (p, span) in zip(rules, fast):
+            if self.confirm is not None:
+                if p < self.confirm.fast_min:
+                    entries.append(self._entry(message, r["id"], False, p, None))
+                    continue
+                used_second = True
+                try:
+                    if self.second is None:
+                        raise RuntimeError("second opinion unavailable")
+                    p2, span2 = self._second(message, r["text"], span)
+                    ok = p2 >= self.confirm.second_min
+                    entries.append(self._entry(message, r["id"], ok, p2, span2 or span))
+                except (FutureTimeout, RuntimeError, OSError, ValueError):
+                    pending = True
+                    entries.append(self._entry(message, r["id"], None, p, None))
+                continue
             if p < self.bands.low:
                 entries.append(self._entry(message, r["id"], False, p, None))
             elif p >= self.bands.high:

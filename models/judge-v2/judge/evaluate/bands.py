@@ -1,6 +1,36 @@
 import numpy as np
 
 
+def choose_confirm(fast_scores, second_scores, labels, min_precision: float = 0.95):
+    """Pick (fast_min, second_min) maximising leaks caught while blocks stay at least min_precision real leaks.
+
+    Ties prefer higher precision, then a higher fast_min (fewer second-opinion calls), then a lower second_min.
+    second_scores may be None where the second model was not run (fast score below every candidate fast_min).
+    """
+    f = np.asarray(fast_scores, float)
+    s = np.asarray([-1.0 if x is None else x for x in second_scores], float)
+    y = np.asarray(labels, int)
+    pos = int(y.sum())
+    grid = np.round(np.arange(0.0, 1.0001, 0.01), 2)
+    best = None
+    for fm in grid:
+        flagged = f >= fm
+        for sm in grid:
+            pred = flagged & (s >= sm)
+            n = int(pred.sum())
+            if n == 0:
+                continue
+            tp = int((pred & (y == 1)).sum())
+            prec, rec = tp / n, (tp / pos if pos else 0.0)
+            if prec < min_precision:
+                continue
+            key = (rec, prec, fm, -sm)
+            if best is None or key > best[0]:
+                best = (key, {"fast_min": float(fm), "second_min": float(sm), "precision": prec, "recall": rec,
+                              "flagged_share": float(flagged.mean())})
+    return None if best is None else best[1]
+
+
 def choose_bands(fast_scores, second_scores, labels, critical, min_recall: float = 0.90,
                  min_crit_recall: float = 0.95, max_routed: float = 0.15):
     """Pick (low, high) maximising system precision under the recall gates and the routed-share limit.
