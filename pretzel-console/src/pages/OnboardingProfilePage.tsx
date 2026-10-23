@@ -63,10 +63,16 @@ export function OnboardingProfilePage() {
   // false) and bounce right back to /onboarding — a redirect loop that only
   // "resolves" once the background refetch happens to complete (worse on a
   // cold/slow API). Awaiting closes the race so the dashboard sees the fresh flag.
+  //
+  // refetchType 'all' is required, not just the await: TenantBootstrap
+  // redirected here and unmounted, so ['tenant'] has no observers. A default
+  // (active-only) invalidate would just mark it stale and resolve at once, and
+  // useTenant's refetchOnMount: false would then reuse the stale flag on
+  // /dashboard — looping straight back here.
   const apply = useMutation({
     mutationFn: () => api.onboarding.applyTemplate(profession, followUpAnswer),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['tenant'] })
+      await qc.invalidateQueries({ queryKey: ['tenant'], refetchType: 'all' })
       navigate('/dashboard', { replace: true })
     },
     onError: (e: Error) => setApiError(e.message),
@@ -75,7 +81,7 @@ export function OnboardingProfilePage() {
   const skip = useMutation({
     mutationFn: () => api.onboarding.skip(),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['tenant'] })
+      await qc.invalidateQueries({ queryKey: ['tenant'], refetchType: 'all' })
       navigate('/dashboard', { replace: true })
     },
     onError: (e: Error) => setApiError(e.message),
