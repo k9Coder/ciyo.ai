@@ -46,7 +46,7 @@ Policy content edits are a draft until published: clients read only published sn
 | Route | Access | Purpose |
 |---|---|---|
 | `/login/*` | Public | Two-column mykka login. Embeds Clerk `<SignIn />` at `/login` and `<SignUp />` at `/login/sign-up` (path routing; Clerk owns the sub-steps such as `/login/factor-one`), themed via CSS variables. Honors a same-origin `redirect` query parameter. Right panel is labeled example data. |
-| `/onboarding/profile` | Public route; page wires its own Clerk token | Lets a lone `super_admin` on a freshly auto-provisioned tenant apply or skip a recommended DLP policy template. `TenantBootstrap` redirects here automatically when needed. |
+| `/onboarding/profile` | Outside `RequireAuth`; page wires its own Clerk token and gates itself (signed out → `/login`, wizard already completed → `/dashboard`, no usable tenant → `/`) | Lets a lone `super_admin` on a freshly auto-provisioned tenant apply or skip a recommended DLP policy template. `TenantBootstrap` redirects here automatically when needed. |
 | ~~`/invite/:token`~~ | ~~Public~~ | **Disabled** — was: previews and accepts a single invite token. Route commented out in `App.tsx`; admin-add-by-email on `/members` replaces it. |
 | `/accessibility` | Public | Console accessibility statement. |
 | `/` | Protected | Redirects to `/dashboard`. |
