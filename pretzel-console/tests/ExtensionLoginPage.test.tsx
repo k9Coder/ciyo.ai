@@ -68,7 +68,12 @@ describe('ExtensionLoginPage', () => {
 
   it('opens Clerk sign-in when the user is not yet signed in', () => {
     vi.mocked(useAuth).mockReturnValue({ isLoaded: true, isSignedIn: false, getToken: mockGetToken } as any)
+    const relayUrl = `https://pretzel-console.mykka.ai/extension-login?${QS}`
+    ;(window as any).location.href = relayUrl
     renderPage()
-    expect(mockOpenSignIn).toHaveBeenCalled()
+    expect(mockOpenSignIn).toHaveBeenCalledWith({
+      forceRedirectUrl: relayUrl,
+      signUpForceRedirectUrl: relayUrl,
+    })
   })
 })

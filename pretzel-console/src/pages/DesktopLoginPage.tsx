@@ -18,7 +18,12 @@ export function DesktopLoginPage() {
   useEffect(() => {
     if (!isLoaded) return
     if (!isSignedIn) {
-      openSignIn()
+      // Return to this relay (PKCE params intact) after sign-in AND sign-up.
+      // Without this, a brand-new email signs up via the modal and Clerk sends
+      // it to "/", where TenantBootstrap self-serve-provisions a personal org
+      // and the handoff never completes.
+      const returnUrl = window.location.href
+      openSignIn({ forceRedirectUrl: returnUrl, signUpForceRedirectUrl: returnUrl })
       return
     }
     if (!state || !codeChallenge || !redirectUri) {
