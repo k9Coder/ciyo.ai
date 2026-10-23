@@ -21,6 +21,7 @@
     "provision:clerk-users": "tsx --env-file=.env src/scripts/provision-clerk-users.ts",
     "promote:free-to-pilot": "tsx --env-file=.env src/scripts/promote-free-to-pilot.ts",
     "mint-clerk-ticket": "tsx --env-file=.env src/scripts/mint-clerk-ticket.ts",
+    "delete:user": "tsx --env-file=.env src/scripts/delete-user.ts",
     "test:e2e": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
