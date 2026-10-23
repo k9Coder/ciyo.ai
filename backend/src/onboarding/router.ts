@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { requireAdminTokenOrClerkAdmin } from '../auth/middleware.js'
+import { requireAdminTokenOrClerkAdmin, invalidateTenantCache } from '../auth/middleware.js'
 import { applyTemplate, completeWizardSkip } from './service.js'
 
 const VALID_PROFESSIONS = new Set(['accountant', 'developer', 'legal', 'healthcare', 'other'])
@@ -15,6 +15,10 @@ export async function onboardingRouter(fastify: FastifyInstance): Promise<void> 
     }
 
     const result = await applyTemplate(req.tenant.id, profession, followUpAnswer)
+    // Both handlers flip onboardingWizardCompleted. Drop the auth middleware's
+    // 30s tenant cache or GET /tenant keeps serving the old `false` and the
+    // console bounces the user straight back into the wizard.
+    invalidateTenantCache(req.tenant.id)
 
     if (result.status === 'created') {
       return reply.status(201).send({ policyId: result.policyId, wizardCompleted: true })
@@ -28,6 +32,7 @@ export async function onboardingRouter(fastify: FastifyInstance): Promise<void> 
 
   fastify.post('/onboarding/skip', { preHandler: requireAdminTokenOrClerkAdmin }, async (req, reply) => {
     await completeWizardSkip(req.tenant.id)
+    invalidateTenantCache(req.tenant.id)
     return reply.status(200).send({ policyId: null, wizardCompleted: true })
   })
 }
