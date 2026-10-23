@@ -1,10 +1,19 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
 import { PageLoader } from '../components/ui/Spinner'
 import { PretzelLogo } from '../components/layout/PretzelLogo'
 import { useWireAuthToken } from '../hooks/useWireAuthToken'
+import { useTenant } from '../hooks/useTenant'
+
+function FullPageLoader({ label }: { label: string }) {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <PageLoader label={label} />
+    </div>
+  )
+}
 
 const PROFESSIONS = [
   { slug: 'accountant',  label: 'Accountant / Finance',      description: 'Tax, bookkeeping, financial advisory' },
@@ -48,9 +57,12 @@ const FOLLOW_UP: Record<string, { question: string; options: { slug: string; lab
 type Step = 'profession' | 'followup' | 'confirm' | 'done'
 
 export function OnboardingProfilePage() {
-  useWireAuthToken()
+  const { isLoaded, isSignedIn } = useWireAuthToken()
   const navigate = useNavigate()
   const qc = useQueryClient()
+  // This route sits outside RequireAuth/TenantBootstrap, so a typed-in URL
+  // reaches it directly — it must gate itself (see the early returns below).
+  const tenant = useTenant(isLoaded && isSignedIn === true)
 
   const [step, setStep]         = useState<Step>('profession')
   const [profession, setProfession]     = useState('')
@@ -116,6 +128,14 @@ export function OnboardingProfilePage() {
   }
 
   const busy = apply.isPending || skip.isPending
+
+  if (!isLoaded) return <FullPageLoader label="Authenticating" />
+  if (!isSignedIn) return <Navigate to="/login" replace />
+  if (tenant.isLoading) return <FullPageLoader label="Loading organization" />
+  // No usable tenant (a plain member's 403, several orgs with none selected, …):
+  // hand off to "/" where TenantBootstrap picks the right screen.
+  if (tenant.isError || !tenant.data) return <Navigate to="/" replace />
+  if (tenant.data.onboardingWizardCompleted) return <Navigate to="/dashboard" replace />
 
   return (
     <div style={{
