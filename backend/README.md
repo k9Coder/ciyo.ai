@@ -42,6 +42,20 @@ pnpm dev
 | `pnpm seed:e2e` | Replace test data and write root `e2e/.seed-state.json` |
 | `pnpm test:e2e` | Run backend Playwright API specs |
 | `pnpm teardown:e2e` | Remove seeded E2E records |
+| `pnpm delete:user -- --user-id <uuid>` | Delete one user and any org they're the sole member of (dry-run without `--apply`) |
+
+## Deleting a test account
+
+No foreign key into `users` or `tenants` cascades, so deleting a row from the Neon table UI fails (`members_user_id_users_id_fk`). Use the script instead:
+
+```bash
+pnpm delete:user -- --user-id <users.id>           # dry-run: shows the user and orgs it would delete
+pnpm delete:user -- --user-id <users.id> --apply
+```
+
+It deletes in one transaction, so it either finishes or changes nothing. It refuses if the user is in any org with other members, and it needs `--force` to delete an org that wasn't auto-provisioned. Tables the target DB doesn't have yet are skipped. It uses `DATABASE_URL` from `.env`, so point that at the right database first.
+
+It does not touch Clerk. At the end it prints the Clerk user id: delete that user in the Clerk dashboard (matching instance) **after** the script runs. If the Clerk user is left in place, the next sign-in reuses it and recreates the `users` row, so you won't be testing the sign-up path.
 
 ## Documentation
 
