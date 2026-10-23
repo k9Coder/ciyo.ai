@@ -1,5 +1,6 @@
 import json
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -175,3 +176,25 @@ def test_4bit_export_uses_weight_only_blocks_everywhere(run_dir, tmp_path):
     ops = {n.op_type for n in onnx.load(str(out / "judge.onnx")).graph.node}
     assert "MatMulNBits" in ops and "MatMulInteger" not in ops
     assert all(0.0 <= p <= 1.0 for p in OnnxJudge(out).score("hello can you review this code", RULES))
+
+
+def test_export_leaves_no_intermediate_files(run_dir, tmp_path):
+    for mode in ("4bit", True, False):
+        out = export_model_dir(run_dir, tmp_path / f"m_{mode}", quantize=mode)
+        names = {p.name for p in out.iterdir()}
+        assert "judge.onnx" in names and not any(n.startswith(("judge_fp32", "judge_wo", "_export")) for n in names), names
+        assert not any(n.startswith("onnx__") for n in names), names
+
+
+def test_export_cleans_external_data_of_large_models(run_dir, tmp_path, monkeypatch):
+    # torch writes weights of >2 GB graphs as separate files next to the .onnx; simulate that with a stray file
+    import judge.export as ex
+    real = ex.torch.onnx.export
+
+    def fake_export(model, args, f, **kw):
+        real(model, args, f, **kw)
+        (Path(f).parent / "onnx__MatMul_123").write_bytes(b"x")
+
+    monkeypatch.setattr(ex.torch.onnx, "export", fake_export)
+    out = export_model_dir(run_dir, tmp_path / "m", quantize="4bit")
+    assert not any(p.name.startswith("onnx__") for p in out.iterdir())

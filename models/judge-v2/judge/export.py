@@ -97,19 +97,24 @@ def export_model_dir(run_dir: Path, out_dir: Path, quantize: bool | str = True) 
     past_names, present_names = kv_names(n, "past"), kv_names(n, "present")
     axes = {**BASE_AXES, "span_key": {1: "S"}, "span_query": {1: "S"},
             **{k: {2: "P"} for k in past_names}, **{k: {2: "T"} for k in present_names}}
-    fp32 = out_dir / "judge_fp32.onnx"
+    # Export into a scratch folder: graphs over 2 GB come with separate weight files that must not leak into
+    # the shipped model directory.
+    tmp = out_dir / "_export_tmp"
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    fp32 = tmp / "judge_fp32.onnx"
     torch.onnx.export(KVExportJudge(model).eval(), args, str(fp32), opset_version=18, dynamo=False,
                       input_names=BASE_INPUTS + past_names, output_names=SPAN_OUTPUTS + present_names,
                       dynamic_axes=axes)
     final = out_dir / "judge.onnx"
     if quantize == "4bit":
         quantize_4bit(fp32, final)
-        fp32.unlink()
     elif quantize:
         quantize_hybrid(fp32, final)
-        fp32.unlink()
     else:
-        fp32.replace(final)
+        for f in tmp.iterdir():
+            f.replace(final if f.name == fp32.name else out_dir / f.name)
+    shutil.rmtree(tmp)
     for name in ["judge_config.json", "backbone_spec.json", "vocab_remap.json"]:
         if (run_dir / name).exists():
             shutil.copy2(run_dir / name, out_dir / name)
