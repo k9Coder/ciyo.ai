@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-from judge.cascade import Bands, Cascade, to_utf16
+from judge.cascade import Bands, Cascade, Confirm, to_utf16
 from judge.data.schema import Example, read_jsonl
 from judge.evaluate.metrics import Row, precision, recall
 
@@ -17,6 +17,19 @@ GATES = {"recall_overall": 0.90, "recall_critical": 0.95, "recall_adversarial": 
          "recall_late_violation": 0.90, "precision": 0.95, "span_accuracy": 0.90}
 MAX_ROUTED = 0.15
 LANG_GATE, LANG_MIN_POSITIVES = 0.85, 50
+# Owner decision 2026-10-23: blocks must be real leaks; leaks caught is reported, not gated.
+PRECISION_FIRST_GATES = {"precision": 0.99, "span_accuracy": 0.90}
+
+
+def load_policy(path: Path) -> dict:
+    """Cascade keyword arguments from a policy file: confirm thresholds, or the older low/high bands."""
+    d = json.loads(path.read_text(encoding="utf-8"))
+    if d.get("policy") == "confirm":
+        out = {"confirm": Confirm(d["fast_min"], d["second_min"])}
+        if "window_tokens" in d:
+            out["window_tokens"] = d["window_tokens"]
+        return out
+    return {"bands": Bands(d["low"], d["high"])}
 
 
 def _view(rows) -> dict:
@@ -31,7 +44,8 @@ def _view(rows) -> dict:
     return out
 
 
-def evaluate(cascade, examples, tok=None) -> dict:
+def evaluate(cascade, examples, tok=None, gates=None) -> dict:
+    precision_first = gates is not None
     hold, let, routed, span_hits, span_total = [], [], 0, 0, 0
     for ex in examples:
         res = cascade.judge(ex.message, [{"id": f"r{i}", "text": t} for i, t in enumerate(ex.rules)])
@@ -54,11 +68,13 @@ def evaluate(cascade, examples, tok=None) -> dict:
     rep = {**_view(hold), "hold": _view(hold), "let_through": _view(let),
            "routed_share": routed / len(examples) if examples else 0.0,
            "span_accuracy": span_hits / span_total if span_total else float("nan")}
-    gates = {k: {"value": rep[k], "bar": bar, "pass": rep[k] >= bar} for k, bar in GATES.items()}
-    gates["routed_share"] = {"value": rep["routed_share"], "bar": MAX_ROUTED, "pass": rep["routed_share"] <= MAX_ROUTED}
-    for k, v in rep["hold"].items():
-        if k.startswith("recall_lang_"):
-            gates[k] = {"value": v, "bar": LANG_GATE, "pass": v >= LANG_GATE}
+    gates = {k: {"value": rep[k], "bar": bar, "pass": rep[k] >= bar} for k, bar in (gates or GATES).items()}
+    if not precision_first:
+        gates["routed_share"] = {"value": rep["routed_share"], "bar": MAX_ROUTED,
+                                 "pass": rep["routed_share"] <= MAX_ROUTED}
+        for k, v in rep["hold"].items():
+            if k.startswith("recall_lang_"):
+                gates[k] = {"value": v, "bar": LANG_GATE, "pass": v >= LANG_GATE}
     rep["gates"] = gates
     rep["pass"] = all(g["pass"] for g in gates.values())
     return rep
@@ -69,16 +85,22 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="judge.evaluate.run_cascade_eval")
     ap.add_argument("--fast", type=Path, required=True)
     ap.add_argument("--second", type=Path)
-    ap.add_argument("--bands", type=Path, required=True)
+    ap.add_argument("--bands", type=Path, help="policy file: confirm thresholds or low/high bands")
+    ap.add_argument("--policy", type=Path, help="alias of --bands")
     ap.add_argument("--examples", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--log", type=Path, required=True)
     a = ap.parse_args(argv)
-    b = json.loads(a.bands.read_text(encoding="utf-8"))
+    policy_path = a.policy or a.bands
+    if policy_path is None:
+        ap.error("--policy (or --bands) is required")
+    kw = load_policy(policy_path)
+    b = json.loads(policy_path.read_text(encoding="utf-8"))
     fast = OnnxJudge(a.fast)
     second = OnnxJudge(a.second) if a.second else None
-    cascade = Cascade(fast, second, Bands(b["low"], b["high"]), second_timeout_s=60)
-    rep = evaluate(cascade, read_jsonl(a.examples, Example), fast.tok)
+    cascade = Cascade(fast, second, second_timeout_s=60, **kw)
+    gates = PRECISION_FIRST_GATES if "confirm" in kw else None
+    rep = evaluate(cascade, read_jsonl(a.examples, Example), fast.tok, gates=gates)
     a.out.write_text(json.dumps(rep, indent=2), encoding="utf-8")
     with a.log.open("a", encoding="utf-8") as f:
         f.write(json.dumps({"ts": time.time(), "kind": "cascade", "fast": str(a.fast), "second": str(a.second),
