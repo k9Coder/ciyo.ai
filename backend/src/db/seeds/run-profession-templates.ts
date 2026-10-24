@@ -13,7 +13,9 @@ async function seed() {
   for (const entry of professionTemplates) {
     const templateContent = { subjects: entry.subjects }
 
-    // Upsert: if template with same (profession, followUpAnswer) exists, skip
+    // Upsert: if template with same (profession, followUpAnswer) exists, update it in place
+    // so rule changes reach already-seeded environments. Tenants that already applied a
+    // template keep their own copied rules — this only affects future onboardings.
     const existing = await db
       .select({ id: professionTemplateMap.templateId })
       .from(professionTemplateMap)
@@ -24,8 +26,12 @@ async function seed() {
         )
       )
 
-    if (existing.length > 0) {
-      console.log(`  SKIP ${entry.profession}/${entry.followUpAnswer} (already exists)`)
+    if (existing[0]) {
+      await db
+        .update(policyTemplates)
+        .set({ name: entry.name, description: entry.description, policyJson: templateContent })
+        .where(eq(policyTemplates.id, existing[0].id))
+      console.log(`  UPD ${entry.profession}/${entry.followUpAnswer} → ${existing[0].id}`)
       continue
     }
 
