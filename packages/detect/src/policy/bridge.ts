@@ -33,10 +33,13 @@ function bridgeRule(rule: PolicyDoc["subjects"][number]["rules"][number], subjec
   }
 
   switch (rule.kind) {
+    // Keyword and pattern rules are deterministic and are what admins see as
+    // "block"/"warn" in the console — they must actually enforce. Entropy and
+    // score stay shadow-only until their false-positive rate is measured.
     case "keyword":
-      return { ...base, kind: "dictionary" as const, terms: rule.keywords ?? [], caseSensitive: false, enforced: false }
+      return { ...base, kind: "dictionary" as const, terms: rule.keywords ?? [], caseSensitive: false, enforced: true }
     case "pattern":
-      return { ...base, kind: "pattern" as const, pattern: rule.pattern ?? "", flags: "gi", validator: "none" as const, scope: "all" as const, enforced: false }
+      return { ...base, kind: "pattern" as const, pattern: rule.pattern ?? "", flags: "gi", validator: "none" as const, scope: "all" as const, enforced: true }
     case "entropy":
       return { ...base, kind: "entropy" as const, minTokenLength: 24, minBitsPerChar: 4.0, enforced: false }
     case "score":
