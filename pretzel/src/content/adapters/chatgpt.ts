@@ -22,7 +22,12 @@ export const chatGPTAdapter: SiteAdapter = {
     return (
       (document.querySelector('[data-testid="send-button"]') as HTMLElement | null) ??
       (document.querySelector('button[aria-label="Send message"]') as HTMLElement | null) ??
-      (document.querySelector('button[aria-label="Send prompt"]') as HTMLElement | null)
+      (document.querySelector('button[aria-label="Send prompt"]') as HTMLElement | null) ??
+      // Oct 2026 DOM: <button type="submit" aria-label="Send"> with no data-testid.
+      (document.querySelector('#composer-submit-button') as HTMLElement | null) ??
+      (document.querySelector('button[aria-label="Send"]') as HTMLElement | null) ??
+      (this.findComposer()?.closest("form")?.querySelector('button[type="submit"]') as HTMLElement | null | undefined) ??
+      null
     );
   },
 

@@ -21,10 +21,11 @@ const MAX_BODY_BYTES = 2 * 1024 * 1024;
 type Extractor = (url: string, body: unknown) => string | null;
 
 // ─── ChatGPT ────────────────────────────────────────────────────────────────
-// POST https://chatgpt.com/backend-api/(f/)conversation
+// POST https://chatgpt.com/backend-api/(f/)conversation   (signed in)
+// POST https://chatgpt.com/backend-anon/(f/)conversation  (signed out)
 // { action, messages: [{ author:{role:'user'}, content:{ content_type:'text', parts:['...'] } }] }
 function extractChatGPT(url: string, body: unknown): string | null {
-  if (!/\/backend-api\/(f\/)?conversation\b/.test(url)) return null;
+  if (!/\/backend-(api|anon)\/(f\/)?conversation\b/.test(url)) return null;
   const b = body as { messages?: Array<{ author?: { role?: string }; content?: { parts?: unknown[] } }> };
   if (!Array.isArray(b?.messages)) return null;
 
