@@ -1,6 +1,6 @@
 """Token windows for the second-opinion model.
 
-The second opinion reads one rule plus about 400 tokens around the fast model's span, which keeps it under the
+The second opinion reads one rule plus about 150 tokens (the runtime window; see cascade.py) around the fast model's span, which keeps it under the
 latency limits even for large pastes. Training uses the same kind of windows.
 """
 import dataclasses

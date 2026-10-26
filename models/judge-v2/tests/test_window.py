@@ -31,3 +31,14 @@ def test_negative_rule_gets_a_window_and_keeps_its_target(tiny_tokenizer_dir):
     ex = Example("m", text, "en", ("r",), ("x",), (0.0,), (False,), False, None)
     w = window_examples([ex], tok, size=40, seed=1)
     assert len(w) == 1 and w[0].targets == (0.0,) and len(tok.message_ids(w[0].message)) <= 40
+
+
+def test_window_examples_respect_runtime_size_150(tiny_tokenizer_dir):
+    tok = JudgeTokenizer.load(tiny_tokenizer_dir, JudgeConfig(model_version="t", base_model="t"))
+    filler = " ".join(TINY_WORDS[i % len(TINY_WORDS)] for i in range(600))
+    text = filler + " SECRET 078-05-1120 " + filler
+    s = text.index("078")
+    ex = Example("m", text, "en", ("r",), ("x",), (1.0,), (True,), False, s, ((s, s + 11),))
+    out = window_examples([ex], tok, size=150)
+    assert out and all(len(tok.message_offsets(w.message)) <= 150 for w in out)
+    assert any("078-05-1120" in w.message for w in out)
