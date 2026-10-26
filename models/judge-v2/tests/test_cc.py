@@ -101,3 +101,29 @@ def test_ingest_records_excerpt_end(tmp_path):
     p = _write(tmp_path / "o1.jsonl", [row])
     msgs = ingest_pairs(order, p)[0]
     assert (msgs[0].violation_char_start, msgs[0].violation_char_end) == (7, 18)
+
+
+def test_train_orders_skip_heldout_and_use_training_styles():
+    from judge.cc.orders import train_orders
+    from judge.data.catalog import CATEGORIES, HELDOUT_LANGUAGES, HELDOUT_STYLES
+    heldout = {c.id for c in CATEGORIES if c.heldout}
+    orders = train_orders(CATEGORIES, 4, 7, "wave1")
+    assert orders and all(o.language not in HELDOUT_LANGUAGES for o in orders)
+    assert all(o.category_id not in heldout for o in orders)
+    assert all(not set(o.styles) & HELDOUT_STYLES for o in orders)
+    assert any(o.category_id is None for o in orders)
+    assert len({o.id for o in orders}) == len(orders)
+
+
+def test_train_orders_ids_differ_between_waves():
+    from judge.cc.orders import train_orders
+    from judge.data.catalog import CATEGORIES
+    a = {o.id for o in train_orders(CATEGORIES, 4, 7, "wave1")}
+    b = {o.id for o in train_orders(CATEGORIES, 4, 7, "wave2")}
+    assert not a & b
+
+
+def test_custom_other_rules_are_accepted_and_trainable():
+    from judge.data.catalog import CATEGORIES
+    c = {x.id: x for x in CATEGORIES}["custom_other"]
+    assert c.heldout is False and c.critical is False

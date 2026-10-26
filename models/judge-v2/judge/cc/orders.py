@@ -33,6 +33,22 @@ def pair_orders(categories, n_per_order: int, seed: int) -> list[Order]:
     return out
 
 
+def train_orders(categories, n_per_order: int, seed: int, tag: str) -> list[Order]:
+    """Orders for training data only: no held-out language, category or style; ids unique per wave tag."""
+    rng = random.Random(seed)
+    styles = sorted(set(MESSAGE_STYLES) - HELDOUT_STYLES)
+    cids = [c.id for c in categories if not c.heldout] + [None]
+    out = []
+    for lang in LANGUAGES:
+        if lang in HELDOUT_LANGUAGES:
+            continue
+        for cid in cids:
+            n = n_per_order * 2 if cid is None else n_per_order
+            out.append(Order(stable_id("order", tag, lang, cid or "benign"), "pairs", lang, cid,
+                             tuple(rng.sample(styles, 3)), n, ()))
+    return out
+
+
 def label_orders(items: list[dict], batch: int = 40) -> list[Order]:
     items = sorted(items, key=lambda x: x["pair_id"])
     return [Order(stable_id("order", "label", items[i]["pair_id"]), "label", "mixed", None, (),

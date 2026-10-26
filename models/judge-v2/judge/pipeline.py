@@ -8,7 +8,7 @@ from pathlib import Path
 
 from judge.cc.ingest import ingest_labels, ingest_pairs
 from judge.cc.merge import merge_second_pass, needs_second_pass
-from judge.cc.orders import label_orders, pair_orders, read_order, write_orders
+from judge.cc.orders import label_orders, pair_orders, read_order, train_orders, write_orders
 from judge.data.catalog import CATEGORIES, category_by_id
 from judge.data.devx import devx_pairs
 from judge.data.examples import build_examples, build_long_examples
@@ -125,6 +125,10 @@ def cmd_devx_ingest(a):
 
 def cmd_cc_orders(a):
     write_orders(pair_orders(CATEGORIES, a.per_order, a.seed), a.out)
+
+
+def cmd_train_orders(a):
+    write_orders(train_orders(CATEGORIES, a.per_order, a.seed, a.tag), a.out)
 
 
 def cmd_cc_ingest(a):
@@ -261,6 +265,11 @@ def main(argv=None):
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-order", type=int, required=True)
     s.add_argument("--seed", type=int, default=1234)
+    s = sub.add_parser("train-orders")
+    s.add_argument("--out", type=Path, required=True)
+    s.add_argument("--per-order", type=int, required=True)
+    s.add_argument("--seed", type=int, default=1234)
+    s.add_argument("--tag", required=True)
     s = sub.add_parser("cc-ingest")
     s.add_argument("--orders", type=Path, required=True)
     s.add_argument("--outputs", type=Path, required=True)
@@ -285,7 +294,7 @@ def main(argv=None):
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
     handlers = {"backfill-spans": cmd_backfill_spans, "subset": cmd_subset, "devx-orders": cmd_devx_orders,
-                "devx-ingest": cmd_devx_ingest, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+                "devx-ingest": cmd_devx_ingest, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "train-orders": cmd_train_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
                 "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
     handler = handlers[a.cmd]
     handler(a)

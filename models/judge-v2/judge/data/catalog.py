@@ -65,6 +65,7 @@ CATEGORIES = [
     _c("marketing_campaign_unreleased", "custom", False, "an unannounced marketing campaign or slogan"),
     _c("customer_complaint_named", "custom", False, "a named customer's complaint or support case details"),
     _c("donor_records", "custom", False, "donors' names with their donation amounts"),
+    _c("custom_other", "custom", False, "a company-specific confidential item described in the rule itself"),
 ]
 
 MESSAGE_STYLES = {
