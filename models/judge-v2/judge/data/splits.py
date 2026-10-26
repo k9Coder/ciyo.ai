@@ -39,6 +39,12 @@ def _norm(text: str) -> str:
     return " ".join(text.lower().split())
 
 
+def check_disjoint(train_texts, forbidden_texts) -> list[str]:
+    """Forbidden (development/test) texts that also occur in training, compared case- and space-insensitively."""
+    seen = {_norm(t) for t in train_texts}
+    return [t for t in forbidden_texts if _norm(t) in seen]
+
+
 def check_no_leakage(messages, rules, pairs, splits) -> None:
     seen: dict[str, str] = {}
     for m in messages:

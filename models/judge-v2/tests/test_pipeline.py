@@ -245,3 +245,38 @@ def test_devx_orders_and_ingest_round_trip(tmp_path):
                    "--out", str(tmp_path / "devx.jsonl")])
     ex = read_jsonl(tmp_path / "devx.jsonl", Example)
     assert [(e.message_id, e.rule_ids, e.critical) for e in ex] == [("v1", ("r2",), (True,))] and ex[0].targets[0] < 0.5
+
+
+def test_check_disjoint_catches_case_and_whitespace_variants():
+    from judge.data.splits import check_disjoint
+    assert check_disjoint(["Hello   World", "other"], ["hello world", "x"]) == ["hello world"]
+
+
+def test_merge_refuses_training_text_that_is_in_a_forbidden_set(tmp_path):
+    import pytest
+    from judge.data.schema import write_jsonl
+    src = tmp_path / "src"; src.mkdir()
+    m = Message("c1", "us_ssn", "positive", "email_draft", "en", "My SSN is 078-05-1120", False, 10, "c1", "claude")
+    write_jsonl(src / "messages.jsonl", [m]); write_jsonl(src / "rules.jsonl", [])
+    write_jsonl(src / "pairs.jsonl", []); write_jsonl(src / "labels.jsonl", [])
+    forbid = tmp_path / "dev.jsonl"
+    forbid.write_text(json.dumps({"message": "my ssn is  078-05-1120"}) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as e:
+        pipeline.main(["merge", "--inputs", str(src), "--out", str(tmp_path / "out"), "--forbid", str(forbid)])
+    assert "also appear in training" in str(e.value.code)
+
+
+def test_examples_appends_long_training_messages(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message("c1", "us_ssn", "positive", "email_draft", "en", "ssn 078-05-1120", False, 4, "c1", "claude")]
+    msgs += [Message(f"b{i}", None, "benign", "email_draft", "en", "harmless text " * 60, False, None, f"b{i}", "claude")
+             for i in range(10)]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    write_jsonl(tmp_path / "messages.jsonl", msgs); write_jsonl(tmp_path / "rules.jsonl", rules)
+    write_jsonl(tmp_path / "pairs.jsonl", [Pair("pc1", "c1", "r1")])
+    write_jsonl(tmp_path / "labels.jsonl", [Label("pc1", 1.0, "single")])
+    (tmp_path / "splits.json").write_text(json.dumps({m.id: "train" for m in msgs}))
+    pipeline.main(["examples", "--data", str(tmp_path), "--seed", "1", "--long-train-per-language", "3"])
+    train = read_jsonl(tmp_path / "train.jsonl", Example)
+    longs = [e for e in train if e.message_id.startswith("long_")]
+    assert len(longs) == 1 and longs[0].violation_char_start >= 4000

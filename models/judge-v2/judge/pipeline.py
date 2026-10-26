@@ -15,7 +15,7 @@ from judge.data.extra import extra_pairs
 from judge.data.examples import build_examples, build_long_examples
 from judge.data.schema import Example, Label, Message, Pair, Rule, read_jsonl, stable_id, write_jsonl
 from judge.data.scripted import generate, load_templates, validate
-from judge.data.splits import assign_splits, check_no_leakage, rule_is_test_only
+from judge.data.splits import assign_splits, check_disjoint, check_no_leakage, rule_is_test_only
 
 FILES = (("messages", Message), ("rules", Rule), ("pairs", Pair), ("labels", Label))
 
@@ -193,6 +193,11 @@ def cmd_merge(a):
     parts = [_read_all(d) for d in a.inputs]
     msgs, rules, pairs, labels = (_dedup([x for part in parts for x in part[i]]) for i in range(4))
     splits = assign_splits(msgs)
+    forbidden = [json.loads(l)["message"] for f in (a.forbid or [])
+                 for l in f.read_text(encoding="utf-8").splitlines() if l.strip()]
+    clash = check_disjoint([m.text for m in msgs if splits[m.id] != "test"], forbidden)
+    if clash:
+        sys.exit(f"{len(clash)} development/test texts also appear in training, e.g. {clash[0][:80]!r}")
     # Teacher pairs sometimes attach an "unrelated" rule from a held-out category to a training
     # message; held-out categories must never reach training, so those pairs are dropped.
     rule_by_id = {r.id: r for r in rules}
@@ -259,6 +264,9 @@ def cmd_examples(a):
         if split == "train" and a.oversample_claude > 1:
             # Realistic teacher messages were ~10x rarer than scripted ones, and the model over-flagged them.
             built += [e for e in built if msgs[e.message_id].source == "claude"] * (a.oversample_claude - 1)
+        if split == "train" and a.long_train_per_language:
+            train_msgs = [m for mid, m in msgs.items() if splits[mid] == "train"]
+            built += build_long_examples(built, train_msgs, a.long_train_per_language, 4000, a.seed)
         if split == "test" and a.long_per_language:
             test_msgs = [m for mid, m in msgs.items() if splits[mid] == "test"]
             built += build_long_examples(built, test_msgs, a.long_per_language, 4000, a.seed)
@@ -328,6 +336,7 @@ def main(argv=None):
     s = sub.add_parser("merge")
     s.add_argument("--inputs", type=Path, nargs="+", required=True)
     s.add_argument("--out", type=Path, required=True)
+    s.add_argument("--forbid", type=Path, nargs="*", help="jsonl files whose 'message' texts must not be trained on")
     s = sub.add_parser("label-orders")
     s.add_argument("--data", type=Path, required=True)
     s.add_argument("--out", type=Path, required=True)
@@ -340,6 +349,8 @@ def main(argv=None):
     s.add_argument("--max-test-messages", type=int, default=0)
     s.add_argument("--oversample-claude", type=int, default=1,
                    help="repeat each Claude Code training example N times in train.jsonl")
+    s.add_argument("--long-train-per-language", type=int, default=0,
+                   help="also bury N training positives per language behind training-split benign filler")
     s.add_argument("--long-per-language", type=int, default=0,
                    help="also bury N test positives per language past ~500 tokens of benign filler")
     s.add_argument("--seed", type=int, default=1234)
