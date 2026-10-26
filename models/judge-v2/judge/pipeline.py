@@ -11,6 +11,7 @@ from judge.cc.merge import merge_second_pass, needs_second_pass
 from judge.cc.orders import label_orders, pair_orders, read_order, train_orders, write_orders
 from judge.data.catalog import CATEGORIES, category_by_id
 from judge.data.devx import devx_pairs
+from judge.data.extra import extra_pairs
 from judge.data.examples import build_examples, build_long_examples
 from judge.data.schema import Example, Label, Message, Pair, Rule, read_jsonl, stable_id, write_jsonl
 from judge.data.scripted import generate, load_templates, validate
@@ -121,6 +122,46 @@ def cmd_devx_ingest(a):
                           tuple(p for _, p in rs), tuple(cats[rules[r].category_id].critical for r, _ in rs),
                           m.adversarial, m.violation_char_start))
     write_jsonl(a.out, ex)
+
+
+def cmd_extra_orders(a):
+    msgs = read_jsonl(a.data / "messages.jsonl", Message)
+    rules = read_jsonl(a.data / "rules.jsonl", Rule)
+    existing = {(p.message_id, p.rule_id) for p in read_jsonl(a.data / "pairs.jsonl", Pair)}
+    ids = set(json.loads(a.message_ids.read_text(encoding="utf-8")))
+    text, rtext = {m.id: m.text for m in msgs}, {r.id: r.text for r in rules}
+    index, items = {}, []
+    for mid, rid in extra_pairs(msgs, rules, ids, a.per_message, a.seed):
+        if (mid, rid) in existing:
+            continue
+        pid = stable_id("pair", mid, rid)
+        index[pid] = [mid, rid]
+        items.append({"pair_id": pid, "message": text[mid], "rule": rtext[rid]})
+    write_orders(label_orders(items), a.out)
+    (a.out / "pairs_index.json").write_text(json.dumps(index), encoding="utf-8")
+
+
+def cmd_extra_ingest(a):
+    index = json.loads((a.orders / "pairs_index.json").read_text(encoding="utf-8"))
+    pairs = read_jsonl(a.data / "pairs.jsonl", Pair)
+    labels = read_jsonl(a.data / "labels.jsonl", Label)
+    missing = []
+    for p in sorted(a.orders.glob("order_*.json")):
+        order = read_order(p)
+        out = a.outputs / f"{order.id}.jsonl"
+        if not out.exists():
+            missing.append(order.id)
+            continue
+        got, errors = ingest_labels(order, out)
+        if errors:
+            sys.exit("\n".join(errors))
+        for pid, prob in got.items():
+            pairs.append(Pair(pid, *index[pid]))
+            labels.append(Label(pid, prob, "single"))
+    if missing:
+        sys.exit(f"missing outputs: {missing}")
+    write_jsonl(a.data / "pairs.jsonl", _dedup(pairs))
+    write_jsonl(a.data / "labels.jsonl", _dedup(labels))
 
 
 def cmd_cc_orders(a):
@@ -265,6 +306,16 @@ def main(argv=None):
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-order", type=int, required=True)
     s.add_argument("--seed", type=int, default=1234)
+    s = sub.add_parser("extra-orders")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--message-ids", type=Path, required=True)
+    s.add_argument("--out", type=Path, required=True)
+    s.add_argument("--per-message", type=int, default=4)
+    s.add_argument("--seed", type=int, default=5)
+    s = sub.add_parser("extra-ingest")
+    s.add_argument("--data", type=Path, required=True)
+    s.add_argument("--orders", type=Path, required=True)
+    s.add_argument("--outputs", type=Path, required=True)
     s = sub.add_parser("train-orders")
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--per-order", type=int, required=True)
@@ -294,7 +345,8 @@ def main(argv=None):
     s.add_argument("--seed", type=int, default=1234)
     a = ap.parse_args(argv)
     handlers = {"backfill-spans": cmd_backfill_spans, "subset": cmd_subset, "devx-orders": cmd_devx_orders,
-                "devx-ingest": cmd_devx_ingest, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "train-orders": cmd_train_orders, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
+                "devx-ingest": cmd_devx_ingest, "scripted": cmd_scripted, "cc-orders": cmd_cc_orders, "train-orders": cmd_train_orders,
+                "extra-orders": cmd_extra_orders, "extra-ingest": cmd_extra_ingest, "cc-ingest": cmd_cc_ingest, "merge": cmd_merge,
                 "label-orders": cmd_label_orders, "label-ingest": cmd_label_ingest, "examples": cmd_examples}
     handler = handlers[a.cmd]
     handler(a)
