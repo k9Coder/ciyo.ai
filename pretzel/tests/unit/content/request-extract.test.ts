@@ -15,6 +15,17 @@ describe("extractPromptFromRequest — ChatGPT", () => {
     );
   });
 
+  it("pulls the prompt from a signed-out (backend-anon) conversation POST", () => {
+    for (const anonUrl of [
+      "https://chatgpt.com/backend-anon/conversation",
+      "https://chatgpt.com/backend-anon/f/conversation",
+    ]) {
+      expect(extractPromptFromRequest("chatgpt.com", anonUrl, body(["מזהה הלקוח שלי הוא 123-45-6789"]))).toBe(
+        "מזהה הלקוח שלי הוא 123-45-6789",
+      );
+    }
+  });
+
   it("ignores non-conversation endpoints", () => {
     expect(
       extractPromptFromRequest("chatgpt.com", "https://chatgpt.com/backend-api/models", body(["hi"])),
