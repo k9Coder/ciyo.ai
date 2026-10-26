@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { bridgePolicy } from '../../src/policy/bridge'
+import { detectPrompt } from '../../src/detection/engine'
 import type { PolicyDoc } from '../../src/policy/schema'
 
 const MINIMAL_DOC: PolicyDoc = {
@@ -31,7 +32,7 @@ describe('bridgePolicy', () => {
     expect((p.custom[0] as { terms: string[] }).terms).toContain('secret')
     expect(p.custom[0]!.action).toBe('warn')
     expect(p.custom[0]!.enabled).toBe(true)
-    expect(p.custom[0]!.enforced).toBe(false)
+    expect(p.custom[0]!.enforced).toBe(true)
   })
 
   it('maps pattern rule to PatternRule', () => {
@@ -46,7 +47,7 @@ describe('bridgePolicy', () => {
     expect(p.custom[0]!.kind).toBe('pattern')
     expect((p.custom[0] as { pattern: string }).pattern).toBe('sk-[A-Za-z0-9]{20,}')
     expect(p.custom[0]!.action).toBe('block')
-    expect(p.custom[0]!.enforced).toBe(false)
+    expect(p.custom[0]!.enforced).toBe(true)
   })
 
   it('maps entropy rule with defaults', () => {
@@ -101,7 +102,7 @@ describe('bridgePolicy', () => {
     for (const rule of p.custom) expect(rule.enabled).toBe(false)
   })
 
-  it("bridges legacy rule kinds with enforced: false", () => {
+  it("enforces keyword/pattern rules and keeps entropy/score in shadow", () => {
     const doc: PolicyDoc = {
       ...MINIMAL_DOC,
       subjects: [{
@@ -116,6 +117,25 @@ describe('bridgePolicy', () => {
     }
     const p = bridgePolicy(doc, [])
     expect(p.custom).toHaveLength(4)
-    for (const rule of p.custom) expect(rule.enforced).toBe(false)
+    expect(p.custom.map(r => [r.kind, r.enforced])).toEqual([
+      ['dictionary', true],
+      ['pattern', true],
+      ['entropy', false],
+      ['score', false],
+    ])
+  })
+
+  it('a console pattern rule set to block actually blocks a matching prompt', async () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'Personal Identifiers',
+        rules: [{ id: 'r1', kind: 'pattern', keywords: null, pattern: String.raw`\b\d{3}-\d{2}-\d{4}\b`, destinations: [], action: 'block', message: null, reportLevel: 'none' }],
+      }],
+    }
+    const result = await detectPrompt('מזהה הלקוח שלי הוא 123-45-6789', bridgePolicy(doc, []), 'chatgpt.com')
+    expect(result.highestAction).toBe('block')
+    expect(result.findings[0]!.matchedText).toBe('123-45-6789')
+    expect(result.shadowFindings).toHaveLength(0)
   })
 })
