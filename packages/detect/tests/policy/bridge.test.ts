@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { bridgePolicy } from '../../src/policy/bridge'
+import { detectPrompt } from '../../src/detection/engine'
 import type { PolicyDoc } from '../../src/policy/schema'
 
 const MINIMAL_DOC: PolicyDoc = {
@@ -63,5 +64,18 @@ describe('bridgePolicy', () => {
   it('injects disabledSites into perSite', () => {
     const p = bridgePolicy(MINIMAL_DOC, ['chatgpt.com'])
     expect(p.perSite['chatgpt.com']!.enabled).toBe(false)
+  })
+
+  it('a console pattern rule set to block actually blocks a matching prompt', async () => {
+    const doc: PolicyDoc = {
+      ...MINIMAL_DOC,
+      subjects: [{
+        id: 's1', name: 'Personal Identifiers',
+        rules: [{ id: 'r1', kind: 'pattern', keywords: null, pattern: String.raw`\b\d{3}-\d{2}-\d{4}\b`, destinations: [], action: 'block', message: null, reportLevel: 'none' }],
+      }],
+    }
+    const result = await detectPrompt('מזהה הלקוח שלי הוא 123-45-6789', bridgePolicy(doc, []), 'chatgpt.com')
+    expect(result.highestAction).toBe('block')
+    expect(result.findings[0]!.matchedText).toBe('123-45-6789')
   })
 })
