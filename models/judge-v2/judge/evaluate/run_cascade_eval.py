@@ -28,6 +28,8 @@ def load_policy(path: Path) -> dict:
         out = {"confirm": Confirm(d["fast_min"], d["second_min"])}
         if "window_tokens" in d:
             out["window_tokens"] = d["window_tokens"]
+        if "max_windows" in d:
+            out["max_windows"] = d["max_windows"]
         return out
     return {"bands": Bands(d["low"], d["high"])}
 

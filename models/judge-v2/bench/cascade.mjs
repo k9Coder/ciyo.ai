@@ -8,7 +8,7 @@ const CHARS_PER_TOKEN = 4;
 // confirm = { fastMin, secondMin } switches to the precision-first policy: block only when the fast model flags
 // and the second model confirms; otherwise bands route the uncertain middle to the second model.
 export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0.9 }, windowTokens = 400,
-                                secondTimeoutMs = 2500, idleUnloadMs = 300000, confirm = null }) {
+                                secondTimeoutMs = 2500, idleUnloadMs = 300000, confirm = null, maxWindows = 1 }) {
   const windowChars = windowTokens * CHARS_PER_TOKEN;
   const lazy = typeof second === "function";
   let loaded = lazy ? null : second;
@@ -30,6 +30,19 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
     const mid = span ? Math.floor((span[0] + span[1]) / 2) : 0;
     const a = Math.max(0, Math.min(mid - Math.floor(windowChars / 2), message.length - windowChars));
     return [a, a + windowChars];
+  }
+
+  // The window around the fast model's span first, then the rest of the message left to right.
+  function windowsFor(message, span) {
+    const first = windowFor(message, span);
+    const out = [first];
+    if (message.length <= windowChars) return out;
+    for (let a = 0; a < message.length; a += windowChars) {
+      const b = Math.min(a + windowChars, message.length);
+      const overlap = Math.max(0, Math.min(b, first[1]) - Math.max(a, first[0]));
+      if (overlap <= Math.floor(windowChars / 2)) out.push([a, b]);
+    }
+    return out.slice(0, maxWindows);
   }
 
   function withTimeout(promise) {
@@ -61,10 +74,15 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
         try {
           const scorer = await getSecond();
           if (!scorer) throw new Error("second opinion unavailable");
-          const [a, b] = windowFor(message, span);
-          const [res] = await withTimeout(scorer.scoreWithSpans(message.slice(a, b), [rules[i].text]));
-          const span2 = res.span ? [res.span[0] + a, res.span[1] + a] : span;
-          entries.push(entry(message, rules[i].id, res.p >= confirm.secondMin, res.p, span2));
+          let best = { p: 0, span: null }, hit = null;
+          for (const [a, b] of windowsFor(message, span)) {
+            const [res] = await withTimeout(scorer.scoreWithSpans(message.slice(a, b), [rules[i].text]));
+            const s = res.span ? [res.span[0] + a, res.span[1] + a] : null;
+            if (res.p >= confirm.secondMin) { hit = { p: res.p, span: s ?? span }; break; }
+            if (res.p > best.p) best = { p: res.p, span: s };
+          }
+          const out = hit ?? best;
+          entries.push(entry(message, rules[i].id, hit !== null, out.p, out.span));
         } catch {
           pending = true;
           entries.push(entry(message, rules[i].id, null, p, null));

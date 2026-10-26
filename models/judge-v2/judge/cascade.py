@@ -36,8 +36,9 @@ def to_utf16(message: str, idx: int) -> int:
 
 class Cascade:
     def __init__(self, fast, second=None, bands: Bands = Bands(0.1, 0.9), window_tokens: int = 400,
-                 second_timeout_s: float = 2.5, confirm: Confirm | None = None):
+                 second_timeout_s: float = 2.5, confirm: Confirm | None = None, max_windows: int = 1):
         self.fast, self.second, self.bands, self.confirm = fast, second, bands, confirm
+        self.max_windows = max_windows
         self.window_chars = window_tokens * CHARS_PER_TOKEN
         self.timeout = second_timeout_s
         self.pool = ThreadPoolExecutor(max_workers=1)
@@ -48,6 +49,31 @@ class Cascade:
         mid = 0 if span is None else (span[0] + span[1]) // 2
         a = max(0, min(mid - self.window_chars // 2, len(message) - self.window_chars))
         return a, a + self.window_chars
+
+    def _windows(self, message: str, span) -> list[tuple[int, int]]:
+        """The window around the fast model's span first, then the rest of the message left to right."""
+        first = self._window(message, span)
+        out, w = [first], self.window_chars
+        if len(message) <= w:
+            return out
+        for a in range(0, len(message), w):
+            b = min(a + w, len(message))
+            if max(0, min(b, first[1]) - max(a, first[0])) <= w // 2:
+                out.append((a, b))
+        return out[:self.max_windows]
+
+    def _second_any(self, message: str, rule: str, span):
+        """Confirm if any window confirms (first confirm stops); otherwise the highest score seen."""
+        best = (0.0, None)
+        for a, b in self._windows(message, span):
+            future = self.pool.submit(self.second.score_with_spans, message[a:b], [rule])
+            p, s = future.result(timeout=self.timeout)[0]
+            s = None if s is None else (s[0] + a, s[1] + a)
+            if p >= self.confirm.second_min:
+                return p, s
+            if p > best[0]:
+                best = (p, s)
+        return best
 
     def _second(self, message: str, rule: str, span):
         a, b = self._window(message, span)
@@ -79,7 +105,7 @@ class Cascade:
                 try:
                     if self.second is None:
                         raise RuntimeError("second opinion unavailable")
-                    p2, span2 = self._second(message, r["text"], span)
+                    p2, span2 = self._second_any(message, r["text"], span)
                     ok = p2 >= self.confirm.second_min
                     entries.append(self._entry(message, r["id"], ok, p2, span2 or span))
                 except (FutureTimeout, RuntimeError, OSError, ValueError):

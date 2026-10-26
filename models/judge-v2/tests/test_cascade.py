@@ -116,3 +116,51 @@ def test_confirm_policy_makes_no_second_call_when_nothing_is_flagged():
     fast = Fake({"A": (0.1, None), "B": (0.2, None), "C": (0.3, None)})
     r = Cascade(fast, Boom(), confirm=Confirm(0.7, 0.7)).judge("abc", RULES)
     assert r["violated"] is False and r["decided_by"] == "fast"
+
+
+from judge.cascade import Confirm
+
+
+class Spy:
+    def __init__(self, hit):
+        self.hit, self.calls = hit, []
+
+    def score_with_spans(self, message, rules):
+        self.calls.append(message)
+        return [(0.99, (message.index(self.hit), message.index(self.hit) + 3)) if self.hit in message else (0.01, None)]
+
+
+def test_second_window_far_from_fast_span_can_confirm():
+    msg = "a" * 2000 + "LEAK" + "b" * 2000
+    fast = Fake({"A": (0.95, (10, 20))})
+    spy = Spy("LEAK")
+    r = Cascade(fast, spy, window_tokens=150, confirm=Confirm(0.7, 0.7), max_windows=8).judge(msg, [RULES[0]])
+    assert r["rules"][0]["violated"] is True and len(spy.calls) >= 2
+    s = r["rules"][0]["span"]
+    assert msg[s["start"]:s["end"]] == "LEA"
+
+
+def test_windows_stop_at_first_confirm_and_cap_at_max():
+    msg = "LEAK" + "x" * 5000
+    spy = Spy("LEAK")
+    Cascade(Fake({"A": (0.95, (0, 4))}), spy, window_tokens=150, confirm=Confirm(0.7, 0.7), max_windows=3).judge(msg, [RULES[0]])
+    assert len(spy.calls) == 1
+    spy2 = Spy("NOPE")
+    Cascade(Fake({"A": (0.95, (0, 4))}), spy2, window_tokens=150, confirm=Confirm(0.7, 0.7), max_windows=3).judge(msg, [RULES[0]])
+    assert len(spy2.calls) == 3
+
+
+def test_timeout_in_any_window_before_a_confirm_is_pending():
+    class SlowSecond:
+        n = 0
+
+        def score_with_spans(self, message, rules):
+            SlowSecond.n += 1
+            if SlowSecond.n == 2:
+                time.sleep(0.3)
+            return [(0.01, None)]
+
+    msg = "x" * 5000
+    r = Cascade(Fake({"A": (0.95, (0, 4))}), SlowSecond(), window_tokens=150, second_timeout_s=0.1,
+                confirm=Confirm(0.7, 0.7), max_windows=3).judge(msg, [RULES[0]])
+    assert r["pending"] is True and r["rules"][0]["violated"] is None

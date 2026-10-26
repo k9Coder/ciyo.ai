@@ -52,3 +52,11 @@ def test_policy_file_selects_confirm_or_bands(tmp_path):
     assert load_policy(p) == {"confirm": Confirm(0.69, 0.55), "window_tokens": 150}
     p.write_text('{"low": 0.1, "high": 0.9}')
     assert load_policy(p) == {"bands": Bands(0.1, 0.9)}
+
+
+def test_policy_file_passes_max_windows(tmp_path):
+    from judge.cascade import Confirm
+    from judge.evaluate.run_cascade_eval import load_policy
+    p = tmp_path / "policy.json"
+    p.write_text('{"policy": "confirm", "fast_min": 0.7, "second_min": 0.6, "window_tokens": 150, "max_windows": 3}')
+    assert load_policy(p) == {"confirm": Confirm(0.7, 0.6), "window_tokens": 150, "max_windows": 3}

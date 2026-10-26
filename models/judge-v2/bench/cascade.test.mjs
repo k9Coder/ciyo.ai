@@ -77,3 +77,15 @@ test("confirm policy without a second model is pending", async () => {
   const r = await createCascade({ fast, second: null, confirm: { fastMin: 0.7, secondMin: 0.7 } }).judge("abc", RULES);
   assert.equal(r.rules[0].violated, null); assert.equal(r.pending, true); assert.equal(r.violated, false);
 });
+
+test("confirm policy checks further windows on long messages", async () => {
+  const msg = "a".repeat(2000) + "LEAK" + "b".repeat(2000);
+  const calls = [];
+  const second = { scoreWithSpans: async (m) => { calls.push(m); const i = m.indexOf("LEAK");
+    return [i >= 0 ? { p: 0.99, span: [i, i + 3] } : { p: 0.01, span: null }]; } };
+  const fast = { scoreWithSpans: async () => [{ p: 0.95, span: [10, 20] }] };
+  const r = await createCascade({ fast, second, windowTokens: 150, maxWindows: 8, confirm: { fastMin: 0.7, secondMin: 0.7 } })
+    .judge(msg, [{ id: "a", text: "A" }]);
+  assert.equal(r.rules[0].violated, true); assert.ok(calls.length >= 2);
+  assert.equal(r.rules[0].span.text, "LEA");
+});
