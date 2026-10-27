@@ -280,3 +280,19 @@ def test_examples_appends_long_training_messages(tmp_path):
     train = read_jsonl(tmp_path / "train.jsonl", Example)
     longs = [e for e in train if e.message_id.startswith("long_")]
     assert len(longs) == 1 and longs[0].violation_char_start >= 4000
+
+
+def test_long_training_examples_use_benign_messages_that_have_pairs_as_filler(tmp_path):
+    from judge.data.schema import write_jsonl
+    msgs = [Message("c1", "us_ssn", "positive", "email_draft", "en", "ssn 078-05-1120", False, 4, "c1", "claude")]
+    msgs += [Message(f"b{i}", None, "benign", "email_draft", "en", "harmless text " * 60, False, None, f"b{i}", "claude")
+             for i in range(10)]
+    rules = [Rule("r1", "us_ssn", "en", "discloses an SSN", "claude")]
+    pairs = [Pair("pc1", "c1", "r1")] + [Pair(f"pb{i}", f"b{i}", "r1") for i in range(10)]
+    labels = [Label("pc1", 1.0, "single")] + [Label(f"pb{i}", 0.0, "single") for i in range(10)]
+    write_jsonl(tmp_path / "messages.jsonl", msgs); write_jsonl(tmp_path / "rules.jsonl", rules)
+    write_jsonl(tmp_path / "pairs.jsonl", pairs); write_jsonl(tmp_path / "labels.jsonl", labels)
+    (tmp_path / "splits.json").write_text(json.dumps({m.id: "train" for m in msgs}))
+    pipeline.main(["examples", "--data", str(tmp_path), "--seed", "1", "--long-train-per-language", "3"])
+    longs = [e for e in read_jsonl(tmp_path / "train.jsonl", Example) if e.message_id.startswith("long_")]
+    assert len(longs) == 1 and longs[0].violation_char_start >= 4000
