@@ -266,7 +266,9 @@ def cmd_examples(a):
             built += [e for e in built if msgs[e.message_id].source == "claude"] * (a.oversample_claude - 1)
         if split == "train" and a.long_train_per_language:
             train_msgs = [m for mid, m in msgs.items() if splits[mid] == "train"]
-            built += build_long_examples(built, train_msgs, a.long_train_per_language, 4000, a.seed)
+            # Benign training messages are labeled examples too; they may still serve as filler here.
+            not_benign = [e for e in built if msgs[e.message_id].polarity != "benign"]
+            built += build_long_examples(not_benign, train_msgs, a.long_train_per_language, 4000, a.seed)
         if split == "test" and a.long_per_language:
             test_msgs = [m for mid, m in msgs.items() if splits[mid] == "test"]
             built += build_long_examples(built, test_msgs, a.long_per_language, 4000, a.seed)
