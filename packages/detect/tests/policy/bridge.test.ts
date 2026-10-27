@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { bridgePolicy } from '../../src/policy/bridge'
 import { detectPrompt } from '../../src/detection/engine'
 import type { PolicyDoc } from '../../src/policy/schema'
+import { DEFAULT_POLICY } from '../../src/policy/defaults'
 
 const MINIMAL_DOC: PolicyDoc = {
   version: 1,
@@ -12,10 +13,19 @@ const MINIMAL_DOC: PolicyDoc = {
 }
 
 describe('bridgePolicy', () => {
-  it('returns a Policy with empty rules when no subjects', () => {
+  it('keeps the built-in baseline and adds no custom rules when no subjects', () => {
     const p = bridgePolicy(MINIMAL_DOC, [])
-    expect(p.baseline).toHaveLength(0)
+    expect(p.baseline).toBe(DEFAULT_POLICY.baseline)
     expect(p.custom).toHaveLength(0)
+  })
+
+  it('still blocks baseline PII (SSN) for a signed-in tenant with no matching rule', async () => {
+    const result = await detectPrompt(
+      { text: 'מזהה הלקוח שלי הוא 123-45-6789', hostname: 'chatgpt.com', pasteDetected: false, inputType: 'prompt' },
+      bridgePolicy(MINIMAL_DOC, []),
+    )
+    expect(result.highestAction).toBe('block')
+    expect(result.findings.map(f => f.ruleId)).toContain('us-ssn')
   })
 
   it('maps keyword rule to DictionaryRule', () => {

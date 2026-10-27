@@ -1,4 +1,5 @@
 import type { PolicyDoc, ResolvedRule, Policy } from "./schema";
+import { DEFAULT_POLICY } from "./defaults";
 
 type EngineAction = "log" | "warn" | "require_confirmation" | "block"
 type Severity = "low" | "medium" | "high" | "critical"
@@ -57,7 +58,10 @@ export function bridgePolicy(doc: PolicyDoc, disabledSites: string[]): Policy {
   return {
     version:                   1,
     tenantId:                  doc.tenantId,
-    baseline:                  [],
+    // The built-in baseline (SSNs, cards, API keys, ...) is an always-on floor
+    // — a tenant policy adds rules on top of it, never replaces it. Dropping it
+    // here meant signing in removed protection a signed-out user still had.
+    baseline:                  DEFAULT_POLICY.baseline,
     custom:                    allRules,
     perSite,
     allowSendAnywayWithReason: false,
