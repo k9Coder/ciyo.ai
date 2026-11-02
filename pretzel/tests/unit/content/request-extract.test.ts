@@ -26,6 +26,25 @@ describe("extractPromptFromRequest — ChatGPT", () => {
     }
   });
 
+  it("pulls the prompt from the signed-out form-encoded /unauth-mweb POST", () => {
+    const form = new URLSearchParams({
+      conversationState: '{"messages":[]}',
+      prompt: "מזהה הלקוח שלי הוא 123-45-6789",
+    }).toString();
+    expect(extractPromptFromRequest("chatgpt.com", "https://chatgpt.com/unauth-mweb/conversation/updates", form)).toBe(
+      "מזהה הלקוח שלי הוא 123-45-6789",
+    );
+  });
+
+  it("ignores the promptless /unauth-mweb/conversation/prepare POST", () => {
+    const form = new URLSearchParams({ conversationState: '{"messages":[]}', timezone: "Asia/Jerusalem" }).toString();
+    expect(extractPromptFromRequest("chatgpt.com", "https://chatgpt.com/unauth-mweb/conversation/prepare", form)).toBeNull();
+  });
+
+  it("ignores a prompt= field on unrelated endpoints", () => {
+    expect(extractPromptFromRequest("chatgpt.com", "https://chatgpt.com/unauth-mweb/events/business", "prompt=hello")).toBeNull();
+  });
+
   it("ignores non-conversation endpoints", () => {
     expect(
       extractPromptFromRequest("chatgpt.com", "https://chatgpt.com/backend-api/models", body(["hi"])),

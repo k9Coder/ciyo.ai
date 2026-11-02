@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH } from '@/content/intercept-messages'
+import { MSG_INTERCEPT, MSG_DECISION, MSG_DECISION_PENDING, MSG_UNLOCK_FETCH } from '@/content/intercept-messages'
 
 describe('intercept message constants', () => {
   it('are distinct strings', () => {
-    const all = [MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH]
-    expect(new Set(all).size).toBe(3)
+    const all = [MSG_INTERCEPT, MSG_DECISION, MSG_DECISION_PENDING, MSG_UNLOCK_FETCH]
+    expect(new Set(all).size).toBe(4)
   })
 
   it('have expected values', () => {

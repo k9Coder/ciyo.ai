@@ -15,7 +15,7 @@
 
 import { extractFile } from "./file-extract";
 import { extractPromptFromRequest } from "./request-extract";
-import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
+import { MSG_INTERCEPT, MSG_DECISION, MSG_DECISION_PENDING, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
 
 export { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED };
 
@@ -52,7 +52,11 @@ function requestDetection(payload: InterceptPayload): Promise<boolean> {
     const handler = (e: MessageEvent) => {
       if (e.source !== window) return;
       const data = e.data as { type?: string; id?: string; proceed?: boolean };
-      if (data?.type !== MSG_DECISION || data?.id !== id) return;
+      if (data?.id !== id) return;
+      // The timeout covers detection not answering. Once a modal is up the
+      // request waits on the user, or a blocked prompt would leak after 5s.
+      if (data?.type === MSG_DECISION_PENDING) { clearTimeout(timer); return; }
+      if (data?.type !== MSG_DECISION) return;
       window.removeEventListener("message", handler);
       clearTimeout(timer);
       resolve(data.proceed ?? true);
@@ -82,9 +86,10 @@ function requestUrl(input: RequestInfo | URL): string {
 }
 
 /**
- * Read a string request body for JSON prompt inspection.
+ * Read a request body for prompt inspection.
  * Only string bodies (the common `fetch(url, { body: JSON.stringify(...) })`
- * shape) and Request objects are read; anything else returns null.
+ * shape), URLSearchParams and Request objects are read; anything else returns
+ * null.
  */
 async function readBodyText(
   input: RequestInfo | URL,
@@ -92,6 +97,7 @@ async function readBodyText(
 ): Promise<string | null> {
   const body = init?.body;
   if (typeof body === "string") return body;
+  if (body instanceof URLSearchParams) return body.toString();
   if (!body && input instanceof Request) {
     try { return await input.clone().text(); } catch { return null; }
   }
@@ -214,9 +220,10 @@ class MykkaXHR extends OriginalXHR {
       return;
     }
 
-    // JSON prompt body — network backstop (mirrors the fetch path).
-    if (typeof body === "string") {
-      const payload = inspectPromptBody(this._mykkaUrl, body);
+    // Prompt body — network backstop (mirrors the fetch path).
+    const bodyText = typeof body === "string" ? body : body instanceof URLSearchParams ? body.toString() : null;
+    if (bodyText) {
+      const payload = inspectPromptBody(this._mykkaUrl, bodyText);
       if (payload) {
         requestDetection(payload).then((proceed) => {
           if (!proceed) { this.dispatchEvent(new ProgressEvent("error")); return; }

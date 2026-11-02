@@ -7,7 +7,7 @@ import { sendMessage } from "@/shared/messages";
 import type { DetectionResult } from "@mykka/detect";
 import type { AuditEvent } from "@/audit/types";
 import { logger } from "@/shared/logger";
-import { MSG_INTERCEPT, MSG_DECISION, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
+import { MSG_INTERCEPT, MSG_DECISION, MSG_DECISION_PENDING, MSG_UNLOCK_FETCH, MSG_DEGRADED } from "./intercept-messages";
 import type { EnforcementReason } from "@/shared/messages";
 
 /**
@@ -104,6 +104,7 @@ async function bootstrap() {
 
       const promptText = String(payload.text ?? "");
       const eventHostname = String(payload.hostname ?? hostname);
+      window.postMessage({ type: MSG_DECISION_PENDING, id }, "*");
       const decision = await showWarningModal(result, label, { reporting: await getReporting(result) });
       const proceed = decision.type === "send_anyway";
       // Record the outcome — the network/file backstop must be visible in the
