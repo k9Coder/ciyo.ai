@@ -19,11 +19,21 @@
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
 type Extractor = (url: string, body: unknown) => string | null;
+type FormExtractor = (url: string, bodyText: string) => string | null;
 
 // ─── ChatGPT ────────────────────────────────────────────────────────────────
 // POST https://chatgpt.com/backend-api/(f/)conversation   (signed in)
 // POST https://chatgpt.com/backend-anon/(f/)conversation  (signed out)
 // { action, messages: [{ author:{role:'user'}, content:{ content_type:'text', parts:['...'] } }] }
+//
+// POST https://chatgpt.com/unauth-mweb/conversation/updates  (signed out, Nov 2026)
+// form-encoded: ...&prompt=...&...  The sibling /conversation/prepare has no prompt.
+function extractChatGPTForm(url: string, bodyText: string): string | null {
+  if (!/\/unauth-[^/]+\/conversation\b/.test(url)) return null;
+  const text = new URLSearchParams(bodyText).get("prompt")?.trim() ?? "";
+  return text.length > 0 ? text : null;
+}
+
 function extractChatGPT(url: string, body: unknown): string | null {
   if (!/\/backend-(api|anon)\/(f\/)?conversation\b/.test(url)) return null;
   const b = body as { messages?: Array<{ author?: { role?: string }; content?: { parts?: unknown[] } }> };
@@ -65,9 +75,9 @@ function extractGemini(): string | null {
   return null;
 }
 
-const EXTRACTORS: Array<{ match: RegExp; extract: Extractor }> = [
-  { match: /(^|\.)chatgpt\.com$/i,        extract: extractChatGPT },
-  { match: /(^|\.)chat\.openai\.com$/i,   extract: extractChatGPT },
+const EXTRACTORS: Array<{ match: RegExp; extract: Extractor; extractForm?: FormExtractor }> = [
+  { match: /(^|\.)chatgpt\.com$/i,        extract: extractChatGPT, extractForm: extractChatGPTForm },
+  { match: /(^|\.)chat\.openai\.com$/i,   extract: extractChatGPT, extractForm: extractChatGPTForm },
   { match: /(^|\.)claude\.ai$/i,          extract: extractClaude },
   { match: /(^|\.)gemini\.google\.com$/i, extract: extractGemini },
 ];
@@ -85,6 +95,9 @@ export function extractPromptFromRequest(
 
   const entry = EXTRACTORS.find((e) => e.match.test(hostname));
   if (!entry) return null;
+
+  const formPrompt = entry.extractForm?.(url, bodyText);
+  if (formPrompt) return formPrompt;
 
   let parsed: unknown;
   try {

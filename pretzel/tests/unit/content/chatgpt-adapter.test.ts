@@ -6,6 +6,28 @@ function stubDom(map: Record<string, unknown>) {
   vi.stubGlobal("document", { querySelector: (sel: string) => map[sel] ?? null });
 }
 
+describe("chatGPTAdapter.findComposer", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("finds the signed-out textarea composer", () => {
+    const textarea = { id: "mobile-composer-prompt" };
+    stubDom({ "#mobile-composer-prompt": textarea });
+    expect(chatGPTAdapter.findComposer()).toBe(textarea);
+  });
+
+  it("finds the pre-hydration textarea on the signed-in page", () => {
+    const textarea = { id: "pending-home-input" };
+    stubDom({ "#pending-home-input": textarea });
+    expect(chatGPTAdapter.findComposer()).toBe(textarea);
+  });
+
+  it("prefers the ProseMirror editor once it exists", () => {
+    const editor = { id: "editor" };
+    stubDom({ 'div[contenteditable="true"]': editor, "#pending-home-input": { id: "old" } });
+    expect(chatGPTAdapter.findComposer()).toBe(editor);
+  });
+});
+
 describe("chatGPTAdapter.findSendButton", () => {
   afterEach(() => vi.unstubAllGlobals());
 
