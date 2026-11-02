@@ -2,6 +2,7 @@ import argparse
 import dataclasses
 import json
 import math
+import os
 import random
 import shutil
 from pathlib import Path
@@ -141,6 +142,8 @@ def main(argv=None):
     ap.add_argument("--lora-alpha", type=int, default=16)
     ap.add_argument("--frozen-fp16", action="store_true")
     ap.add_argument("--span-only", action="store_true")
+    ap.add_argument("--save-every", type=int, default=0, help="write resume.pt every N optimizer steps")
+    ap.add_argument("--resume", action="store_true", help="continue from resume.pt in --out when it exists")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
     seed_everything(a.seed)
@@ -181,8 +184,29 @@ def main(argv=None):
     k0, v0 = model.backbone.empty_past(device)
     rng = random.Random(a.seed)
     best_f2, step, acc, acc_loss, acc_span = -1.0, 0, 0, 0.0, 0.0
-    log = (a.out / "train_log.jsonl").open("w", encoding="utf-8", buffering=1)
     metrics_path = a.out / "val_metrics.json"
+    log_path, resume_path = a.out / "train_log.jsonl", a.out / "resume.pt"
+    start_epoch, start_pos = 0, 0
+    if a.resume and resume_path.exists():
+        state = torch.load(resume_path, map_location=device, weights_only=False)
+        model.load_state_dict(state["model"])
+        opt.load_state_dict(state["opt"])
+        sched.load_state_dict(state["sched"])
+        scaler.load_state_dict(state["scaler"])
+        step, best_f2, start_epoch, start_pos = state["step"], state["best_f2"], state["epoch"], state["pos"]
+        skipped_ids = set(state["skipped"])
+        # Steps logged after the checkpoint are about to be redone.
+        kept = [l for l in log_path.read_text(encoding="utf-8").splitlines() if json.loads(l)["step"] <= step]
+        log_path.write_text("".join(l + "\n" for l in kept), encoding="utf-8")
+    log = log_path.open("a" if start_epoch or start_pos else "w", encoding="utf-8", buffering=1)
+
+    def save_resume(epoch: int, pos: int) -> None:
+        # Written to a temporary name first: a crash mid-save must not destroy the previous checkpoint.
+        tmp = a.out / "resume.pt.tmp"
+        torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(),
+                    "scaler": scaler.state_dict(), "step": step, "best_f2": best_f2, "epoch": epoch, "pos": pos,
+                    "skipped": sorted(skipped_ids)}, tmp)
+        os.replace(tmp, resume_path)
 
     def checkpoint():
         nonlocal best_f2
@@ -192,10 +216,14 @@ def main(argv=None):
             torch.save(merged_state_dict(model) if a.lora_rank else model.state_dict(), a.out / "best.pt")
             metrics_path.write_text(json.dumps({**m, "step": step, "skipped_long": len(skipped_ids)}), encoding="utf-8")
 
-    for _ in range(a.epochs):
+    for epoch in range(a.epochs):
         order = list(indices)
-        rng.shuffle(order)
-        for j in order:
+        rng.shuffle(order)  # replayed on resume, so a resumed run sees the same order
+        if epoch < start_epoch:
+            continue
+        for pos, j in enumerate(order):
+            if epoch == start_epoch and pos < start_pos:
+                continue
             ex = train[j]
             st = _encode(tok, prefix, ex, a.max_tokens)
             if st is None:
@@ -228,6 +256,8 @@ def main(argv=None):
                 step += 1
                 log.write(json.dumps({"step": step, "loss": acc_loss, "span_loss": acc_span}) + "\n")
                 acc, acc_loss, acc_span = 0, 0.0, 0.0
+                if a.save_every and step % a.save_every == 0:
+                    save_resume(epoch, pos + 1)
                 if step % a.eval_every == 0:
                     checkpoint()
     checkpoint()

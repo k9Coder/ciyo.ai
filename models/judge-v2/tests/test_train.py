@@ -157,3 +157,37 @@ def test_span_only_training_leaves_verdict_weights_untouched(tmp_path, tiny_toke
             torch.testing.assert_close(after[k], before[k], rtol=0, atol=0)
     spans = [json.loads(l)["span_loss"] for l in (second / "train_log.jsonl").read_text().splitlines()]
     assert sum(spans[-5:]) / 5 < 0.5 * sum(spans[:5]) / 5
+
+
+class _Crash(Exception):
+    pass
+
+
+def test_resume_after_crash_continues_exactly_like_an_uninterrupted_run(tmp_path, tiny_tokenizer_dir, monkeypatch):
+    import pytest
+    import judge.train.train as T
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    args = ["--base", str(base), "--data", str(data), "--epochs", "2", "--lr", "3e-3", "--warmup", "5",
+            "--grad-accum", "4", "--seed", "1", "--span-weight", "0"]
+    ref = tmp_path / "ref"
+    train_main(args + ["--out", str(ref), "--eval-every", "1000"])
+    run = tmp_path / "run"
+    real_evaluate = T.evaluate
+    monkeypatch.setattr(T, "evaluate", lambda *a, **k: (_ for _ in ()).throw(_Crash()))
+    with pytest.raises(_Crash):
+        train_main(args + ["--out", str(run), "--eval-every", "47", "--save-every", "30"])
+    monkeypatch.setattr(T, "evaluate", real_evaluate)
+    assert (run / "resume.pt").exists()
+    train_main(args + ["--out", str(run), "--eval-every", "1000", "--save-every", "30", "--resume"])
+    read = lambda d: [json.loads(l) for l in (d / "train_log.jsonl").read_text().splitlines()]
+    got, want = read(run), read(ref)
+    assert [r["step"] for r in got] == [r["step"] for r in want]
+    assert got[-1]["loss"] == pytest.approx(want[-1]["loss"], abs=1e-4)
+
+
+def test_resume_without_a_checkpoint_starts_from_the_beginning(tmp_path, tiny_tokenizer_dir):
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--grad-accum", "4",
+                "--seed", "1", "--eval-every", "1000", "--resume"])
+    assert json.loads((out / "train_log.jsonl").read_text().splitlines()[0])["step"] == 1
