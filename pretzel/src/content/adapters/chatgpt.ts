@@ -14,7 +14,13 @@ export const chatGPTAdapter: SiteAdapter = {
     return (
       (document.querySelector("#prompt-textarea") as HTMLElement | null) ??
       (document.querySelector('[contenteditable="true"][data-id]') as HTMLElement | null) ??
-      (document.querySelector('div[contenteditable="true"]') as HTMLElement | null)
+      (document.querySelector('div[contenteditable="true"]') as HTMLElement | null) ??
+      // Signed-out page (Nov 2026): a plain <textarea name="prompt"> inside
+      // <form action="/unauth-mweb/conversation">, with no contenteditable.
+      (document.querySelector('#mobile-composer-prompt') as HTMLElement | null) ??
+      // Signed-in page before hydration swaps in the ProseMirror editor.
+      (document.querySelector('#pending-home-input') as HTMLElement | null) ??
+      (document.querySelector('textarea[name="prompt"]') as HTMLElement | null)
     );
   },
 
