@@ -20,7 +20,14 @@ export const geminiAdapter: SiteAdapter = {
     return (
       (document.querySelector('button[aria-label="Send message"]') as HTMLElement | null) ??
       (document.querySelector('button[data-mat-icon-name="send"]') as HTMLElement | null) ??
-      (document.querySelector('button.send-button') as HTMLElement | null)
+      (document.querySelector('button.send-button') as HTMLElement | null) ??
+      // aria-label is localized ("שליחת הודעה" in Hebrew), so also match on
+      // markup that doesn't change with the UI language (Nov 2026 DOM:
+      // <gem-icon-button class="send-button"><button>…arrow_upward…</button>).
+      (document.querySelector('.send-button button') as HTMLElement | null) ??
+      (document.querySelector('.send-button-container button') as HTMLElement | null) ??
+      (document.querySelector('mat-icon[fonticon="arrow_upward"]')?.closest("button") as HTMLElement | null | undefined) ??
+      null
     );
   },
 
