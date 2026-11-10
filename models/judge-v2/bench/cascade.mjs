@@ -7,6 +7,8 @@ const CHARS_PER_TOKEN = 4;
 
 // confirm = { fastMin, secondMin } switches to the precision-first policy: block only when the fast model flags
 // and the second model confirms; otherwise bands route the uncertain middle to the second model.
+// Optional warn tier { warnFastMin, warnSecondMin } inside confirm: a rule that is not blocked but clears the looser
+// thresholds is reported with warn: true (the user is warned and may still send).
 export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0.9 }, windowTokens = 400,
                                 secondTimeoutMs = 2500, idleUnloadMs = 300000, confirm = null, maxWindows = 1 }) {
   const windowChars = windowTokens * CHARS_PER_TOKEN;
@@ -51,16 +53,16 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 
-  function entry(message, ruleId, violated, p, span) {
-    const s = violated && span ? { start: span[0], end: span[1], text: message.slice(span[0], span[1]) } : null;
+  function entry(message, ruleId, violated, p, span, warn = false) {
+    const s = (violated || warn) && span ? { start: span[0], end: span[1], text: message.slice(span[0], span[1]) } : null;
     const confidence = violated === null ? null : Math.round((violated ? p : 1 - p) * 1e4) / 1e4;
-    return { rule_id: ruleId, violated, confidence, span: s };
+    return { rule_id: ruleId, violated, warn, confidence, span: s };
   }
 
   async function judge(message, rules) {
     const t0 = performance.now();
     if (!message || rules.length === 0) {
-      return { violated: false, decided_by: "fast", latency_ms: 0, pending: false,
+      return { violated: false, warn: false, decided_by: "fast", latency_ms: 0, pending: false,
                rules: rules.map((r) => entry(message, r.id, false, 0, null)) };
     }
     const fastOut = await fast.scoreWithSpans(message, rules.map((r) => r.text));
@@ -69,7 +71,11 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
     for (let i = 0; i < rules.length; i++) {
       const { p, span } = fastOut[i];
       if (confirm) {
-        if (p < confirm.fastMin) { entries.push(entry(message, rules[i].id, false, p, null)); continue; }
+        const hasWarn = confirm.warnFastMin != null && confirm.warnSecondMin != null;
+        const canBlock = p >= confirm.fastMin;
+        const canWarn = hasWarn && p >= confirm.warnFastMin;
+        if (!canBlock && !canWarn) { entries.push(entry(message, rules[i].id, false, p, null)); continue; }
+        const stopAt = canBlock ? confirm.secondMin : confirm.warnSecondMin;
         usedSecond = true;
         try {
           const scorer = await getSecond();
@@ -78,11 +84,13 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
           for (const [a, b] of windowsFor(message, span)) {
             const [res] = await withTimeout(scorer.scoreWithSpans(message.slice(a, b), [rules[i].text]));
             const s = res.span ? [res.span[0] + a, res.span[1] + a] : null;
-            if (res.p >= confirm.secondMin) { hit = { p: res.p, span: s ?? span }; break; }
+            if (res.p >= stopAt) { hit = { p: res.p, span: s ?? span }; break; }
             if (res.p > best.p) best = { p: res.p, span: s };
           }
           const out = hit ?? best;
-          entries.push(entry(message, rules[i].id, hit !== null, out.p, out.span));
+          const block = canBlock && out.p >= confirm.secondMin;
+          const warn = !block && canWarn && out.p >= confirm.warnSecondMin;
+          entries.push(entry(message, rules[i].id, block, out.p, out.span ?? span, warn));
         } catch {
           pending = true;
           entries.push(entry(message, rules[i].id, null, p, null));
@@ -106,7 +114,7 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
         }
       }
     }
-    return { violated: entries.some((e) => e.violated === true), decided_by: usedSecond ? "second_opinion" : "fast",
+    return { violated: entries.some((e) => e.violated === true), warn: entries.some((e) => e.warn), decided_by: usedSecond ? "second_opinion" : "fast",
              latency_ms: Math.round(performance.now() - t0), pending, rules: entries };
   }
 

@@ -60,13 +60,14 @@ Inspired by TypeSafe's Jev (a non-autoregressive "System 1" decision model that 
 ```json
 {
   "violated": true,
+  "warn": false,
   "decided_by": "second_opinion",
   "latency_ms": 1840,
   "pending": false,
   "rules": [
-    {"rule_id": "r-17", "violated": true, "confidence": 0.96,
+    {"rule_id": "r-17", "violated": true, "warn": false, "confidence": 0.96,
      "span": {"start": 212, "end": 231, "text": "4539 1488 0343 6467"}},
-    {"rule_id": "r-04", "violated": false, "confidence": 0.91, "span": null}
+    {"rule_id": "r-04", "violated": false, "warn": false, "confidence": 0.91, "span": null}
   ]
 }
 ```
@@ -74,6 +75,10 @@ Inspired by TypeSafe's Jev (a non-autoregressive "System 1" decision model that 
 - `violated`: any rule violated. `decided_by`: `fast` or `second_opinion` (the latter if any rule went to it).
 - `span`: character offsets into the message as typed (UTF-16 code units in JS runtimes, documented), `null` when not violated.
 - `pending: true`: at least one rule is unresolved; the company setting decides.
+- `warn` (added in v2.2, owner decision 2026-11-10): two tiers. A rule is blocked (`violated: true`) only at the strict
+  block thresholds (about 99% precision). A rule that is not blocked but clears the looser warn thresholds (about 95%
+  precision) gets `warn: true` and a `span`; the user is warned and may still send. Top-level `warn` is true when any
+  rule warns. Policies without warn thresholds never warn.
 
 ## Evaluation
 

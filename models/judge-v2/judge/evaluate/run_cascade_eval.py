@@ -25,7 +25,7 @@ def load_policy(path: Path) -> dict:
     """Cascade keyword arguments from a policy file: confirm thresholds, or the older low/high bands."""
     d = json.loads(path.read_text(encoding="utf-8"))
     if d.get("policy") == "confirm":
-        out = {"confirm": Confirm(d["fast_min"], d["second_min"])}
+        out = {"confirm": Confirm(d["fast_min"], d["second_min"], d.get("warn_fast_min"), d.get("warn_second_min"))}
         if "window_tokens" in d:
             out["window_tokens"] = d["window_tokens"]
         if "max_windows" in d:
@@ -48,7 +48,7 @@ def _view(rows) -> dict:
 
 def evaluate(cascade, examples, tok=None, gates=None) -> dict:
     precision_first = gates is not None
-    hold, let, routed, span_hits, span_total = [], [], 0, 0, 0
+    hold, let, tiers, routed, span_hits, span_total = [], [], [], 0, 0, 0
     for ex in examples:
         res = cascade.judge(ex.message, [{"id": f"r{i}", "text": t} for i, t in enumerate(ex.rules)])
         routed += res["decided_by"] == "second_opinion"
@@ -62,12 +62,15 @@ def evaluate(cascade, examples, tok=None, gates=None) -> dict:
             for rows, pending_blocks in ((hold, True), (let, False)):
                 v = pending_blocks if e["violated"] is None else e["violated"]
                 rows.append(Row(1.0 if v else 0.0, label, crit, ex.adversarial, row_late, ex.language))
+            # Block or warn (pending held): what the user is stopped or warned on.
+            bw = e["violated"] is None or e["violated"] or e.get("warn", False)
+            tiers.append(Row(1.0 if bw else 0.0, label, crit, ex.adversarial, row_late, ex.language))
             true_span = ex.spans[i] if ex.spans else None
             if label == 1 and e["violated"] and true_span is not None and e["span"] is not None:
                 span_total += 1
                 ts, te = to_utf16(ex.message, true_span[0]), to_utf16(ex.message, true_span[1])
                 span_hits += e["span"]["start"] < te and e["span"]["end"] > ts
-    rep = {**_view(hold), "hold": _view(hold), "let_through": _view(let),
+    rep = {**_view(hold), "hold": _view(hold), "let_through": _view(let), "block_or_warn": _view(tiers),
            "routed_share": routed / len(examples) if examples else 0.0,
            "span_accuracy": span_hits / span_total if span_total else float("nan")}
     gates = {k: {"value": rep[k], "bar": bar, "pass": rep[k] >= bar} for k, bar in (gates or GATES).items()}

@@ -164,3 +164,58 @@ def test_timeout_in_any_window_before_a_confirm_is_pending():
     r = Cascade(Fake({"A": (0.95, (0, 4))}), SlowSecond(), window_tokens=150, second_timeout_s=0.1,
                 confirm=Confirm(0.7, 0.7), max_windows=3).judge(msg, [RULES[0]])
     assert r["pending"] is True and r["rules"][0]["violated"] is None
+
+
+WARN = Confirm(fast_min=0.7, second_min=0.9, warn_fast_min=0.4, warn_second_min=0.6)
+
+
+def test_warn_tier_flags_rules_between_warn_and_block_thresholds():
+    fast = Fake({"A": (0.95, (0, 3)), "B": (0.5, (0, 3)), "C": (0.3, None), "D": (0.95, (4, 7))})
+    second = Fake({"A": (0.97, (0, 3)), "B": (0.8, (0, 3)), "D": (0.75, (4, 7))})
+    rules = RULES + [{"id": "d", "text": "D"}]
+    r = Cascade(fast, second, confirm=WARN).judge("abc def", rules)
+    by = {x["rule_id"]: x for x in r["rules"]}
+    assert (by["a"]["violated"], by["a"]["warn"]) == (True, False)
+    assert (by["b"]["violated"], by["b"]["warn"]) == (False, True) and by["b"]["span"]["text"] == "abc"
+    assert (by["c"]["violated"], by["c"]["warn"]) == (False, False) and by["c"]["span"] is None
+    assert (by["d"]["violated"], by["d"]["warn"]) == (False, True) and by["d"]["span"]["text"] == "def"
+    assert r["violated"] is True and r["warn"] is True
+
+
+def test_warn_alone_does_not_block():
+    fast = Fake({"A": (0.5, (0, 3)), "B": (0.1, None), "C": (0.1, None)})
+    r = Cascade(fast, Fake({"A": (0.8, (0, 3))}), confirm=WARN).judge("abc", RULES)
+    assert r["violated"] is False and r["warn"] is True
+
+
+def test_without_a_warn_tier_nothing_warns():
+    fast = Fake({"A": (0.95, (0, 3)), "B": (0.95, (0, 3)), "C": (0.05, None)})
+    second = Fake({"A": (0.97, (0, 3)), "B": (0.65, None)})
+    for r in (Cascade(fast, second, confirm=Confirm(0.7, 0.7)).judge("abc", RULES),
+              Cascade(fast, second, Bands(0.1, 0.9)).judge("abc", RULES)):
+        assert r["warn"] is False and all(x["warn"] is False for x in r["rules"])
+
+
+def test_warn_uses_the_best_window_and_pending_rules_do_not_warn():
+    class Mid:
+        def score_with_spans(self, message, rules):
+            return [(0.8, (0, 3)) if "LEAK" in message else (0.1, None)]
+
+    msg = "x" * 2000 + "LEAK" + "y" * 2000
+    r = Cascade(Fake({"A": (0.95, (0, 4))}), Mid(), window_tokens=150, confirm=WARN, max_windows=8).judge(msg, [RULES[0]])
+    assert r["rules"][0]["warn"] is True and r["rules"][0]["violated"] is False
+    p = Cascade(Fake({"A": (0.95, None)}), None, confirm=WARN).judge("abc", [RULES[0]])
+    assert p["pending"] is True and p["rules"][0]["warn"] is False and p["warn"] is False
+
+
+def test_rule_below_block_fast_min_stops_at_first_warn_window():
+    msg = "LEAK" + "x" * 5000
+    calls = []
+
+    class S:
+        def score_with_spans(self, message, rules):
+            calls.append(message)
+            return [(0.8, None)]
+
+    r = Cascade(Fake({"A": (0.5, (0, 4))}), S(), window_tokens=150, confirm=WARN, max_windows=3).judge(msg, [RULES[0]])
+    assert r["rules"][0]["warn"] is True and len(calls) == 1

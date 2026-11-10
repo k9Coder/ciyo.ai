@@ -89,3 +89,39 @@ test("confirm policy checks further windows on long messages", async () => {
   assert.equal(r.rules[0].violated, true); assert.ok(calls.length >= 2);
   assert.equal(r.rules[0].span.text, "LEA");
 });
+
+const WARN = { fastMin: 0.7, secondMin: 0.9, warnFastMin: 0.4, warnSecondMin: 0.6 };
+
+test("warn tier flags rules between the warn and block thresholds", async () => {
+  const fast = fake({ A: { p: 0.95, span: [0, 3] }, B: { p: 0.5, span: [0, 3] }, C: { p: 0.3, span: null }, D: { p: 0.95, span: [4, 7] } });
+  const second = fake({ A: { p: 0.97, span: [0, 3] }, B: { p: 0.8, span: [0, 3] }, D: { p: 0.75, span: [4, 7] } });
+  const rules = [...RULES, { id: "d", text: "D" }];
+  const r = await createCascade({ fast, second, confirm: WARN }).judge("abc def", rules);
+  const by = Object.fromEntries(r.rules.map((x) => [x.rule_id, x]));
+  assert.deepEqual([by.a.violated, by.a.warn], [true, false]);
+  assert.deepEqual([by.b.violated, by.b.warn], [false, true]); assert.equal(by.b.span.text, "abc");
+  assert.deepEqual([by.c.violated, by.c.warn], [false, false]); assert.equal(by.c.span, null);
+  assert.deepEqual([by.d.violated, by.d.warn], [false, true]); assert.equal(by.d.span.text, "def");
+  assert.equal(r.violated, true); assert.equal(r.warn, true);
+});
+
+test("warn alone does not block; no warn tier means nothing warns", async () => {
+  const fast = fake({ A: { p: 0.5, span: [0, 3] }, B: { p: 0.05, span: null }, C: { p: 0.05, span: null } });
+  const r = await createCascade({ fast, second: fake({ A: { p: 0.8, span: [0, 3] } }), confirm: WARN }).judge("abc", RULES);
+  assert.equal(r.violated, false); assert.equal(r.warn, true);
+  const f2 = fake({ A: { p: 0.95, span: [0, 3] }, B: { p: 0.05, span: null }, C: { p: 0.05, span: null } });
+  const r2 = await createCascade({ fast: f2, second: fake({ A: { p: 0.65, span: null } }), confirm: { fastMin: 0.7, secondMin: 0.7 } }).judge("abc", RULES);
+  assert.equal(r2.warn, false); assert.ok(r2.rules.every((x) => x.warn === false));
+  const r3 = await createCascade({ fast: f2, second: null, bands }).judge("abc", RULES);
+  assert.equal(r3.warn, false);
+});
+
+test("pending rules do not warn; a rule below the block fast threshold stops at the first warn window", async () => {
+  const p = await createCascade({ fast: fake({ A: { p: 0.95, span: null } }), second: null, confirm: WARN }).judge("abc", [RULES[0]]);
+  assert.equal(p.pending, true); assert.equal(p.rules[0].warn, false); assert.equal(p.warn, false);
+  let calls = 0;
+  const s = { scoreWithSpans: async () => { calls++; return [{ p: 0.8, span: null }]; } };
+  const r = await createCascade({ fast: fake({ A: { p: 0.5, span: [0, 4] } }), second: s, windowTokens: 150, maxWindows: 3, confirm: WARN })
+    .judge("LEAK" + "x".repeat(5000), [RULES[0]]);
+  assert.equal(r.rules[0].warn, true); assert.equal(calls, 1);
+});

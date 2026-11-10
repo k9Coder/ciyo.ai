@@ -24,9 +24,18 @@ class Bands:
 
 @dataclass(frozen=True)
 class Confirm:
-    """Precision-first policy: block only when the fast model flags (>= fast_min) and the second confirms."""
+    """Precision-first policy: block only when the fast model flags (>= fast_min) and the second confirms.
+
+    Optional warn tier: a rule that is not blocked but clears the looser warn thresholds is reported with
+    `warn: true` (the user is warned and may still send). Without warn thresholds nothing ever warns."""
     fast_min: float
     second_min: float
+    warn_fast_min: float | None = None
+    warn_second_min: float | None = None
+
+    @property
+    def has_warn(self) -> bool:
+        return self.warn_fast_min is not None and self.warn_second_min is not None
 
 
 def to_utf16(message: str, idx: int) -> int:
@@ -62,14 +71,14 @@ class Cascade:
                 out.append((a, b))
         return out[:self.max_windows]
 
-    def _second_any(self, message: str, rule: str, span):
-        """Confirm if any window confirms (first confirm stops); otherwise the highest score seen."""
+    def _second_any(self, message: str, rule: str, span, stop_at: float):
+        """First window scoring >= stop_at ends the search; otherwise the highest score seen."""
         best = (0.0, None)
         for a, b in self._windows(message, span):
             future = self.pool.submit(self.second.score_with_spans, message[a:b], [rule])
             p, s = future.result(timeout=self.timeout)[0]
             s = None if s is None else (s[0] + a, s[1] + a)
-            if p >= self.confirm.second_min:
+            if p >= stop_at:
                 return p, s
             if p > best[0]:
                 best = (p, s)
@@ -81,33 +90,37 @@ class Cascade:
         p, s = future.result(timeout=self.timeout)[0]
         return p, None if s is None else (s[0] + a, s[1] + a)
 
-    def _entry(self, message: str, rule_id: str, violated, p: float, span) -> dict:
+    def _entry(self, message: str, rule_id: str, violated, p: float, span, warn: bool = False) -> dict:
         out = None
-        if violated and span is not None:
+        if (violated or warn) and span is not None:
             out = {"start": to_utf16(message, span[0]), "end": to_utf16(message, span[1]),
                    "text": message[span[0]:span[1]]}
         conf = None if violated is None else round(p if violated else 1 - p, 4)
-        return {"rule_id": rule_id, "violated": violated, "confidence": conf, "span": out}
+        return {"rule_id": rule_id, "violated": violated, "warn": warn, "confidence": conf, "span": out}
 
     def judge(self, message: str, rules: list[dict]) -> dict:
         t0 = time.perf_counter()
         if not message or not rules:
-            return {"violated": False, "decided_by": "fast", "latency_ms": 0, "pending": False,
+            return {"violated": False, "warn": False, "decided_by": "fast", "latency_ms": 0, "pending": False,
                     "rules": [self._entry(message, r["id"], False, 0.0, None) for r in rules]}
         fast = self.fast.score_with_spans(message, [r["text"] for r in rules])
         entries, used_second, pending = [], False, False
         for r, (p, span) in zip(rules, fast):
             if self.confirm is not None:
-                if p < self.confirm.fast_min:
+                c = self.confirm
+                can_block = p >= c.fast_min
+                can_warn = c.has_warn and p >= c.warn_fast_min
+                if not (can_block or can_warn):
                     entries.append(self._entry(message, r["id"], False, p, None))
                     continue
                 used_second = True
                 try:
                     if self.second is None:
                         raise RuntimeError("second opinion unavailable")
-                    p2, span2 = self._second_any(message, r["text"], span)
-                    ok = p2 >= self.confirm.second_min
-                    entries.append(self._entry(message, r["id"], ok, p2, span2 or span))
+                    p2, span2 = self._second_any(message, r["text"], span, c.second_min if can_block else c.warn_second_min)
+                    block = can_block and p2 >= c.second_min
+                    warn = not block and can_warn and p2 >= c.warn_second_min
+                    entries.append(self._entry(message, r["id"], block, p2, span2 or span, warn))
                 except (FutureTimeout, RuntimeError, OSError, ValueError):
                     pending = True
                     entries.append(self._entry(message, r["id"], None, p, None))
@@ -127,6 +140,7 @@ class Cascade:
                     pending = True
                     entries.append(self._entry(message, r["id"], None, p, None))
         return {"violated": any(e["violated"] is True for e in entries),
+                "warn": any(e["warn"] for e in entries),
                 "decided_by": "second_opinion" if used_second else "fast",
                 "latency_ms": round((time.perf_counter() - t0) * 1000),
                 "pending": pending, "rules": entries}

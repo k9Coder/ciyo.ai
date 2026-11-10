@@ -60,3 +60,27 @@ def test_policy_file_passes_max_windows(tmp_path):
     p = tmp_path / "policy.json"
     p.write_text('{"policy": "confirm", "fast_min": 0.7, "second_min": 0.6, "window_tokens": 150, "max_windows": 3}')
     assert load_policy(p) == {"confirm": Confirm(0.7, 0.6), "window_tokens": 150, "max_windows": 3}
+
+
+def test_policy_file_passes_warn_thresholds(tmp_path):
+    from judge.cascade import Confirm
+    from judge.evaluate.run_cascade_eval import load_policy
+    p = tmp_path / "p.json"
+    p.write_text('{"policy": "confirm", "fast_min": 0.85, "second_min": 0.85, "warn_fast_min": 0.43, "warn_second_min": 0.7}')
+    assert load_policy(p) == {"confirm": Confirm(0.85, 0.85, 0.43, 0.7)}
+
+
+def test_report_has_a_block_or_warn_view():
+    ex = [Example("m", "abc", "en", ("r1", "r2", "r3"), ("x", "y", "z"), (1.0, 1.0, 0.0), (True, False, False),
+                  False, None)]
+
+    class Tiers:
+        def judge(self, m, rules):
+            v = [(True, False), (False, True), (False, True)]
+            return {"violated": True, "warn": True, "decided_by": "second_opinion", "latency_ms": 5, "pending": False,
+                    "rules": [{"rule_id": r["id"], "violated": a, "warn": w, "confidence": 0.9, "span": None}
+                              for r, (a, w) in zip(rules, v)]}
+
+    rep = evaluate(Tiers(), ex)
+    assert rep["precision"] == 1.0 and rep["recall_overall"] == 0.5
+    assert rep["block_or_warn"]["recall_overall"] == 1.0 and abs(rep["block_or_warn"]["precision"] - 2 / 3) < 1e-9
