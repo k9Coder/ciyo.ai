@@ -256,10 +256,11 @@ def main(argv=None):
                 step += 1
                 log.write(json.dumps({"step": step, "loss": acc_loss, "span_loss": acc_span}) + "\n")
                 acc, acc_loss, acc_span = 0, 0.0, 0.0
-                if a.save_every and step % a.save_every == 0:
-                    save_resume(epoch, pos + 1)
+                # Evaluate first, so a resume checkpoint on the same step carries this step's best score.
                 if step % a.eval_every == 0:
                     checkpoint()
+                if a.save_every and step % a.save_every == 0:
+                    save_resume(epoch, pos + 1)
     checkpoint()
     if a.span_only:
         # Verdict metrics cannot change, so best-F2 selection never fires after the first save; keep the end state.

@@ -125,3 +125,28 @@ test("pending rules do not warn; a rule below the block fast threshold stops at 
     .judge("LEAK" + "x".repeat(5000), [RULES[0]]);
   assert.equal(r.rules[0].warn, true); assert.equal(calls, 1);
 });
+
+test("windows: medium messages are fully covered; long-message extra windows add unseen text (parity with Python)", async () => {
+  const seen = [];
+  const second = { scoreWithSpans: async (m) => { seen.push(m.length); return [{ p: 0.01, span: null }]; } };
+  for (const n of [700, 1200, 1600, 1800]) {
+    for (const mid of [0, Math.floor(n / 3), Math.floor(n / 2), n - 1]) {
+      const marked = [...Array(n)].map((_, i) => String.fromCharCode(0x4e00 + i)).join("");
+      const got = new Set();
+      const s = { scoreWithSpans: async (m) => { for (const ch of m) got.add(ch); return [{ p: 0.01, span: null }]; } };
+      const fast = fake({ A: { p: 0.95, span: [mid, mid + 1] } });
+      await createCascade({ fast, second: s, windowTokens: 150, maxWindows: 3, confirm: { fastMin: 0.7, secondMin: 0.7 } })
+        .judge(marked, [RULES[0]]);
+      assert.equal(got.size, n, `n=${n} mid=${mid}`);
+    }
+  }
+  const calls = [];
+  const s2 = { scoreWithSpans: async (m) => { calls.push(m); return [{ p: 0.01, span: null }]; } };
+  const long = [...Array(5000)].map((_, i) => String.fromCharCode(0x4e00 + i)).join("");
+  await createCascade({ fast: fake({ A: { p: 0.95, span: [2500, 2510] } }), second: s2, windowTokens: 150, maxWindows: 3,
+                        confirm: { fastMin: 0.7, secondMin: 0.7 } }).judge(long, [RULES[0]]);
+  assert.equal(calls.length, 3);
+  const all = new Set(); let total = 0;
+  for (const m of calls) { for (const ch of m) all.add(ch); total += m.length; }
+  assert.equal(all.size, total);
+});

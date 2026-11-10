@@ -60,16 +60,30 @@ class Cascade:
         return a, a + self.window_chars
 
     def _windows(self, message: str, span) -> list[tuple[int, int]]:
-        """The window around the fast model's span first, then the rest of the message left to right."""
-        first = self._window(message, span)
-        out, w = [first], self.window_chars
-        if len(message) <= w:
-            return out
-        for a in range(0, len(message), w):
-            b = min(a + w, len(message))
-            if max(0, min(b, first[1]) - max(a, first[0])) <= w // 2:
-                out.append((a, b))
-        return out[:self.max_windows]
+        """Second-opinion windows, the one holding the fast model's span first.
+
+        A message that fits in max_windows windows is tiled evenly (overlapping) so every character is checked.
+        A longer one gets the window around the span, then the windows that add the most unseen text."""
+        n, w, k = len(message), self.window_chars, max(1, self.max_windows)
+        if n <= w:
+            return [(0, n)]
+        mid = 0 if span is None else (span[0] + span[1]) // 2
+        if n <= k * w:
+            m = -(-n // w)
+            tiles = [(s, s + w) for s in (round(i * (n - w) / (m - 1)) for i in range(m))]
+            first = min(tiles, key=lambda t: (not t[0] <= mid < t[1], abs((t[0] + t[1]) // 2 - mid)))
+            return [first] + [t for t in tiles if t != first]
+        out = [self._window(message, span)]
+        seen = set(range(*out[0]))
+        starts = sorted({min(s, n - w) for s in range(0, n, w // 2)})
+        while len(out) < k:
+            gain = {s: sum(1 for i in range(s, s + w) if i not in seen) for s in starts}
+            best = max(starts, key=lambda s: (gain[s], -s))
+            if gain[best] == 0:
+                break
+            out.append((best, best + w))
+            seen.update(range(best, best + w))
+        return out
 
     def _second_any(self, message: str, rule: str, span, stop_at: float):
         """First window scoring >= stop_at ends the search; otherwise the highest score seen."""

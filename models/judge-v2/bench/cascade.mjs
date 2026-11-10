@@ -34,17 +34,46 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
     return [a, a + windowChars];
   }
 
-  // The window around the fast model's span first, then the rest of the message left to right.
+  // Second-opinion windows, the one holding the fast model's span first. A message that fits in maxWindows windows
+  // is tiled evenly (overlapping) so every character is checked; a longer one gets the window around the span, then
+  // the windows that add the most unseen text. Mirrors judge/cascade.py _windows.
   function windowsFor(message, span) {
-    const first = windowFor(message, span);
-    const out = [first];
-    if (message.length <= windowChars) return out;
-    for (let a = 0; a < message.length; a += windowChars) {
-      const b = Math.min(a + windowChars, message.length);
-      const overlap = Math.max(0, Math.min(b, first[1]) - Math.max(a, first[0]));
-      if (overlap <= Math.floor(windowChars / 2)) out.push([a, b]);
+    const n = message.length, w = windowChars, k = Math.max(1, maxWindows);
+    if (n <= w) return [[0, n]];
+    const mid = span ? Math.floor((span[0] + span[1]) / 2) : 0;
+    if (n <= k * w) {
+      const m = Math.ceil(n / w);
+      const tiles = [...Array(m)].map((_, i) => { const s = pyRound((i * (n - w)) / (m - 1)); return [s, s + w]; });
+      const dist = (t) => (t[0] <= mid && mid < t[1] ? 0 : w) + Math.abs(Math.floor((t[0] + t[1]) / 2) - mid);
+      let first = tiles[0];
+      for (const t of tiles) if (dist(t) < dist(first)) first = t;
+      return [first, ...tiles.filter((t) => t !== first)];
     }
-    return out.slice(0, maxWindows);
+    const out = [windowFor(message, span)];
+    const seen = new Uint8Array(n);
+    seen.fill(1, out[0][0], out[0][1]);
+    const starts = [...new Set([...Array(Math.ceil(n / Math.floor(w / 2))).keys()]
+      .map((i) => Math.min(i * Math.floor(w / 2), n - w)))].sort((x, y) => x - y);
+    while (out.length < k) {
+      let best = -1, bestGain = 0;
+      for (const s of starts) {
+        let g = 0;
+        for (let i = s; i < s + w; i++) g += 1 - seen[i];
+        if (g > bestGain) { best = s; bestGain = g; }
+      }
+      if (best < 0) break;
+      out.push([best, best + w]);
+      seen.fill(1, best, best + w);
+    }
+    return out;
+  }
+
+  // Python's round(): halves go to the even neighbour, so both runtimes cut identical windows.
+  function pyRound(x) {
+    const f = Math.floor(x), d = x - f;
+    if (d > 0.5) return f + 1;
+    if (d < 0.5) return f;
+    return f % 2 === 0 ? f : f + 1;
   }
 
   function withTimeout(promise) {

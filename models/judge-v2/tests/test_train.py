@@ -191,3 +191,16 @@ def test_resume_without_a_checkpoint_starts_from_the_beginning(tmp_path, tiny_to
     train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--grad-accum", "4",
                 "--seed", "1", "--eval-every", "1000", "--resume"])
     assert json.loads((out / "train_log.jsonl").read_text().splitlines()[0])["step"] == 1
+
+
+def test_resume_checkpoint_carries_the_best_score_of_its_own_step(tmp_path, tiny_tokenizer_dir, monkeypatch):
+    import torch
+    import judge.train.train as T
+    base, data = _base(tmp_path, tiny_tokenizer_dir)
+    scores = iter([0.5, 0.7, 0.7])
+    monkeypatch.setattr(T, "evaluate", lambda *a, **k: {"f2": next(scores), "precision": 0.5, "recall": 0.5})
+    out = tmp_path / "run"
+    train_main(["--base", str(base), "--data", str(data), "--out", str(out), "--epochs", "1", "--grad-accum", "4",
+                "--seed", "1", "--span-weight", "0", "--eval-every", "20", "--save-every", "20"])
+    state = torch.load(out / "resume.pt", weights_only=False)
+    assert state["step"] == 40 and state["best_f2"] == 0.7

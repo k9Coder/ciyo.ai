@@ -219,3 +219,26 @@ def test_rule_below_block_fast_min_stops_at_first_warn_window():
 
     r = Cascade(Fake({"A": (0.5, (0, 4))}), S(), window_tokens=150, confirm=WARN, max_windows=3).judge(msg, [RULES[0]])
     assert r["rules"][0]["warn"] is True and len(calls) == 1
+
+
+def test_medium_message_windows_cover_every_character():
+    c = Cascade(None, None, window_tokens=150, confirm=Confirm(0.7, 0.7), max_windows=3)
+    for n in (700, 1200, 1600, 1800):
+        for mid in (0, n // 3, n // 2, n - 1):
+            wins = c._windows("x" * n, (mid, mid + 1))
+            covered = set()
+            for a, b in wins:
+                covered |= set(range(a, b))
+            assert len(wins) <= 3 and covered == set(range(n)), (n, mid, wins)
+            assert wins[0][0] <= mid < wins[0][1]
+
+
+def test_long_message_extra_windows_add_unseen_text():
+    c = Cascade(None, None, window_tokens=150, confirm=Confirm(0.7, 0.7), max_windows=3)
+    wins = c._windows("x" * 5000, (2500, 2510))
+    assert wins[0][0] <= 2500 < wins[0][1] and len(wins) == 3
+    seen = set(range(*wins[0]))
+    for a, b in wins[1:]:
+        new = set(range(a, b)) - seen
+        assert len(new) == b - a, wins
+        seen |= new
