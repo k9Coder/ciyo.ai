@@ -10,9 +10,14 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@huggingface/tokenizers": "0.2.0",
+    "onnxruntime-common": "1.30.0"
+  },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "onnxruntime-node": "1.30.0",
+    "@types/node": "^22.0.0"
   }
 }
