@@ -37,8 +37,11 @@ export interface CascadeResult {
   rules: RuleEntry[];
 }
 
+type ScorerSource = Scorer | (() => Promise<Scorer>);
+
 export interface CascadeOptions {
-  fast: Scorer;
+  /** A scorer, or a lazy loader (loaded on demand, disposed after idleUnloadMs unused). */
+  fast: ScorerSource;
   second?: Scorer | (() => Promise<Scorer>) | null;
   bands?: { low: number; high: number };
   windowTokens?: number;
@@ -70,20 +73,23 @@ function pyRound(x: number): number {
 export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0.9 }, windowTokens = 400,
                                 secondTimeoutMs = 2500, idleUnloadMs = 300000, confirm = null, maxWindows = 1 }: CascadeOptions): Cascade {
   const windowChars = windowTokens * CHARS_PER_TOKEN;
-  const lazy = typeof second === "function";
-  let loaded: Scorer | null = lazy ? null : (second as Scorer | null);
-  let idleTimer: ReturnType<typeof setTimeout> | undefined;
-
-  async function getSecond(): Promise<Scorer | null> {
-    if (!lazy) return loaded;
-    if (!loaded) loaded = await (second as () => Promise<Scorer>)();
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      if (loaded && typeof loaded.dispose === "function") loaded.dispose();
-      loaded = null;
-    }, idleUnloadMs);
-    return loaded;
+  // A model given as a loader is loaded on first use and disposed after idleUnloadMs without use.
+  function lazyModel(src: ScorerSource | null): () => Promise<Scorer | null> {
+    if (typeof src !== "function") return async () => src;
+    let loaded: Scorer | null = null;
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
+    return async () => {
+      if (!loaded) loaded = await src();
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (loaded && typeof loaded.dispose === "function") loaded.dispose();
+        loaded = null;
+      }, idleUnloadMs);
+      return loaded;
+    };
   }
+  const getFast = lazyModel(fast);
+  const getSecond = lazyModel(second);
 
   function windowFor(message: string, span: Span | null): Span {
     if (message.length <= windowChars) return [0, message.length];
@@ -145,7 +151,7 @@ export function createCascade({ fast, second = null, bands = { low: 0.1, high: 0
       return { violated: false, warn: false, decided_by: "fast", latency_ms: 0, pending: false,
                rules: rules.map((r) => entry(message, r.id, false, 0, null, { fast_p: 0, second_p: null, windows: 0 })) };
     }
-    const fastOut = await fast.scoreWithSpans(message, rules.map((r) => r.text));
+    const fastOut = await (await getFast())!.scoreWithSpans(message, rules.map((r) => r.text));
     const entries: RuleEntry[] = [];
     let usedSecond = false, pending = false;
     for (let i = 0; i < rules.length; i++) {

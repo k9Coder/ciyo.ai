@@ -35,19 +35,15 @@ export function createDesktopRunner(deps: {
   const store = createFsStore(root)
   const fetchFn = deps.fetchFn ?? fetch
   let cascade: Promise<Cascade> | null = null
-  let version: string | null = null
+  const version = `fast_${manifest.version}+so_${manifest.version}`
 
   async function loadCascade(): Promise<Cascade> {
     const ort = await import('onnxruntime-node')
-    const fastFiles = await loadModelFiles(manifest, store, 'fast')
-    const onnxPath = (list: ModelManifest['fast']) => path.join(root, manifest.version, list.find((f) => f.name.endsWith('-judge.onnx'))!.name)
-    const fast = await createOnnxScorer(ort, { ...fastFiles, onnx: onnxPath(manifest.fast) })
-    version = `${fastFiles.config.model_version}+so_${manifest.version}`
-    const second = async () => {
-      const files = await loadModelFiles(manifest, store, 'second')
-      return createOnnxScorer(ort, { ...files, onnx: onnxPath(manifest.second) })
-    }
-    return createCascade({ fast, second, ...LOCKED_POLICY, secondTimeoutMs: 10_000, idleUnloadMs: 300_000 })
+    const onnxPath = (name: string) => path.join(root, manifest.version, name)
+    // Both models load on demand and unload after 5 idle minutes; ONNX Runtime reads the model file itself.
+    const load = (which: 'fast' | 'second') => async () =>
+      createOnnxScorer(ort, await loadModelFiles(manifest, store, which, { onnxPath }))
+    return createCascade({ fast: load('fast'), second: load('second'), ...LOCKED_POLICY, secondTimeoutMs: 10_000, idleUnloadMs: 300_000 })
   }
 
   const runner = createShadowRunner({

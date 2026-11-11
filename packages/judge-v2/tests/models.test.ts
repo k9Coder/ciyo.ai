@@ -180,4 +180,18 @@ describe("loadModelFiles", () => {
     expect(files.backboneSpec.num_layers).toBe(18);
     expect(files.tokenizerConfigJson).toBe("{\"a\":1}");
   });
+
+  it("with onnxPath, hands back the file path and never reads the model bytes", async () => {
+    const store = new MemStore();
+    const put = (n: string, x: string) => store.write("v7", n, enc.encode(x));
+    await put("fast_v7-tokenizer.json", "{}"); await put("fast_v7-tokenizer_config.json", "{}");
+    await put("fast_v7-judge_config.json", "{}"); await put("fast_v7-backbone_spec.json", "{}");
+    const reads: string[] = [];
+    const spy: ModelStore = { ...store, has: store.has.bind(store), write: store.write.bind(store), markReady: store.markReady.bind(store),
+      isReady: store.isReady.bind(store), prune: store.prune.bind(store), read: async (v, n) => { reads.push(n); return store.read(v, n); } };
+    const files = await loadModelFiles(MANIFEST, spy, "fast", { onnxPath: (name) => `/models/v7/${name}` });
+    expect(files.onnx).toBe("/models/v7/fast_v7-judge.onnx");
+    expect(reads).not.toContain("fast_v7-judge.onnx");
+  });
 });
+

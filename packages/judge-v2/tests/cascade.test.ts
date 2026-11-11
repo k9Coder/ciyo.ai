@@ -67,6 +67,24 @@ describe("cascade (port of cascade.mjs)", () => {
     }
   });
 
+  it("lazy fast model loads on demand and unloads after idle", async () => {
+    vi.useFakeTimers();
+    try {
+      let loads = 0, disposes = 0;
+      const fastLoader = async (): Promise<Scorer> => { loads += 1; return { scoreWithSpans: async (_m, rules) => rules.map(() => ({ p: 0.01, span: null })), dispose: () => { disposes += 1; } }; };
+      const c = createCascade({ fast: fastLoader, second: null, bands, idleUnloadMs: 1000 });
+      await c.judge("hello", [RULES[0]!]);
+      await c.judge("hello", [RULES[0]!]);
+      expect(loads).toBe(1);
+      vi.advanceTimersByTime(1500);
+      expect(disposes).toBe(1);
+      await c.judge("hello", [RULES[0]!]);
+      expect(loads).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("confirm policy blocks only when both models agree", async () => {
     const fast = fake({ A: { p: 0.95, span: [0, 3] }, B: { p: 0.95, span: [0, 3] }, C: { p: 0.4, span: null } });
     const second = fake({ A: { p: 0.97, span: [0, 3] }, B: { p: 0.2, span: null } });

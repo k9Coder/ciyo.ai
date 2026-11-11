@@ -93,8 +93,11 @@ export function ensureModels(m: ModelManifest, store: ModelStore, fetchFn: typeo
 const text = new TextDecoder();
 
 /** One model's files from the store, in the shape createOnnxScorer takes. */
-export async function loadModelFiles(m: ModelManifest, store: ModelStore, which: "fast" | "second"): Promise<ModelFiles> {
+export async function loadModelFiles(m: ModelManifest, store: ModelStore, which: "fast" | "second",
+                                     opts: { onnxPath?: (name: string) => string } = {}): Promise<ModelFiles> {
   const list = which === "fast" ? m.fast : m.second;
+  const onnxName = list.find((x) => x.name.endsWith("-judge.onnx"))?.name;
+  if (!onnxName) throw new Error(`manifest has no judge.onnx for ${which}`);
   const get = async (suffix: string) => {
     const f = list.find((x) => x.name.endsWith(`-${suffix}`));
     if (!f) throw new Error(`manifest has no ${suffix} for ${which}`);
@@ -102,7 +105,8 @@ export async function loadModelFiles(m: ModelManifest, store: ModelStore, which:
   };
   const str = async (s: string) => text.decode(await get(s));
   return {
-    onnx: await get("judge.onnx"),
+    // With onnxPath (desktop) ONNX Runtime opens the file itself; reading 141/290 MB here would be wasted.
+    onnx: opts.onnxPath ? opts.onnxPath(onnxName) : await get("judge.onnx"),
     tokenizerJson: await str("tokenizer.json"),
     tokenizerConfigJson: await str("tokenizer_config.json"),
     config: JSON.parse(await str("judge_config.json")),

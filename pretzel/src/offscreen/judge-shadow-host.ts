@@ -32,14 +32,12 @@ export function createExtensionShadow(report: (rows: JudgeShadowRow[]) => void, 
   const manifest = modelBase ? manifestFor(modelBase) : MANIFEST;
   const store = createCacheStore();
   let cascade: Promise<Cascade> | null = null;
-  let version: string | null = null;
+  const version = `fast_${manifest.version}+so_${manifest.version}`;
 
   async function loadCascade(): Promise<Cascade> {
-    const fastFiles = await loadModelFiles(manifest, store, "fast");
-    const fast = await createOnnxScorer(ort, fastFiles);
-    version = `${fastFiles.config.model_version}+so_${manifest.version}`;
-    const second = async () => createOnnxScorer(ort, await loadModelFiles(manifest, store, "second"));
-    return createCascade({ fast, second, ...LOCKED_POLICY, secondTimeoutMs: 10_000, idleUnloadMs: 300_000 });
+    // Both models load on demand and unload after 5 idle minutes.
+    const load = (which: "fast" | "second") => async () => createOnnxScorer(ort, await loadModelFiles(manifest, store, which));
+    return createCascade({ fast: load("fast"), second: load("second"), ...LOCKED_POLICY, secondTimeoutMs: 10_000, idleUnloadMs: 300_000 });
   }
 
   return createShadowRunner({
