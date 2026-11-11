@@ -23,29 +23,16 @@
     "release": "node scripts/release.mjs"
   },
   "dependencies": {
-    "@huggingface/transformers": "^4.3.0",
-    "@img/colour": "^1.1.0",
     "@mykka/detect": "workspace:*",
     "@sentry/electron": "^7.17.0",
-    "detect-libc": "^2.1.2",
     "electron-updater": "^6.3.9",
     "keytar": "^7.9.0",
     "node-forge": "^1.3.1",
     "onnxruntime-common": "1.30.0",
     "onnxruntime-node": "1.30.0",
     "semver": "^7.8.5",
-    "sharp": "^0.35.4",
     "zod": "^3.23.8",
     "@mykka/judge-v2": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@img/sharp-darwin-arm64": "0.35.5",
-    "@img/sharp-darwin-x64": "0.35.5",
-    "@img/sharp-libvips-darwin-arm64": "1.3.4",
-    "@img/sharp-libvips-darwin-x64": "1.3.4",
-    "@img/sharp-libvips-linux-x64": "1.3.4",
-    "@img/sharp-linux-x64": "0.35.5",
-    "@img/sharp-win32-x64": "0.35.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

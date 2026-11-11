@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@clerk/chrome-extension": "^3.1.76",
-    "@huggingface/transformers": "^4.3.0",
     "@mykka/detect": "workspace:*",
     "@mykka/judge-v2": "workspace:*",
     "@sentry/browser": "^10.56.0",

@@ -17,12 +17,8 @@ files:
 # asar archive — these load fine in dev (no asar involved) and would
 # silently fail only in a packaged build without this. Scoped to only these
 # packages, not touching any other native dependency's existing packaging.
-# @img/sharp-* are sharp's (an @huggingface/transformers dependency, used
-# for image preprocessing we never exercise but which it requires
-# unconditionally at module load) own per-platform native binaries.
 asarUnpack:
   - node_modules/onnxruntime-node/**/*
-  - node_modules/@img/**/*
 
 mac:
   category: public.app-category.productivity
@@ -31,13 +27,11 @@ mac:
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
-  # onnxruntime-node and sharp's @img/* packages bundle prebuilt native
-  # binaries for every platform they support — without this, a mac build
-  # would also ship the win32/linux binaries it can never load.
+  # onnxruntime-node bundles prebuilt native binaries for every platform it
+  # supports — without this, a mac build would also ship the win32/linux
+  # binaries it can never load.
   files:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
-    - '!node_modules/@img/sharp-{win32,linux}-*/**'
-    - '!node_modules/@img/sharp-libvips-linux-*/**'
   target:
     - target: dmg
       arch: [x64, arm64]
@@ -48,8 +42,6 @@ win:
   icon: build/icon.ico
   files:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
-    - '!node_modules/@img/sharp-{darwin,linux}-*/**'
-    - '!node_modules/@img/sharp-libvips-{darwin,linux}-*/**'
   target:
     - target: nsis
       arch: [x64]
@@ -59,8 +51,6 @@ linux:
   category: Utility
   files:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,darwin}/**'
-    - '!node_modules/@img/sharp-{win32,darwin}-*/**'
-    - '!node_modules/@img/sharp-libvips-darwin-*/**'
   target:
     - target: AppImage
       arch: [x64]
