@@ -48,8 +48,11 @@ second opinion, LoRA r16 merged, 4-bit). Policy `artifacts/policy.json`, chosen 
 
 | Set | Rule rows (pos) | Block P | Block R | Block-or-warn P | Block-or-warn R | Span acc. |
 |---|---|---|---|---|---|---|
-| dev2 + extra long (thresholds) | 3,135 (1,262) | 0.991 | 0.088 | 0.951 | 0.548 | 0.917 |
-| test2 (fresh, run once) | 2,917 (1,229) | 0.991 | 0.094 | 0.955 | 0.530 | 0.922 |
+| dev2 + extra long (thresholds) | 3,135 (1,262) | 0.983 | 0.090 | 0.952 | 0.563 | 0.937 |
+| test2 (fresh, locked thresholds) | 2,917 (1,229) | 1.000 | 0.096 | 0.955 | 0.538 | 0.925 |
+
+Thresholds were chosen with the earlier window layout (dev2 block P 0.991). With full window coverage dev2
+block precision is 0.983 (one extra false block); thresholds were not retuned, so test2 stays an untouched final test.
 
 test2 block-or-warn recall: critical 0.62, disguised 0.42, late violations 0.35; per language 0.42 (de, en) to
 0.62 (it).
