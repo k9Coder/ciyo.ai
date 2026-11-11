@@ -294,7 +294,9 @@ export async function detectPrompt(
   const effectivePasteDetected = isFile ? false : pasteDetected;
   const allRules = [...policy.baseline, ...policy.custom];
   const syncRules = allRules.filter((r): r is SyncRule => r.kind !== "judge_prompt");
-  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt" && r.enabled);
+  // Non-enforced judge_prompt rules are judged off the send path by the judge v2
+  // shadow runner (@mykka/judge-v2), never here.
+  const judgePromptRules = allRules.filter((r): r is JudgePromptRule => r.kind === "judge_prompt" && r.enabled && r.enforced);
 
   const kindedFindings: KindedFinding[] = [];
   for (const rule of syncRules) {

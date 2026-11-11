@@ -6,7 +6,6 @@ import { dispatchScan, isScanLimitReached } from "@/scans/dispatch";
 import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
-import { RemoteLocalJudge } from "@/background/remote-local-judge";
 import { dispatchShadowTelemetry } from "@/events/shadow-dispatch";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
@@ -17,23 +16,11 @@ import { logger } from "@/shared/logger";
 
 initSentry();
 
-const localJudge = new RemoteLocalJudge();
-
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
-
-// Warm up the judge at module load — the same place `syncPolicy()` below
-// already runs reliably — rather than only reactively from inside DETECT's
-// message handler. That handler's promise chain resolves almost instantly,
-// and Chrome was tearing this service worker down before the triggered,
-// fire-and-forget readiness check (offscreen doc creation + ping) ever got
-// to run, so isAvailable() could never flip true. Calling it here gives the
-// warm-up the same startup window every other top-level side effect gets.
-localJudge.isAvailable();
 
 // Accepts the offscreen document's keepalive port (see offscreen.ts) — an
 // open port is one of Chrome's documented signals that keeps this service
-// worker alive, which is what lets the judge warm-up above actually finish
-// instead of racing its own teardown. Nothing needs to be done with it.
+// worker alive while the offscreen document exists. Nothing needs to be done with it.
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "local-judge-keepalive") {
     logger.info("local-judge keepalive port connected");
@@ -56,16 +43,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onMessage.addListener(
   (message: Message, _sender, sendResponse) => {
-    // RemoteLocalJudge talks to the offscreen document via this same
-    // chrome.runtime.sendMessage channel. That message isn't part of the
-    // Message union and must be answered exclusively by the offscreen
-    // document — handleMessage's default case would otherwise race
-    // sendResponse against the offscreen doc's real (async) classify call
-    // and could win with a bogus `null`.
-    const messageType = (message as { type?: string })?.type;
-    if (messageType === "LOCAL_JUDGE_CLASSIFY" || messageType === "LOCAL_JUDGE_PING") {
-      return undefined;
-    }
     handleMessage(message)
       .then(sendResponse)
       .catch((err) => {
@@ -123,7 +100,7 @@ async function handleMessage(message: Message): Promise<unknown> {
       }
 
       const policy = await loadPolicy();
-      const result = await detectPrompt(detectInput, policy, undefined, undefined, localJudge);
+      const result = await detectPrompt(detectInput, policy);
       void dispatchEvents(result, hostname);
       void dispatchShadowTelemetry(result.shadowFindings);
       const limitReached = await isScanLimitReached();

@@ -45,14 +45,16 @@ function bridgeRule(rule: PolicyDoc["subjects"][number]["rules"][number], subjec
     case "score":
       return { ...base, kind: "score" as const, signals: DEFAULT_SCORE_SIGNALS, warnThreshold: 40, confirmThreshold: 70, enforced: false }
     case "judge_prompt": {
-      // The sole real enforcement mechanism for its own rule — never shadow.
+      // Not enforced while judge v2 runs in shadow (docs/superpowers/specs/
+      // 2026-11-11-judge-v2-shadow-mode-design.md): the plain-language rule is
+      // judged off the send path and only recorded, never blocks.
       // An empty claim is not a harmless no-op: handed to the model, its
       // match/no-match behavior is undefined, and a false "match" would
       // block everything — a fail-CLOSED outcome in a design that promises
       // fail-open everywhere. The service layer should never let this
       // reach a published policy, but disable defensively here too.
       const hasPrompt = typeof rule.prompt === "string" && rule.prompt.trim().length > 0;
-      return { ...base, kind: "judge_prompt" as const, prompt: rule.prompt ?? "", enforced: true, enabled: hasPrompt }
+      return { ...base, kind: "judge_prompt" as const, prompt: rule.prompt ?? "", enforced: false, enabled: hasPrompt }
     }
   }
 }

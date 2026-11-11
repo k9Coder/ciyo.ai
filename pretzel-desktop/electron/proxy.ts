@@ -28,12 +28,9 @@ import tls from 'tls'
 import zlib from 'zlib'
 import { EventEmitter } from 'events'
 import { detectPrompt } from '@mykka/detect'
-import type { Policy, DetectionResult, LocalJudge } from '@mykka/detect'
+import type { Policy, DetectionResult } from '@mykka/detect'
 import { signHostCertCached, type CACert } from './ca'
-import { ThemisLocalJudge } from './themis-judge'
 import { reportShadowTelemetry } from './report-shadow-telemetry'
-
-const judge: LocalJudge = new ThemisLocalJudge()
 
 export const PROXY_PORT = 18888
 
@@ -146,9 +143,8 @@ export async function evaluateRequest(
   policy: Policy,
   hostname: string,
   body: string,
-  judge?: LocalJudge,
 ): Promise<DetectionResult> {
-  return detectPrompt({ text: body, hostname, inputType: 'prompt' }, policy, hostname, undefined, judge)
+  return detectPrompt({ text: body, hostname, inputType: 'prompt' }, policy, hostname)
 }
 
 /** True if a detection result requires holding the request for a user decision. */
@@ -412,7 +408,7 @@ export class PretzelProxy extends EventEmitter {
 
     if (!truncated && body.length > 0 && this.policy && !isNoisePath(clientReq.url ?? '')) {
       try {
-        const result = await evaluateRequest(this.policy, hostname, body, judge)
+        const result = await evaluateRequest(this.policy, hostname, body)
         void reportShadowTelemetry(result.shadowFindings)
         if (body.includes('AKIA')) {
           console.log(`[proxy][diag] AKIA result: action=${result.highestAction} findings=${result.findings.length}`)
