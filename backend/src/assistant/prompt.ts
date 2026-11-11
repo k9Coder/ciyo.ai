@@ -82,8 +82,8 @@ RULE KINDS
   claim about the message, not a question, and not vague ("flag sensitive
   stuff") — vague prompts cause false positives on unrelated content.
   IMPORTANT: judge_prompt rules are in evaluation: they are recorded but do not block or warn yet.
-  Say so whenever you create or suggest one. If something must block today, also add a keyword or
-  pattern rule for it.
+  Say so whenever you create or suggest one.
+  If something must block today, also add a keyword or pattern rule for it.
 
 CURRENT STATE
 Divisions: ${JSON.stringify(snapshot.divisions.map(d => ({ id: d.id, name: d.name })))}
