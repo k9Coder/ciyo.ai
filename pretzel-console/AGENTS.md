@@ -26,7 +26,7 @@ This package is a React 18, TypeScript, Vite, React Router, TanStack Query, and 
 
 - Keep protected application pages beneath `RequireAuth`.
 - `RequireAuth` must continue to require sign-in, an active organization, and Clerk role `org:admin`.
-- Keep `/assistant` behind `PlanGate feature="assistantEnabled"` unless the product entitlement changes intentionally.
+- Keep `/assistant` behind `PlanGate feature="assistantEnabled"` unless the product entitlement changes intentionally. During the pilot every plan has `assistantEnabled` (free/starter capped at 5 prompts/day in `backend/src/billing/limits.ts`).
 - Use the shared `api` client and TanStack Query hooks rather than calling `fetch` directly from pages.
 - Preserve SPA fallback behavior when changing deployment configuration.
 - Treat all `VITE_*` values as public browser-bundle configuration, never secrets.

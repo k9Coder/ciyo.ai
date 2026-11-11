@@ -76,10 +76,10 @@ describe('pilot plan limits', () => {
 })
 
 describe('existing plans are not broken', () => {
-  it('free: maxSeats=3, assistantEnabled=false', () => {
+  it('free: maxSeats=3, assistant enabled with 5 prompts/day', () => {
     expect(PLAN_LIMITS['free'].maxSeats).toBe(3)
-    expect(PLAN_LIMITS['free'].assistantEnabled).toBe(false)
-    expect(PLAN_LIMITS['free'].assistantPromptsADay).toBe(-1)
+    expect(PLAN_LIMITS['free'].assistantEnabled).toBe(true)
+    expect(PLAN_LIMITS['free'].assistantPromptsADay).toBe(5)
     expect(PLAN_LIMITS['free'].assistantMaximumTokens).toBe(-1)
   })
   it('business: assistantEnabled=true, unlimited prompts', () => {

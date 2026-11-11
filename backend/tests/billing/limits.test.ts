@@ -14,8 +14,11 @@ describe('PLAN_LIMITS', () => {
     expect(PLAN_LIMITS.business.allowedRuleKinds).toContain('entropy')
     expect(PLAN_LIMITS.business.allowedRuleKinds).toContain('score')
   })
-  it('free plan has no assistant', () => {
-    expect(PLAN_LIMITS.free.assistantEnabled).toBe(false)
+  it('free and starter plans have a capped assistant during the pilot', () => {
+    expect(PLAN_LIMITS.free.assistantEnabled).toBe(true)
+    expect(PLAN_LIMITS.free.assistantPromptsADay).toBe(5)
+    expect(PLAN_LIMITS.starter.assistantEnabled).toBe(true)
+    expect(PLAN_LIMITS.starter.assistantPromptsADay).toBe(5)
   })
   it('business plan has assistant', () => {
     expect(PLAN_LIMITS.business.assistantEnabled).toBe(true)
