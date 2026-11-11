@@ -73,10 +73,26 @@ describe("ensureModels", () => {
   it("an interrupted download resumes with only the missing files", async () => {
     const { m, bodies } = await tinyManifest();
     const store = new MemStore();
-    expect(await ensureModels(m, store, fakeFetch(bodies, { failOn: "so-b" }).f)).toBe("failed");
+    expect(await ensureModels(m, store, fakeFetch(bodies, { failOn: "so-b" }).f, { retryAfterMs: 0 })).toBe("failed");
     const second = fakeFetch(bodies);
-    expect(await ensureModels(m, store, second.f)).toBe("ready");
+    expect(await ensureModels(m, store, second.f, { retryAfterMs: 0 })).toBe("ready");
     expect(second.calls).toEqual(["https://example.test/t1/so-b"]);
+  });
+
+  it("after a failure, calls within the cooldown do no network (no retry storm on every prompt)", async () => {
+    const { m, bodies } = await tinyManifest();
+    const store = new MemStore();
+    let t = 1_000_000;
+    const now = () => t;
+    expect(await ensureModels(m, store, fakeFetch(bodies, { corrupt: "so-b" }).f, { now, retryAfterMs: 60_000 })).toBe("failed");
+    const blocked = fakeFetch(bodies);
+    t += 59_000;
+    expect(await ensureModels(m, store, blocked.f, { now, retryAfterMs: 60_000 })).toBe("failed");
+    expect(blocked.calls).toEqual([]);
+    t += 2_000;
+    const later = fakeFetch(bodies);
+    expect(await ensureModels(m, store, later.f, { now, retryAfterMs: 60_000 })).toBe("ready");
+    expect(later.calls).toEqual(["https://example.test/t1/so-b"]);
   });
 
   it("concurrent calls share one download", async () => {

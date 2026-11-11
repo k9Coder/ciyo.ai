@@ -7,6 +7,9 @@ import type { DetectionResult } from "@mykka/detect";
 import { syncPolicy } from "@/policy/sync";
 import { checkForUpdates } from "@/background/update-check";
 import { dispatchShadowTelemetry } from "@/events/shadow-dispatch";
+import { dispatchJudgeShadow } from "@/events/judge-shadow-dispatch";
+import { submitJudgeShadow, JUDGE_SHADOW_ROWS, JUDGE_SHADOW_SUBMIT } from "@/background/judge-shadow";
+import type { JudgeShadowRow } from "@mykka/judge-v2";
 import { getRole } from "@/policy/role";
 import { reportDegraded } from "@/telemetry/dispatch";
 import { appendAuditEvent } from "@/audit/log";
@@ -43,6 +46,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onMessage.addListener(
   (message: Message, _sender, sendResponse) => {
+    // Judge v2 shadow traffic between this worker and the offscreen document
+    // is not part of the Message union and needs no response.
+    const shadowType = (message as { type?: string })?.type;
+    if (shadowType === JUDGE_SHADOW_ROWS) {
+      void dispatchJudgeShadow((message as unknown as { rows: JudgeShadowRow[] }).rows ?? []);
+      return undefined;
+    }
+    if (shadowType === JUDGE_SHADOW_SUBMIT) return undefined;
     handleMessage(message)
       .then(sendResponse)
       .catch((err) => {
@@ -103,6 +114,7 @@ async function handleMessage(message: Message): Promise<unknown> {
       const result = await detectPrompt(detectInput, policy);
       void dispatchEvents(result, hostname);
       void dispatchShadowTelemetry(result.shadowFindings);
+      void submitJudgeShadow(text, policy, result);
       const limitReached = await isScanLimitReached();
       if (!limitReached) void dispatchScan();
       return result;

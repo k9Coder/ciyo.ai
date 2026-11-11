@@ -16,33 +16,14 @@ import path from 'path'
 import type { Policy, DetectionResult } from '@mykka/detect'
 import {
   createCascade, createOnnxScorer, createShadowRunner, ensureModels, loadModelFiles, manifestFor, MANIFEST, LOCKED_POLICY,
-  type Cascade, type JudgeShadowRow, type ModelManifest, type PrimarySummary, type ShadowRule,
+  shadowRulesFrom, primarySummaryFrom, needsJudgeShadow,
+  type Cascade, type JudgeShadowRow, type ModelManifest,
 } from '@mykka/judge-v2'
 import { createFsStore } from '@mykka/judge-v2/store-fs'
 
 const LOW_MEMORY_BYTES = 2 ** 30
 
-export function shadowRulesFrom(policy: Policy): ShadowRule[] {
-  const out: ShadowRule[] = []
-  for (const r of [...policy.baseline, ...policy.custom]) {
-    if (!r.enabled) continue
-    if (r.kind === 'judge_prompt') out.push({ id: r.id, kind: 'judge_prompt', prompt: r.prompt })
-    else if (r.kind === 'dictionary') out.push({ id: r.id, kind: 'keyword' })
-    else if (r.kind === 'pattern') out.push({ id: r.id, kind: 'pattern' })
-  }
-  return out
-}
-
-export function primarySummaryFrom(result: DetectionResult): PrimarySummary {
-  const actionByRuleId: PrimarySummary['actionByRuleId'] = {}
-  for (const f of result.findings) {
-    actionByRuleId[f.ruleId] = f.action === 'block' ? 'block' : f.action === 'log' ? 'log' : 'warn'
-  }
-  return { actionByRuleId }
-}
-
-const hasJudgeRule = (policy: Policy | null): boolean =>
-  !!policy && [...policy.baseline, ...policy.custom].some((r) => r.enabled && r.kind === 'judge_prompt' && r.prompt.trim().length > 0)
+export { shadowRulesFrom, primarySummaryFrom }
 
 export interface DesktopShadow {
   submit(body: string, policy: Policy, result: DetectionResult): void
@@ -96,7 +77,7 @@ export function createDesktopShadow(deps: {
       runner.submit(body, shadowRulesFrom(policy), primarySummaryFrom(result))
     },
     prepare(policy) {
-      if (hasJudgeRule(policy)) void ensureModels(manifest, store, fetchFn)
+      if (needsJudgeShadow(policy)) void ensureModels(manifest, store, fetchFn)
     },
   }
 }

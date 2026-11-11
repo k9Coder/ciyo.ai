@@ -7,3 +7,4 @@ export type { JudgeShadowRow, ShadowRule, PrimarySummary, PrimaryAction, Seconda
 export { ensureModels, manifestFor, loadModelFiles, sha256Hex, MANIFEST, DEFAULT_MODEL_BASE } from "./models";
 export type { ModelFile, ModelManifest, ModelStore, EnsureStatus } from "./models";
 // Stores are separate entry points (@mykka/judge-v2/store-fs, @mykka/judge-v2/store-cache): the fs one is Node-only.
+export { shadowRulesFrom, primarySummaryFrom, needsJudgeShadow } from "./detect-adapter";

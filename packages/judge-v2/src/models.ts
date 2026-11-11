@@ -34,6 +34,10 @@ export async function sha256Hex(data: Uint8Array): Promise<string> {
 }
 
 const inFlight = new WeakMap<ModelStore, Promise<EnsureStatus>>();
+const lastFailure = new WeakMap<ModelStore, number>();
+
+/** Wait this long after a failed download before trying again (a failure must not re-download on every prompt). */
+export const DEFAULT_RETRY_AFTER_MS = 15 * 60_000;
 
 async function download(m: ModelManifest, store: ModelStore, fetchFn: typeof fetch): Promise<EnsureStatus> {
   if (await store.isReady(m.version)) return "ready";
@@ -56,11 +60,25 @@ async function download(m: ModelManifest, store: ModelStore, fetchFn: typeof fet
   return "ready";
 }
 
-/** Download every missing file of the manifest; resumable, checksum-verified, one download per store at a time. */
-export function ensureModels(m: ModelManifest, store: ModelStore, fetchFn: typeof fetch): Promise<EnsureStatus> {
+/**
+ * Download every missing file of the manifest; resumable, checksum-verified, one download per store at a time.
+ * After a failure, calls within retryAfterMs return "failed" without touching the network.
+ */
+export function ensureModels(m: ModelManifest, store: ModelStore, fetchFn: typeof fetch,
+                             opts: { now?: () => number; retryAfterMs?: number } = {}): Promise<EnsureStatus> {
   const running = inFlight.get(store);
   if (running) return running;
-  const p = download(m, store, fetchFn).catch(() => "failed" as const).finally(() => inFlight.delete(store));
+  const now = opts.now ?? Date.now;
+  const failedAt = lastFailure.get(store);
+  if (failedAt !== undefined && now() - failedAt < (opts.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS)) return Promise.resolve("failed");
+  const p = download(m, store, fetchFn)
+    .catch(() => "failed" as const)
+    .then((status) => {
+      if (status === "failed") lastFailure.set(store, now());
+      else lastFailure.delete(store);
+      return status;
+    })
+    .finally(() => inFlight.delete(store));
   inFlight.set(store, p);
   return p;
 }
