@@ -27,7 +27,10 @@ const JUDGE_SHADOW_KEYS = [
   'spanStart', 'spanEnd', 'messageChars', 'windows', 'latencyMs', 'modelVersion', 'occurredAt',
 ] as const
 
-const isUint = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0
+// Column limits: integer (int4) and smallint. Larger values must be a 400, not a database 500.
+const INT_MAX = 2_147_483_647
+const SMALLINT_MAX = 32_767
+const isUint = (v: unknown, max = INT_MAX): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
 const isScore = (v: unknown): boolean => v === null || (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1)
 
 /** Returns an error message, or null when the row is valid. Exact key set: nothing else (no prompt text) fits. */
@@ -49,7 +52,9 @@ export function judgeShadowRowError(raw: unknown): string | null {
   if (r.spanStart !== null && (!isUint(r.spanStart) || !isUint(r.spanEnd) || (r.spanEnd as number) < r.spanStart)) {
     return 'span must be non-negative integers with spanEnd >= spanStart'
   }
-  if (!isUint(r.messageChars) || !isUint(r.windows) || !isUint(r.latencyMs)) return 'messageChars, windows and latencyMs must be non-negative integers'
+  if (!isUint(r.messageChars) || !isUint(r.windows, SMALLINT_MAX) || !isUint(r.latencyMs)) {
+    return 'messageChars, windows and latencyMs must be non-negative integers within the column range'
+  }
   if (typeof r.modelVersion !== 'string' || !MODEL_VERSION_RE.test(r.modelVersion)) return 'modelVersion is malformed'
   if (typeof r.occurredAt !== 'string' || Number.isNaN(new Date(r.occurredAt).getTime())) return 'occurredAt must be a valid ISO date string'
   return null

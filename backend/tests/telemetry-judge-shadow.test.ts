@@ -90,6 +90,10 @@ describe('POST /v1/telemetry/judge-shadow', () => {
     ['a modelVersion carrying text', { ...ROW, modelVersion: 'x'.repeat(40) }],
     ['a bad timestamp', { ...ROW, occurredAt: 'yesterday' }],
     ['a missing field', (({ windows: _w, ...rest }) => rest)(ROW)],
+    ['windows above the smallint range', { ...ROW, windows: 40000 }],
+    ['latencyMs above the int range', { ...ROW, latencyMs: 2 ** 31 }],
+    ['messageChars above the int range', { ...ROW, messageChars: 2 ** 31 }],
+    ['spanEnd above the int range', { ...ROW, spanEnd: 2 ** 31 }],
   ]
   for (const [what, row] of bad) {
     it(`rejects ${what} with 400 and stores nothing`, async () => {
