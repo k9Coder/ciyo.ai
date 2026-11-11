@@ -118,7 +118,7 @@ describe("shadow runner", () => {
   });
 
   it("budget exceeded → pending rows", async () => {
-    const s = setup({ budgetMs: 20, judge: () => new Promise(() => {}) });
+    const s = setup({ budgetMs: 20, judge: (_m, rules) => new Promise((r) => setTimeout(() => r(result(rules)), 60)) });
     s.runner.submit("x", [JP], { actionByRuleId: {} });
     await s.runner.idle();
     expect(s.rows().map((r) => r.secondaryVerdict)).toEqual(["pending"]);
@@ -142,12 +142,28 @@ describe("shadow runner", () => {
     expect([...byCheck.values()].filter((v) => v === "skipped").length).toBe(5);
   });
 
-  it("a 100 000-char message is handed to the cascade intact", async () => {
+  it("a 100 000-char message is capped at 50 000 chars before judging; messageChars keeps the real length", async () => {
     let seen = 0;
     const s = setup({ judge: async (m, rules) => { seen = m.length; return result(rules); } });
     s.runner.submit("a".repeat(100_000), [JP], { actionByRuleId: {} });
     await s.runner.idle();
-    expect(seen).toBe(100_000);
+    expect(seen).toBe(50_000);
     expect(s.rows()[0]!.messageChars).toBe(100_000);
+  });
+
+  it("a timed-out inference keeps the queue busy until it settles: never two inferences at once", async () => {
+    let inFlight = 0, maxInFlight = 0;
+    const judge = async (_m: string, rules: CascadeRule[]) => {
+      inFlight++; maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 80));
+      inFlight--;
+      return result(rules);
+    };
+    const s = setup({ budgetMs: 10, judge });
+    s.runner.submit("a", [JP], { actionByRuleId: {} });
+    s.runner.submit("b", [JP], { actionByRuleId: {} });
+    await s.runner.idle();
+    expect(maxInFlight).toBe(1);
+    expect(s.rows().map((r) => r.secondaryVerdict)).toEqual(["pending", "pending"]);
   });
 });

@@ -34,10 +34,14 @@ export async function sha256Hex(data: Uint8Array): Promise<string> {
 }
 
 const inFlight = new WeakMap<ModelStore, Promise<EnsureStatus>>();
-const lastFailure = new WeakMap<ModelStore, number>();
+const failures = new WeakMap<ModelStore, { at: number; count: number }>();
 
-/** Wait this long after a failed download before trying again (a failure must not re-download on every prompt). */
+/**
+ * Wait this long after a failed download before trying again, doubling after each consecutive failure up to
+ * MAX_RETRY_AFTER_MS (a failure must not re-download on every prompt, nor every 15 min forever).
+ */
 export const DEFAULT_RETRY_AFTER_MS = 15 * 60_000;
+export const MAX_RETRY_AFTER_MS = 24 * 3600_000;
 
 async function download(m: ModelManifest, store: ModelStore, fetchFn: typeof fetch): Promise<EnsureStatus> {
   if (await store.isReady(m.version)) return "ready";
@@ -69,13 +73,16 @@ export function ensureModels(m: ModelManifest, store: ModelStore, fetchFn: typeo
   const running = inFlight.get(store);
   if (running) return running;
   const now = opts.now ?? Date.now;
-  const failedAt = lastFailure.get(store);
-  if (failedAt !== undefined && now() - failedAt < (opts.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS)) return Promise.resolve("failed");
+  const failed = failures.get(store);
+  if (failed) {
+    const wait = Math.min(MAX_RETRY_AFTER_MS, (opts.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS) * 2 ** (failed.count - 1));
+    if (now() - failed.at < wait) return Promise.resolve("failed");
+  }
   const p = download(m, store, fetchFn)
     .catch(() => "failed" as const)
     .then((status) => {
-      if (status === "failed") lastFailure.set(store, now());
-      else lastFailure.delete(store);
+      if (status === "failed") failures.set(store, { at: now(), count: (failures.get(store)?.count ?? 0) + 1 });
+      else failures.delete(store);
       return status;
     })
     .finally(() => inFlight.delete(store));

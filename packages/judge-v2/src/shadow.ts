@@ -38,6 +38,8 @@ export interface ShadowRunnerOptions {
   now?: () => number;
   budgetMs?: number;
   maxQueue?: number;
+  /** Text beyond this many characters is not judged (bounds CPU; ~12k tokens = 3 fast-model windows). */
+  maxChars?: number;
 }
 
 export interface ShadowRunner {
@@ -72,6 +74,7 @@ export function createShadowRunner(o: ShadowRunnerOptions): ShadowRunner {
   const now = o.now ?? (() => Date.now());
   const budgetMs = o.budgetMs ?? 60_000;
   const maxQueue = o.maxQueue ?? 4;
+  const maxChars = o.maxChars ?? 50_000;
   const queue: Job[] = [];
   let running: Promise<void> | null = null;
 
@@ -105,10 +108,16 @@ export function createShadowRunner(o: ShadowRunnerOptions): ShadowRunner {
     try { cascade = await o.getCascade(); } catch { cascade = null; }
     if (!cascade) return emit(rows(job, now() - t0, null, "skipped"));
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const inference = cascade.judge(job.text.slice(0, maxChars), job.judgeRules);
     try {
       const timeout = new Promise<"timeout">((res) => { timer = setTimeout(() => res("timeout"), budgetMs); });
-      const out = await Promise.race([cascade.judge(job.text, job.judgeRules), timeout]);
-      if (out === "timeout") return emit(rows(job, now() - t0, null, "pending"));
+      const out = await Promise.race([inference, timeout]);
+      if (out === "timeout") {
+        emit(rows(job, now() - t0, null, "pending"));
+        // The model cannot be interrupted: keep the queue busy until it is done so inferences never overlap.
+        await inference.catch(() => {});
+        return;
+      }
       emit(rows(job, now() - t0, new Map(out.rules.map((e) => [e.rule_id, e])), "error"));
     } catch {
       emit(rows(job, now() - t0, null, "error"));

@@ -95,6 +95,28 @@ describe("ensureModels", () => {
     expect(later.calls).toEqual(["https://example.test/t1/so-b"]);
   });
 
+  it("consecutive failures back off exponentially (base, 2x, 4x ... capped at 24 h)", async () => {
+    const { m, bodies } = await tinyManifest();
+    const store = new MemStore();
+    let t = 0;
+    const now = () => t;
+    const bad = fakeFetch(bodies, { corrupt: "so-b" });
+    const opts = { now, retryAfterMs: 1000 };
+    expect(await ensureModels(m, store, bad.f, opts)).toBe("failed");      // failure 1 at t=0 -> next try at 1000
+    t = 1000; expect(await ensureModels(m, store, bad.f, opts)).toBe("failed"); // failure 2 -> wait 2000
+    const calls = bad.calls.length;
+    t = 2500; expect(await ensureModels(m, store, bad.f, opts)).toBe("failed");
+    expect(bad.calls.length).toBe(calls);                                   // still cooling down
+    t = 3000; await ensureModels(m, store, bad.f, opts);                    // failure 3 -> wait 4000
+    expect(bad.calls.length).toBeGreaterThan(calls);
+    const huge = { now, retryAfterMs: 20 * 3600_000 };
+    const s2 = new MemStore();
+    t = 0; await ensureModels(m, s2, bad.f, huge); t = 20 * 3600_000; await ensureModels(m, s2, bad.f, huge);
+    const c2 = bad.calls.length;
+    t = 20 * 3600_000 + 24 * 3600_000; await ensureModels(m, s2, bad.f, huge);
+    expect(bad.calls.length).toBeGreaterThan(c2);                           // capped at 24 h, not 40 h
+  });
+
   it("concurrent calls share one download", async () => {
     const { m, bodies } = await tinyManifest();
     const store = new MemStore(); const ff = fakeFetch(bodies);
