@@ -42,7 +42,7 @@ export async function assistantRouter(fastify: FastifyInstance): Promise<void> {
 
     if (!limits?.assistantEnabled) {
       return reply.status(402).send({
-        error: 'The AI Assistant is available on the Business plan. Upgrade to access it.',
+        error: 'The AI Assistant is not available on your plan.',
       })
     }
 

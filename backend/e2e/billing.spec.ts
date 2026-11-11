@@ -78,13 +78,16 @@ test.describe('Billing API', () => {
     await api.dispose()
   })
 
-  test('POST /v1/assistant/chat returns 402 on free plan', async () => {
+  test('GET /v1/billing/status enables a capped assistant on free plan', async () => {
     const api = await playwrightRequest.newContext()
-    const res  = await api.post(`${BACKEND}/v1/assistant/chat`, {
-      headers: freeAdminHeaders(),
-      data:    { message: 'hello' },
-    })
-    expect(res.status()).toBe(402)
+    const res = await api.get(`${BACKEND}/v1/billing/status`, { headers: freeAdminHeaders() })
+    expect(res.status()).toBe(200)
+    const body = await res.json() as {
+      features: { assistantEnabled: boolean }
+      assistantLimits: { promptsPerDay: number }
+    }
+    expect(body.features.assistantEnabled).toBe(true)
+    expect(body.assistantLimits.promptsPerDay).toBe(5)
     await api.dispose()
   })
 
