@@ -68,6 +68,8 @@ These files are public once released. To test locally instead, serve the `releas
 
 ## Known limits
 
+- **Desktop runs in a worker thread** and judges the last 12,000 characters of the body. The extension judges the
+  first 50,000 characters of the prompt. Failed downloads back off from 15 minutes up to 24 hours.
 - **Desktop judges the raw request body.** It sees the same JSON the regex rules see. The models were trained on
   plain messages, so desktop numbers may come out lower than the extension's.
 - **The extension runs single-threaded WASM.** A flagged check that also has to load the second model takes about
