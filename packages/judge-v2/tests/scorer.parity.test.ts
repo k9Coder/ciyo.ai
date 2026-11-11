@@ -43,6 +43,11 @@ for (const name of ["fast_v7", "so_v7"]) {
       }
     });
 
+    it("fixtures cover the multi-window path (a message longer than max_message_tokens)", () => {
+      const max = files.config.max_message_tokens;
+      expect(fixture(name).filter((c) => c.message_ids.length > max).length).toBeGreaterThanOrEqual(2);
+    });
+
     it("scores and spans match", async () => {
       const ort = await import("onnxruntime-node");
       const scorer = await createOnnxScorer(ort, files);
@@ -59,6 +64,6 @@ for (const name of ["fast_v7", "so_v7"]) {
       scorer.dispose?.();
       // fp16 KV and float32 dot products can flip an exact tie; allow at most one span difference per model.
       expect(spanMisses, `${spanMisses}/${spans} spans differ`).toBeLessThanOrEqual(1);
-    }, 600_000);
+    }, 3_000_000);
   });
 }

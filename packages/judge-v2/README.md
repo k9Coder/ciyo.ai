@@ -34,7 +34,7 @@ removed by the pilot retention purge, member anonymisation and `delete-user`.
 
 ```bash
 pnpm --filter @mykka/judge-v2 test
-# Parity with Python on the real models (≈2 min):
+# Parity with Python on the real models (slow: ~5 min fast, ~13 min second on a busy laptop):
 JUDGE_V2_MODELS=<models/judge-v2/artifacts> pnpm --filter @mykka/judge-v2 test
 ```
 

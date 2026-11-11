@@ -1,6 +1,8 @@
 """Dump Python reference outputs that the TypeScript scorer (packages/judge-v2) must reproduce.
 
-For each model: 24 dev2 messages (8 en, 4 he, 4 zh, 2 ar, 2 with emoji, 4 longer than 600 chars), up to 3 rules each.
+For each model: 24 dev2 messages (8 en, 4 he, 4 zh, 2 ar, 2 with emoji, 4 longer than 600 chars), up to 3 rules each,
+plus 2 long cases (~26k chars, built by joining dev2 messages) that exceed max_message_tokens and exercise the
+multi-window path; their rules are those of the joined message placed mid-text (case 1) or last (case 2).
 Offsets are converted from Python code-point indices to UTF-16 indices, which is what JS strings use.
 
 Usage (from models/judge-v2):
@@ -48,17 +50,26 @@ def main() -> None:
     ap.add_argument("--artifacts", type=Path, required=True)
     ap.add_argument("--examples", type=Path, default=Path("data/dev2/dev2.jsonl"))
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--long-examples", type=Path, default=Path("data/dev2/dev2_extra_long.jsonl"))
     a = ap.parse_args()
     chosen = pick(list(read_jsonl(a.examples, Example)))
     if len(chosen) < 20:
         raise SystemExit(f"only {len(chosen)} examples matched the quota")
+    pool = list(read_jsonl(a.long_examples, Example))
+    long_cases = []
+    for target, start in (("mid", 0), ("last", 20)):
+        parts, n = [], 0
+        while n < 26_000:
+            e = pool[(start + len(parts)) % len(pool)]
+            parts.append(e)
+            n += len(e.message) + 2
+        key = parts[len(parts) // 2] if target == "mid" else parts[-1]
+        long_cases.append(("\n\n".join(e.message for e in parts), list(key.rules)[:3]))
     a.out.mkdir(parents=True, exist_ok=True)
     for name in ("fast_v7", "so_v7"):
         judge = OnnxJudge(a.artifacts / name)
         cases = []
-        for e in chosen:
-            rules = list(e.rules)[:3]
-            msg = e.message
+        for msg, rules in [(e.message, list(e.rules)[:3]) for e in chosen] + long_cases:
             offs = judge.tok.message_offsets(msg)
             res = judge.score_with_spans(msg, rules)
             cases.append({
