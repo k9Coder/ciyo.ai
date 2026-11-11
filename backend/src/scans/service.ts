@@ -1,6 +1,6 @@
 import { and, eq, gte, lt, count } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { scans, enforcementSignals, shadowVerdicts } from '../db/schema.js'
+import { scans, enforcementSignals, shadowVerdicts, judgeShadowChecks } from '../db/schema.js'
 import { isOverScanLimit, getScanLimit, type Plan } from '../billing/limits.js'
 import { tenantsClient } from '../http/internal-client.js'
 import { getContext } from '../context/request-context.js'
@@ -16,7 +16,7 @@ export const PILOT_RETENTION_DAYS = 90
  * and `enforcement_signals` tables. Returns per-table deletion counts. Safe to
  * run repeatedly (idempotent) — scheduled on boot and every 24h.
  */
-export async function purgeExpired(): Promise<{ scans: number; enforcementSignals: number; shadowVerdicts: number }> {
+export async function purgeExpired(): Promise<{ scans: number; enforcementSignals: number; shadowVerdicts: number; judgeShadowChecks: number }> {
   const cutoff = new Date(Date.now() - PILOT_RETENTION_DAYS * 24 * 60 * 60 * 1000)
 
   const deletedScans = await db.delete(scans)
@@ -29,7 +29,12 @@ export async function purgeExpired(): Promise<{ scans: number; enforcementSignal
     .where(lt(shadowVerdicts.occurredAt, cutoff))
     .returning({ id: shadowVerdicts.id })
 
-  return { scans: deletedScans.length, enforcementSignals: deletedSignals.length, shadowVerdicts: deletedShadowVerdicts.length }
+  const deletedJudgeShadow = await db.delete(judgeShadowChecks)
+    .where(lt(judgeShadowChecks.occurredAt, cutoff))
+    .returning({ id: judgeShadowChecks.id })
+
+  return { scans: deletedScans.length, enforcementSignals: deletedSignals.length, shadowVerdicts: deletedShadowVerdicts.length,
+           judgeShadowChecks: deletedJudgeShadow.length }
 }
 
 /**
@@ -38,7 +43,7 @@ export async function purgeExpired(): Promise<{ scans: number; enforcementSignal
  * path so behavioral data survives for aggregate/billing purposes but no longer
  * identifies the erased individual. Returns per-table update counts.
  */
-export async function anonymizeMember(memberId: string): Promise<{ scans: number; enforcementSignals: number }> {
+export async function anonymizeMember(memberId: string): Promise<{ scans: number; enforcementSignals: number; judgeShadowChecks: number }> {
   const updatedScans = await db.update(scans)
     .set({ memberId: null })
     .where(eq(scans.memberId, memberId))
@@ -48,7 +53,12 @@ export async function anonymizeMember(memberId: string): Promise<{ scans: number
     .where(eq(enforcementSignals.memberId, memberId))
     .returning({ id: enforcementSignals.id })
 
-  return { scans: updatedScans.length, enforcementSignals: updatedSignals.length }
+  const updatedJudgeShadow = await db.update(judgeShadowChecks)
+    .set({ memberId: null })
+    .where(eq(judgeShadowChecks.memberId, memberId))
+    .returning({ id: judgeShadowChecks.id })
+
+  return { scans: updatedScans.length, enforcementSignals: updatedSignals.length, judgeShadowChecks: updatedJudgeShadow.length }
 }
 
 let retentionTimer: NodeJS.Timeout | null = null
@@ -69,6 +79,7 @@ export function scheduleRetentionPurge(): void {
         scansDeleted: counts.scans,
         enforcementSignalsDeleted: counts.enforcementSignals,
         shadowVerdictsDeleted: counts.shadowVerdicts,
+        judgeShadowChecksDeleted: counts.judgeShadowChecks,
       })
     } catch (err) {
       logger.error('retention purge failed', { error: (err as Error).message })

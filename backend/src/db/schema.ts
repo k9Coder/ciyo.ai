@@ -1,5 +1,5 @@
 import {
-  pgTable, pgEnum, uuid, text, boolean, integer, numeric,
+  pgTable, pgEnum, uuid, text, boolean, integer, smallint, numeric,
   timestamp, jsonb, index, unique, primaryKey,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
@@ -273,6 +273,43 @@ export const shadowVerdicts = pgTable('shadow_verdicts', {
   createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+}))
+
+// ── Judge v2 shadow checks ────────────────────────────────────────────────────
+// One row per (check, rule) while judge v2 runs in shadow (docs/superpowers/
+// specs/2026-11-11-judge-v2-shadow-mode-design.md). Never any prompt content:
+// only ids, enums, scores, integer offsets/lengths and timings. The endpoint
+// rejects any other key.
+export const judgeShadowSurfaceEnum = pgEnum('judge_shadow_surface', ['extension', 'desktop'])
+export const judgeShadowRuleKindEnum = pgEnum('judge_shadow_rule_kind', ['keyword', 'pattern', 'judge_prompt'])
+export const judgeShadowPrimaryActionEnum = pgEnum('judge_shadow_primary_action', ['block', 'warn', 'log', 'none'])
+export const judgeShadowSecondaryVerdictEnum = pgEnum('judge_shadow_secondary_verdict', [
+  'block', 'warn', 'ok', 'pending', 'skipped', 'error', 'not_applicable',
+])
+
+export const judgeShadowChecks = pgTable('judge_shadow_checks', {
+  id:               uuid('id').primaryKey().defaultRandom(),
+  tenantId:         uuid('tenant_id').notNull().references(() => tenants.id),
+  memberId:         uuid('member_id').references(() => members.id),
+  checkId:          uuid('check_id').notNull(),
+  surface:          judgeShadowSurfaceEnum('surface').notNull(),
+  ruleId:           uuid('rule_id').notNull(),
+  ruleKind:         judgeShadowRuleKindEnum('rule_kind').notNull(),
+  primaryAction:    judgeShadowPrimaryActionEnum('primary_action').notNull(),
+  secondaryVerdict: judgeShadowSecondaryVerdictEnum('secondary_verdict').notNull(),
+  fastScore:        numeric('fast_score', { precision: 4, scale: 3 }),
+  secondScore:      numeric('second_score', { precision: 4, scale: 3 }),
+  spanStart:        integer('span_start'),
+  spanEnd:          integer('span_end'),
+  messageChars:     integer('message_chars').notNull(),
+  windows:          smallint('windows').notNull(),
+  latencyMs:        integer('latency_ms').notNull(),
+  modelVersion:     text('model_version').notNull(),
+  occurredAt:       timestamp('occurred_at', { withTimezone: true }).notNull(),
+  createdAt:        timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantTimeIdx: index().on(t.tenantId, t.occurredAt),
+  checkIdx:      index().on(t.checkId),
 }))
 
 // ── Chat Sessions ─────────────────────────────────────────────────────────────

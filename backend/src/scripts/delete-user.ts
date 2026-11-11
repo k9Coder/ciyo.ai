@@ -54,7 +54,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // Children before parents. Every table here has a tenant_id column.
 const TENANT_TABLES_BEFORE_MEMBER_TEAMS = [
   'subject_versions', 'chat_sessions', 'events', 'scans', 'enforcement_signals',
-  'shadow_verdicts', 'member_rule_exceptions', 'invites', 'desktop_auth_codes',
+  'shadow_verdicts', 'judge_shadow_checks', 'member_rule_exceptions', 'invites', 'desktop_auth_codes',
   'extension_auth_codes', 'device_tokens',
 ]
 const TENANT_TABLES_AFTER_MEMBER_TEAMS = [
