@@ -18,6 +18,12 @@ const snapshot: TenantSnapshot = {
 }
 
 describe('buildSystemPrompt', () => {
+  it('tells the assistant judge_prompt rules are in evaluation and do not block yet (judge v2 shadow period)', () => {
+    const prompt = buildSystemPrompt(snapshot)
+    expect(prompt).toMatch(/judge_prompt rules are in evaluation: they are recorded but do not block or warn yet/)
+    expect(prompt).toMatch(/must block today.*keyword or pattern rule/s)
+  })
+
   it('includes real IDs from snapshot', () => {
     const prompt = buildSystemPrompt(snapshot)
     expect(prompt).toContain('s1')
