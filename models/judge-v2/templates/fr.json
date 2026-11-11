@@ -1,0 +1,1742 @@
+{
+ "language": "fr",
+ "messages": [
+  {
+   "id": "fr-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu vérifier si le format est valide pour la déclaration de {name} ? [[Son numéro de Social Security est {us_ssn}]]"
+  },
+  {
+   "id": "fr-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail aux RH pour {name} :\n\nBonjour, voici les infos pour le dossier d'embauche aux US. [[SSN : {us_ssn}]] Merci de confirmer la réception."
+  },
+  {
+   "id": "fr-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "nom,date_embauche,ssn\n{name},{date},[[{us_ssn}]]\nPeux-tu formater ce CSV pour l'import Workday ?"
+  },
+  {
+   "id": "fr-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Pourquoi ce JSON est rejeté par l'API de paie ?\n{\"nom\": \"{name}\", [[\"ssn\": \"{us_ssn}\"]], \"etat\": \"CA\"}"
+  },
+  {
+   "id": "fr-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "C'est quoi exactement un numéro de Social Security aux États-Unis et qui a le droit de le demander à un employé ?"
+  },
+  {
+   "id": "fr-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Corrige ce paragraphe de notre politique : « Les numéros de sécurité sociale américains (format XXX-XX-XXXX) ne doivent jamais être saisis dans des outils d'IA. »"
+  },
+  {
+   "id": "fr-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Je dois remplir le formulaire pour {name}, son [[numéro de sécurité sociale français est {national_id}]]. C'est bien 15 chiffres ?"
+  },
+  {
+   "id": "fr-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Écris un mail à la mutuelle :\n\nBonjour, merci d'affilier {name}, [[numéro d'identité nationale {national_id}]], à partir du {date}."
+  },
+  {
+   "id": "fr-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Fiche salarié\nNom : {name}\nEntreprise : {company}\n[[N° de sécurité sociale / ID national : {national_id}]]\nRésume cette fiche en trois lignes."
+  },
+  {
+   "id": "fr-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "ERROR validate_person: champ invalide\npayload={\"nom\":\"{name}\",\n[[\"id_national\":\n\"{national_id}\"]]}\nPourquoi la validation échoue ?"
+  },
+  {
+   "id": "fr-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment fonctionne le numéro de sécurité sociale français ? Que signifient les premiers chiffres ?"
+  },
+  {
+   "id": "fr-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Écris une regex qui valide le format d'un NIR français, sans que je te donne de vrai numéro. Exemple de placeholder : 0 00 00 00 000 000 00."
+  },
+  {
+   "id": "fr-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Aide-moi à remplir le formulaire de visa : [[passeport de {name} numéro {passport}]], délivré en 2021."
+  },
+  {
+   "id": "fr-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à l'agence de voyage :\n\nBonjour, pour la réservation de {name}, [[n° de passeport : {passport}]]. Pouvez-vous confirmer le vol du {date} ?"
+  },
+  {
+   "id": "fr-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "voyageur,passeport,destination\n{name},[[{passport}]],Tokyo\nTrie ce tableau par destination."
+  },
+  {
+   "id": "fr-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Mon script plante sur ce dict :\ntraveler = {\"nom\": \"{name}\",\n  [[\"passport\":\n  \"{passport}\"]]}\nIl manque quoi ?"
+  },
+  {
+   "id": "fr-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quels documents faut-il pour renouveler un passeport quand on travaille à l'étranger ? Combien de temps ça prend ?"
+  },
+  {
+   "id": "fr-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un rappel pour l'équipe : « Merci d'envoyer vos numéros de passeport à l'agence uniquement via le portail sécurisé, jamais par mail ou dans un chatbot. »"
+  },
+  {
+   "id": "fr-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu m'aider à calculer le temps de trajet depuis [[le domicile de {name}, {address}]] jusqu'au bureau ?"
+  },
+  {
+   "id": "fr-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un courrier de relance :\n\nMadame, Monsieur, nous écrivons à {name}, [[résidant au {address}]], concernant la facture du {date}."
+  },
+  {
+   "id": "fr-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Dossier de licenciement\nSalarié : {name}\n[[Adresse personnelle : {address}]]\nMets cette lettre en forme pour l'envoi recommandé."
+  },
+  {
+   "id": "fr-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "nom;adresse_domicile\n{name};[[{address}]]\nGénère des étiquettes d'envoi à partir de ce fichier."
+  },
+  {
+   "id": "fr-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelle est la meilleure façon de stocker les adresses personnelles des salariés pour rester conforme au RGPD ?"
+  },
+  {
+   "id": "fr-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail demandant à chaque employé de mettre à jour son adresse dans l'outil RH : « Rue : <adresse>, Ville : <ville> »."
+  },
+  {
+   "id": "fr-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Rédige un SMS pour {name}. [[Son numéro perso est le {phone}]], donc évite de l'appeler en journée."
+  },
+  {
+   "id": "fr-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Écris un mail à {name} sur son adresse perso : [[{email}]]. Dis-lui que son dossier est prêt à signer."
+  },
+  {
+   "id": "fr-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[10:42] {name}: tu peux m'écrire en dehors du boulot\n[10:42] {name}: [[mon mail perso : {email}, mon portable : {phone}]]\nRésume ce fil pour le CRM."
+  },
+  {
+   "id": "fr-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "INFO contact_sync: user={name}\n[[personal_phone=\n{phone}]]\nINFO sync terminé\nPourquoi le champ personal_phone est vide côté CRM ?"
+  },
+  {
+   "id": "fr-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Est-ce que j'ai le droit de contacter un candidat sur son numéro personnel après un entretien ?"
+  },
+  {
+   "id": "fr-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Reformule cette consigne : « Ne communiquez jamais le téléphone ou l'e-mail personnel d'un collègue sans son accord écrit. »"
+  },
+  {
+   "id": "fr-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Calcule l'âge de [[{name}, né(e) le {dob}]] à la date du {date} pour le dossier retraite."
+  },
+  {
+   "id": "fr-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à l'assurance :\n\nBonjour, merci d'ajouter [[{name}, date de naissance : {dob}]] au contrat collectif de {company}."
+  },
+  {
+   "id": "fr-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "nom,date_naissance\n[[{name},{dob}]]\nAjoute une colonne avec l'âge."
+  },
+  {
+   "id": "fr-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Fiche d'identification\n[[Nom : {name}\nNé(e) le :\n{dob}]]\nTraduis cette fiche en anglais."
+  },
+  {
+   "id": "fr-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment calculer l'âge exact d'une personne en Excel à partir de sa date de naissance ?"
+  },
+  {
+   "id": "fr-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mon formulaire a un champ « nom » et un champ « date de naissance » (JJ/MM/AAAA). Comment valider le format côté React ? Pas de vraies données, juste le code."
+  },
+  {
+   "id": "fr-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mon appel renvoie 401, voici le code :\nheaders = {\"Authorization\": \"Bearer [[{api_key}]]\"}\nrequests.get(url, headers=headers)"
+  },
+  {
+   "id": "fr-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu tester cette clé sur l'API de {company} ? [[{api_key}]]"
+  },
+  {
+   "id": "fr-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2025-03-02 12:01:44 DEBUG client init\n2025-03-02 12:01:44 DEBUG [[api_key={api_key}]]\n2025-03-02 12:01:45 ERROR 403 forbidden\nÀ quoi correspond cette 403 ?"
+  },
+  {
+   "id": "fr-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "J'ai ce .env, pourquoi la variable n'est pas lue ?\nSTRIPE_KEY=\n[[{api_key}]]\nAPP_ENV=prod"
+  },
+  {
+   "id": "fr-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mon appel renvoie 401. Voici le code, la clé est dans la variable d'environnement :\nheaders = {\"Authorization\": \"Bearer \" + os.environ[\"API_KEY\"]}"
+  },
+  {
+   "id": "fr-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelle est la bonne pratique pour faire tourner les clés API sans interruption de service ? Genre : API_KEY=<votre_clé_ici>"
+  },
+  {
+   "id": "fr-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Je n'arrive plus à me connecter au compte admin de {company}. [[Le mot de passe est {password}]], tu vois ce qui cloche ?"
+  },
+  {
+   "id": "fr-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail pour {name} :\n\nBonjour, voici vos accès temporaires. [[Mot de passe : {password}]] Pensez à le changer dès la première connexion."
+  },
+  {
+   "id": "fr-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Pourquoi ce script ne se connecte pas ?\nuser = \"admin\"\n[[password = \"{password}\"]]\nclient.login(user, password)"
+  },
+  {
+   "id": "fr-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[09:12] {name}: j'ai oublié le wifi invité\n[09:13] Marc: [[le mot de\npasse est {password}]]\nRésume cette discussion en une phrase."
+  },
+  {
+   "id": "fr-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelles règles faut-il imposer pour un mot de passe en entreprise ? Longueur, complexité, rotation ?"
+  },
+  {
+   "id": "fr-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mon formulaire de connexion plante : password = \"<votre_mot_de_passe>\" puis client.login(user, password). C'est quoi l'erreur ?"
+  },
+  {
+   "id": "fr-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Ma connexion SSH est refusée. Voici ma clé :\n[[{private_key}]]\nC'est quoi qui ne va pas ?"
+  },
+  {
+   "id": "fr-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu vérifier que cette clé privée est bien formatée ?\n[[{private_key}]]"
+  },
+  {
+   "id": "fr-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Procédure de déploiement de {company}, étape 3 : coller la clé dans ~/.ssh/id_ed25519\n[[{private_key}]]\nRéécris cette procédure plus clairement."
+  },
+  {
+   "id": "fr-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "$ cat deploy_key\n[[{private_key}]]\n$ ssh -i deploy_key ci@build\nPermission denied\nPourquoi cette erreur ?"
+  },
+  {
+   "id": "fr-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "C'est quoi la différence entre une clé publique et une clé privée SSH ? Où faut-il stocker la clé privée ?"
+  },
+  {
+   "id": "fr-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Comment générer une paire de clés avec ssh-keygen, puis charger la clé depuis le fichier : key = load(\"~/.ssh/id_rsa\") ? Je ne colle pas la clé, évidemment."
+  },
+  {
+   "id": "fr-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Ma connexion à la base échoue :\nengine = create_engine(\"[[{db_url}]]\")\nErreur : timeout. Une idée ?"
+  },
+  {
+   "id": "fr-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu me dire ce qui cloche dans cette chaîne de connexion ? [[{db_url}]]"
+  },
+  {
+   "id": "fr-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "INFO app starting\nINFO using database [[{db_url}]]\nERROR connection refused\nComment déboguer ça ?"
+  },
+  {
+   "id": "fr-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Voici mon config.json, pourquoi le pool ne s'initialise pas ?\n{\"db\": {\"dsn\":\n\"[[{db_url}]]\"}, \"pool\": 5}"
+  },
+  {
+   "id": "fr-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Mon URL de connexion est postgres://<user>:<password>@<host>:5432/<db>, mais j'ai une erreur de timeout. Que vérifier ?"
+  },
+  {
+   "id": "fr-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Est-ce que je peux mettre un mot de passe dans une chaîne de connexion de base de données ou vaut-il mieux utiliser un secret manager ?"
+  },
+  {
+   "id": "fr-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu m'aider à formuler le compte rendu ? [[La patiente {name} a reçu un diagnostic de diabète de type 2 et d'hypertension]] le {date}."
+  },
+  {
+   "id": "fr-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à son médecin traitant :\n\nBonjour docteur, [[{name} souffre d'une insuffisance rénale chronique stade 3, diagnostiquée le {date}]]. Pouvez-vous confirmer le suivi ?"
+  },
+  {
+   "id": "fr-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Dossier patient\n[[Patient : {name}. Pathologie : cancer du sein HER2 positif, découvert en {date}.]]\nRésume ce dossier pour la réunion de concertation."
+  },
+  {
+   "id": "fr-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Notes de staff :\n- [[{name} : schizophrénie\nparanoïde, diagnostic confirmé]]\n- revoir le planning des gardes\nFais la liste des actions."
+  },
+  {
+   "id": "fr-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quels sont les symptômes habituels du diabète de type 2 et comment se fait le diagnostic ?"
+  },
+  {
+   "id": "fr-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Mets en forme ce modèle de compte rendu : « Patient : <nom>. Diagnostic : <pathologie>. Date : <date>. »"
+  },
+  {
+   "id": "fr-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Vérifie les interactions : [[{name} est sous metformine 850 mg deux fois par jour et sous warfarine 5 mg]]."
+  },
+  {
+   "id": "fr-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un message à la pharmacie :\n\nBonjour, [[ordonnance de {name} du {date} : amoxicilline 1 g, 3 fois par jour pendant 7 jours]]. Merci de préparer le renouvellement."
+  },
+  {
+   "id": "fr-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "patient,médicament,posologie\n[[{name},sertraline,50 mg le matin]]\nTrie par médicament."
+  },
+  {
+   "id": "fr-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Fiche de suivi\n[[{name} prend\ndu lithium 400 mg\nmatin et soir]] depuis {date}.\nCorrige l'orthographe."
+  },
+  {
+   "id": "fr-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelle est la différence entre un médicament générique et le princeps ? Peut-on substituer sans l'accord du médecin ?"
+  },
+  {
+   "id": "fr-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail type pour la pharmacie : « Veuillez trouver l'ordonnance du patient <nom>, médicament : <médicament>, posologie : <posologie>. »"
+  },
+  {
+   "id": "fr-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Le paiement est refusé avec la carte [[{card}]], exp 09/27. Qu'est-ce qui peut bloquer ?"
+  },
+  {
+   "id": "fr-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail au fournisseur :\n\nBonjour, pour régler la facture du {date}, voici la carte de {name} : [[{card}]], cryptogramme 123."
+  },
+  {
+   "id": "fr-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Pourquoi cette requête de paiement échoue ?\ncharge = {\"amount\": 4200, \"card\": \"[[{card}]]\", \"currency\": \"eur\"}"
+  },
+  {
+   "id": "fr-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "Note la carte d'entreprise : [[quatre-cinq-cinq-six, sept-sept-huit-neuf, un-deux-trois-quatre, cinq-six-sept-huit]], c'est celle de {name}."
+  },
+  {
+   "id": "fr-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment fonctionne l'algorithme de Luhn pour valider un numéro de carte bancaire ? Donne un exemple avec des chiffres fictifs du type 0000 0000 0000 0000."
+  },
+  {
+   "id": "fr-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Résume cette règle PCI-DSS : « Le numéro de carte doit être masqué et seuls les quatre derniers chiffres peuvent être affichés (**** **** **** ****). »"
+  },
+  {
+   "id": "fr-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à la comptabilité :\n\nBonjour, merci de virer le remboursement de {name} sur [[l'IBAN {iban}]] avant le {date}."
+  },
+  {
+   "id": "fr-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu vérifier que cet IBAN est correctement formaté ? [[{iban}]]"
+  },
+  {
+   "id": "fr-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "fournisseur,iban,montant\n{company},[[{iban}]],{amount}\nCalcule le total par fournisseur."
+  },
+  {
+   "id": "fr-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Ma validation IBAN échoue sur cet exemple :\nconst compte = {\n  titulaire: \"{name}\",\n  [[iban: \"{iban}\"]]\n};"
+  },
+  {
+   "id": "fr-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment est structuré un IBAN français ? Que représentent le code banque et le code guichet ?"
+  },
+  {
+   "id": "fr-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail aux fournisseurs : « Merci d'indiquer votre IBAN (format FR76 XXXX XXXX XXXX XXXX XXXX XXX) sur le portail, jamais par mail. »"
+  },
+  {
+   "id": "fr-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Je prépare l'entretien annuel. [[Le salaire de {name} est de 4 800 € brut par mois]], dois-je proposer une augmentation de 5 % ?"
+  },
+  {
+   "id": "fr-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail aux RH :\n\nBonjour, [[la rémunération de {name} passe à 62 000 € brut annuel avec une prime de 5 000 €]] à compter du {date}. Merci de mettre à jour la paie."
+  },
+  {
+   "id": "fr-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "employé,poste,salaire_annuel\n[[{name},Directeur technique,98 000 €]]\nCompare avec la médiane du marché."
+  },
+  {
+   "id": "fr-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Réunion budget :\n- [[{name} touche\nquatre-vingt-quatre mille euros par an]]\n- geler les recrutements\nExtrais les actions."
+  },
+  {
+   "id": "fr-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment construire une grille de salaires équitable pour une équipe de développeurs ? Je ne donne aucun nom."
+  },
+  {
+   "id": "fr-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Reformule cette politique : « Les rémunérations individuelles sont confidentielles et ne doivent pas être partagées dans des outils externes. »"
+  },
+  {
+   "id": "fr-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Aide-moi à rédiger l'évaluation de {name} : [[elle a manqué ses objectifs trois trimestres de suite et a reçu un avertissement écrit]]."
+  },
+  {
+   "id": "fr-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail aux RH :\n\nBonjour, suite à l'entretien du {date}, [[{name} fait l'objet d'un plan d'amélioration de performance de 60 jours pour retards répétés et travail insuffisant]]."
+  },
+  {
+   "id": "fr-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Bilan annuel\n[[{name} : note 2/5, comportement conflictuel avec ses collègues, blâme formel en {date}]]\nRésume en trois points."
+  },
+  {
+   "id": "fr-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Comité RH :\n- [[{name} sera mis\nsous procédure disciplinaire pour insubordination]]\n- budget formation\nDresse les actions."
+  },
+  {
+   "id": "fr-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment structurer un entretien annuel d'évaluation de façon constructive ? Donne un plan type."
+  },
+  {
+   "id": "fr-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail type : « Bonjour <prénom>, ton entretien d'évaluation est prévu le <date>. Merci de remplir ton auto-évaluation avant. »"
+  },
+  {
+   "id": "fr-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Résume le conseil de notre avocat : [[maître Durand nous recommande de ne pas contester le redressement car nos chances de succès sont faibles et le risque de pénalités élevé]]."
+  },
+  {
+   "id": "fr-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige une réponse à la direction :\n\nBonjour, [[notre conseil juridique nous a confirmé que la clause de non-concurrence de {name} est probablement nulle et qu'il vaut mieux transiger]]. Que décidons-nous ?"
+  },
+  {
+   "id": "fr-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Note confidentielle – Avocat / {company}\n[[Avis juridique : notre exposition dans le litige est estimée entre {amount} et le double ; nous conseillons un accord amiable avant le {date}.]]\nSimplifie cette note pour le comité."
+  },
+  {
+   "id": "fr-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": true,
+   "text": "Traduis en anglais : [[notre avocat\nnous a écrit en privé que nous\nrisquons une condamnation et qu'il ne faut détruire aucune pièce]]."
+  },
+  {
+   "id": "fr-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "C'est quoi le secret professionnel de l'avocat en France et dans quels cas peut-il être levé ?"
+  },
+  {
+   "id": "fr-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un rappel pour les équipes : « Les échanges avec nos avocats sont confidentiels : ne les transférez pas hors de l'entreprise. »"
+  },
+  {
+   "id": "fr-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Prépare le communiqué : [[notre chiffre d'affaires du T3 atteint {amount}, en hausse de 18 %, avec un résultat net de {amount}]], publication prévue le {date}."
+  },
+  {
+   "id": "fr-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail au conseil d'administration :\n\nBonjour, [[les résultats annuels non publiés de {company} font apparaître un EBITDA de {amount} et une perte nette de {amount}]]. Merci de ne pas diffuser avant le {date}."
+  },
+  {
+   "id": "fr-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Projet de rapport trimestriel (confidentiel jusqu'à l'annonce)\n[[Revenus T2 : {amount} ; marge brute 41 % ; prévisions annuelles relevées à {amount}]]\nCorrige le style."
+  },
+  {
+   "id": "fr-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "indicateur\tT4 (non publié)\n[[chiffre d'affaires\ttrois cent douze millions d'euros\nrésultat net\tquarante et un millions]]\nMets ça en graphique."
+  },
+  {
+   "id": "fr-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment présenter des résultats trimestriels de façon claire à des investisseurs ? Donne-moi un plan type."
+  },
+  {
+   "id": "fr-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Résume cette règle : « Aucune information financière non publiée ne doit être partagée avant l'annonce officielle (période de silence). »"
+  },
+  {
+   "id": "fr-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Aide-moi à structurer l'offre : [[nous prévoyons de racheter {company} pour {amount} et l'annonce n'est pas encore publique]]."
+  },
+  {
+   "id": "fr-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail au comité de direction :\n\nBonjour, [[les négociations avancent pour l'acquisition de {company} ; la lettre d'intention sera signée le {date} sur la base de {amount}]]. Restons discrets."
+  },
+  {
+   "id": "fr-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Note stratégique confidentielle\n[[Nous allons fusionner avec {company} au T2 et les actionnaires n'en sont pas informés ; valorisation visée : {amount}.]]\nReformule en plus formel."
+  },
+  {
+   "id": "fr-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Réunion dirigeants :\n- [[prise de participation\nde 30 % dans {company},\nnon annoncée]]\n- calendrier du closing\nExtrais les actions."
+  },
+  {
+   "id": "fr-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelles sont les grandes étapes d'une opération de fusion-acquisition ? Explique la due diligence."
+  },
+  {
+   "id": "fr-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Corrige cette phrase de notre charte : « Tout projet de fusion ou d'acquisition est strictement confidentiel jusqu'à son annonce officielle. »"
+  },
+  {
+   "id": "fr-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Rédige un message d'équipe : [[nous lancerons {product} 2.0 avec l'IA intégrée en septembre, avant l'annonce publique prévue en novembre]]."
+  },
+  {
+   "id": "fr-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Écris un mail aux responsables produit :\n\nBonjour, [[la feuille de route non annoncée prévoit le lancement de {product} Pro au T1, puis une version mobile au T3]]. Merci de ne pas diffuser."
+  },
+  {
+   "id": "fr-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Roadmap interne (confidentielle)\n[[Q1 : sortie de {product} Lite. Q2 : intégration de paiement. Q3 : lancement en Asie, date : {date}.]]\nMets ça sous forme de tableau."
+  },
+  {
+   "id": "fr-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "Point produit :\n- [[on sort\nle nouveau tableau de bord\nen avant-première le {date}, pas encore annoncé]]\n- recruter un designer\nListe les actions."
+  },
+  {
+   "id": "fr-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment construire une roadmap produit trimestrielle claire pour une équipe de six personnes ? Donne un modèle."
+  },
+  {
+   "id": "fr-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Mets en forme ce modèle vide : « Q1 : <fonctionnalité>. Q2 : <fonctionnalité>. Q3 : <fonctionnalité>. »"
+  },
+  {
+   "id": "fr-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Résume l'état du projet {codename} : [[le budget a dépassé {amount} et le lancement chez {company} est repoussé au {date}]]."
+  },
+  {
+   "id": "fr-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à l'équipe :\n\nBonjour, [[pour {codename}, nous avons choisi {company} comme partenaire et la phase pilote démarre le {date}]]. Merci de garder ça interne."
+  },
+  {
+   "id": "fr-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Point {codename} :\n- [[le prototype échoue sur la montée en charge ; {name} reprend l'architecture]]\n- prochain jalon : {date}\nFais les actions."
+  },
+  {
+   "id": "fr-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[14:03] {name}: sur {codename}\n[14:04] {name}: [[on vise\n{amount}\nde revenus la première année]]\nRésume cette discussion."
+  },
+  {
+   "id": "fr-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment bien choisir un nom de code pour un projet interne ? Des exemples de conventions de nommage, comme {codename} ?"
+  },
+  {
+   "id": "fr-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un rappel : « Merci de ne pas utiliser le nom du projet {codename} dans les mails externes. »"
+  },
+  {
+   "id": "fr-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "client,contact,contrat\n[[{company},{name},{amount}\n{company},{name},{amount}]]\nTrie par montant de contrat."
+  },
+  {
+   "id": "fr-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige une campagne mail pour ces clients :\n[[{company} – {name} (contrat {amount})\n{company} – {name} (contrat {amount})]]\nTon chaleureux, mais professionnel."
+  },
+  {
+   "id": "fr-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Liste des comptes stratégiques\n[[1. {company}, contact : {name}, contrat {amount}\n2. {company}, contact : {name}, contrat {amount}]]\nMets-la en forme pour la réunion commerciale."
+  },
+  {
+   "id": "fr-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[16:20] {name}: voilà notre portefeuille\n[16:20] {name}: [[{company} ; {company} ;\n{company} ; {company},\ntous clients depuis 2022]]\nAnalyse ce fil."
+  },
+  {
+   "id": "fr-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment segmenter une base de clients B2B pour une campagne emailing ? Quels critères utiliser ?"
+  },
+  {
+   "id": "fr-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "client,contact,email\n<nom_client>,<contact>,<email>\nPeux-tu me proposer un modèle de colonnes pour notre CRM ?"
+  },
+  {
+   "id": "fr-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Peux-tu optimiser cette fonction de notre moteur de tarification interne ?\n[[def compute_price(order, tiers):\n    base = sum(i.qty * i.unit for i in order.items)\n    for t in tiers:\n        if base >= t.threshold:\n            base *= (1 - t.discount)\n    return round(base * 1.2, 2)]]"
+  },
+  {
+   "id": "fr-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Pourquoi ce service plante en prod ?\n[[class ScoringEngine {\n  constructor(weights) { this.w = weights; }\n  score(user) {\n    return this.w.reduce((a, k) => a + user[k.name] * k.value, 0);\n  }\n}]]"
+  },
+  {
+   "id": "fr-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Refactore notre algorithme de recommandation maison :\n[[for u in users:\n    s = proprietary_embed(u.history) @ item_matrix.T\n    top = s.argsort()[-10:]\n    u.reco = top]]"
+  },
+  {
+   "id": "fr-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Peux-tu relire ce code interne ?\n[[// (c) {company} - confidentiel\nfn route(p: &Packet) -> Port {\n    match p.kind {\n        Kind::Fast => self.fast.pick(p.hash),\n        _ => self.slow.pick(p.hash ^ SALT),\n    }\n}]]"
+  },
+  {
+   "id": "fr-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Peux-tu m'expliquer la différence entre map et reduce en Python ? Exemple générique : sum(map(lambda x: x*2, [1,2,3]))."
+  },
+  {
+   "id": "fr-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Notre politique interdit de coller du code propriétaire dans des outils d'IA. Comment demander de l'aide sur un bug sans exposer le code ?"
+  },
+  {
+   "id": "fr-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ssh: connect to host [[{hostname} port 22]]: Connection timed out\nping {ip}: 100% packet loss\nUne idée ? Le sous-réseau est-il bien routé ?"
+  },
+  {
+   "id": "fr-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Notre serveur [[{hostname} a l'adresse {ip}]] et il n'est pas joignable depuis le VPN. Que vérifier ?"
+  },
+  {
+   "id": "fr-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Architecture interne\n[[Passerelle : {ip}\nBase de données : {hostname}\nBastion : {hostname} (réseau 10.20.0.0/16)]]\nMets ce schéma au propre."
+  },
+  {
+   "id": "fr-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Pourquoi ce fichier Ansible échoue ?\nhosts:\n  [[web:\n    - {ip}\n    - {hostname}]]\nvars:\n  env: prod"
+  },
+  {
+   "id": "fr-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelle est la différence entre un sous-réseau privé et public ? Donne un exemple de plan d'adressage avec des placeholders comme 10.x.x.x."
+  },
+  {
+   "id": "fr-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ssh: connect to host <hostname> port 22: Connection timed out\nping <ip>: 100% packet loss\nQue vérifier en premier, sachant que j'ai masqué les adresses ?"
+  },
+  {
+   "id": "fr-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Compare notre offre avec celle de {company} : [[d'après un ex-employé, leur marge brute est de 22 % et ils perdent leur client principal en janvier]]."
+  },
+  {
+   "id": "fr-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail à la direction commerciale :\n\nBonjour, [[nous avons récupéré le document interne de {company} : leur grille tarifaire non publique offre 30 % de remise aux grands comptes]]. À exploiter avant le {date}."
+  },
+  {
+   "id": "fr-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Veille concurrentielle (source : fuite)\n[[Plan stratégique confidentiel de {company} : lancement de {product} en avril, budget marketing {amount}.]]\nRésume pour le comité."
+  },
+  {
+   "id": "fr-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[11:05] {name}: j'ai eu des infos\n[11:06] {name}: [[chez {company}, ils préparent\nune baisse de prix de 15 %\nque personne ne connaît]]\nRésume ce fil."
+  },
+  {
+   "id": "fr-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment faire une analyse concurrentielle propre en n'utilisant que des sources publiques ? Donne une méthode."
+  },
+  {
+   "id": "fr-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Corrige cette phrase de notre charte : « Il est interdit d'utiliser des informations confidentielles obtenues sur un concurrent. »"
+  },
+  {
+   "id": "fr-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Peux-tu m'expliquer la différence entre un LEFT JOIN et un INNER JOIN avec un exemple simple ?"
+  },
+  {
+   "id": "fr-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Rédige un mail poli pour reporter notre réunion de mardi à jeudi, 14 h."
+  },
+  {
+   "id": "fr-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Pourquoi ce composant React se re-rend en boucle ?\nuseEffect(() => {\n  setCount(count + 1);\n}, [count]);"
+  },
+  {
+   "id": "fr-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Peux-tu raccourcir ce paragraphe d'introduction pour un rapport de stage ? « Dans le cadre de ma formation, j'ai eu l'opportunité de travailler sur l'optimisation des processus logistiques. »"
+  },
+  {
+   "id": "fr-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "npm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@\"^17.0.0\"\nComment résoudre ce conflit de versions ?"
+  },
+  {
+   "id": "fr-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Traduis en anglais : « Merci de votre retour rapide, nous reviendrons vers vous d'ici la fin de la semaine. »"
+  },
+  {
+   "id": "fr-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "produit,quantité,prix\nstylo,120,0.8\ncahier,45,2.5\nCalcule le total par produit avec une formule Excel."
+  },
+  {
+   "id": "fr-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Notes de la réunion hebdo :\n- planifier la rétro de sprint\n- relire la doc d'onboarding\n- organiser le déjeuner d'équipe\nTransforme ça en liste d'actions avec responsables."
+  },
+  {
+   "id": "fr-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[09:30] Léa: on déplace le stand-up à 10 h ?\n[09:31] Tom: ok pour moi\n[09:32] Léa: parfait\nRésume cette discussion."
+  },
+  {
+   "id": "fr-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Quelles sont les bonnes pratiques pour préparer un entretien d'embauche en tant que développeur ?"
+  },
+  {
+   "id": "fr-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Écris un mail de remerciement à {name} de {company} après notre rencontre au salon du {date}."
+  },
+  {
+   "id": "fr-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Écris une fonction Python qui renvoie les doublons d'une liste, avec des tests unitaires."
+  },
+  {
+   "id": "fr-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Mets en forme ce compte rendu de réunion en bullet points clairs : on a discuté du calendrier du séminaire, du lieu et du traiteur."
+  },
+  {
+   "id": "fr-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "GET /health 200 3ms\nGET /api/items 200 41ms\nGET /api/items/9 404 5ms\nLe 404 est-il normal si l'article 9 a été supprimé ?"
+  },
+  {
+   "id": "fr-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Traduis ce message en espagnol : « Bonjour à tous, la formation de lundi est annulée, nous vous proposerons une nouvelle date. »"
+  },
+  {
+   "id": "fr-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Donne-moi un plan de cours sur la gestion du temps pour une formation de deux heures."
+  },
+  {
+   "id": "fr-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "mois\tventes\njanvier\t120\nfévrier\t135\nmars\t128\nFais-moi un graphique en courbe et une phrase de conclusion."
+  },
+  {
+   "id": "fr-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Atelier créativité : idées de noms pour le blog interne, thèmes des prochains articles, fréquence de publication. Propose un résumé en trois lignes."
+  },
+  {
+   "id": "fr-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Aide-moi à répondre à un client mécontent du retard de livraison, avec un ton empathique, sans promettre de date précise."
+  },
+  {
+   "id": "fr-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Comment configurer un pare-feu local sur Ubuntu avec ufw ? Juste les commandes de base."
+  }
+ ],
+ "rules": [
+  {
+   "id": "fr-r-001",
+   "category": "us_ssn",
+   "text": "Ce message divulgue un numéro de sécurité sociale américain (SSN), même déguisé."
+  },
+  {
+   "id": "fr-r-002",
+   "category": "us_ssn",
+   "text": "Le message contient le numéro de Social Security d'une personne aux États-Unis."
+  },
+  {
+   "id": "fr-r-003",
+   "category": "us_ssn",
+   "text": "Bloquer tout message qui transmet un SSN américain, écrit en chiffres, en lettres ou réparti sur plusieurs lignes."
+  },
+  {
+   "id": "fr-r-004",
+   "category": "national_id_non_us",
+   "text": "Ce message divulgue un numéro d'identité nationale non américain, même déguisé."
+  },
+  {
+   "id": "fr-r-005",
+   "category": "national_id_non_us",
+   "text": "Le message contient un numéro de sécurité sociale ou d'identité d'un pays autre que les États-Unis (NIR, DNI, codice fiscale, etc.)."
+  },
+  {
+   "id": "fr-r-006",
+   "category": "national_id_non_us",
+   "text": "Signaler tout numéro d'identification nationale étranger, quel que soit le format."
+  },
+  {
+   "id": "fr-r-007",
+   "category": "passport_number",
+   "text": "Ce message divulgue un numéro de passeport, même déguisé."
+  },
+  {
+   "id": "fr-r-008",
+   "category": "passport_number",
+   "text": "Le message contient le numéro de passeport d'une personne identifiable."
+  },
+  {
+   "id": "fr-r-009",
+   "category": "passport_number",
+   "text": "Interdire l'envoi de numéros de passeport, y compris dans des tableaux, du code ou des formulaires de visa."
+  },
+  {
+   "id": "fr-r-010",
+   "category": "home_address",
+   "text": "Ce message divulgue l'adresse personnelle d'un particulier, même déguisée."
+  },
+  {
+   "id": "fr-r-011",
+   "category": "home_address",
+   "text": "Le message contient l'adresse de domicile d'une personne physique."
+  },
+  {
+   "id": "fr-r-012",
+   "category": "home_address",
+   "text": "Ne pas laisser passer les adresses de résidence privée de salariés, clients ou candidats."
+  },
+  {
+   "id": "fr-r-013",
+   "category": "personal_contact",
+   "text": "Ce message divulgue le numéro de téléphone personnel ou l'adresse e-mail personnelle d'un particulier, même déguisé."
+  },
+  {
+   "id": "fr-r-014",
+   "category": "personal_contact",
+   "text": "Le message contient les coordonnées personnelles (téléphone ou e-mail) d'une personne précise."
+  },
+  {
+   "id": "fr-r-015",
+   "category": "personal_contact",
+   "text": "Bloquer le partage du mobile ou de l'e-mail privé d'un individu identifiable."
+  },
+  {
+   "id": "fr-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "Ce message divulgue la date de naissance d'une personne nommée, même déguisée."
+  },
+  {
+   "id": "fr-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "Le message associe un nom de personne à sa date de naissance."
+  },
+  {
+   "id": "fr-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "Signaler toute date de naissance liée à une personne identifiable."
+  },
+  {
+   "id": "fr-r-019",
+   "category": "api_key",
+   "text": "Ce message divulgue une clé d'API ou un jeton d'accès à un service cloud ou SaaS, même déguisé."
+  },
+  {
+   "id": "fr-r-020",
+   "category": "api_key",
+   "text": "Le message contient un token ou une clé secrète de service (AWS, GitHub, Slack, Stripe, etc.)."
+  },
+  {
+   "id": "fr-r-021",
+   "category": "api_key",
+   "text": "Interdire les clés d'API réelles dans le texte, le code, les logs ou les fichiers de configuration."
+  },
+  {
+   "id": "fr-r-022",
+   "category": "password",
+   "text": "Ce message divulgue un mot de passe ou une phrase secrète de compte, même déguisé."
+  },
+  {
+   "id": "fr-r-023",
+   "category": "password",
+   "text": "Le message contient les identifiants secrets d'un compte, comme un mot de passe en clair."
+  },
+  {
+   "id": "fr-r-024",
+   "category": "password",
+   "text": "Bloquer tout mot de passe ou passphrase, y compris dans du code, des logs ou des conversations."
+  },
+  {
+   "id": "fr-r-025",
+   "category": "private_key",
+   "text": "Ce message divulgue une clé cryptographique privée (SSH, PGP ou TLS), même déguisée."
+  },
+  {
+   "id": "fr-r-026",
+   "category": "private_key",
+   "text": "Le message contient une clé privée, par exemple un bloc BEGIN PRIVATE KEY."
+  },
+  {
+   "id": "fr-r-027",
+   "category": "private_key",
+   "text": "Signaler tout contenu de clé privée, entier ou partiel."
+  },
+  {
+   "id": "fr-r-028",
+   "category": "db_connection_string",
+   "text": "Ce message divulgue une chaîne de connexion à une base de données contenant des identifiants, même déguisée."
+  },
+  {
+   "id": "fr-r-029",
+   "category": "db_connection_string",
+   "text": "Le message contient une URL de base de données avec utilisateur et mot de passe."
+  },
+  {
+   "id": "fr-r-030",
+   "category": "db_connection_string",
+   "text": "Interdire les DSN et URL de connexion qui incluent des identifiants."
+  },
+  {
+   "id": "fr-r-031",
+   "category": "patient_diagnosis",
+   "text": "Ce message divulgue le diagnostic ou l'état de santé d'un patient identifiable, même déguisé."
+  },
+  {
+   "id": "fr-r-032",
+   "category": "patient_diagnosis",
+   "text": "Le message associe un patient nommé à une maladie ou une condition médicale."
+  },
+  {
+   "id": "fr-r-033",
+   "category": "patient_diagnosis",
+   "text": "Bloquer toute information médicale sur une personne précise, comme une pathologie diagnostiquée."
+  },
+  {
+   "id": "fr-r-034",
+   "category": "prescription_record",
+   "text": "Ce message divulgue l'ordonnance ou les médicaments pris par un patient identifiable, même déguisés."
+  },
+  {
+   "id": "fr-r-035",
+   "category": "prescription_record",
+   "text": "Le message contient un traitement ou une posologie liés à une personne nommée."
+  },
+  {
+   "id": "fr-r-036",
+   "category": "prescription_record",
+   "text": "Signaler les dossiers de prescription ou de médication de patients identifiables."
+  },
+  {
+   "id": "fr-r-037",
+   "category": "credit_card",
+   "text": "Ce message divulgue un numéro de carte de paiement, même déguisé."
+  },
+  {
+   "id": "fr-r-038",
+   "category": "credit_card",
+   "text": "Le message contient un numéro de carte bancaire complet."
+  },
+  {
+   "id": "fr-r-039",
+   "category": "credit_card",
+   "text": "Interdire les numéros de carte, qu'ils soient écrits en chiffres, en lettres ou répartis sur plusieurs lignes."
+  },
+  {
+   "id": "fr-r-040",
+   "category": "bank_account",
+   "text": "Ce message divulgue un numéro de compte bancaire, un IBAN ou un numéro de routage, même déguisé."
+  },
+  {
+   "id": "fr-r-041",
+   "category": "bank_account",
+   "text": "Le message contient les coordonnées bancaires d'une personne ou d'une société."
+  },
+  {
+   "id": "fr-r-042",
+   "category": "bank_account",
+   "text": "Signaler tout IBAN ou numéro de compte réel dans les tableaux, mails ou code."
+  },
+  {
+   "id": "fr-r-043",
+   "category": "salary_of_named_person",
+   "text": "Ce message divulgue le salaire ou la rémunération d'un employé nommé, même déguisé."
+  },
+  {
+   "id": "fr-r-044",
+   "category": "salary_of_named_person",
+   "text": "Le message indique combien gagne une personne précise (salaire, prime, package)."
+  },
+  {
+   "id": "fr-r-045",
+   "category": "salary_of_named_person",
+   "text": "Bloquer les montants de rémunération associés à un nom."
+  },
+  {
+   "id": "fr-r-046",
+   "category": "performance_review",
+   "text": "Ce message divulgue l'évaluation de performance ou le dossier disciplinaire d'un employé nommé, même déguisé."
+  },
+  {
+   "id": "fr-r-047",
+   "category": "performance_review",
+   "text": "Le message contient des notes, avertissements ou sanctions concernant une personne précise."
+  },
+  {
+   "id": "fr-r-048",
+   "category": "performance_review",
+   "text": "Signaler tout contenu d'entretien d'évaluation ou de procédure disciplinaire sur un salarié identifiable."
+  },
+  {
+   "id": "fr-r-049",
+   "category": "attorney_client_privilege",
+   "text": "Ce message divulgue un conseil juridique ou des échanges couverts par le secret avocat-client, même déguisés."
+  },
+  {
+   "id": "fr-r-050",
+   "category": "attorney_client_privilege",
+   "text": "Le message reprend l'avis ou la stratégie d'un avocat de l'entreprise."
+  },
+  {
+   "id": "fr-r-051",
+   "category": "attorney_client_privilege",
+   "text": "Interdire la transmission de communications confidentielles avec les conseils juridiques."
+  },
+  {
+   "id": "fr-r-052",
+   "category": "unreleased_financial_results",
+   "text": "Ce message divulgue des résultats financiers de l'entreprise non encore publiés, même déguisés."
+  },
+  {
+   "id": "fr-r-053",
+   "category": "unreleased_financial_results",
+   "text": "Le message contient des chiffres financiers confidentiels avant leur annonce officielle."
+  },
+  {
+   "id": "fr-r-054",
+   "category": "unreleased_financial_results",
+   "text": "Bloquer chiffre d'affaires, bénéfices ou prévisions non publiés."
+  },
+  {
+   "id": "fr-r-055",
+   "category": "m_and_a",
+   "text": "Ce message divulgue des projets non publics de fusion, d'acquisition ou d'investissement, même déguisés."
+  },
+  {
+   "id": "fr-r-056",
+   "category": "m_and_a",
+   "text": "Le message évoque un rachat, une fusion ou une prise de participation non annoncés."
+  },
+  {
+   "id": "fr-r-057",
+   "category": "m_and_a",
+   "text": "Signaler toute opération de M&A confidentielle, avec ou sans montant."
+  },
+  {
+   "id": "fr-r-058",
+   "category": "product_roadmap",
+   "text": "Ce message divulgue une feuille de route produit ou un plan de lancement non annoncés, même déguisés."
+  },
+  {
+   "id": "fr-r-059",
+   "category": "product_roadmap",
+   "text": "Le message contient des fonctionnalités ou dates de sortie produit non publiques."
+  },
+  {
+   "id": "fr-r-060",
+   "category": "product_roadmap",
+   "text": "Interdire le partage de plans produit confidentiels."
+  },
+  {
+   "id": "fr-r-061",
+   "category": "project_codename",
+   "text": "Ce message divulgue des détails sur le projet interne {codename}, même déguisés."
+  },
+  {
+   "id": "fr-r-062",
+   "category": "project_codename",
+   "text": "Le message contient des informations sur le projet {codename} (budget, calendrier, partenaires, état d'avancement)."
+  },
+  {
+   "id": "fr-r-063",
+   "category": "project_codename",
+   "text": "Bloquer tout contenu concernant spécifiquement le projet {codename}."
+  },
+  {
+   "id": "fr-r-064",
+   "category": "customer_list",
+   "text": "Ce message divulgue une liste de clients ou leurs coordonnées, même déguisée."
+  },
+  {
+   "id": "fr-r-065",
+   "category": "customer_list",
+   "text": "Le message contient plusieurs clients ou les données de contact de clients."
+  },
+  {
+   "id": "fr-r-066",
+   "category": "customer_list",
+   "text": "Signaler les extraits de fichier client, CRM ou portefeuille de comptes."
+  },
+  {
+   "id": "fr-r-067",
+   "category": "proprietary_source_code",
+   "text": "Ce message divulgue du code source propriétaire interne, même déguisé."
+  },
+  {
+   "id": "fr-r-068",
+   "category": "proprietary_source_code",
+   "text": "Le message contient du code interne de l'entreprise, comme des algorithmes maison ou des modules internes."
+  },
+  {
+   "id": "fr-r-069",
+   "category": "proprietary_source_code",
+   "text": "Interdire de coller du code propriétaire dans l'assistant, même partiellement."
+  },
+  {
+   "id": "fr-r-070",
+   "category": "internal_infrastructure",
+   "text": "Ce message divulgue des noms d'hôtes, adresses IP ou détails de l'architecture réseau interne, même déguisés."
+  },
+  {
+   "id": "fr-r-071",
+   "category": "internal_infrastructure",
+   "text": "Le message contient des adresses ou noms de serveurs internes."
+  },
+  {
+   "id": "fr-r-072",
+   "category": "internal_infrastructure",
+   "text": "Signaler les IP privées, noms d'hôtes et schémas d'infrastructure de l'entreprise."
+  },
+  {
+   "id": "fr-r-073",
+   "category": "competitor_confidential",
+   "text": "Ce message divulgue des informations confidentielles obtenues sur un concurrent, même déguisées."
+  },
+  {
+   "id": "fr-r-074",
+   "category": "competitor_confidential",
+   "text": "Le message contient des données non publiques d'une société concurrente."
+  },
+  {
+   "id": "fr-r-075",
+   "category": "competitor_confidential",
+   "text": "Bloquer tout renseignement interne d'un concurrent obtenu hors sources publiques."
+  }
+ ]
+}

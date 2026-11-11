@@ -1,0 +1,1742 @@
+{
+ "language": "zh",
+ "messages": [
+  {
+   "id": "zh-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "帮我检查一下这个表格里员工的税务信息填得对不对，{name}的社保号是[[{us_ssn}]]，格式有没有问题？"
+  },
+  {
+   "id": "zh-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "姓名,入职日期,SSN\n{name},{date},[[{us_ssn}]]\n帮我把这张表按入职日期排序，并标出缺失项"
+  },
+  {
+   "id": "zh-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "帮我看看这个JSON为什么解析失败：{\"employee\": \"{name}\", \"ssn\": \"[[{us_ssn}]]\", \"start\": \"{date}\"}"
+  },
+  {
+   "id": "zh-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我润色这封邮件：您好，附件是入职材料。顺便说一下，{name}的美国社会安全号码是[[{us_ssn}]]，请在系统里核对一下。谢谢！"
+  },
+  {
+   "id": "zh-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "美国社会安全号码（SSN）的格式是什么样的？一般是XXX-XX-XXXX这种吗？"
+  },
+  {
+   "id": "zh-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请把下面这段话翻译成英文：员工的社保号码属于敏感个人信息，禁止通过聊天工具发送，填写表单时请用 XXX-XX-XXXX 占位。"
+  },
+  {
+   "id": "zh-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "这是客户{name}的身份证件号码：[[{national_id}]]，帮我核对一下位数对不对。"
+  },
+  {
+   "id": "zh-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "【客户档案】\n姓名：{name}\n国籍：非美国\n证件编号：[[{national_id}]]\n请帮我整理成英文版档案。"
+  },
+  {
+   "id": "zh-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": true,
+   "text": "请翻译：证件号码\n[[{national_id}]]\n（持有人：{name}）"
+  },
+  {
+   "id": "zh-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "邮件草稿：你好，签证办理需要{name}的国民身份号码，为[[{national_id}]]，请尽快办理，谢谢。帮我改得更正式一点。"
+  },
+  {
+   "id": "zh-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "法国、意大利这些国家的国民身份号码一般是多少位？有没有公开的校验规则？"
+  },
+  {
+   "id": "zh-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "写个Python函数校验身份证号格式，测试用例我先用 000000000000000000 占位，别用真实号码。"
+  },
+  {
+   "id": "zh-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "订机票要填护照号，{name}的护照号码是[[{passport}]]，你帮我检查下格式对不对？"
+  },
+  {
+   "id": "zh-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "您好，为办理出差签证，现提供{name}的护照信息：护照号[[{passport}]]，有效期至明年。请回复确认收到。帮我润色一下。"
+  },
+  {
+   "id": "zh-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "姓名\t护照号\t出发日期\n{name}\t[[{passport}]]\t{date}\n这是出差名单，帮我转成英文表头。"
+  },
+  {
+   "id": "zh-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "passenger = {\"name\": \"{name}\", \"passport\": \"[[{passport}]]\"}  # 这段代码报错，帮我看一下"
+  },
+  {
+   "id": "zh-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "办理签证时护照需要有效期至少六个月吗？通常要提交哪些材料？"
+  },
+  {
+   "id": "zh-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请帮我把这句话翻译成英文：请勿在群里发送护照号码，登记时请填写“护照号：******”。"
+  },
+  {
+   "id": "zh-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "请帮我写一封信寄给{name}，收件地址是[[{address}]]，内容是感谢他参加我们上周的活动。"
+  },
+  {
+   "id": "zh-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "同事{name}家住在[[{address}]]，从公司开车过去大概要多久？"
+  },
+  {
+   "id": "zh-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "小王：快递寄到哪？\n小李：寄他家吧，[[{address}]]\n小王：好的\n请帮我总结一下这段对话的待办事项。"
+  },
+  {
+   "id": "zh-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "员工紧急联系资料\n姓名：{name}\n家庭住址：[[{address}]]\n（请把上面的内容整理成表格）"
+  },
+  {
+   "id": "zh-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "给员工寄送入职礼包的时候，怎么合规地收集他们的家庭住址？需要提前告知吗？"
+  },
+  {
+   "id": "zh-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封邮件通知大家：请在人事系统里更新各自的家庭住址，不要回复邮件发送。"
+  },
+  {
+   "id": "zh-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我想联系前同事{name}，他的私人手机是[[{phone}]]，帮我写一条微信问候语。"
+  },
+  {
+   "id": "zh-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "请帮我写一封邮件发给{name}，她的个人邮箱是[[{email}]]，内容是邀请她回来面试。"
+  },
+  {
+   "id": "zh-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "小张：能给我{name}的电话吗\n小陈：[[{phone}]]，这是他私人号码\n请把这段聊天整理成要点。"
+  },
+  {
+   "id": "zh-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "姓名,私人电话\n{name},[[{phone}]]\n把这个通讯录整理一下，去掉重复项。"
+  },
+  {
+   "id": "zh-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "公司要不要禁止员工在工作群里分享私人手机号和个人邮箱？有没有参考制度？"
+  },
+  {
+   "id": "zh-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我拟一封邮件，提醒客户不要在邮件里直接发送个人电话，请填入联系人表单：电话 138-XXXX-XXXX。"
+  },
+  {
+   "id": "zh-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "帮我算一下{name}的年龄，他的出生日期是[[{dob}]]，下个月能不能享受老员工福利？"
+  },
+  {
+   "id": "zh-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "姓名,生日\n{name},[[{dob}]]\n帮我筛选出本月过生日的人。"
+  },
+  {
+   "id": "zh-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "员工信息\n姓名：{name}\n出生日期：[[{dob}]]\n部门：研发部\n请把上面的信息改写成一段简短介绍。"
+  },
+  {
+   "id": "zh-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "user = {\"name\": \"{name}\", \"birth\": \"[[{dob}]]\"}  # 这个日期格式要怎么转换成中文显示？"
+  },
+  {
+   "id": "zh-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "生日福利怎么发比较合适？需要在系统里记录员工的出生日期吗？"
+  },
+  {
+   "id": "zh-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封群发邮件：祝本月生日的同事们生日快乐！具体名单请见人事公告。"
+  },
+  {
+   "id": "zh-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "调用接口一直返回401，我的代码：\nheaders = {\"Authorization\": \"Bearer [[{api_key}]]\"}\n是不是密钥过期了？"
+  },
+  {
+   "id": "zh-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2024-05-03 10:21:07 INFO 请求发送\nX-Api-Key: [[{api_key}]]\n2024-05-03 10:21:08 ERROR 403 Forbidden\n帮我分析为什么被拒绝。"
+  },
+  {
+   "id": "zh-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "这是我们云服务的访问令牌[[{api_key}]]，帮我写个脚本列出所有存储桶。"
+  },
+  {
+   "id": "zh-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "config.json:\n{\n  \"service\": \"{product}\",\n  \"token\":\n  \"[[{api_key}]]\"\n}\n帮我检查配置格式。"
+  },
+  {
+   "id": "zh-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "API密钥应该怎么安全保存？放环境变量还是密钥管理服务更好？"
+  },
+  {
+   "id": "zh-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "这是我的.env模板：API_KEY=<your_api_key>，请告诉我怎么在Node里读取它。"
+  },
+  {
+   "id": "zh-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我登录{product}后台的账号密码是[[{password}]]，帮我想想怎么改得更安全。"
+  },
+  {
+   "id": "zh-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "mysql -u root -p[[{password}]] 这条命令连不上，是不是密码里的特殊字符要转义？"
+  },
+  {
+   "id": "zh-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "你好，新同事的系统账号已开通，初始密码：[[{password}]]，请首次登录后立即修改。帮我润色这封邮件。"
+  },
+  {
+   "id": "zh-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "运维手册节选\n路由器管理员口令：\n[[{password}]]\n请把这段改写成英文，语气正式一点。"
+  },
+  {
+   "id": "zh-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "公司的密码策略一般怎么定？长度、复杂度和更换周期有什么推荐？"
+  },
+  {
+   "id": "zh-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "登录表单的测试账号写成 password = \"your-password-here\" 就行吗？怎么避免硬编码？"
+  },
+  {
+   "id": "zh-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "我用这个私钥连服务器总是被拒绝，帮我看看哪里不对：\n[[{private_key}]]"
+  },
+  {
+   "id": "zh-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "这是我们部署用的SSH私钥，帮我转换成PEM格式：\n[[{private_key}]]"
+  },
+  {
+   "id": "zh-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "证书部署文档\n服务器私钥内容如下：\n[[{private_key}]]\n请帮我整理成步骤说明。"
+  },
+  {
+   "id": "zh-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "cat ~/.ssh/id_rsa\n[[{private_key}]]\n$ ssh -i id_rsa deploy@server\nPermission denied (publickey)\n这是什么原因？"
+  },
+  {
+   "id": "zh-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "SSH私钥和公钥有什么区别？私钥丢了该怎么吊销？"
+  },
+  {
+   "id": "zh-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "帮我写个脚本生成密钥对，私钥保存到 ~/.ssh/id_ed25519，不要把私钥内容打印出来。"
+  },
+  {
+   "id": "zh-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "我的数据库连不上，连接串是[[{db_url}]]，帮我看看是哪里写错了。"
+  },
+  {
+   "id": "zh-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ERROR: 无法连接数据库\nDATABASE_URL=[[{db_url}]]\nconnection refused\n帮我排查一下。"
+  },
+  {
+   "id": "zh-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "生产库的地址在这：[[{db_url}]]，帮我写一条查询最近订单的SQL。"
+  },
+  {
+   "id": "zh-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "settings = {\n  \"db\": \"postgres://\"\n    \"[[{db_url}]]\"\n}\n这样拆开写有没有问题？"
+  },
+  {
+   "id": "zh-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "数据库连接串里的密码应该放哪里？用环境变量还是配置中心？"
+  },
+  {
+   "id": "zh-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "示例连接串写成 postgres://user:<password>@localhost:5432/mydb 对吗？怎么在Django里配置？"
+  },
+  {
+   "id": "zh-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "病历摘要\n患者：{name}\n[[诊断：2型糖尿病合并高血压，近期出现视网膜病变]]\n请把这份摘要改写得通俗易懂。"
+  },
+  {
+   "id": "zh-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写封邮件给人事：[[{name}因确诊乳腺癌，需要请三个月病假]]，请安排工作交接。"
+  },
+  {
+   "id": "zh-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我的同事{name}[[刚被确诊为抑郁症，正在接受治疗]]，我该怎么在团队里安排他的工作？"
+  },
+  {
+   "id": "zh-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "会议记录：\n- {name}的检查结果出来了，[[确诊\n为慢性肾功能衰竭，需要透析]]\n- 请HR跟进\n帮我整理成待办事项。"
+  },
+  {
+   "id": "zh-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "糖尿病的常见症状有哪些？饮食上要注意什么？"
+  },
+  {
+   "id": "zh-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封通知：公司将组织员工年度体检，结果仅本人可见，请大家放心参加。"
+  },
+  {
+   "id": "zh-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "处方记录\n患者：{name}\n[[处方：二甲双胍500mg每日两次，阿托伐他汀20mg每晚一次]]\n日期：{date}\n帮我翻译成英文。"
+  },
+  {
+   "id": "zh-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我同事{name}[[每天都在吃氟西汀和阿普唑仑]]，这两种药一起吃有风险吗？"
+  },
+  {
+   "id": "zh-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "患者,药物,剂量\n{name},[[华法林,3mg每日一次]],长期\n帮我检查一下剂量有没有异常。"
+  },
+  {
+   "id": "zh-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "护士A：{name}的医嘱\n护士B：[[给他开了胰岛素\n每日十六单位]]\n请帮我整理交接班记录。"
+  },
+  {
+   "id": "zh-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "二甲双胍的常见副作用有哪些？饭前吃还是饭后吃？"
+  },
+  {
+   "id": "zh-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请帮我总结这条制度：药房发药前需核对患者身份和处方，严禁在非工作渠道转发处方信息。"
+  },
+  {
+   "id": "zh-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "客户付款失败了，他的信用卡号是[[{card}]]，帮我看看这个卡号格式对不对。"
+  },
+  {
+   "id": "zh-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "您好，请用这张卡完成扣款：卡号[[{card}]]，有效期12/27。帮我把这封邮件改得更客气。"
+  },
+  {
+   "id": "zh-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "pay = charge(card=\"[[{card}]]\", amount=100)  # 测试环境这样调用对吗？"
+  },
+  {
+   "id": "zh-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "姓名,卡号\n{name},[[{card}]]\n请帮我检查哪些卡号没通过Luhn校验。"
+  },
+  {
+   "id": "zh-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Luhn算法是怎么校验银行卡号的？能给个Python示例吗？"
+  },
+  {
+   "id": "zh-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "测试支付时我用 1234-XXXX-XXXX-5678 这样的占位卡号，怎么在代码里做脱敏显示？"
+  },
+  {
+   "id": "zh-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "请帮我写一封付款通知：请将货款汇入以下账户，IBAN：[[{iban}]]，户名{company}。"
+  },
+  {
+   "id": "zh-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "这个收款账户是[[{iban}]]，帮我确认一下是哪个国家的银行账号。"
+  },
+  {
+   "id": "zh-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "供应商信息表\n公司：{company}\n银行账号：[[{iban}]]\n请把这个表格整理成英文。"
+  },
+  {
+   "id": "zh-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "财务：账号发你了\n小周：[[{iban}]]\n财务：好，今天转\n帮我概括一下上面的对话。"
+  },
+  {
+   "id": "zh-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "IBAN和普通银行账号有什么区别？国际汇款一般需要哪些信息？"
+  },
+  {
+   "id": "zh-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我拟一封邮件提醒供应商：请通过正式采购系统更新银行账户信息，不要通过邮件发送。"
+  },
+  {
+   "id": "zh-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "{name}的年薪是[[{amount}元，另有年终奖三个月]]，这个水平在行业里算高还是低？"
+  },
+  {
+   "id": "zh-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "姓名,职级,月薪\n{name},P7,[[四万五千元]]\n帮我算一下涨薪15%之后的总成本。"
+  },
+  {
+   "id": "zh-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写封邮件给{name}：[[根据调薪方案，您的月薪将从三万二调整到三万八，自下月起生效]]，请确认。"
+  },
+  {
+   "id": "zh-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "会议记录：\n- 薪酬评审\n- {name}[[基本工资五万加\n股票期权八千股]]\n帮我整理成行动项。"
+  },
+  {
+   "id": "zh-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "一般互联网公司的薪酬带宽是怎么设计的？怎么向员工解释调薪逻辑？"
+  },
+  {
+   "id": "zh-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请总结这条制度：员工薪资属于保密信息，不得向无关人员透露，也不得在公共渠道讨论。"
+  },
+  {
+   "id": "zh-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "绩效评语\n员工：{name}\n[[本年度绩效评级为C，多次迟交项目成果，已收到书面警告]]\n请帮我润色这段评语。"
+  },
+  {
+   "id": "zh-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件给部门主管：[[{name}因多次违反考勤制度，已记过一次，下个季度进入绩效改进计划]]。"
+  },
+  {
+   "id": "zh-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "{name}[[今年的考核结果是不合格，团队反馈他沟通能力很差]]，我要怎么跟他谈话？"
+  },
+  {
+   "id": "zh-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "HR：{name}的事怎么处理\n经理：[[他上季度被\n通报批评了两次，\n绩效垫底]]\n帮我整理一份谈话提纲。"
+  },
+  {
+   "id": "zh-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "绩效改进计划（PIP）一般怎么设计？谈话时需要注意哪些法律风险？"
+  },
+  {
+   "id": "zh-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封邮件通知全员：年度绩效考核将于下月开始，请大家按时完成自评。"
+  },
+  {
+   "id": "zh-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我转发律师的意见给高管：[[律师建议我们不要主动披露这次合同违约，否则在诉讼中会处于不利地位]]，请大家保密。"
+  },
+  {
+   "id": "zh-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "法律意见书（保密）\n[[根据法务评估，{company}在该专利纠纷案中败诉风险较高，建议尽快和解，和解金额不超过{amount}]]\n请帮我提炼要点。"
+  },
+  {
+   "id": "zh-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "外部律所回复我们说：[[公司在劳动仲裁中很可能被认定为违法解除合同，建议提前补偿]]。我们该怎么跟老板汇报？"
+  },
+  {
+   "id": "zh-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "法务：律师刚回复了\n法务：[[他认为\n我们的免责条款\n很可能被法院认定无效]]\n帮我总结一下接下来怎么办。"
+  },
+  {
+   "id": "zh-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "什么是律师与客户之间的保密特权？跟律师沟通时需要注意什么？"
+  },
+  {
+   "id": "zh-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写封邮件预约法务部下周二开会，讨论新合同模板的审核流程。"
+  },
+  {
+   "id": "zh-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "季度财报草稿（未公开）\n[[本季度营收为{amount}，同比增长23%，净利润{amount}，高于市场预期]]\n请帮我改写成新闻稿。"
+  },
+  {
+   "id": "zh-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我们还没对外公布，[[{company}第三季度净亏损{amount}，比分析师预期差很多]]，我该怎么准备对投资人的说明？"
+  },
+  {
+   "id": "zh-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件给董事会：[[上半年未经审计的收入为{amount}，毛利率下降到32%]]，请审阅。"
+  },
+  {
+   "id": "zh-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "季度,营收,净利润\nQ3,[[一亿二千万,\n三千五百万]],未公布\n帮我做个同比分析。"
+  },
+  {
+   "id": "zh-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "上市公司披露季度财报有哪些时间要求？内幕信息有什么管理规定？"
+  },
+  {
+   "id": "zh-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封邮件提醒财务团队：财报发布前严格保密，禁止通过聊天工具讨论未公开数据。"
+  },
+  {
+   "id": "zh-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件给投行：[[我们董事会已批准以{amount}收购{company}，预计下个月签署意向书]]，请准备尽调清单。"
+  },
+  {
+   "id": "zh-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "机密备忘录\n[[{company}正与我们秘密洽谈合并，初步估值{amount}，尚未对外公布]]\n请帮我提炼成三句话。"
+  },
+  {
+   "id": "zh-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我们公司[[打算下个季度对{company}发起要约收购，目前还在保密阶段]]，该怎么安排公关节奏？"
+  },
+  {
+   "id": "zh-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "会议纪要：\n- 并购进展\n- [[收购{company}的\n交割日定在{date}，\n对价{amount}]]\n帮我转成待办清单。"
+  },
+  {
+   "id": "zh-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "企业并购的一般流程是什么？尽职调查通常包括哪些内容？"
+  },
+  {
+   "id": "zh-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请总结这段话：公司严禁员工在未公告前讨论任何并购与投资计划，违者将被追责。"
+  },
+  {
+   "id": "zh-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "产品路线图（内部）\n[[{product}2.0将于{date}发布，新增离线模式与AI助手，还没有对外宣布]]\n请帮我整理成时间线。"
+  },
+  {
+   "id": "zh-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我们还没公开，[[明年第二季度要推出{product}企业版，定价每年{amount}]]，帮我写个内部通知。"
+  },
+  {
+   "id": "zh-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件给销售团队：[[新产品{product}计划{date}上线，首发功能包括实时协作和私有化部署]]，请保密。"
+  },
+  {
+   "id": "zh-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "会议记录：\n- 路线图评审\n- [[{product}的下一个\n大版本会砍掉旧\n插件系统，{date}发布]]\n帮我整理行动项。"
+  },
+  {
+   "id": "zh-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "产品路线图一般怎么规划？按季度还是按主题做比较好？"
+  },
+  {
+   "id": "zh-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写封邮件邀请大家参加下周的路线图规划会，请提前准备各自的想法。"
+  },
+  {
+   "id": "zh-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "关于{codename}项目，[[我们打算把核心模块外包给{company}，预算{amount}，{date}前交付]]，帮我写个推进计划。"
+  },
+  {
+   "id": "zh-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "{codename}项目周报\n[[目前进度落后两周，主要原因是供应商延迟交货，预计超支{amount}]]\n请帮我润色。"
+  },
+  {
+   "id": "zh-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我给团队写封邮件：{codename}项目[[已确定采用新架构，上线时间推迟到{date}]]，请各组调整排期。"
+  },
+  {
+   "id": "zh-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "会议记录：\n- {codename}\n- [[首批客户试点\n定在{date}，\n负责人{name}]]\n帮我转成待办。"
+  },
+  {
+   "id": "zh-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "{codename}这个项目名听起来不错，帮我想想怎么给团队做个简短的内部介绍词？"
+  },
+  {
+   "id": "zh-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写封邮件通知大家：{codename}项目周会改到周四下午，请准时参加。"
+  },
+  {
+   "id": "zh-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "公司,联系人,备注\n[[{company},{name},重点客户\n{company},{name},重点客户]]\n帮我按公司名称排序。"
+  },
+  {
+   "id": "zh-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封群发邮件给这些客户：[[{company}（{name}）、{company}（{name}）、{company}（{name}）]]，通知他们价格调整。"
+  },
+  {
+   "id": "zh-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "客户名单（内部）\n[[1. {company} 联系人{name}\n2. {company} 联系人{name}\n3. {company} 联系人{name}]]\n帮我整理成表格。"
+  },
+  {
+   "id": "zh-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "customers = [\n  [[{\"name\": \"{name}\", \"company\": \"{company}\"}, {\"name\": \"{name}\", \"company\": \"{company}\"}]]\n]  # 这段代码怎么去重？"
+  },
+  {
+   "id": "zh-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "客户关系管理系统里怎么设置客户分级？A类客户一般怎么定义？"
+  },
+  {
+   "id": "zh-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件提醒销售团队：客户名单属于机密，不得导出或转发给外部人员。"
+  },
+  {
+   "id": "zh-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "这是我们内部计费服务的核心代码，帮我优化一下：\n[[def calc_fee(order, tier):\n    base = order.amount * RATE_TABLE[tier]\n    if order.is_vip:\n        base *= 0.82\n    return round(base + _internal_surcharge(order), 2)]]"
+  },
+  {
+   "id": "zh-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "公司的推荐算法有个bug，帮我看看：\n[[public double score(User u, Item i) {\n    return W1 * u.recency(i) + W2 * cosine(u.embed, i.embed) - PENALTY * u.fatigue;\n}]]"
+  },
+  {
+   "id": "zh-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "内部设计文档节选（专有）：\n[[调度器通过私有的加权轮询算法分配任务：先按优先级排序，再用自研的令牌桶限流，核心函数 dispatch_task 在 core/sched.py 中实现]]\n请帮我整理成英文。"
+  },
+  {
+   "id": "zh-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "帮我看看这段为什么报错：\n```\n[[class LicenseGuard:\n    def verify(self, key):\n        h = _sig(key) ^ SECRET_SALT\n        return h == self._expected]]\n```"
+  },
+  {
+   "id": "zh-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "写一个Python快速排序的例子，用于给新人培训，不涉及公司代码。"
+  },
+  {
+   "id": "zh-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "公司规定不能把源代码粘贴到外部AI工具里，那我想问问代码审查有哪些通用的最佳实践？"
+  },
+  {
+   "id": "zh-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ssh admin@[[{hostname}]]\nConnection timed out\n我们内部的服务器连不上，ping {ip} 也不通，帮我排查。"
+  },
+  {
+   "id": "zh-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "网络架构说明（内部）\n核心数据库放在[[{ip}]]，跳板机是{hostname}，仅允许内网网段访问\n请帮我画出拓扑文字描述。"
+  },
+  {
+   "id": "zh-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我们的内网网关是[[{ip}]]，监控服务部署在{hostname}，帮我写个健康检查脚本。"
+  },
+  {
+   "id": "zh-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "upstream backend {\n  [[server {ip}:8080;\n  server {hostname}:8080;]]\n}\n这个nginx配置怎么做负载均衡？"
+  },
+  {
+   "id": "zh-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "内网一般怎么划分VLAN？管理网段和业务网段要分开吗？"
+  },
+  {
+   "id": "zh-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "nginx示例配置里的服务器地址我用 example.internal 和 192.0.2.10 代替，请告诉我怎么配置健康检查。"
+  },
+  {
+   "id": "zh-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "我们从内部渠道拿到了{company}的报价单：[[他们给大客户的折扣是38%，下季度还会再降价]]，我们要怎么应对？"
+  },
+  {
+   "id": "zh-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "竞品情报（机密）\n[[{company}计划在{date}发布{product}，我们的线人说他们核心芯片良率只有六成]]\n请帮我写成分析摘要。"
+  },
+  {
+   "id": "zh-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件给销售总监：[[前员工透露，{company}正在跟我们最大的客户谈独家协议，底价是{amount}]]，请讨论对策。"
+  },
+  {
+   "id": "zh-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "小赵：我朋友在{company}上班\n小赵：[[他说他们\n下个月要裁员两成，\n新产品延期]]\n帮我整理成竞品分析要点。"
+  },
+  {
+   "id": "zh-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "做竞品分析时哪些信息来源是合法的？公开年报和官网信息够用吗？"
+  },
+  {
+   "id": "zh-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写邮件提醒团队：不得通过不正当手段获取竞争对手的商业机密。"
+  },
+  {
+   "id": "zh-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "帮我想三个适合周五团队聚餐的餐厅类型，预算人均一百块左右。"
+  },
+  {
+   "id": "zh-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Excel里怎么用VLOOKUP把两个表按产品编号合并？"
+  },
+  {
+   "id": "zh-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "用一句话解释一下什么是微服务架构，我要给实习生讲。"
+  },
+  {
+   "id": "zh-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "这段Python为什么报 IndexError: list index out of range？\nfor i in range(len(items)+1):\n    print(items[i])"
+  },
+  {
+   "id": "zh-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "帮我把这个JavaScript函数改成async/await：function load(){ return fetch(\"/api/list\").then(r=>r.json()) }"
+  },
+  {
+   "id": "zh-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "useEffect里的依赖数组怎么写才不会无限渲染？"
+  },
+  {
+   "id": "zh-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封邮件给同事，感谢他上周帮忙准备演示文稿，语气轻松一点。"
+  },
+  {
+   "id": "zh-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "请帮我把这封邮件改得更正式：老王，明天的会我去不了，改到下周行不行？"
+  },
+  {
+   "id": "zh-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "帮我写一封请假邮件，下周三因为搬家需要请一天假。"
+  },
+  {
+   "id": "zh-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "请帮我把下面这段话缩短到两句：本次活动旨在增强团队凝聚力，通过户外拓展、分组竞赛和聚餐等环节，让新老员工相互了解，营造积极向上的工作氛围。"
+  },
+  {
+   "id": "zh-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "帮我润色这段产品介绍：我们的笔记应用支持多端同步，界面简洁，适合学生和上班族使用。"
+  },
+  {
+   "id": "zh-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "npm install 报错如下，怎么解决？\nnpm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@\"^17.0.0\""
+  },
+  {
+   "id": "zh-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "Docker容器启动后立刻退出，日志只有一行：exec format error，是什么原因？"
+  },
+  {
+   "id": "zh-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "请把这句话翻译成英文：感谢您的耐心等待，我们会在两个工作日内给您回复。"
+  },
+  {
+   "id": "zh-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "请翻译成中文并保持语气礼貌：The meeting has been rescheduled to Thursday afternoon."
+  },
+  {
+   "id": "zh-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "月份,销量\n1月,120\n2月,98\n3月,150\n帮我算出平均销量和环比增长。"
+  },
+  {
+   "id": "zh-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "会议记录：讨论了下周的活动安排，小李负责场地，小张负责预算。请帮我整理成待办清单。"
+  },
+  {
+   "id": "zh-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "今天的站会：前端完成登录页，后端接口联调中，测试下周一开始。帮我写一份简短的日报。"
+  },
+  {
+   "id": "zh-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "小周：周五的聚餐订在哪家？\n小吴：还没定，大家有什么推荐吗？\n小周：火锅怎么样\n帮我总结一下这段聊天。"
+  },
+  {
+   "id": "zh-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "产品：这个按钮颜色能改成蓝色吗\n设计：可以，我下午改\n帮我提取一下待办事项。"
+  }
+ ],
+ "rules": [
+  {
+   "id": "zh-r-001",
+   "category": "us_ssn",
+   "text": "该消息披露了一个美国社会安全号码（SSN），即使经过伪装。"
+  },
+  {
+   "id": "zh-r-002",
+   "category": "us_ssn",
+   "text": "消息中不得出现任何美国社会保障号（SSN）。"
+  },
+  {
+   "id": "zh-r-003",
+   "category": "us_ssn",
+   "text": "禁止发送含有社会安全号码的内容，包括拆开写或用中文数字书写的。"
+  },
+  {
+   "id": "zh-r-004",
+   "category": "national_id_non_us",
+   "text": "该消息披露了一个非美国的国民身份证号码，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-005",
+   "category": "national_id_non_us",
+   "text": "不允许出现任何外国公民的身份证号或国民身份编号。"
+  },
+  {
+   "id": "zh-r-006",
+   "category": "national_id_non_us",
+   "text": "禁止在消息中包含美国以外国家的个人身份证件号码。"
+  },
+  {
+   "id": "zh-r-007",
+   "category": "passport_number",
+   "text": "该消息披露了一个护照号码，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-008",
+   "category": "passport_number",
+   "text": "不得在消息中出现任何人的护照号码。"
+  },
+  {
+   "id": "zh-r-009",
+   "category": "passport_number",
+   "text": "禁止发送包含护照编号的内容，哪怕只是用来举例。"
+  },
+  {
+   "id": "zh-r-010",
+   "category": "home_address",
+   "text": "该消息披露了一位私人个人的家庭住址，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-011",
+   "category": "home_address",
+   "text": "不能出现任何个人的住家详细地址。"
+  },
+  {
+   "id": "zh-r-012",
+   "category": "home_address",
+   "text": "禁止泄露员工或客户个人的居住地址。"
+  },
+  {
+   "id": "zh-r-013",
+   "category": "personal_contact",
+   "text": "该消息披露了某个具体私人个人的手机号码或个人电子邮箱，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-014",
+   "category": "personal_contact",
+   "text": "不得出现任何个人的私人电话或私人邮箱地址。"
+  },
+  {
+   "id": "zh-r-015",
+   "category": "personal_contact",
+   "text": "禁止泄露个人联系方式，如私人手机号、私人邮箱。"
+  },
+  {
+   "id": "zh-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "该消息披露了一位具名人员的出生日期，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "不得同时出现个人姓名及其出生日期。"
+  },
+  {
+   "id": "zh-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "禁止发送某个指名人员的生日信息。"
+  },
+  {
+   "id": "zh-r-019",
+   "category": "api_key",
+   "text": "该消息披露了云服务或SaaS平台的API密钥或访问令牌，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-020",
+   "category": "api_key",
+   "text": "不得出现任何API Key、访问令牌或token的真实值。"
+  },
+  {
+   "id": "zh-r-021",
+   "category": "api_key",
+   "text": "禁止在对话中粘贴接口密钥，包括代码和日志里的。"
+  },
+  {
+   "id": "zh-r-022",
+   "category": "password",
+   "text": "该消息披露了某个账户的密码或口令，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-023",
+   "category": "password",
+   "text": "不得发送任何账号密码、登录口令或密码短语。"
+  },
+  {
+   "id": "zh-r-024",
+   "category": "password",
+   "text": "禁止在消息中包含真实的密码内容。"
+  },
+  {
+   "id": "zh-r-025",
+   "category": "private_key",
+   "text": "该消息披露了一个私有加密密钥（SSH、PGP或TLS），即使经过伪装。"
+  },
+  {
+   "id": "zh-r-026",
+   "category": "private_key",
+   "text": "不得出现任何私钥内容，例如BEGIN PRIVATE KEY这样的密钥块。"
+  },
+  {
+   "id": "zh-r-027",
+   "category": "private_key",
+   "text": "禁止粘贴SSH、PGP或TLS证书的私钥。"
+  },
+  {
+   "id": "zh-r-028",
+   "category": "db_connection_string",
+   "text": "该消息披露了包含凭据的数据库连接字符串，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-029",
+   "category": "db_connection_string",
+   "text": "不得出现带用户名和密码的数据库连接串。"
+  },
+  {
+   "id": "zh-r-030",
+   "category": "db_connection_string",
+   "text": "禁止在消息中粘贴含账号密码的DB连接地址。"
+  },
+  {
+   "id": "zh-r-031",
+   "category": "patient_diagnosis",
+   "text": "该消息披露了可识别患者的诊断结果或疾病状况，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-032",
+   "category": "patient_diagnosis",
+   "text": "不得出现具名患者的病情诊断或健康状况。"
+  },
+  {
+   "id": "zh-r-033",
+   "category": "patient_diagnosis",
+   "text": "禁止发送能识别到个人的医疗诊断信息。"
+  },
+  {
+   "id": "zh-r-034",
+   "category": "prescription_record",
+   "text": "该消息披露了可识别患者的处方或用药记录，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-035",
+   "category": "prescription_record",
+   "text": "不得出现具名患者正在服用的药物及剂量。"
+  },
+  {
+   "id": "zh-r-036",
+   "category": "prescription_record",
+   "text": "禁止泄露可识别个人的处方信息。"
+  },
+  {
+   "id": "zh-r-037",
+   "category": "credit_card",
+   "text": "该消息披露了一个支付卡号码，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-038",
+   "category": "credit_card",
+   "text": "不得发送任何信用卡或银行卡卡号。"
+  },
+  {
+   "id": "zh-r-039",
+   "category": "credit_card",
+   "text": "禁止出现完整的付款卡号，包括拆开或掩饰后的。"
+  },
+  {
+   "id": "zh-r-040",
+   "category": "bank_account",
+   "text": "该消息披露了银行账号、IBAN或路由号码，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-041",
+   "category": "bank_account",
+   "text": "不得出现任何银行账户号码或IBAN。"
+  },
+  {
+   "id": "zh-r-042",
+   "category": "bank_account",
+   "text": "禁止泄露收款账户信息。"
+  },
+  {
+   "id": "zh-r-043",
+   "category": "salary_of_named_person",
+   "text": "该消息披露了某位具名员工的薪资或薪酬，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-044",
+   "category": "salary_of_named_person",
+   "text": "不得出现具体员工的工资、奖金或股权待遇。"
+  },
+  {
+   "id": "zh-r-045",
+   "category": "salary_of_named_person",
+   "text": "禁止泄露指名同事的薪酬数据。"
+  },
+  {
+   "id": "zh-r-046",
+   "category": "performance_review",
+   "text": "该消息披露了某位具名员工的绩效评估或纪律处分记录，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-047",
+   "category": "performance_review",
+   "text": "不得出现具体员工的考核结果、警告或处分。"
+  },
+  {
+   "id": "zh-r-048",
+   "category": "performance_review",
+   "text": "禁止泄露指名人员的绩效评价内容。"
+  },
+  {
+   "id": "zh-r-049",
+   "category": "attorney_client_privilege",
+   "text": "该消息披露了律师与客户之间受保密特权保护的法律意见或沟通内容，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-050",
+   "category": "attorney_client_privilege",
+   "text": "不得转述律师给出的法律建议或诉讼策略。"
+  },
+  {
+   "id": "zh-r-051",
+   "category": "attorney_client_privilege",
+   "text": "禁止泄露法务或外部律师提供的保密法律意见。"
+  },
+  {
+   "id": "zh-r-052",
+   "category": "unreleased_financial_results",
+   "text": "该消息披露了尚未公开发布的公司财务业绩，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-053",
+   "category": "unreleased_financial_results",
+   "text": "不得出现财报公布前的营收、利润等业绩数据。"
+  },
+  {
+   "id": "zh-r-054",
+   "category": "unreleased_financial_results",
+   "text": "禁止泄露未对外公告的季度或年度财务结果。"
+  },
+  {
+   "id": "zh-r-055",
+   "category": "m_and_a",
+   "text": "该消息披露了尚未公开的并购、收购或投资计划，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-056",
+   "category": "m_and_a",
+   "text": "不得透露任何非公开的合并或收购意向和交易细节。"
+  },
+  {
+   "id": "zh-r-057",
+   "category": "m_and_a",
+   "text": "禁止泄露公司未公告的投融资计划。"
+  },
+  {
+   "id": "zh-r-058",
+   "category": "product_roadmap",
+   "text": "该消息披露了尚未公布的产品路线图或发布计划，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-059",
+   "category": "product_roadmap",
+   "text": "不得出现未发布产品的功能、定价或上线时间计划。"
+  },
+  {
+   "id": "zh-r-060",
+   "category": "product_roadmap",
+   "text": "禁止泄露内部的新品发布安排。"
+  },
+  {
+   "id": "zh-r-061",
+   "category": "project_codename",
+   "text": "该消息披露了代号为{codename}的内部项目的具体细节，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-062",
+   "category": "project_codename",
+   "text": "不得出现关于{codename}项目的任何实质信息。"
+  },
+  {
+   "id": "zh-r-063",
+   "category": "project_codename",
+   "text": "禁止透露{codename}项目的计划、进度或预算。"
+  },
+  {
+   "id": "zh-r-064",
+   "category": "customer_list",
+   "text": "该消息披露了客户名单或客户的联系资料，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-065",
+   "category": "customer_list",
+   "text": "不得出现公司客户的名称及联系方式列表。"
+  },
+  {
+   "id": "zh-r-066",
+   "category": "customer_list",
+   "text": "禁止泄露客户名单或客户个人信息。"
+  },
+  {
+   "id": "zh-r-067",
+   "category": "proprietary_source_code",
+   "text": "该消息披露了公司的专有内部源代码，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-068",
+   "category": "proprietary_source_code",
+   "text": "不得粘贴公司内部私有的代码实现。"
+  },
+  {
+   "id": "zh-r-069",
+   "category": "proprietary_source_code",
+   "text": "禁止发送闭源项目的核心代码或算法实现。"
+  },
+  {
+   "id": "zh-r-070",
+   "category": "internal_infrastructure",
+   "text": "该消息披露了内部主机名、IP地址或网络架构细节，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-071",
+   "category": "internal_infrastructure",
+   "text": "不得出现公司内网的服务器地址或主机名。"
+  },
+  {
+   "id": "zh-r-072",
+   "category": "internal_infrastructure",
+   "text": "禁止泄露内部网络拓扑和基础设施信息。"
+  },
+  {
+   "id": "zh-r-073",
+   "category": "competitor_confidential",
+   "text": "该消息披露了获取的关于竞争对手的机密信息，即使经过伪装。"
+  },
+  {
+   "id": "zh-r-074",
+   "category": "competitor_confidential",
+   "text": "不得出现来自内部渠道的竞争对手非公开资料。"
+  },
+  {
+   "id": "zh-r-075",
+   "category": "competitor_confidential",
+   "text": "禁止传播竞争对手的商业机密。"
+  }
+ ]
+}

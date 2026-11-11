@@ -69,7 +69,7 @@ describe('bridgePolicy', () => {
     expect(p.perSite['chatgpt.com']!.enabled).toBe(false)
   })
 
-  it("bridges a judge_prompt rule with enforced: true and the prompt text preserved", () => {
+  it("bridges a judge_prompt rule with enforced: false (judge v2 shadow period) and the prompt text preserved", () => {
     const doc: PolicyDoc = {
       ...MINIMAL_DOC,
       subjects: [{
@@ -82,7 +82,7 @@ describe('bridgePolicy', () => {
     const p = bridgePolicy(doc, [])
     expect(p.custom).toHaveLength(1)
     expect(p.custom[0]!.kind).toBe('judge_prompt')
-    expect(p.custom[0]!.enforced).toBe(true)
+    expect(p.custom[0]!.enforced).toBe(false)
     expect((p.custom[0] as { prompt: string }).prompt).toBe('This message discloses a Social Security Number.')
   })
 

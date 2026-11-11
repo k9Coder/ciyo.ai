@@ -1,0 +1,25 @@
+{
+  "name": "@mykka/judge-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./store-fs": "./src/store-fs.ts",
+    "./store-cache": "./src/store-cache.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@huggingface/tokenizers": "0.2.0",
+    "onnxruntime-common": "1.30.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5",
+    "onnxruntime-node": "1.30.0",
+    "@types/node": "^22.0.0"
+  }
+}

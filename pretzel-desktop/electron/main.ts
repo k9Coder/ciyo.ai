@@ -40,6 +40,10 @@ import { loadSettings } from './settings'
 import { notifyDecision, notifyTimeout } from './decision-notify'
 import { recordActivity, getRecentActivity, setActivityOutcome } from './activity-log'
 import { reportEvent } from './report-event'
+import { createDesktopShadow } from './judge-shadow'
+import judgeShadowWorkerPath from './judge-shadow-worker?modulePath'
+import { Worker } from 'worker_threads'
+import { reportJudgeShadow } from './report-judge-shadow'
 import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
@@ -521,10 +525,22 @@ app.whenReady().then(async () => {
 
   await setupTray(authenticated)
 
+  // Judge v2 shadow: runs after the primary decision, never affects it.
+  // JUDGE_V2_MODEL_BASE (dev only) points the model download at a local server.
+  const judgeShadow = createDesktopShadow({
+    // Inference runs in a worker thread so it never blocks the proxy's event loop.
+    spawn: () => new Worker(judgeShadowWorkerPath, {
+      workerData: { userDataDir: app.getPath('userData'), modelBase: process.env.JUDGE_V2_MODEL_BASE || undefined },
+    }),
+    report: (rows) => { void reportJudgeShadow(rows) },
+  })
+  proxy.setShadowHook((body, policy, result) => judgeShadow.submit(body, policy, result))
+
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
+    judgeShadow.prepare(policy)
     pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: null })
   }, {
     onUnauthorized: () => { void handleSessionLost() },

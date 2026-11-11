@@ -46,6 +46,8 @@ This index contains authoritative current-state documentation. Files under `docs
 - [Backend](../backend/README.md)
 - [Pretzel extension](../pretzel/README.md)
 - [Pretzel Console](../pretzel-console/README.md)
+- [Judge v2 runtime and shadow mode](../packages/judge-v2/README.md) — design: [spec](superpowers/specs/2026-11-11-judge-v2-shadow-mode-design.md), [plan](superpowers/plans/2026-11-11-judge-v2-shadow-mode.md)
+- [Judge v2 models](../models/judge-v2/README.md)
 - [mykka-web](../mykka-web/README.md)
 - [Cross-package E2E](../e2e/README.md)
 - [Manual QA suite](../qa/README.md)

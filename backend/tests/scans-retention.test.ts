@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm'
 import { truncateAll, buildTestTenant, buildTestUser } from './helpers/db.js'
 import { startTestApp } from './helpers/setup.js'
 import { db } from '../src/db/client.js'
-import { scans, enforcementSignals, members, shadowVerdicts } from '../src/db/schema.js'
+import { scans, enforcementSignals, members, shadowVerdicts, judgeShadowChecks } from '../src/db/schema.js'
 import { purgeExpired, anonymizeMember, PILOT_RETENTION_DAYS } from '../src/scans/service.js'
 import { deleteMember } from '../src/members/service.js'
 import type { FastifyInstance } from 'fastify'
@@ -102,5 +102,32 @@ describe('retention: member deletion triggers anonymize', () => {
     const signalRows = await db.select().from(enforcementSignals).where(eq(enforcementSignals.tenantId, tenantId))
     expect(signalRows).toHaveLength(1)
     expect(signalRows[0]!.memberId).toBeNull()
+  })
+})
+
+const JUDGE_ROW = {
+  checkId: '22222222-2222-4222-8222-222222222222', surface: 'desktop' as const, ruleId: '11111111-1111-1111-1111-111111111111',
+  ruleKind: 'judge_prompt' as const, primaryAction: 'none' as const, secondaryVerdict: 'ok' as const, fastScore: '0.1', secondScore: null,
+  spanStart: null, spanEnd: null, messageChars: 10, windows: 0, latencyMs: 5, modelVersion: 'fast_v7+so_v7',
+}
+
+describe('retention: judge_shadow_checks', () => {
+  it('purgeExpired deletes judge shadow rows older than the retention window', async () => {
+    await db.insert(judgeShadowChecks).values([
+      { ...JUDGE_ROW, tenantId, occurredAt: daysAgo(PILOT_RETENTION_DAYS + 2) },
+      { ...JUDGE_ROW, tenantId, occurredAt: daysAgo(1) },
+    ])
+    const counts = await purgeExpired()
+    expect(counts.judgeShadowChecks).toBe(1)
+    expect(await db.select().from(judgeShadowChecks).where(eq(judgeShadowChecks.tenantId, tenantId))).toHaveLength(1)
+  })
+
+  it('anonymizeMember nulls memberId on that member’s judge shadow rows, and deleteMember no longer trips the FK', async () => {
+    const memberId = await makeMember('shadow-erase@example.com')
+    await db.insert(judgeShadowChecks).values([{ ...JUDGE_ROW, tenantId, memberId, occurredAt: daysAgo(1) }])
+    const counts = await anonymizeMember(memberId)
+    expect(counts.judgeShadowChecks).toBe(1)
+    const rows = await db.select().from(judgeShadowChecks).where(eq(judgeShadowChecks.tenantId, tenantId))
+    expect(rows[0]!.memberId).toBeNull()
   })
 })
