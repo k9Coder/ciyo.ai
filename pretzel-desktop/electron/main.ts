@@ -40,6 +40,8 @@ import { loadSettings } from './settings'
 import { notifyDecision, notifyTimeout } from './decision-notify'
 import { recordActivity, getRecentActivity, setActivityOutcome } from './activity-log'
 import { reportEvent } from './report-event'
+import { createDesktopShadow } from './judge-shadow'
+import { reportJudgeShadow } from './report-judge-shadow'
 import { showDecisionWindow, hideDecisionWindow, showDecisionTimeout } from './decision-window'
 import { activateSystemProxy, restoreSystemProxy } from './system-proxy'
 import { isAuthenticated, signIn, cancelSignIn, loadToken, clearCredentials } from './auth'
@@ -521,10 +523,20 @@ app.whenReady().then(async () => {
 
   await setupTray(authenticated)
 
+  // Judge v2 shadow: runs after the primary decision, never affects it.
+  // JUDGE_V2_MODEL_BASE (dev only) points the model download at a local server.
+  const judgeShadow = createDesktopShadow({
+    userDataDir: app.getPath('userData'),
+    report: (rows) => { void reportJudgeShadow(rows) },
+    modelBase: process.env.JUDGE_V2_MODEL_BASE || undefined,
+  })
+  proxy.setShadowHook((body, policy, result) => judgeShadow.submit(body, policy, result))
+
   // Start background policy sync — feeds into proxy + IPC state
   startPolicySync((policy) => {
     setCurrentPolicy(policy)
     proxy.setPolicy(policy)
+    judgeShadow.prepare(policy)
     pushStatus({ proxyRunning: true, policyAvailable: true, systemProxyActive: true, syncIssue: null })
   }, {
     onUnauthorized: () => { void handleSessionLost() },

@@ -35,7 +35,8 @@
     "onnxruntime-node": "1.30.0",
     "semver": "^7.8.5",
     "sharp": "^0.35.4",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@mykka/judge-v2": "workspace:*"
   },
   "optionalDependencies": {
     "@img/sharp-darwin-arm64": "0.35.5",

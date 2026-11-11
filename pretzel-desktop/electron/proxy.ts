@@ -34,6 +34,19 @@ import { reportShadowTelemetry } from './report-shadow-telemetry'
 
 export const PROXY_PORT = 18888
 
+/** Judge v2 shadow hook: receives the inspected body after the primary decision is computed. */
+export type ShadowHook = (body: string, policy: Policy, result: DetectionResult) => void
+
+/** Hands a request to the shadow hook. Synchronous and never throws: the shadow path must not touch the send path. */
+export function submitShadowSafely(hook: ShadowHook | null, body: string, policy: Policy, result: DetectionResult): void {
+  if (!hook) return
+  try {
+    hook(body, policy, result)
+  } catch (err) {
+    console.warn('[pretzel-desktop] judge v2 shadow submit failed', (err as Error).message)
+  }
+}
+
 /** Max request body we will buffer for inspection (2 MB). Larger → forward unscanned. */
 const MAX_INSPECT_BYTES = 2 * 1024 * 1024
 
@@ -242,6 +255,12 @@ export class PretzelProxy extends EventEmitter {
     this.ca = ca
   }
 
+  private shadowHook: ShadowHook | null = null
+
+  setShadowHook(hook: ShadowHook | null): void {
+    this.shadowHook = hook
+  }
+
   setPolicy(policy: Policy | null): void {
     this.policy = policy
   }
@@ -410,6 +429,7 @@ export class PretzelProxy extends EventEmitter {
       try {
         const result = await evaluateRequest(this.policy, hostname, body)
         void reportShadowTelemetry(result.shadowFindings)
+        submitShadowSafely(this.shadowHook, body, this.policy, result)
         if (body.includes('AKIA')) {
           console.log(`[proxy][diag] AKIA result: action=${result.highestAction} findings=${result.findings.length}`)
         }
