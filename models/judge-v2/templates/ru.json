@@ -1,0 +1,1742 @@
+{
+ "language": "ru",
+ "messages": [
+  {
+   "id": "ru-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет, Анна! Для оформления справки по налогам Марку нужен номер соцстрахования, вот он: [[{us_ssn}]]. Перешли, пожалуйста, в бухгалтерию."
+  },
+  {
+   "id": "ru-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Имя,Должность,SSN\n[[{name},аналитик,{us_ssn}\n{name},менеджер,{us_ssn}]]\nОтформатируй таблицу и убери дубли."
+  },
+  {
+   "id": "ru-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "Почему падает валидация? тест: assert is_valid({\"employee\": \"{name}\", \"ssn\": \"[[{us_ssn}]]\"}) — регулярка вроде правильная."
+  },
+  {
+   "id": "ru-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "проверь, что у клиента правильный SSN: [[три два один, шесть пять, четыре три два один]] — по-моему там ошибка в цифрах"
+  },
+  {
+   "id": "ru-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно хранить SSN сотрудников в базе, чтобы это было безопасно? Нужно шифрование на уровне колонки?"
+  },
+  {
+   "id": "ru-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Формат в форме W-4 такой: XXX-XX-XXXX. Перепиши инструкцию для новых сотрудников попроще, номер соцстрахования в черновике не указан."
+  },
+  {
+   "id": "ru-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Добрый день! Для регистрации контрагента в Германии прошу использовать идентификационный номер директора: [[{national_id}]]. С уважением, {name}."
+  },
+  {
+   "id": "ru-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "ФИО;Страна;Нац. ID\n[[{name};Франция;{national_id}\n{name};Италия;{national_id}]]\nСделай из этого красивую таблицу для отдела кадров."
+  },
+  {
+   "id": "ru-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[10:42] {name}: у испанского подрядчика какой DNI?\n[10:43] Ольга: вот, [[{national_id}]], записывай в карточку\nСуммируй, что нам нужно сделать."
+  },
+  {
+   "id": "ru-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Данные сотрудника из филиала:\nФамилия: {name}\nНациональный идентификатор: [[{national_id}\n(без пробелов, как в паспорте ID-карты)]]\nПереведи на английский."
+  },
+  {
+   "id": "ru-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Чем отличается испанский NIE от DNI и в каких случаях компании нужно запрашивать его у иностранного сотрудника?"
+  },
+  {
+   "id": "ru-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Переведи на английский: «Укажите ваш национальный идентификационный номер в поле ниже. Номер в письме вставлять не нужно»."
+  },
+  {
+   "id": "ru-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Здравствуйте, для бронирования билетов в Лондон отправляю данные командированного: {name}, паспорт [[{passport}]]. Подтвердите, пожалуйста."
+  },
+  {
+   "id": "ru-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "фио,дата,паспорт\n{name},{date},[[{passport}]]\nОтсортируй по дате и найди пропущенные значения."
+  },
+  {
+   "id": "ru-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "{\"traveller\": \"{name}\", \"doc\": {\"type\": \"passport\", \"num\": \"[[{passport}]]\"}}\nСхема JSON валидна? Что-то парсер ругается."
+  },
+  {
+   "id": "ru-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "помоги оформить визу, номер загранпаспорта у меня [[{passport}]] — пиши через дефис по две цифры, чтобы никто не ошибся"
+  },
+  {
+   "id": "ru-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие документы нужны, чтобы продлить загранпаспорт, и сколько по времени занимает процедура?"
+  },
+  {
+   "id": "ru-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "В анкете поле «Номер паспорта» оставь пустым: <passport_number>. Помоги переформулировать подсказку для сотрудника."
+  },
+  {
+   "id": "ru-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Добрый день, {name}! Курьер привезёт оборудование по домашнему адресу: [[{address}]]. Пожалуйста, будьте на месте."
+  },
+  {
+   "id": "ru-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[18:20] {name}: напиши, куда отправлять подарок Ивану\n[18:21] Света: [[он живёт по адресу {address}]], домофон не работает\nСоставь список дел по подаркам."
+  },
+  {
+   "id": "ru-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Личная карточка сотрудника\nФИО: {name}\nАдрес проживания: [[{address}]]\nСократи до трёх строк для HR."
+  },
+  {
+   "id": "ru-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "order-service: delivery.addr_line1=\"[[{address}\n]]\" customer=\"{name}\" status=ROUTED\nПочему адрес разбивается на две строки?"
+  },
+  {
+   "id": "ru-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно оформить адрес в графе «адрес проживания» в российском заявлении на вычет? Нужно ли писать индекс?"
+  },
+  {
+   "id": "ru-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Переведи на немецкий: «Просим вас сообщить адрес доставки через защищённую форму, а не в переписке»."
+  },
+  {
+   "id": "ru-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет! Напиши, пожалуйста, Дмитрию на [[личную почту {email} и позвони на мобильный {phone}]], у него сейчас больничный."
+  },
+  {
+   "id": "ru-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Имя,Личный телефон,Личная почта\n[[{name},{phone},{email}\n{name},{phone},{email}]]\nОтформатируй номера единообразно."
+  },
+  {
+   "id": "ru-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[09:05] {name}: дай номер Лены\n[09:06] Катя: [[ее личный телефон: плюс семь, девять, ноль ноль, {phone}]]\nСкопируй номер в заметку."
+  },
+  {
+   "id": "ru-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Мой коллега {name} просил не светить его телефон, но вот он: [[{phone}]]. Составь ему SMS про смену времени встречи."
+  },
+  {
+   "id": "ru-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Можно ли компании хранить личные телефоны сотрудников в общей таблице без их согласия? Что говорит 152-ФЗ?"
+  },
+  {
+   "id": "ru-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Составь письмо коллегам: просим обновить контакты в системе, личные номера и почты указывать только в защищённой форме HR-портала."
+  },
+  {
+   "id": "ru-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, подскажите, правильно ли в списке дата рождения: [[{name}, родился {dob}]]? Нужно для оформления полиса."
+  },
+  {
+   "id": "ru-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "ФИО,Дата рождения\n[[{name},{dob}\n{name},{dob}]]\nПроверь, нет ли среди них несовершеннолетних."
+  },
+  {
+   "id": "ru-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Анкета кандидата\nКандидат: {name}\n[[Дата рождения: {dob}]]\nОпыт: 5 лет в продажах\nСократи анкету до абзаца."
+  },
+  {
+   "id": "ru-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "user = {\"name\": \"{name}\", \"dob\": \"[[{dob}]]\"}\nКак посчитать возраст в питоне корректно, а то в январе падает?"
+  },
+  {
+   "id": "ru-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как написать красивое поздравление коллеге с днём рождения, не раскрывая лишних подробностей в общем чате?"
+  },
+  {
+   "id": "ru-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие поля даты рождения считаются персональными данными по GDPR, если имя в системе не хранится?"
+  },
+  {
+   "id": "ru-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Не работает запрос к API:\ncurl -H 'Authorization: Bearer [[{api_key}]]' https://api.example.com/v1/users\nПолучаю 401. В чём дело?"
+  },
+  {
+   "id": "ru-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2025-03-04 12:01:22 ERROR stripe client: auth failed, key=[[{api_key}]]\nВ чём может быть проблема, ключ просрочен?"
+  },
+  {
+   "id": "ru-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "config.yaml:\nservice:\n  token: \"[[{api_key}]]\"\nПочему yaml не парсится, если в токене есть двоеточие?"
+  },
+  {
+   "id": "ru-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "вот наш токен к AWS, сохрани: [[{api_key}\n]] и напомни мне как его ротировать"
+  },
+  {
+   "id": "ru-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как безопасно хранить API-ключи для сторонних сервисов: переменные окружения, vault или секреты в CI?"
+  },
+  {
+   "id": "ru-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Что не так в коде?\nheaders = {\"Authorization\": \"Bearer <API_KEY>\"}\nresp = requests.get(url, headers=headers)\nВ ключе стоит заглушка, реальный я не показываю."
+  },
+  {
+   "id": "ru-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Забыл как зайти в админку. Логин admin, пароль [[{password}]]. Не пускает, что делать?"
+  },
+  {
+   "id": "ru-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет, {name}! Доступ к вики вам выдан. Логин: ваша почта, временный пароль: [[{password}]]. Сменить при первом входе."
+  },
+  {
+   "id": "ru-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "const creds = { user: 'deploy', pass: '[[{password}]]' }; // временно\nПомоги вынести это в .env."
+  },
+  {
+   "id": "ru-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ssh: Permission denied for user svc_backup (password [[{password}]]) from 10.0.4.12\nПочему отказ, пароль точно верный."
+  },
+  {
+   "id": "ru-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Придумай политику паролей для компании на 200 человек: длина, ротация, менеджер паролей."
+  },
+  {
+   "id": "ru-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Что не так в строке подключения? password=<ваш_пароль> — я вставил заглушку, настоящий пароль не покажу."
+  },
+  {
+   "id": "ru-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Как мне добавить этот ключ в ssh-agent? Он выглядит так:\n[[{private_key}]]\nПишет invalid format."
+  },
+  {
+   "id": "ru-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "tls handshake failed. Key in use:\n[[{private_key}]]\nПочему nginx не принимает этот ключ?"
+  },
+  {
+   "id": "ru-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "Инструкция по деплою, шаг 4: положите файл id_rsa со следующим содержимым:\n[[{private_key}]]\nПерепиши шаг понятнее для новичков."
+  },
+  {
+   "id": "ru-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Проверь, не повреждён ли мой PGP-ключ:\n[[{private_key}]]\nВроде заголовок на месте."
+  },
+  {
+   "id": "ru-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Объясни разницу между публичным и приватным ключом SSH и как безопасно хранить приватный на ноутбуке."
+  },
+  {
+   "id": "ru-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Файл начинается с -----BEGIN OPENSSH PRIVATE KEY----- и дальше идёт ...КЛЮЧ СКРЫТ... Как мне правильно выставить права chmod?"
+  },
+  {
+   "id": "ru-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Подключение не работает:\nengine = create_engine(\"[[{db_url}]]\")\nПишет timeout. Что проверить?"
+  },
+  {
+   "id": "ru-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "FATAL: password authentication failed for connection [[{db_url}]]\nПочему после смены пароля падает только прод?"
+  },
+  {
+   "id": "ru-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": ".env\nDATABASE_URL=[[{db_url}]]\nКак подключить этот файл в docker-compose, чтобы переменная читалась?"
+  },
+  {
+   "id": "ru-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Помоги написать скрипт миграции. Подключаюсь через [[{db_url}]], нужно перенести таблицу users в новую схему."
+  },
+  {
+   "id": "ru-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "В каком формате писать строку подключения к PostgreSQL и как не хранить пароль прямо в строке?"
+  },
+  {
+   "id": "ru-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Не пойму, как обновить DSN: postgres://user:<password>@host/db — настоящие данные не вставляю, только формат."
+  },
+  {
+   "id": "ru-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Уважаемая Мария Ивановна, сообщаю, что у пациента {name} [[диагностирован сахарный диабет второго типа, назначена консультация эндокринолога]]. Составьте официальное письмо."
+  },
+  {
+   "id": "ru-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "История болезни\nПациент: {name}\n[[Диагноз: острый лимфобластный лейкоз, начата химиотерапия]]\nСократи для выписки."
+  },
+  {
+   "id": "ru-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[14:10] Врач: что у {name} по результатам?\n[14:12] Лаборант: [[у него подтвердили ВИЧ-инфекцию, нужно сообщить в диспансер]]\nСоставь чек-лист действий."
+  },
+  {
+   "id": "ru-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "Мой сотрудник {name} признался, что у него [[д-и-а-г-н-о-з: шизофрения]], как с ним лучше строить график?"
+  },
+  {
+   "id": "ru-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно описывать диагноз в медицинской карте по МКБ-10, чтобы не нарушить врачебную тайну?"
+  },
+  {
+   "id": "ru-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Сократи инструкцию: диагнозы пациентов нельзя пересылать по почте без шифрования, в тексте конкретных диагнозов нет."
+  },
+  {
+   "id": "ru-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Добрый день, аптека. По рецепту пациента {name} [[выписан метформин 850 мг два раза в день и лизиноприл 10 мг утром]]. Подтвердите наличие."
+  },
+  {
+   "id": "ru-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Лист назначений\nПациент: {name}\n[[Препараты: сертралин 50 мг, ежедневно; кветиапин 25 мг на ночь]]\nПереведи на английский."
+  },
+  {
+   "id": "ru-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Пациент,Препарат,Доза\n[[{name},варфарин,5 мг\n{name},инсулин гларгин,20 ЕД]]\nПроверь на взаимодействие препаратов."
+  },
+  {
+   "id": "ru-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[11:20] Сестра: что принимает {name}?\n[11:21] Врач: [[трамадол 50 мг 3 раза в день, т-р-а-м-а-д-о-л по рецепту №{amount}]]\nСоставь памятку."
+  },
+  {
+   "id": "ru-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно оформлять рецептурный бланк и сколько он действителен в России?"
+  },
+  {
+   "id": "ru-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Подскажи, какие общие правила хранения лекарств в аптеке, без привязки к конкретным пациентам."
+  },
+  {
+   "id": "ru-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Здравствуйте, для оплаты подписки используйте мою карту [[{card}]], срок действия 08/28. Спасибо, {name}."
+  },
+  {
+   "id": "ru-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Клиент,Номер карты,Сумма\n[[{name},{card},{amount}\n{name},{card},{amount}]]\nПосчитай итог по клиентам."
+  },
+  {
+   "id": "ru-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "payment = {\"pan\": \"[[{card}]]\", \"exp\": \"12/27\"}\nпочему Luhn-проверка не проходит, в номере есть пробелы?"
+  },
+  {
+   "id": "ru-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "оплати с моей карты: [[четыре два четыре два, четыре два четыре два, четыре два четыре два, четыре два четыре два]], пришли чек"
+  },
+  {
+   "id": "ru-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как отличить номер карты Visa от Mastercard по первым цифрам? Нужен общий принцип для валидатора."
+  },
+  {
+   "id": "ru-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Тест для валидации: card_number = \"XXXX XXXX XXXX XXXX\"; assert validate(card_number) is False. Что поправить в регулярке?"
+  },
+  {
+   "id": "ru-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Добрый день! Прошу перевести оплату по счёту №{amount} на IBAN [[{iban}]], получатель {company}. С уважением, {name}."
+  },
+  {
+   "id": "ru-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Реквизиты поставщика\nПолучатель: {company}\nР/с: [[{iban}]]\nБанк: Сбербанк\nСократи и оформи как письмо для финотдела."
+  },
+  {
+   "id": "ru-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Сотрудник,IBAN\n[[{name},{iban}\n{name},{iban}]]\nПроверь, все ли номера одинаковой длины."
+  },
+  {
+   "id": "ru-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[16:00] {name}: куда платить?\n[16:01] Игорь: счёт [[{iban}\nполучатель {company}]], только не забудь про НДС\nСоставь платёжное поручение."
+  },
+  {
+   "id": "ru-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Из каких частей состоит IBAN и как проверить контрольную сумму без доступа к реальным счетам?"
+  },
+  {
+   "id": "ru-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Составь письмо контрагенту: просим выслать реквизиты для оплаты в защищённый чат, в этом письме банковские данные не указываем."
+  },
+  {
+   "id": "ru-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет, Ольга! По повышению: [[{name} сейчас получает {amount} рублей в месяц, предлагаю поднять до {amount}]]. Подготовь обоснование."
+  },
+  {
+   "id": "ru-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Конфиденциально, HR\n[[Годовая компенсация {name}: оклад {amount}, бонус {amount}, опционы на {amount}]]\nСделай краткую выжимку для директора."
+  },
+  {
+   "id": "ru-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[15:30] {name}: сколько получает Игорь?\n[15:31] HR: [[у Игоря оклад {amount}, плюс премия {amount} в квартал]]\nСоставь вывод про равенство зарплат."
+  },
+  {
+   "id": "ru-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "сравни: [[з/п {name} — сто пятьдесят тысяч на руки]] и рынок для сеньор-разработчиков в Москве, не мало ли?"
+  },
+  {
+   "id": "ru-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно провести разговор о повышении зарплаты с руководителем? Какие аргументы привести?"
+  },
+  {
+   "id": "ru-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Перепиши политику: зарплатные вилки по грейдам публикуются внутри компании, а оклады конкретных сотрудников остаются конфиденциальными."
+  },
+  {
+   "id": "ru-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, по результатам квартала: [[{name} получил оценку «ниже ожиданий», срывал дедлайны три раза, объявлен выговор]]. Оформите приказ."
+  },
+  {
+   "id": "ru-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Оценка эффективности, H1\nСотрудник: {name}\n[[Итог: не соответствует должности, план улучшения на 60 дней, предупреждение о возможном увольнении]]\nСократи до трёх пунктов."
+  },
+  {
+   "id": "ru-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Встреча по персоналу {date}:\n- [[{name}: низкие KPI, жалобы клиентов, оформить дисциплинарное взыскание]]\n- обсудили бюджет на обучение\nСделай список задач."
+  },
+  {
+   "id": "ru-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "Помоги подготовить разговор: у {name} [[в п-е-р-ф-о-р-м-а-н-с ревью оценка 2 из 5 и была жалоба на хамство]]. Что говорить?"
+  },
+  {
+   "id": "ru-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как структурировать performance review для разработчика, чтобы это было конструктивно?"
+  },
+  {
+   "id": "ru-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие шаблоны выговора допустимы по ТК РФ? Нужен только общий формат без привязки к людям."
+  },
+  {
+   "id": "ru-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, пересылаю совет юриста: [[по мнению наших адвокатов, у нас высокий риск проиграть иск {company}, рекомендуем урегулировать вне суда до {date}]]. Не пересылайте дальше."
+  },
+  {
+   "id": "ru-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Конфиденциально. Адвокатская тайна.\n[[Заключение юриста: условия договора с {company} допускают одностороннее расторжение, но возможна ответственность в размере {amount}]]\nКратко перепиши для совета директоров."
+  },
+  {
+   "id": "ru-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[13:00] {name}: что сказал внешний юрист?\n[13:02] Юрист-консультант: [[советуем не подписывать мировое, у них слабая позиция по IP, будем настаивать]]\nСделай саммари."
+  },
+  {
+   "id": "ru-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "Нам юрист посоветовал вот что: [[не раскрывать документы по делу {company}, ссылаться на привилегию]] — как это сформулировать в ответе?"
+  },
+  {
+   "id": "ru-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Что такое адвокатская тайна и распространяется ли она на переписку с корпоративным юристом?"
+  },
+  {
+   "id": "ru-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Составь письмо юристам с просьбой дать заключение по новому договору, без изложения самих обстоятельств дела."
+  },
+  {
+   "id": "ru-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, предварительно: [[выручка за Q3 составила {amount} при чистой прибыли {amount}, раньше прогноза на 12%]]. Публикация только {date}, пока не распространяйте."
+  },
+  {
+   "id": "ru-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Внутренний отчёт, не для публикации\n[[Выручка за год {amount}, EBITDA {amount}, убыток по сегменту {product} превысил прогноз]]\nПодготовь пресс-релиз по этим цифрам."
+  },
+  {
+   "id": "ru-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Квартал,Выручка,Прибыль\nQ4 (предв.),[[{amount},{amount}]]\nПосчитай рост к прошлому году и построй график."
+  },
+  {
+   "id": "ru-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[20:15] CFO: итоги такие\n[20:16] CFO: [[выручка за квартал — {amount}, а EBITDA — минус пять процентов]]\nСделай слайд для совета."
+  },
+  {
+   "id": "ru-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как правильно оформить пресс-релиз по финансовым результатам, чтобы соответствовать правилам раскрытия информации биржи?"
+  },
+  {
+   "id": "ru-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Перепиши: публикация квартальных результатов запланирована на следующую неделю, до тех пор цифры считаются инсайдерской информацией."
+  },
+  {
+   "id": "ru-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Команда, строго конфиденциально: [[мы ведём переговоры о покупке {company} за {amount}, подписание сделки ожидается в {date}]]. Прошу подготовить due diligence."
+  },
+  {
+   "id": "ru-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Проект сделки\n[[Совет директоров одобрил поглощение конкурента {company}, цена {amount}, объявление в {date}]]\nСократи до одного абзаца для писем инвесторам."
+  },
+  {
+   "id": "ru-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Встреча по стратегии:\n- [[договорились о слиянии с {company}, доли распределим 60/40]]\n- обсудили бюджет\nСоставь список задач."
+  },
+  {
+   "id": "ru-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "пиши: [[мы планируем вложить {amount} в {company} и выкупить контрольный пакет]] — тс-с, пока не объявлено. Как оформить это в term sheet?"
+  },
+  {
+   "id": "ru-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие этапы проходит типичная сделка по слиянию и поглощению? Расскажи в общих чертах."
+  },
+  {
+   "id": "ru-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Составь вежливое письмо, где мы отказываемся комментировать слухи о возможных сделках на рынке."
+  },
+  {
+   "id": "ru-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет, команда! Планы на год: [[в {date} выпускаем {product} 2.0 с новым ИИ-ассистентом, затем в Q4 запускаем мобильное приложение]]. Пока не объявлено, никому не говорите."
+  },
+  {
+   "id": "ru-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Roadmap 2026 (внутренний)\n[[Q1: запуск функции {product}, Q2: интеграция с {company}, Q3: переход на подписку]]\nСделай красивую презентацию."
+  },
+  {
+   "id": "ru-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Планёрка продукта:\n- [[релиз нового тарифа «{product} Pro» запланирован на {date}, анонс не раньше]]\n- обсудили баги\nВыдели действия."
+  },
+  {
+   "id": "ru-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[12:40] PM: что в следующем релизе?\n[12:41] Lead: [[в следующем квартале выпускаем {product}, без анонсов]]\nСобери список задач."
+  },
+  {
+   "id": "ru-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как лучше структурировать продуктовый роадмап: по кварталам или по темам? Дай шаблон."
+  },
+  {
+   "id": "ru-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Перепиши абзац для сайта: ближайшие обновления будут анонсированы позже, подробности пока не раскрываем."
+  },
+  {
+   "id": "ru-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Привет, {name}! По проекту {codename}: [[бюджет {amount}, запуск в {date}, заказчик {company}, ключевая задача — переезд на новую платформу]]. Пожалуйста, подготовьте план."
+  },
+  {
+   "id": "ru-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Внутренний документ.\n[[Проект {codename}: разрабатываем новую систему скоринга для {company}, срок {date}, команда из 12 человек]]\nКоротко перескажи для руководства."
+  },
+  {
+   "id": "ru-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Синк по проекту:\n- [[{codename}: пилот у {company} провалился, откатили релиз, потеряли {amount}]]\n- обсудили найм\nСделай список действий."
+  },
+  {
+   "id": "ru-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[10:05] {name}: как дела у {codename}?\n[10:06] Дима: [[{codename}: с-р-ы-в сроков на месяц, клиент {company} грозит отказаться]]\nЧто нам предпринять?"
+  },
+  {
+   "id": "ru-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Придумай план встречи для обсуждения {codename}: только повестка, без деталей проекта."
+  },
+  {
+   "id": "ru-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Напиши короткое письмо: приглашаю всех на еженедельный созвон по {codename} в четверг в 11:00, детали в календаре."
+  },
+  {
+   "id": "ru-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Клиент,Контакт,Почта,Телефон\n[[{company},{name},ivanov@acme-trade.ru,+7 495 123-45-67\n{company},{name},sales@nordlogistika.ru,+7 812 555-01-22]]\nОтсортируй по алфавиту и найди дубли."
+  },
+  {
+   "id": "ru-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, передаю список наших клиентов: [[{company} ({name}, buh@zarya-opt.ru), {company} ({name}, info@vector-m.ru), {company} ({name}, +7 903 111-22-33)]]. Нужно подготовить рассылку."
+  },
+  {
+   "id": "ru-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Основные клиенты\n[[1. {company}, контакт {name}, +7 916 200-30-40\n2. {company}, контакт {name}, +7 495 777-88-99\n3. {company}, контакт {name}, +7 921 300-40-50]]\nСделай из этого красивое письмо."
+  },
+  {
+   "id": "ru-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "customers = [\"{company}\", \"{company}\"]\n# выгрузка из CRM: [[{name} <petrov@kontur-sev.ru>, {name} <orders@alfa-snab.ru>]]\nКак отфильтровать неактивных клиентов в pandas?"
+  },
+  {
+   "id": "ru-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как выстроить структуру CRM для списка клиентов, чтобы было удобно сегментировать? Нужен общий подход."
+  },
+  {
+   "id": "ru-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Напиши SQL: выбрать клиентов, не покупавших более 90 дней, из таблицы customers (name, email, last_order). Реальных данных у меня нет, нужен только запрос."
+  },
+  {
+   "id": "ru-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Помоги оптимизировать наш внутренний алгоритм ценообразования:\n[[def calculate_price(user, cart):\n    base = sum(i.cost for i in cart)\n    if user.tier == 'gold':\n        base *= 0.82 - COMPANY_MARGIN_FACTOR\n    return apply_secret_surge(base, user.region)]]\nСлишком медленно работает."
+  },
+  {
+   "id": "ru-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Исправь баг в нашем модуле синхронизации:\n[[class OrderSyncWorker:\n    def run(self):\n        for o in self.queue.drain():\n            self.internal_gateway.push(o.serialize_v3())\n            self.audit.write(o.id)]]\nНе пойму, где утечка памяти."
+  },
+  {
+   "id": "ru-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Фрагмент нашей закрытой библиотеки:\n[[export async function scoreLead(lead) {\n  const w = await loadProprietaryWeights();\n  return w.recency * lead.recency + w.intent * lead.intent;\n}]]\nНапиши документацию в стиле JSDoc."
+  },
+  {
+   "id": "ru-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "Stack trace и код ниже, помоги разобраться:\n[[pub fn route(&self, req: Req) -> Resp {\n    self.engine.match_internal(req) // наш приватный движок\n}]]\nпадает с panic в проде."
+  },
+  {
+   "id": "ru-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие практики помогают не допустить утечки исходного кода компании при работе с ИИ-ассистентами?"
+  },
+  {
+   "id": "ru-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Покажи на общем примере, как написать функцию расчёта скидки на Python, я потом адаптирую под своё. Свой код вставлять не буду."
+  },
+  {
+   "id": "ru-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "Не могу достучаться до сервера:\n[[ssh admin@{ip}\nconnect to host {ip} port 22]]: Connection timed out\nЧто проверить?"
+  },
+  {
+   "id": "ru-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Схема сети\n[[ДБ-сервер: {hostname} ({ip})\nКеш: {hostname} ({ip})]]\nПерепиши как инструкцию для нового админа."
+  },
+  {
+   "id": "ru-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "upstream:\n  servers:\n[[    - {ip}:8080\n    - {hostname}:8080]]\nПочему nginx не балансирует на второй узел?"
+  },
+  {
+   "id": "ru-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "У нас внутренний DNS не резолвит [[{hostname}, он живёт на {ip}]] в VLAN 20. Как отладить?"
+  },
+  {
+   "id": "ru-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как лучше организовать внутреннюю сеть компании: какие подсети выделить под базы данных и бастионы? Общие рекомендации."
+  },
+  {
+   "id": "ru-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ping: <internal-host>: Name or service not known — реальное имя хоста скрыл. Какие причины бывают у такой ошибки?"
+  },
+  {
+   "id": "ru-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Коллеги, у меня есть инсайд: [[внутренний прайс-лист {company} на следующий год, скидки для топ-клиентов до 35%]]. Давайте под него подстроимся."
+  },
+  {
+   "id": "ru-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Заметки по конкуренту\n[[Нам удалось получить презентацию {company} для инвесторов: они планируют запуск {product} и потеряли 20% клиентов]]\nСделай сравнение с нашим продуктом."
+  },
+  {
+   "id": "ru-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Разбор конкурентов:\n- [[от бывшего сотрудника {company} узнали, что их новая архитектура сделана на {product}, слитые внутренние метрики прилагаются]]\n- обсудили маркетинг\nВыдели выводы."
+  },
+  {
+   "id": "ru-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[17:00] Менеджер: что у {company}?\n[17:01] Аналитик: [[достали их закрытый отчёт, выручка {amount}, у-в-о-л-ь-н-я-ю-т 15% персонала]]\nСобери в резюме."
+  },
+  {
+   "id": "ru-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Как законно собирать информацию о конкурентах: открытые источники, отчёты, вебинары? Дай общий план."
+  },
+  {
+   "id": "ru-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Перепиши раздел: сотрудникам запрещено использовать конфиденциальные материалы конкурентов, полученные из неофициальных источников."
+  },
+  {
+   "id": "ru-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Подскажи, как лучше организовать работу в команде из пяти разработчиков, если у нас есть и удалёнщики?"
+  },
+  {
+   "id": "ru-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Объясни простыми словами, чем отличается Kubernetes от Docker Swarm."
+  },
+  {
+   "id": "ru-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Помоги переписать письмо клиенту вежливее: «Вы опять опоздали с оплатой, это недопустимо»."
+  },
+  {
+   "id": "ru-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "Напиши короткое поздравление коллеге с юбилеем компании, тон тёплый, но без пафоса."
+  },
+  {
+   "id": "ru-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Почему в JavaScript `[] + {}` даёт строку? Объясни на примерах."
+  },
+  {
+   "id": "ru-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "Как отсортировать список словарей по ключу «date» в Python, чтобы пропуски оказывались в конце?"
+  },
+  {
+   "id": "ru-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "Виснет сборка в CI:\nStep 4/9: RUN npm ci\nnpm ERR! network timeout\nМожет, дело в кэше?"
+  },
+  {
+   "id": "ru-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "Traceback (most recent call last):\n  File \"app.py\", line 12\nKeyError: 'items'\nЧто означает эта ошибка и как исправить?"
+  },
+  {
+   "id": "ru-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Сократи абзац для презентации: «Наша команда уделяет большое внимание качеству обслуживания и постоянно совершенствует процессы»."
+  },
+  {
+   "id": "ru-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "Проверь орфографию и пунктуацию в этом тексте: «Мы не смогли то-что планировали и поэтому перенесли срок.»"
+  },
+  {
+   "id": "ru-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Переведи на английский: «Благодарим за обращение, мы свяжемся с вами в течение трёх рабочих дней»."
+  },
+  {
+   "id": "ru-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Переведи на русский: 'Please find attached the agenda for tomorrow's meeting.'"
+  },
+  {
+   "id": "ru-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Дата,Товар,Количество\n{date},{product},{amount}\n{date},{product},{amount}\nПосчитай сумму по столбцу «Количество»."
+  },
+  {
+   "id": "ru-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "Месяц;Посетители\nянварь;1200\nфевраль;1450\nмарт;1980\nКакой рост по месяцам в процентах?"
+  },
+  {
+   "id": "ru-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Заметки со встречи {date}:\n- обсудили выбор CRM\n- {name} подготовит сравнение до пятницы\n- следующий созвон во вторник\nСделай чек-лист задач."
+  },
+  {
+   "id": "ru-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "Итоги ретро: что работало хорошо — парное программирование, что мешало — частые прерывания. Сформулируй три действия."
+  },
+  {
+   "id": "ru-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[11:00] {name}: кто берёт ревью PR?\n[11:02] Ольга: давай я, после обеда\nСделай саммари этого обмена одной строкой."
+  },
+  {
+   "id": "ru-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[09:15] Макс: у нас в пятницу корпоратив?\n[09:16] Анна: да, в 18:00 в офисе\nСоставь анонс для общей рассылки."
+  },
+  {
+   "id": "ru-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Какие хорошие книги по менеджменту можно прочитать новому тимлиду?"
+  },
+  {
+   "id": "ru-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "Придумай идеи для командного воркшопа на тему обратной связи, на два часа."
+  }
+ ],
+ "rules": [
+  {
+   "id": "ru-r-001",
+   "category": "us_ssn",
+   "text": "Это сообщение раскрывает номер социального страхования США (SSN), даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-002",
+   "category": "us_ssn",
+   "text": "Сообщение не должно содержать SSN или иной американский номер соцстрахования физического лица."
+  },
+  {
+   "id": "ru-r-003",
+   "category": "us_ssn",
+   "text": "Блокировать любые сообщения с номерами Social Security Number, записанными цифрами или словами."
+  },
+  {
+   "id": "ru-r-004",
+   "category": "national_id_non_us",
+   "text": "Это сообщение раскрывает национальный идентификационный номер не из США, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-005",
+   "category": "national_id_non_us",
+   "text": "Нельзя передавать личные идентификационные номера граждан других стран (DNI, NIE, INSEE, codice fiscale и т.п.)."
+  },
+  {
+   "id": "ru-r-006",
+   "category": "national_id_non_us",
+   "text": "Сообщения с номером национального ID гражданина любой страны, кроме США, запрещены."
+  },
+  {
+   "id": "ru-r-007",
+   "category": "passport_number",
+   "text": "Это сообщение раскрывает номер паспорта, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-008",
+   "category": "passport_number",
+   "text": "Запрещено отправлять номера паспортов и загранпаспортов сотрудников, клиентов и других лиц."
+  },
+  {
+   "id": "ru-r-009",
+   "category": "passport_number",
+   "text": "Нельзя публиковать серию и номер паспорта в любом виде, включая разбитый на части."
+  },
+  {
+   "id": "ru-r-010",
+   "category": "home_address",
+   "text": "Это сообщение раскрывает домашний адрес частного лица, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-011",
+   "category": "home_address",
+   "text": "Сообщения не должны содержать адрес проживания конкретного человека."
+  },
+  {
+   "id": "ru-r-012",
+   "category": "home_address",
+   "text": "Блокировать любые сообщения, где указан личный адрес места жительства сотрудника, клиента или иного физлица."
+  },
+  {
+   "id": "ru-r-013",
+   "category": "personal_contact",
+   "text": "Это сообщение раскрывает личный номер телефона или личный адрес электронной почты конкретного человека, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-014",
+   "category": "personal_contact",
+   "text": "Нельзя передавать личные мобильные телефоны и частные email-адреса сотрудников и клиентов."
+  },
+  {
+   "id": "ru-r-015",
+   "category": "personal_contact",
+   "text": "Запрещены сообщения, содержащие личные контактные данные конкретных людей."
+  },
+  {
+   "id": "ru-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "Это сообщение раскрывает дату рождения конкретного человека вместе с его именем, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "Запрещено указывать дату рождения вместе с ФИО или именем."
+  },
+  {
+   "id": "ru-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "Блокировать сообщения, где дата рождения связана с конкретным человеком."
+  },
+  {
+   "id": "ru-r-019",
+   "category": "api_key",
+   "text": "Это сообщение раскрывает API-ключ или токен доступа к облачному или SaaS-сервису, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-020",
+   "category": "api_key",
+   "text": "Нельзя отправлять ключи API, bearer-токены и токены доступа к сторонним сервисам."
+  },
+  {
+   "id": "ru-r-021",
+   "category": "api_key",
+   "text": "Запрещены сообщения с секретами доступа к облаку, например AWS, GitHub или Stripe."
+  },
+  {
+   "id": "ru-r-022",
+   "category": "password",
+   "text": "Это сообщение раскрывает пароль или парольную фразу от учётной записи, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-023",
+   "category": "password",
+   "text": "Запрещено вставлять пароли и passphrase в сообщения, в том числе в код и логи."
+  },
+  {
+   "id": "ru-r-024",
+   "category": "password",
+   "text": "Блокировать любые сообщения, где виден пароль к аккаунту, серверу или сервису."
+  },
+  {
+   "id": "ru-r-025",
+   "category": "private_key",
+   "text": "Это сообщение раскрывает закрытый криптографический ключ (SSH, PGP или TLS), даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-026",
+   "category": "private_key",
+   "text": "Нельзя передавать приватные ключи, включая блоки BEGIN PRIVATE KEY."
+  },
+  {
+   "id": "ru-r-027",
+   "category": "private_key",
+   "text": "Запрещены сообщения с содержимым файлов id_rsa, приватных PGP- и TLS-ключей."
+  },
+  {
+   "id": "ru-r-028",
+   "category": "db_connection_string",
+   "text": "Это сообщение раскрывает строку подключения к базе данных с учётными данными, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-029",
+   "category": "db_connection_string",
+   "text": "Запрещено отправлять DSN и URL баз данных, содержащие логин и пароль."
+  },
+  {
+   "id": "ru-r-030",
+   "category": "db_connection_string",
+   "text": "Блокировать строки подключения вида postgres://пользователь:пароль@хост/база."
+  },
+  {
+   "id": "ru-r-031",
+   "category": "patient_diagnosis",
+   "text": "Это сообщение раскрывает диагноз или медицинское состояние конкретного пациента, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-032",
+   "category": "patient_diagnosis",
+   "text": "Нельзя передавать диагнозы, которые можно отнести к определённому человеку."
+  },
+  {
+   "id": "ru-r-033",
+   "category": "patient_diagnosis",
+   "text": "Запрещены сообщения с медицинскими сведениями об идентифицируемом пациенте."
+  },
+  {
+   "id": "ru-r-034",
+   "category": "prescription_record",
+   "text": "Это сообщение раскрывает рецепт или перечень назначенных лекарств идентифицируемого пациента, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-035",
+   "category": "prescription_record",
+   "text": "Запрещено указывать лекарства и дозировки, назначенные конкретному человеку."
+  },
+  {
+   "id": "ru-r-036",
+   "category": "prescription_record",
+   "text": "Блокировать записи о назначениях и рецептах с привязкой к пациенту."
+  },
+  {
+   "id": "ru-r-037",
+   "category": "credit_card",
+   "text": "Это сообщение раскрывает номер платёжной карты, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-038",
+   "category": "credit_card",
+   "text": "Нельзя отправлять полные номера банковских карт."
+  },
+  {
+   "id": "ru-r-039",
+   "category": "credit_card",
+   "text": "Запрещены сообщения с номерами кредитных и дебетовых карт, в том числе записанными словами."
+  },
+  {
+   "id": "ru-r-040",
+   "category": "bank_account",
+   "text": "Это сообщение раскрывает номер банковского счёта, IBAN или банковский реквизит, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-041",
+   "category": "bank_account",
+   "text": "Запрещено передавать номера счетов, IBAN и маршрутные номера банков."
+  },
+  {
+   "id": "ru-r-042",
+   "category": "bank_account",
+   "text": "Блокировать платёжные реквизиты с реальными номерами счетов."
+  },
+  {
+   "id": "ru-r-043",
+   "category": "salary_of_named_person",
+   "text": "Это сообщение раскрывает зарплату или компенсацию конкретного именованного сотрудника, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-044",
+   "category": "salary_of_named_person",
+   "text": "Нельзя указывать оклад, премию или бонус конкретного сотрудника."
+  },
+  {
+   "id": "ru-r-045",
+   "category": "salary_of_named_person",
+   "text": "Запрещены сообщения, где доход или вознаграждение привязаны к имени человека."
+  },
+  {
+   "id": "ru-r-046",
+   "category": "performance_review",
+   "text": "Это сообщение раскрывает оценку эффективности или дисциплинарную запись конкретного сотрудника, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-047",
+   "category": "performance_review",
+   "text": "Запрещено передавать содержимое performance review и сведения о взысканиях с указанием имени."
+  },
+  {
+   "id": "ru-r-048",
+   "category": "performance_review",
+   "text": "Блокировать сообщения об оценке, выговорах и планах улучшения конкретных людей."
+  },
+  {
+   "id": "ru-r-049",
+   "category": "attorney_client_privilege",
+   "text": "Это сообщение раскрывает юридическую консультацию или переписку, защищённую адвокатской тайной, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-050",
+   "category": "attorney_client_privilege",
+   "text": "Нельзя пересылать заключения юристов и их советы по делам компании."
+  },
+  {
+   "id": "ru-r-051",
+   "category": "attorney_client_privilege",
+   "text": "Запрещены сообщения с содержанием конфиденциального общения с адвокатом."
+  },
+  {
+   "id": "ru-r-052",
+   "category": "unreleased_financial_results",
+   "text": "Это сообщение раскрывает неопубликованные финансовые результаты компании до их официального объявления, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-053",
+   "category": "unreleased_financial_results",
+   "text": "Запрещено указывать выручку, прибыль и другие итоги, которые ещё не вышли публично."
+  },
+  {
+   "id": "ru-r-054",
+   "category": "unreleased_financial_results",
+   "text": "Блокировать любые предварительные финансовые показатели компании до публикации."
+  },
+  {
+   "id": "ru-r-055",
+   "category": "m_and_a",
+   "text": "Это сообщение раскрывает непубличные планы слияния, поглощения или инвестиций, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-056",
+   "category": "m_and_a",
+   "text": "Нельзя упоминать неанонсированные сделки M&A и условия инвестиций."
+  },
+  {
+   "id": "ru-r-057",
+   "category": "m_and_a",
+   "text": "Запрещены сообщения о переговорах по покупке или продаже компаний, не объявленных публично."
+  },
+  {
+   "id": "ru-r-058",
+   "category": "product_roadmap",
+   "text": "Это сообщение раскрывает неанонсированный роадмап продукта или план запуска, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-059",
+   "category": "product_roadmap",
+   "text": "Нельзя передавать планы будущих релизов, которые ещё не объявлены."
+  },
+  {
+   "id": "ru-r-060",
+   "category": "product_roadmap",
+   "text": "Запрещены сообщения с датами и составом будущих функций до официального анонса."
+  },
+  {
+   "id": "ru-r-061",
+   "category": "project_codename",
+   "text": "Это сообщение раскрывает подробности внутреннего проекта «{codename}», даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-062",
+   "category": "project_codename",
+   "text": "Запрещено делиться сведениями о проекте {codename}: бюджетом, сроками, клиентами и составом работ."
+  },
+  {
+   "id": "ru-r-063",
+   "category": "project_codename",
+   "text": "Блокировать сообщения с конфиденциальными деталями проекта под кодовым именем {codename}."
+  },
+  {
+   "id": "ru-r-064",
+   "category": "customer_list",
+   "text": "Это сообщение раскрывает список клиентов или их контактные данные, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-065",
+   "category": "customer_list",
+   "text": "Нельзя пересылать перечни клиентов с контактами и реквизитами."
+  },
+  {
+   "id": "ru-r-066",
+   "category": "customer_list",
+   "text": "Запрещены выгрузки из CRM с именами, телефонами и почтой клиентов."
+  },
+  {
+   "id": "ru-r-067",
+   "category": "proprietary_source_code",
+   "text": "Это сообщение раскрывает проприетарный внутренний исходный код, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-068",
+   "category": "proprietary_source_code",
+   "text": "Нельзя вставлять в сообщения фрагменты закрытого кода компании."
+  },
+  {
+   "id": "ru-r-069",
+   "category": "proprietary_source_code",
+   "text": "Блокировать любые куски внутреннего кода, алгоритмов и библиотек, не опубликованных открыто."
+  },
+  {
+   "id": "ru-r-070",
+   "category": "internal_infrastructure",
+   "text": "Это сообщение раскрывает внутренние имена хостов, IP-адреса или архитектуру сети, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-071",
+   "category": "internal_infrastructure",
+   "text": "Запрещено указывать адреса внутренних серверов и схемы корпоративной сети."
+  },
+  {
+   "id": "ru-r-072",
+   "category": "internal_infrastructure",
+   "text": "Блокировать сообщения с внутренними IP, hostname и топологией инфраструктуры."
+  },
+  {
+   "id": "ru-r-073",
+   "category": "competitor_confidential",
+   "text": "Это сообщение раскрывает конфиденциальную информацию о конкуренте, полученную неофициально, даже если оно замаскировано."
+  },
+  {
+   "id": "ru-r-074",
+   "category": "competitor_confidential",
+   "text": "Нельзя использовать и передавать закрытые данные конкурентов: прайсы, отчёты, планы."
+  },
+  {
+   "id": "ru-r-075",
+   "category": "competitor_confidential",
+   "text": "Запрещены сообщения с внутренними материалами других компаний, добытыми без их согласия."
+  }
+ ]
+}

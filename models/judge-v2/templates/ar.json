@@ -1,0 +1,1742 @@
+{
+ "language": "ar",
+ "messages": [
+  {
+   "id": "ar-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ممكن تساعدني أعبّي نموذج W-4؟ رقم الضمان الاجتماعي للموظف [[{us_ssn}]] واسمه {name}."
+  },
+  {
+   "id": "ar-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب لي رداً على قسم الموارد البشرية:\n\nمرحباً، أرفقت بيانات {name} لإتمام التعيين. رقمه الضريبي [[SSN: {us_ssn}]]. شكراً لكم."
+  },
+  {
+   "id": "ar-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الاسم,الرقم,القسم\n{name},[[{us_ssn}]],المبيعات\nرتّب الجدول حسب الاسم وأعطني النتيجة."
+  },
+  {
+   "id": "ar-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "ليش هذا الـ JSON يرجع خطأ في التحقق؟\n{\"employee\": \"{name}\", \"ssn\": \"[[{us_ssn}]]\", \"active\": true}"
+  },
+  {
+   "id": "ar-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين رقم الضمان الاجتماعي ورقم ITIN في أمريكا؟ وهل يحق لغير المواطنين الحصول عليهما؟"
+  },
+  {
+   "id": "ar-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "عدّل لي هذه الفقرة من سياستنا: يُمنع إدخال أرقام الضمان الاجتماعي مثل XXX-XX-XXXX في أي أداة ذكاء اصطناعي خارجية."
+  },
+  {
+   "id": "ar-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "عندي موظف أجنبي رقم هويته الوطنية [[{national_id}]]، كيف أسجله في نظام الرواتب؟"
+  },
+  {
+   "id": "ar-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ملف المتقدم: الاسم {name}، الجنسية فرنسية، [[رقم البطاقة الوطنية {national_id}]]، تاريخ التقديم {date}. لخّص لي الملف في ثلاثة أسطر."
+  },
+  {
+   "id": "ar-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "ترجم للإنجليزية: أقرّ أنا {name} بأن رقم هويتي الوطنية [[{national_id}]] صحيح ويخصني."
+  },
+  {
+   "id": "ar-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "ما المشكلة في هذا الكود؟\nrecord = {'name': '{name}', 'nid': '[[{national_id}]]'}\nيرمي استثناء عند الحفظ في قاعدة البيانات."
+  },
+  {
+   "id": "ar-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كم عدد خانات رقم الهوية الوطنية في إسبانيا وإيطاليا؟ أحتاج الصيغة لإعداد حقل الإدخال فقط."
+  },
+  {
+   "id": "ar-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب لي إيميل أطلب فيه من الموظف الجديد رفع صورة هويته الوطنية عبر البوابة الآمنة وليس عبر البريد، من دون ذكر أي رقم."
+  },
+  {
+   "id": "ar-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "ساعدني في صياغة إيميل لشركة السفر:\n\nنرجو حجز تذكرة للسيد {name}، رقم جواز سفره [[{passport}]] وينتهي في {date}."
+  },
+  {
+   "id": "ar-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "أحتاج أعبّي طلب التأشيرة، جواز سفري رقمه [[{passport}]]، وين أكتبه بالضبط في الاستمارة؟"
+  },
+  {
+   "id": "ar-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الاسم\tرقم الجواز\tالرحلة\n{name}\t[[{passport}]]\tدبي - لندن\nحوّل هذا الجدول إلى قائمة نقطية."
+  },
+  {
+   "id": "ar-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "[INFO] booking.create passenger={name}\n[DEBUG] passport_no=[[{passport}]]\n[ERROR] validation failed: expiry\nليش يفشل الحجز هنا؟"
+  },
+  {
+   "id": "ar-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كم تستغرق عادةً إجراءات تجديد جواز السفر، وما المستندات المطلوبة؟"
+  },
+  {
+   "id": "ar-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "راجع لي هذا البند من سياسة السفر: يجب إرسال بيانات الجواز لقسم السفر عبر النظام الداخلي فقط، ويُرمز له هكذا: <رقم الجواز>."
+  },
+  {
+   "id": "ar-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب رسالة رسمية لـ{name}:\n\nسنرسل لك العقد بالبريد إلى منزلك في [[{address}]]. يرجى تأكيد الاستلام."
+  },
+  {
+   "id": "ar-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "زميلي {name} يسكن في [[{address}]] وأنا أريد أن أطلب له سيارة أجرة من البيت، كيف أكتب العنوان بالإنجليزية؟"
+  },
+  {
+   "id": "ar-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ملف الموظف:\nالاسم: {name}\nالقسم: المحاسبة\n[[عنوان السكن: {address}]]\nلخّص هذا الملف لمدير الموارد البشرية."
+  },
+  {
+   "id": "ar-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "أحمد: متى توصل الطرد؟\nسارة: أرسله على بيت مديرتنا\nسارة: [[{address}\n]]\nأحمد: تمام\nلخص لي المحادثة."
+  },
+  {
+   "id": "ar-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أكتب عنوان المنزل بشكل صحيح في طلبات الشحن الدولية؟ ما الحقول الإلزامية؟"
+  },
+  {
+   "id": "ar-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "صغ لي إيميلاً لقسم الموارد البشرية أطلب فيه تحديث عنوان سكني في النظام، وسأدخل العنوان بنفسي في البوابة."
+  },
+  {
+   "id": "ar-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "عندي رقم جوال {name} الشخصي [[{phone}]]، اكتب لي رسالة واتساب مهذبة أدعوه فيها للمقابلة."
+  },
+  {
+   "id": "ar-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "رد على هذا الإيميل وقل له شكراً:\n\nأهلاً، إذا احتجت أي شيء راسلني على بريدي الشخصي [[{email}]]. {name}"
+  },
+  {
+   "id": "ar-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الاسم,الجوال الشخصي,المدينة\n{name},[[{phone}]],الرياض\nأضف عمود للتحقق من تنسيق الرقم."
+  },
+  {
+   "id": "ar-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "contact = {\"name\": \"{name}\", \"mobile\": \"[[{phone}]]\"}\nاشرح لي كيف أتحقق من صحة الرقم هذا بـ regex."
+  },
+  {
+   "id": "ar-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما أفضل طريقة لأطلب من المتقدمين للوظيفة رقم هاتفهم وبريدهم الشخصي بطريقة تحترم الخصوصية؟"
+  },
+  {
+   "id": "ar-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "حسّن صياغة هذا النموذج: الاسم: ____ ، الجوال: 05X-XXX-XXXX ، البريد: name@example.com"
+  },
+  {
+   "id": "ar-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "{name} مولود بتاريخ [[{dob}]]، كم يكون عمره الآن؟ وهل يستحق التقاعد المبكر؟"
+  },
+  {
+   "id": "ar-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "بيانات الموظف للتأمين:\nالاسم الكامل: {name}\n[[تاريخ الميلاد: {dob}]]\nالقسم: التسويق\nراجع الملف وقل لي إن كان ناقصاً."
+  },
+  {
+   "id": "ar-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب لي إيميل تهنئة قصير للزميلة {name}، فعيد ميلادها [[{dob}]] ونريد مفاجأة."
+  },
+  {
+   "id": "ar-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "INFO user.profile name={name}\nINFO dob=[[{dob}]]\nWARN mismatch\nما معنى هذا التحذير؟"
+  },
+  {
+   "id": "ar-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أحسب العمر بدقة في Excel انطلاقاً من تاريخ الميلاد؟ أعطني الدالة فقط."
+  },
+  {
+   "id": "ar-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "ترجم إلى الإنجليزية: يرجى إدخال تاريخ ميلادك بصيغة يوم/شهر/سنة في الحقل المخصص."
+  },
+  {
+   "id": "ar-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "ليش يرجع لي 401 عندما أستدعي الخدمة؟\nheaders = {'Authorization': 'Bearer [[{api_key}]]'}\nr = requests.get(url, headers=headers)"
+  },
+  {
+   "id": "ar-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "هذا مفتاح الـ API حقنا [[{api_key}]]، هل ممكن تكتب لي سكربت يسحب الفواتير الشهرية؟"
+  },
+  {
+   "id": "ar-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "$ curl -H \"x-api-key: [[{api_key}]]\" https://api.example.com/v1/users\n{\"error\": \"rate_limited\"}\nكيف أتجاوز حد الطلبات؟"
+  },
+  {
+   "id": "ar-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "ملف .env للمشروع:\nAPP_ENV=prod\nSTRIPE_KEY=[[{api_key}\n]]\nPORT=8080\nرتّب لي الملف وأضف تعليقات بالعربي."
+  },
+  {
+   "id": "ar-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما أفضل طريقة لتخزين مفاتيح الـ API في تطبيق Node؟ هل أستخدم متغيرات البيئة أم خدمة أسرار؟"
+  },
+  {
+   "id": "ar-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "عدّل هذا الكود ليقرأ المفتاح من البيئة:\nheaders = {'Authorization': 'Bearer <API_KEY>'}\nولا تنسَ التعليق بالعربي."
+  },
+  {
+   "id": "ar-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "نسيت كيف أضبط الراوتر، كلمة سر الأدمن عندنا [[{password}]]، كيف أغيّرها من الواجهة؟"
+  },
+  {
+   "id": "ar-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً للمتعاقد الجديد:\n\nمرحباً {name}، بيانات الدخول للخادم: المستخدم admin وكلمة المرور [[{password}]]. غيّرها فوراً."
+  },
+  {
+   "id": "ar-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "عندي خطأ في الاتصال:\nconn = connect(user='root', password='[[{password}]]')\nيقول access denied، ما السبب؟"
+  },
+  {
+   "id": "ar-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "علي: وش كلمة السر حقت الحساب المشترك؟\nنور: خذ\nنور: ك.ل.م.ة [[{password}\n]]\nعلي: شكراً\nلخّص لي المحادثة لأضيفها لتوثيق الفريق."
+  },
+  {
+   "id": "ar-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما معايير كلمة المرور القوية؟ هل الجمل الطويلة أفضل من الرموز المعقدة؟"
+  },
+  {
+   "id": "ar-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "لخّص لي سياسة كلمات المرور في شركتنا: لا تشارك كلمة مرورك أبداً، ولا تكتبها في أي أداة. مثال للتوضيح: password=********"
+  },
+  {
+   "id": "ar-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "لماذا يرفض السيرفر مفتاحي عند الاتصال بـ SSH؟\n[[{private_key}]]\nالصلاحيات 600 ومع ذلك نفس الخطأ."
+  },
+  {
+   "id": "ar-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "هذا المفتاح الخاص حق الشهادة، حوّله لي إلى صيغة PEM:\n[[{private_key}]]"
+  },
+  {
+   "id": "ar-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "من وثيقة النشر الداخلية:\nيوضع المفتاح التالي في مجلد ~/.ssh على خادم الإنتاج:\n[[{private_key}]]\nأعد صياغة الخطوات بالعربي المبسّط."
+  },
+  {
+   "id": "ar-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "deploy.sh: loading key...\n[[{private_key}]]\nfatal: bad passphrase\nساعدني أفهم الخطأ."
+  },
+  {
+   "id": "ar-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين المفتاح العام والمفتاح الخاص في SSH؟ وأين يجب أن أحفظ المفتاح الخاص؟"
+  },
+  {
+   "id": "ar-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "اكتب لي أمر ssh-keygen لإنشاء زوج مفاتيح ed25519 وشرح لكل خيار بالعربي. لا أريد لصق أي مفتاح هنا."
+  },
+  {
+   "id": "ar-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "التطبيق لا يتصل بقاعدة البيانات، هذا الرابط:\nDATABASE_URL=[[{db_url}]]\nما الذي ينقصه؟"
+  },
+  {
+   "id": "ar-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "عندي سلسلة الاتصال [[{db_url}]] وأريد أن أستخدمها في Prisma، كيف أضبط الـ schema؟"
+  },
+  {
+   "id": "ar-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2025-03-02 ERROR pool: cannot connect to [[{db_url}]]\n2025-03-02 ERROR retry 3/3 failed\nفسّر لي هذا السجل."
+  },
+  {
+   "id": "ar-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "ملف config.yaml:\ndb:\n  url: \"[[{db_url}\n]]\"\n  pool: 10\nراجع الإعدادات واقترح تحسينات."
+  },
+  {
+   "id": "ar-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "هل يجوز وضع سلسلة اتصال قاعدة البيانات في مستودع Git؟ وما البديل الأفضل؟"
+  },
+  {
+   "id": "ar-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "اشرح لي أجزاء سلسلة الاتصال: postgres://USER:PASSWORD@HOST:5432/DBNAME ، وكيف أعبّئها من متغيرات البيئة."
+  },
+  {
+   "id": "ar-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "المريض {name} شُخّص عندنا اليوم بمرض السكري من النوع الثاني [[مع اعتلال الكلى]]، ما الخطوة التالية في الخطة العلاجية؟"
+  },
+  {
+   "id": "ar-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب تقريراً للطبيب المحوّل إليه:\n\nنفيدكم بأن [[المريضة {name} تعاني من فشل القلب الاحتقاني وتم تشخيصها بذلك بتاريخ {date}]]. نرجو التقييم."
+  },
+  {
+   "id": "ar-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "ملاحظات اجتماع الفريق الطبي:\n- [[{name}: تأكد تشخيص الاكتئاب الحاد والقلق، يحتاج متابعة نفسية]]\n- موعد المراجعة القادمة الأسبوع المقبل\nحوّلها إلى مهام."
+  },
+  {
+   "id": "ar-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "سجل الحالة:\nالاسم: {name}\n[[التشخيص: سرطان\nالثدي المرحلة الثانية]]\nأعد كتابة الملخص بلغة مبسطة للأهل."
+  },
+  {
+   "id": "ar-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما أعراض مرض السكري من النوع الثاني، وما الفحوصات المعتادة لتأكيده؟ سؤال عام للتوعية."
+  },
+  {
+   "id": "ar-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "لخّص هذه التعليمات: يجب إخفاء هوية المرضى وإزالة الأسماء من أي تقرير قبل مشاركته، ويُكتب بدلاً منها [اسم المريض]."
+  },
+  {
+   "id": "ar-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "المريض {name} [[يصرف له ميتفورمين 500 ملغ مرتين يومياً وإنسولين لانتوس 20 وحدة]]، هل هناك تعارض دوائي مع الأسبرين؟"
+  },
+  {
+   "id": "ar-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً للصيدلية:\n\nنرجو تجديد الوصفة الخاصة بـ{name}: [[أملوديبين 10 ملغ وأتورفاستاتين 40 ملغ يومياً]] لمدة ثلاثة أشهر."
+  },
+  {
+   "id": "ar-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "المريض,الدواء,الجرعة\n{name},[[سيرترالين,50 ملغ مرة يومياً]],شهرين\nاحسب لي تاريخ انتهاء الصرف."
+  },
+  {
+   "id": "ar-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "سجل الصرف رقم {amount}:\nالمريضة {name}\n[[ترامادول 50 ملغ كل ثماني ساعات،\nوباراسيتامول 1 غرام عند الحاجة]]\nلخّصه لي."
+  },
+  {
+   "id": "ar-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين الوصفة الطبية العادية والوصفة المراقبة؟ وكم مدة صلاحية كل منهما؟"
+  },
+  {
+   "id": "ar-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "راجع هذه الفقرة من إجراءات الصيدلية: لا تُشارك سجلات الصرف الدوائي للمرضى خارج النظام الداخلي. استخدم [اسم المريض] و[اسم الدواء] في الأمثلة."
+  },
+  {
+   "id": "ar-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "أريد أن أدفع رسوم الاشتراك، رقم بطاقتي [[{card}]] وتنتهي في 09/28، هل الرقم يعمل؟"
+  },
+  {
+   "id": "ar-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب رداً للعميل:\n\nأكدنا طلبك، وتم الخصم من البطاقة [[{card}]] بمبلغ {amount}. شكراً لثقتك بنا."
+  },
+  {
+   "id": "ar-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "العميل,رقم البطاقة,المبلغ\n{name},[[{card}]],{amount}\nأضف عمود للحالة وحدد التكرارات."
+  },
+  {
+   "id": "ar-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "payment.process user={name}\ncard=[[{card}]]\nstatus=declined code=05\nلماذا رُفضت العملية؟"
+  },
+  {
+   "id": "ar-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أعرف أن رقم البطاقة صالح من الناحية الشكلية؟ ما هي خوارزمية Luhn؟"
+  },
+  {
+   "id": "ar-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "اكتب هذه التعليمة بشكل أوضح: لا تحفظ رقم البطاقة كاملاً في السجلات، واعرضه مقنّعاً هكذا 4111 **** **** 1111."
+  },
+  {
+   "id": "ar-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "صغ إيميلاً لقسم الحسابات:\n\nنرجو تحويل المستحقات إلى حساب {name} الآيبان [[{iban}]] خلال هذا الأسبوع."
+  },
+  {
+   "id": "ar-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "حولت مبلغاً إلى [[{iban}]] ولم يصل بعد، كم يستغرق التحويل الدولي عادةً؟"
+  },
+  {
+   "id": "ar-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "المورد,الآيبان,المبلغ\n{company},[[{iban}]],{amount}\nجمّع المبالغ حسب المورد من فضلك."
+  },
+  {
+   "id": "ar-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "payout = {\"beneficiary\": \"{name}\", \"iban\": \"[[{iban}]]\"}\nالخطأ يقول invalid format، ما المشكلة؟"
+  },
+  {
+   "id": "ar-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين رقم الآيبان ورقم الحساب العادي؟ وكم عدد خانات الآيبان في السعودية والإمارات؟"
+  },
+  {
+   "id": "ar-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً أطلب فيه من المورد تزويدنا ببيانات حسابه البنكي عبر نموذج الشركة المعتمد، بدون ذكر أي أرقام."
+  },
+  {
+   "id": "ar-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "هل يعتبر هذا عادلاً؟ [[راتب {name} الأساسي {amount} شهرياً مع بدل سكن ومكافأة سنوية]] وهو زميلي في نفس الدرجة."
+  },
+  {
+   "id": "ar-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً للمدير المالي:\n\nبخصوص الترقية: [[سيصبح راتب {name} {amount} بدءاً من {date}]]، يرجى اعتماد التعديل."
+  },
+  {
+   "id": "ar-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الموظف,الراتب\n{name},[[{amount} شهرياً]]\nرتّب الجدول واحسب المتوسط."
+  },
+  {
+   "id": "ar-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "ريم: بالمناسبة تعرف كم يأخذ {name}؟\nلينا: [[يأخذ {amount} وعنده بونص تحفيزي ضعف راتبين]]\nريم: واو!\nلخّص المحادثة بنقاط."
+  },
+  {
+   "id": "ar-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أتفاوض على زيادة الراتب مع مديري؟ أريد نصائح عامة وصيغة مهذبة للطلب."
+  },
+  {
+   "id": "ar-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ترجم هذه السياسة للإنجليزية: تُعدّ معلومات الرواتب سرية، ولا يحق لأي موظف الاطلاع على راتب زميله أو نشره."
+  },
+  {
+   "id": "ar-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب لي إيميلاً لمدير الموارد البشرية بالتفاصيل التالية:\n[[تقييم أداء {name} هذا العام \"دون التوقعات\"، وتم توجيه إنذار كتابي له بسبب التأخر المتكرر عن العمل]]"
+  },
+  {
+   "id": "ar-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ملف التقييم السنوي:\nالموظفة: {name}\n[[الملاحظات: ضعف في الالتزام بالمواعيد، وخطة تحسين أداء لمدة 90 يوماً قبل الفصل]]\nأعد صياغته بشكل أكثر دبلوماسية."
+  },
+  {
+   "id": "ar-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "محضر لجنة التأديب:\n- [[مخالفة {name}: إساءة استخدام صلاحيات النظام، قرار الإيقاف عن العمل أسبوعين]]\n- تحديث السياسة\nاستخرج لي المهام."
+  },
+  {
+   "id": "ar-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": true,
+   "text": "هل تقدر تساعدني أكتب خطاب لزميلي؟ [[تقييمه ضعيف جداً (1 من 5) حسب مديره، ومتوقع أن يُفصل]] أريد أن أخبره بلطف."
+  },
+  {
+   "id": "ar-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما هي أفضل طريقة لكتابة تقييم أداء بنّاء لموظف لديه نقاط ضعف؟ أعطني قالباً عاماً."
+  },
+  {
+   "id": "ar-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "صغ إيميلاً أذكّر فيه المدراء بأن موعد تسليم تقييمات الأداء السنوية يوم الخميس، دون ذكر أسماء أو نتائج."
+  },
+  {
+   "id": "ar-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "حسّن صياغة هذا الإيميل للإدارة:\n\nبحسب استشارة المحامي الخارجي، [[ينبغي ألا نعترف بأي مسؤولية في قضية {company}، فاحتمال خسارتنا مرتفع وقد تصل التعويضات إلى {amount}]]."
+  },
+  {
+   "id": "ar-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "مذكرة سرية من المستشار القانوني:\n[[رأينا القانوني أن الشرط 14 في العقد باطل، وننصح بعدم الإفصاح عن ذلك للطرف الآخر قبل جلسة التسوية]]\nلخّصها في ثلاث نقاط."
+  },
+  {
+   "id": "ar-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "المحامي قال لي أمس: [[لو وقّعنا الاتفاقية بصيغتها الحالية فنحن معرضون للمساءلة الجنائية، وعليه نغير البند الخامس سراً]]. كيف أبلغ الفريق؟"
+  },
+  {
+   "id": "ar-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "منى: وش قال المستشار القانوني؟\nخالد: [[نصحنا بأن نتجنب\nالاعتراف بالخطأ في النزاع مع {company} لأن ذلك سيستخدم ضدنا في المحكمة]]\nمنى: طيب\nلخّص النقاش."
+  },
+  {
+   "id": "ar-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما معنى السرية بين المحامي وموكّله؟ وهل تنطبق على المحامي الداخلي في الشركة؟"
+  },
+  {
+   "id": "ar-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ترجم هذا التنبيه: هذه الرسالة قد تكون محمية بامتياز المحامي والعميل، فإن لم تكن المقصود بها فالرجاء حذفها وإبلاغ المرسل."
+  },
+  {
+   "id": "ar-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "حسّن صياغة هذه الفقرة للمستثمرين:\n[[إيرادات الربع الثالث بلغت {amount} بانخفاض عن توقعاتنا، وصافي الربح {amount}، ولم نعلنها بعد]]."
+  },
+  {
+   "id": "ar-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "مسودة بيان الأرباح (سرية حتى الإعلان):\n[[حققت {company} نمواً 18% في الإيرادات السنوية وارتفعت الأرباح التشغيلية إلى {amount}]]\nراجع اللغة والأرقام."
+  },
+  {
+   "id": "ar-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "اجتماع المالية:\n- [[النتائج الأولية للربع: إيرادات {amount} وخسارة تشغيلية، الإعلان يوم {date}]]\n- اعتماد الميزانية\nحوّلها لقائمة مهام."
+  },
+  {
+   "id": "ar-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "البند,الربع الرابع (غير معلن)\n[[الإيرادات,{amount}\nالربح الصافي,{amount}]]\nاكتب لي ملخصاً تنفيذياً من هذا الجدول."
+  },
+  {
+   "id": "ar-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما معنى فترة الصمت قبل الإعلان عن الأرباح؟ وما القيود على الموظفين خلالها؟"
+  },
+  {
+   "id": "ar-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً أذكّر فيه فريق الاستثمار بأن موعد إعلان نتائج الربع القادم لم يُحدد بعد، دون أي أرقام."
+  },
+  {
+   "id": "ar-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "صغ إيميلاً سرياً لمجلس الإدارة:\n\n[[نخطط للاستحواذ على {company} مقابل {amount}، ومن المتوقع توقيع الاتفاقية الأولية في {date}]]. يرجى الحفاظ على السرية."
+  },
+  {
+   "id": "ar-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "مذكرة داخلية:\n[[نجري مفاوضات متقدمة للاندماج مع {company}، والقيمة المبدئية للصفقة {amount}]]\nلخصها وأضف نقاط المخاطر."
+  },
+  {
+   "id": "ar-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "عندنا صفقة لم تُعلن: [[سنشتري حصة 40% من {company} عبر جولة استثمار بقيمة {amount}]]. كيف أرتب العرض التقديمي؟"
+  },
+  {
+   "id": "ar-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "اجتماع الاستراتيجية:\n- [[العرض النهائي للاستحواذ على\n{company} بمبلغ {amount}، ولا يعلم به أحد خارج الفريق]]\n- مراجعة الميزانية\nاستخرج الإجراءات."
+  },
+  {
+   "id": "ar-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين الاندماج والاستحواذ من الناحية المحاسبية؟ أريد شرحاً مبسطاً."
+  },
+  {
+   "id": "ar-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "ترجم هذا الإعلان العام إلى الإنجليزية: أعلنت الشركة اليوم عن اكتمال استحواذها على شركة ناشئة في مجال الذكاء الاصطناعي، وفق البيان الصحفي المنشور."
+  },
+  {
+   "id": "ar-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ساعدني أعد العرض: [[سنطلق {product} في {date} بميزة ترجمة فورية بالذكاء الاصطناعي، ولم نعلن عنها لأحد]]."
+  },
+  {
+   "id": "ar-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "خارطة الطريق الداخلية:\n[[الربع القادم: إطلاق {product} 2.0، ثم دعم الدفع بالتقسيط في {date}، وإيقاف النسخة القديمة]]\nرتب الخطة زمنياً بجدول."
+  },
+  {
+   "id": "ar-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً لفريق المبيعات:\n\n[[تقرر تأجيل إطلاق {product} الجديد إلى {date} وسيشمل لوحة تحكم جديدة كلياً]]، لكن لا تخبروا العملاء بعد."
+  },
+  {
+   "id": "ar-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "اجتماع المنتج:\n- [[الإطلاق السري لتطبيق {product}\nعلى الجوال في {date}، وتسعيره أقل من المنافسين]]\n- تحديث الواجهة\nحوّلها لمهام."
+  },
+  {
+   "id": "ar-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أبني خارطة طريق لمنتج جديد؟ ما القوالب التي يستخدمها مدراء المنتج عادةً؟"
+  },
+  {
+   "id": "ar-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً أخبر فيه العملاء أن النسخة الجديدة ستتوفر قريباً حسب ما نُشر في مدونتنا الرسمية اليوم."
+  },
+  {
+   "id": "ar-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ساعدني بعرض مشروع {codename}: [[الهدف منه بناء محرك توصيات جديد بميزانية {amount}، ويقوده فريق {name}، والتسليم النهائي {date}]]."
+  },
+  {
+   "id": "ar-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب تحديثاً لإدارة الشركة:\n\nمشروع {codename}: [[تأخرنا أسبوعين بسبب مشكلة التكامل مع {company}، والتكلفة ارتفعت إلى {amount}]]."
+  },
+  {
+   "id": "ar-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "اجتماع اليوم:\n- [[{codename}: قررنا التحول إلى بنية microservices وإيقاف النسخة القديمة بحلول {date}]]\n- مراجعة الميزانية\nاستخرج المهام."
+  },
+  {
+   "id": "ar-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "سامي: وش وضع {codename}؟\nهدى: [[اجتزنا مرحلة\nالتجربة الداخلية والتسليم لـ{company} في {date}]]\nسامي: ممتاز\nلخص لي ما قيل."
+  },
+  {
+   "id": "ar-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "هل يمكنك مساعدتي في كتابة جملة قصيرة للتهنئة بنهاية أسبوع عمل على مشروع {codename}؟ لا أريد ذكر أي تفاصيل."
+  },
+  {
+   "id": "ar-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب دعوة اجتماع عامة بعنوان: مراجعة مشروع {codename} الأسبوعية، الخميس الساعة العاشرة، بدون أي محتوى آخر."
+  },
+  {
+   "id": "ar-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الشركة,جهة الاتصال,الإيميل\n[[{company},{name},{name}@example.com\n{company},{name},{name}@example.org]]\nاحذف التكرارات ورتبها أبجدياً."
+  },
+  {
+   "id": "ar-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "أريد ردّاً لفريق التسويق:\n\nقائمة عملائنا الرئيسيين للحملة: [[{company} و{company} و{company} مع جهات الاتصال وأرقام هواتفهم المرفقة أدناه]]."
+  },
+  {
+   "id": "ar-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "من تقرير المبيعات الداخلي:\n[[أكبر عملائنا هذا العام: {company} ({amount})، {company} ({amount})، {company} ({amount})]]\nلخّصه لي."
+  },
+  {
+   "id": "ar-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "customers = [\n  [[{\"name\": \"{company}\", \"contact\": \"{name}\"},\n  {\"name\": \"{company}\", \"contact\": \"{name}\"}]]\n]\nكيف أحوّل هذه القائمة إلى CSV؟"
+  },
+  {
+   "id": "ar-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أبني قائمة عملاء محتملين بشكل قانوني ومتوافق مع قوانين الخصوصية؟"
+  },
+  {
+   "id": "ar-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب إيميلاً لفريق المبيعات أطلب فيه تحديث بيانات العملاء في نظام الـ CRM قبل نهاية الشهر. لن أرفق أي قائمة."
+  },
+  {
+   "id": "ar-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "هل يمكنك تحسين أداء هذه الدالة؟\n[[def calculate_risk_score(user, txns):\n    w = INTERNAL_WEIGHTS['fraud_v3']\n    return sum(t.amount * w[t.type] for t in txns) / (user.age_days + 1)]]"
+  },
+  {
+   "id": "ar-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "ليش هذا الكلاس يسرّب ذاكرة؟\n[[class PricingEngine {\n  private cache = new Map();\n  quote(sku: string) { return this.cache.get(sku) ?? this.computeMargin(sku); }\n}]]"
+  },
+  {
+   "id": "ar-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "من مستودعنا الداخلي، أضف تعليقات بالعربي على هذا الجزء:\n[[func matchOrders(book *OrderBook) {\n  for _, o := range book.Bids { book.settleWithPriority(o, secretTiebreak) }\n}]]"
+  },
+  {
+   "id": "ar-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "stack trace من خدمتنا:\n[[at com.acme.billing.ProrationEngine.compute(ProrationEngine.java:88)\n   // if (plan.tier == ENTERPRISE) discount = base * 0.37 + loyaltyBonus(user);]]\nما سبب NPE هنا؟"
+  },
+  {
+   "id": "ar-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما أفضل ممارسات كتابة كود نظيف في بايثون؟ أعطني مثالاً عاماً على دالة فرز."
+  },
+  {
+   "id": "ar-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "اشرح لي كيف تعمل الدالة المعروفة quicksort في JavaScript وأعطني تنفيذاً بسيطاً مع تعليقات بالعربي."
+  },
+  {
+   "id": "ar-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "هذا السجل من الخادم:\n[[ssh admin@{ip} timed out\nping {hostname} -> no reply]]\nما الذي يمنع الوصول؟"
+  },
+  {
+   "id": "ar-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "خادم قاعدة البيانات عندنا [[عنوانه {ip} واسمه {hostname}]]، كيف أضبط الجدار الناري ليسمح بمنفذ 5432 فقط؟"
+  },
+  {
+   "id": "ar-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "مخطط الشبكة الداخلي:\n[[- بوابة VPN: {hostname}\n- شبكة الإنتاج: {ip}/24]]\nاكتب لي توثيقاً بالعربي لهذا المخطط."
+  },
+  {
+   "id": "ar-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "servers:\n  [[- host: {hostname}\n    ip: {ip}]]\n    role: db-primary\nالـ ansible playbook لا ينفذ، لماذا؟"
+  },
+  {
+   "id": "ar-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين عناوين IP الخاصة والعامة؟ وما هي نطاقات الشبكات الخاصة المعروفة؟"
+  },
+  {
+   "id": "ar-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "اكتب لي سكربت bash يفحص الاتصال بقائمة خوادم، وسأضع القائمة بنفسي لاحقاً في ملف hosts.txt محلي."
+  },
+  {
+   "id": "ar-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب ملخصاً للإدارة:\n\n[[حصلنا على قائمة الأسعار الداخلية لشركة {company}، وهي تمنح كبار العملاء خصماً 30% وتخطط لخفض الأسعار في {date}]]."
+  },
+  {
+   "id": "ar-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "وثيقة مسرّبة وصلتني:\n[[استراتيجية {company} السرية للعام القادم: دخول سوق الخليج بميزانية {amount} واستهداف عملائنا الحاليين]]\nلخّصها وقارنها بخطتنا."
+  },
+  {
+   "id": "ar-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "صديقي يعمل عند {company} وقال لي: [[سيطلقون منتجاً منافساً لنا في {date}، وتكلفة التصنيع عندهم أقل منا بـ 25%]]. كيف نستفيد من هذه المعلومة؟"
+  },
+  {
+   "id": "ar-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "فهد: وصلتني معلومة من داخل {company}\nفهد: [[عندهم مشكلة\nأمنية خطيرة غير معلنة في منصتهم، والعملاء لا يعلمون]]\nنادر: ممتاز\nاكتب لي رسالة للمبيعات نستغل بها ذلك."
+  },
+  {
+   "id": "ar-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "كيف أجري تحليل منافسين مشروع اعتماداً على المصادر العامة فقط مثل التقارير السنوية والموقع الرسمي؟"
+  },
+  {
+   "id": "ar-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "حسّن هذه الفقرة: قارنّا أسعار {company} المنشورة على موقعها العام مع أسعارنا، وتبيّن أنها أعلى بنسبة بسيطة."
+  },
+  {
+   "id": "ar-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "اكتب لي رداً مهذباً على عميل يشتكي من تأخر الشحنة، وقل له إننا نعتذر وسنعوضه بخصم على الطلب القادم."
+  },
+  {
+   "id": "ar-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "أعد صياغة هذا الإيميل ليكون أكثر رسمية:\n\nمرحبا، أبغى أعدّل موعد الاجتماع يوم الأحد بدل الثلاثاء. شكراً."
+  },
+  {
+   "id": "ar-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "ليش هذا الكود يعطي خطأ undefined؟\nconst total = items.map(i => i.price * i.qty).reduce((a, b) => a + b);\nconsole.log(totel);"
+  },
+  {
+   "id": "ar-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "لخّص لي هذه الفقرة في ثلاث نقاط: يهدف النظام الجديد إلى تقليل زمن معالجة الطلبات عبر أتمتة المراجعة الأولية وتوزيع المهام تلقائياً على الفرق."
+  },
+  {
+   "id": "ar-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ظهر لي هذا الخطأ عند تشغيل المشروع:\nnpm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@^17\nكيف أحلّه؟"
+  },
+  {
+   "id": "ar-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "ترجم هذه الجملة إلى الإنجليزية: نسعد بانضمامكم إلى ورشة العمل التدريبية يوم الأربعاء القادم في مقر الشركة."
+  },
+  {
+   "id": "ar-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "الشهر,المبيعات\nيناير,120\nفبراير,135\nمارس,150\nاحسب لي نسبة النمو بين كل شهرين."
+  },
+  {
+   "id": "ar-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "ملاحظات اجتماع الفريق:\n- ناقشنا موعد المراجعة الأسبوعية\n- أحمد سيجهز العرض\n- نتابع يوم الخميس\nحوّلها إلى قائمة مهام مع المسؤول عن كل مهمة."
+  },
+  {
+   "id": "ar-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "سلمى: هل جهزتم التقرير؟\nعمر: لسه، أحتاج يوم إضافي\nسلمى: تمام، الأحد آخر موعد\nلخّص لي هذه المحادثة في سطر واحد."
+  },
+  {
+   "id": "ar-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "ما الفرق بين REST وGraphQL؟ ومتى أفضّل استخدام كل منهما في مشروع متوسط الحجم؟"
+  },
+  {
+   "id": "ar-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "اقترح لي خطة تدريب لمدة أسبوع لموظف جديد في قسم خدمة العملاء."
+  },
+  {
+   "id": "ar-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "اكتب لي إيميل شكر قصير لفريق التصميم بعد إنهاء حملة رمضان بنجاح."
+  },
+  {
+   "id": "ar-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "اكتب لي استعلام SQL يعرض أعلى عشرة منتجات مبيعاً هذا الشهر من جدول orders وجدول products."
+  },
+  {
+   "id": "ar-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "راجع هذا النص لغوياً وصحح الأخطاء الإملائية: إن التحول الرقمي لم يعد خياراً بل ضرورة لبقاء المؤسسات في سوق متغير."
+  },
+  {
+   "id": "ar-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "عند تشغيل docker compose up يظهر:\nError: port 3000 is already allocated\nكيف أعرف أي برنامج يستخدم هذا المنفذ؟"
+  },
+  {
+   "id": "ar-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "ترجم إلى العربية: Please review the attached agenda and share your feedback before Friday."
+  },
+  {
+   "id": "ar-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "أريد أفكاراً لعنوان عرض تقديمي عن أهمية الأمن السيبراني للموظفين الجدد."
+  },
+  {
+   "id": "ar-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "محضر اجتماع التسويق: اتفقنا على نشر ثلاث منشورات أسبوعياً، وتحديث المدونة، ومراجعة التقارير شهرياً. حوّله إلى جدول زمني."
+  },
+  {
+   "id": "ar-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "المنتج,الكمية,السعر\nقلم,100,2\nدفتر,50,5\nأضف عموداً للإجمالي وشرح الصيغة."
+  },
+  {
+   "id": "ar-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "ساعدني في كتابة طلب إجازة لثلاثة أيام الأسبوع القادم لمديري المباشر بأسلوب مهذب."
+  }
+ ],
+ "rules": [
+  {
+   "id": "ar-r-001",
+   "category": "us_ssn",
+   "text": "هذه الرسالة تكشف عن رقم ضمان اجتماعي أمريكي لشخص ما، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-002",
+   "category": "us_ssn",
+   "text": "امنع أي رسالة تتضمن رقم الضمان الاجتماعي الأمريكي (SSN) بصيغته الكاملة."
+  },
+  {
+   "id": "ar-r-003",
+   "category": "us_ssn",
+   "text": "لا يجوز إرسال أرقام SSN حقيقية لأي موظف أو عميل في نص الرسالة أو في الجداول المرفقة."
+  },
+  {
+   "id": "ar-r-004",
+   "category": "national_id_non_us",
+   "text": "هذه الرسالة تكشف عن رقم هوية وطنية صادر عن دولة غير الولايات المتحدة، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-005",
+   "category": "national_id_non_us",
+   "text": "احظر أي رسالة تحتوي على رقم بطاقة وطنية أو رقم هوية لشخص من خارج أمريكا."
+  },
+  {
+   "id": "ar-r-006",
+   "category": "national_id_non_us",
+   "text": "لا تسمح بمشاركة أرقام الهويات الوطنية الأجنبية (مثل الهوية الفرنسية أو الإيطالية) مع المساعد."
+  },
+  {
+   "id": "ar-r-007",
+   "category": "passport_number",
+   "text": "هذه الرسالة تكشف عن رقم جواز سفر خاص بشخص ما، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-008",
+   "category": "passport_number",
+   "text": "امنع الرسائل التي تتضمن رقم جواز سفر فعلي."
+  },
+  {
+   "id": "ar-r-009",
+   "category": "passport_number",
+   "text": "لا يُسمح بكتابة أرقام جوازات السفر في أي طلب موجّه إلى أداة الذكاء الاصطناعي."
+  },
+  {
+   "id": "ar-r-010",
+   "category": "home_address",
+   "text": "هذه الرسالة تكشف عن عنوان سكن خاص بشخص طبيعي، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-011",
+   "category": "home_address",
+   "text": "احظر أي رسالة تتضمن عنوان منزل شخص بعينه (شارع ومدينة)."
+  },
+  {
+   "id": "ar-r-012",
+   "category": "home_address",
+   "text": "لا تسمح بإرسال عناوين السكن الخاصة بالموظفين أو العملاء."
+  },
+  {
+   "id": "ar-r-013",
+   "category": "personal_contact",
+   "text": "هذه الرسالة تكشف عن رقم هاتف شخصي أو بريد إلكتروني شخصي لفرد محدد، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-014",
+   "category": "personal_contact",
+   "text": "امنع الرسائل التي تحتوي على رقم جوال أو إيميل خاص بشخص بعينه."
+  },
+  {
+   "id": "ar-r-015",
+   "category": "personal_contact",
+   "text": "لا يُسمح بمشاركة وسائل الاتصال الشخصية للأفراد (الهاتف أو البريد) مع المساعد."
+  },
+  {
+   "id": "ar-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "هذه الرسالة تكشف عن تاريخ ميلاد شخص مذكور بالاسم، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "احظر أي رسالة تربط اسم شخص بتاريخ ميلاده."
+  },
+  {
+   "id": "ar-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "لا تسمح بذكر تاريخ ميلاد أي فرد مقترناً باسمه."
+  },
+  {
+   "id": "ar-r-019",
+   "category": "api_key",
+   "text": "هذه الرسالة تكشف عن مفتاح API أو رمز وصول لخدمة سحابية أو SaaS، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-020",
+   "category": "api_key",
+   "text": "امنع أي رسالة تحتوي على مفتاح API فعلي أو توكن وصول."
+  },
+  {
+   "id": "ar-r-021",
+   "category": "api_key",
+   "text": "لا يُسمح بلصق مفاتيح الخدمات مثل AWS أو GitHub أو Slack في الرسائل."
+  },
+  {
+   "id": "ar-r-022",
+   "category": "password",
+   "text": "هذه الرسالة تكشف عن كلمة مرور أو عبارة مرور لحساب ما، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-023",
+   "category": "password",
+   "text": "احظر الرسائل التي تتضمن كلمة سر حقيقية لأي حساب أو جهاز."
+  },
+  {
+   "id": "ar-r-024",
+   "category": "password",
+   "text": "لا تسمح بكتابة كلمات المرور بشكل صريح داخل نص الرسالة أو الكود."
+  },
+  {
+   "id": "ar-r-025",
+   "category": "private_key",
+   "text": "هذه الرسالة تكشف عن مفتاح تشفير خاص (SSH أو PGP أو TLS)، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-026",
+   "category": "private_key",
+   "text": "امنع أي رسالة تحتوي على كتلة PRIVATE KEY كاملة أو جزء كبير منها."
+  },
+  {
+   "id": "ar-r-027",
+   "category": "private_key",
+   "text": "لا يسمح بإرسال المفاتيح الخاصة أو ملفات pem الحساسة إلى المساعد."
+  },
+  {
+   "id": "ar-r-028",
+   "category": "db_connection_string",
+   "text": "هذه الرسالة تكشف عن سلسلة اتصال بقاعدة بيانات تتضمن بيانات اعتماد، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-029",
+   "category": "db_connection_string",
+   "text": "احظر الرسائل التي تحتوي على رابط اتصال بقاعدة بيانات فيه اسم مستخدم وكلمة مرور."
+  },
+  {
+   "id": "ar-r-030",
+   "category": "db_connection_string",
+   "text": "لا تسمح بلصق DATABASE_URL أو أي connection string حقيقية."
+  },
+  {
+   "id": "ar-r-031",
+   "category": "patient_diagnosis",
+   "text": "هذه الرسالة تكشف عن تشخيص أو حالة مرضية لمريض يمكن التعرف عليه، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-032",
+   "category": "patient_diagnosis",
+   "text": "امنع أي رسالة تربط اسم مريض بتشخيصه أو مرضه."
+  },
+  {
+   "id": "ar-r-033",
+   "category": "patient_diagnosis",
+   "text": "لا تسمح بذكر الحالة الصحية أو التشخيص الطبي لشخص محدد."
+  },
+  {
+   "id": "ar-r-034",
+   "category": "prescription_record",
+   "text": "هذه الرسالة تكشف عن وصفة أو سجل أدوية لمريض يمكن التعرف عليه، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-035",
+   "category": "prescription_record",
+   "text": "احظر أي رسالة تذكر الأدوية الموصوفة لشخص محدد بالاسم."
+  },
+  {
+   "id": "ar-r-036",
+   "category": "prescription_record",
+   "text": "لا تسمح بمشاركة سجلات صرف الأدوية الخاصة بالمرضى."
+  },
+  {
+   "id": "ar-r-037",
+   "category": "credit_card",
+   "text": "هذه الرسالة تكشف عن رقم بطاقة دفع، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-038",
+   "category": "credit_card",
+   "text": "امنع أي رسالة تحتوي على رقم بطاقة ائتمان أو مدين كاملة."
+  },
+  {
+   "id": "ar-r-039",
+   "category": "credit_card",
+   "text": "لا يُسمح بكتابة أرقام البطاقات المصرفية في الرسائل أو في الجداول."
+  },
+  {
+   "id": "ar-r-040",
+   "category": "bank_account",
+   "text": "هذه الرسالة تكشف عن رقم حساب بنكي أو آيبان أو رقم توجيه، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-041",
+   "category": "bank_account",
+   "text": "احظر الرسائل التي تتضمن آيبان أو رقم حساب مصرفي فعلي."
+  },
+  {
+   "id": "ar-r-042",
+   "category": "bank_account",
+   "text": "لا تسمح بإرسال تفاصيل الحسابات البنكية للأفراد أو الموردين."
+  },
+  {
+   "id": "ar-r-043",
+   "category": "salary_of_named_person",
+   "text": "هذه الرسالة تكشف عن راتب أو تعويضات موظف محدد بالاسم، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-044",
+   "category": "salary_of_named_person",
+   "text": "امنع أي رسالة تذكر مرتب أو مكافآت شخص بعينه."
+  },
+  {
+   "id": "ar-r-045",
+   "category": "salary_of_named_person",
+   "text": "لا تسمح بمشاركة بيانات الرواتب الفردية للموظفين."
+  },
+  {
+   "id": "ar-r-046",
+   "category": "performance_review",
+   "text": "هذه الرسالة تكشف عن تقييم أداء أو سجل تأديبي لموظف محدد بالاسم، حتى لو كان مموّهاً."
+  },
+  {
+   "id": "ar-r-047",
+   "category": "performance_review",
+   "text": "احظر أي رسالة تتضمن إنذارات أو تقييمات أداء لشخص بعينه."
+  },
+  {
+   "id": "ar-r-048",
+   "category": "performance_review",
+   "text": "لا يُسمح بمشاركة نتائج المراجعة السنوية أو الإجراءات التأديبية للموظفين."
+  },
+  {
+   "id": "ar-r-049",
+   "category": "attorney_client_privilege",
+   "text": "هذه الرسالة تكشف عن استشارة قانونية أو مراسلات محمية بامتياز المحامي والموكّل، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-050",
+   "category": "attorney_client_privilege",
+   "text": "امنع أي رسالة تنقل مضمون نصيحة قانونية سرية من محامي الشركة."
+  },
+  {
+   "id": "ar-r-051",
+   "category": "attorney_client_privilege",
+   "text": "لا تسمح بلصق آراء المستشار القانوني الخاصة بالنزاعات أو القضايا."
+  },
+  {
+   "id": "ar-r-052",
+   "category": "unreleased_financial_results",
+   "text": "هذه الرسالة تكشف عن نتائج مالية للشركة لم تُعلن للجمهور بعد، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-053",
+   "category": "unreleased_financial_results",
+   "text": "احظر أي رسالة تتضمن أرقام الإيرادات أو الأرباح قبل الإعلان الرسمي."
+  },
+  {
+   "id": "ar-r-054",
+   "category": "unreleased_financial_results",
+   "text": "لا يُسمح بمشاركة النتائج المالية الأولية أو المسودات غير المنشورة."
+  },
+  {
+   "id": "ar-r-055",
+   "category": "m_and_a",
+   "text": "هذه الرسالة تكشف عن خطط اندماج أو استحواذ أو استثمار لم تُعلن للجمهور، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-056",
+   "category": "m_and_a",
+   "text": "امنع أي رسالة تذكر صفقة استحواذ أو اندماج سرية مع شركة معينة."
+  },
+  {
+   "id": "ar-r-057",
+   "category": "m_and_a",
+   "text": "لا تسمح بمشاركة تفاصيل المفاوضات أو قيم الصفقات غير المعلنة."
+  },
+  {
+   "id": "ar-r-058",
+   "category": "product_roadmap",
+   "text": "هذه الرسالة تكشف عن خارطة طريق منتج أو خطة إطلاق لم تُعلن، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-059",
+   "category": "product_roadmap",
+   "text": "احظر الرسائل التي تتضمن ميزات أو مواعيد إطلاق غير معلنة لمنتجاتنا."
+  },
+  {
+   "id": "ar-r-060",
+   "category": "product_roadmap",
+   "text": "لا تسمح بمشاركة خطط المنتجات المستقبلية السرية."
+  },
+  {
+   "id": "ar-r-061",
+   "category": "project_codename",
+   "text": "هذه الرسالة تكشف عن تفاصيل المشروع الداخلي المسمّى {codename}، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-062",
+   "category": "project_codename",
+   "text": "امنع أي رسالة تتضمن معلومات حول مشروع {codename} (الأهداف، الجدول، الميزانية)."
+  },
+  {
+   "id": "ar-r-063",
+   "category": "project_codename",
+   "text": "لا يُسمح بمشاركة محتوى سري يخص المشروع الداخلي {codename}."
+  },
+  {
+   "id": "ar-r-064",
+   "category": "customer_list",
+   "text": "هذه الرسالة تكشف عن قائمة عملاء الشركة أو بيانات التواصل مع عملاء محددين، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-065",
+   "category": "customer_list",
+   "text": "احظر الرسائل التي تتضمن أسماء عملائنا مع بياناتهم أو قيمة تعاملاتهم."
+  },
+  {
+   "id": "ar-r-066",
+   "category": "customer_list",
+   "text": "لا تسمح بنسخ قوائم العملاء أو جهات اتصالهم إلى المساعد."
+  },
+  {
+   "id": "ar-r-067",
+   "category": "proprietary_source_code",
+   "text": "هذه الرسالة تكشف عن شيفرة مصدرية داخلية مملوكة للشركة، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-068",
+   "category": "proprietary_source_code",
+   "text": "امنع أي رسالة تحتوي على أجزاء من الكود الخاص بمنتجاتنا أو خوارزمياتنا الداخلية."
+  },
+  {
+   "id": "ar-r-069",
+   "category": "proprietary_source_code",
+   "text": "لا يُسمح بلصق كود المستودعات الخاصة (دوال أو كلاسات أو ملفات كاملة) في الرسائل."
+  },
+  {
+   "id": "ar-r-070",
+   "category": "internal_infrastructure",
+   "text": "هذه الرسالة تكشف عن أسماء مضيفين أو عناوين IP أو تفاصيل بنية الشبكة الداخلية، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-071",
+   "category": "internal_infrastructure",
+   "text": "احظر أي رسالة تتضمن عناوين خوادمنا الداخلية أو أسماء أجهزة الشبكة الخاصة."
+  },
+  {
+   "id": "ar-r-072",
+   "category": "internal_infrastructure",
+   "text": "لا تسمح بمشاركة مخططات الشبكة الداخلية أو عناوين IP الخاصة بالشركة."
+  },
+  {
+   "id": "ar-r-073",
+   "category": "competitor_confidential",
+   "text": "هذه الرسالة تكشف عن معلومات سرية تم الحصول عليها عن شركة منافسة، حتى لو كانت مموّهة."
+  },
+  {
+   "id": "ar-r-074",
+   "category": "competitor_confidential",
+   "text": "امنع أي رسالة تتضمن بيانات داخلية غير منشورة عن منافس."
+  },
+  {
+   "id": "ar-r-075",
+   "category": "competitor_confidential",
+   "text": "لا تسمح بمشاركة وثائق أو أسرار حصلنا عليها من جهات داخلية لدى المنافسين."
+  }
+ ]
+}

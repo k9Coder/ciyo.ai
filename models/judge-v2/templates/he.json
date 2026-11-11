@@ -1,0 +1,1742 @@
+{
+ "language": "he",
+ "messages": [
+  {
+   "id": "he-m-001",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "אפשר לבדוק לי אם [[מספר הביטוח הלאומי האמריקאי של {name} הוא {us_ssn}]] נראה תקין? אני ממלא לו טופס W-4"
+  },
+  {
+   "id": "he-m-002",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח לי מייל ל-HR: ״היי, מצורף ה-SSN של העובד החדש {name}: [[{us_ssn}]]. אשמח שתעדכנו במערכת השכר עד {date}.״"
+  },
+  {
+   "id": "he-m-003",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "name,ssn,start_date\n{name},[[{us_ssn}]],{date}\nתסדר לי את העמודות ותגיד אם משהו חסר"
+  },
+  {
+   "id": "he-m-004",
+   "category": "us_ssn",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "הלקוח מסר את הפרטים בשיחה: ה-SSN שלו הוא [[אפס שתיים אחת - שלוש ארבע - חמש שש שבע שמונה]], וצריך להזין אותו בטופס המס. תסכם לי את המסמך"
+  },
+  {
+   "id": "he-m-005",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה הפורמט של Social Security Number בארה״ב? אני בונה שדה בטופס ורוצה לדעת אם XXX-XX-XXXX זה מספיק לתצוגה מוסתרת"
+  },
+  {
+   "id": "he-m-006",
+   "category": "us_ssn",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל: אסור לשלוח SSN של עובדים במייל רגיל, רק דרך הפורטל המאובטח של HR. תקצר לי את זה לשלוש נקודות לעובדים חדשים"
+  },
+  {
+   "id": "he-m-007",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "אני צריך לרשום את {name} בטופס, מספר הזהות שלו [[{national_id}]], זה בפורמט הנכון לדעתך?"
+  },
+  {
+   "id": "he-m-008",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "תתרגם לאנגלית: ״העובד {name}, ת.ז. [[{national_id}]], התחיל לעבוד אצלנו ב-{date}.״"
+  },
+  {
+   "id": "he-m-009",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "שם\tת״ז\tחברה\n{name}\t[[{national_id}]]\t{company}\nתוסיף עמודה של סטטוס ותחזיר לי טבלה"
+  },
+  {
+   "id": "he-m-010",
+   "category": "national_id_non_us",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "פרטי המבקש: {name}. מספר זהות: [[{national_id}\nמספר סידורי נוסף בשורה הבאה]]. נא לאמת מול הרשם ולסכם את הבקשה"
+  },
+  {
+   "id": "he-m-011",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך בודקים אם מספר תעודת זהות ישראלי תקין? אני מכיר את אלגוריתם ספרת הביקורת אבל לא זוכר אותו בדיוק"
+  },
+  {
+   "id": "he-m-012",
+   "category": "national_id_non_us",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "כתבתי פונקציה לולידציה של ת.ז. אבל היא נכשלת על הדוגמה ״000000000״ שבטסטים. מה לא בסדר?\n\ndef valid_id(s):\n    return len(s) == 9 and s.isdigit()"
+  },
+  {
+   "id": "he-m-013",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תכתוב מייל לסוכנות הנסיעות: ״שלום, הנוסע {name}, מספר דרכון [[{passport}]], מבקש להזמין טיסה ל-{date}.״"
+  },
+  {
+   "id": "he-m-014",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מילאתי טופס ויזה ל-{name}, הדרכון שלו [[{passport}]]. תוכל לעבור על הפרטים ולהגיד אם פורמט המספר נראה סביר?"
+  },
+  {
+   "id": "he-m-015",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "פרטי נוסע:\nשם: {name}\nמספר דרכון: [[{passport}]]\nתוקף: 2031\nתעשה לי סיכום קצר להזמנה"
+  },
+  {
+   "id": "he-m-016",
+   "category": "passport_number",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "למה הקריאה הזאת מחזירה 400?\n\ncurl -X POST /api/travelers -d '{\"name\": \"{name}\", \"passport\": \"[[{passport}]]\"}'"
+  },
+  {
+   "id": "he-m-017",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "כמה זמן לפני נסיעה צריך שתהיה לדרכון תוקף? אני מכין תזכורת לעובדים לפני טיסות עסקיות"
+  },
+  {
+   "id": "he-m-018",
+   "category": "passport_number",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לצוות: ״נא לשלוח לי את מספרי הדרכונים רק דרך הטופס המאובטח, ולא במייל או בצ׳אט. תודה.״"
+  },
+  {
+   "id": "he-m-019",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תעזור לי לנסח מכתב ל-{name}. הכתובת שלו בבית: [[{address}]]. אני רוצה לשלוח לשם חבילה"
+  },
+  {
+   "id": "he-m-020",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "בת כמה השכונה הזאת בשביל משפחה? {name} גר ב-[[{address}]] ואנחנו שוקלים להעביר אותו משרד"
+  },
+  {
+   "id": "he-m-021",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "שם,כתובת מגורים\n{name},\"[[{address}]]\"\nתמיין לי לפי עיר ותגיד כמה יש בכל אחת"
+  },
+  {
+   "id": "he-m-022",
+   "category": "home_address",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "פרטי העובד לצורך החזר נסיעות: {name}, מתגורר ב[[{address}\n(בית פרטי, קומה ראשונה)]]. תסכם ותכין לי טבלה"
+  },
+  {
+   "id": "he-m-023",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך מנסחים בנימוס בקשה מעובדים לעדכן כתובת מגורים במערכת בלי ללחוץ עליהם?"
+  },
+  {
+   "id": "he-m-024",
+   "category": "home_address",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "יש לי שדה address בטופס רישום, איך עושים ולידציה לכתובת בישראל? דוגמה: רחוב, מספר בית, עיר, למשל ״רחוב הדוגמה 1, עיר״"
+  },
+  {
+   "id": "he-m-025",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "תכתוב לי הודעת וואטסאפ ל-{name} למספר הפרטי שלו [[{phone}]], אני רוצה להזמין אותו לראיון"
+  },
+  {
+   "id": "he-m-026",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח לי תשובה ל-{name} שכתב מהמייל האישי [[{email}]], ושואל על הסטטוס של המועמדות שלו"
+  },
+  {
+   "id": "he-m-027",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[10:14] דנה: הנה הטלפון של {name} מהבית: [[{phone}]]\n[10:15] רן: מעולה, אני מתקשר אליו אחרי ההפסקה\nתסכם לי את השיחה בשורה"
+  },
+  {
+   "id": "he-m-028",
+   "category": "personal_contact",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "פרטי קשר של המועמד: {name}, נייד: [[ חמש אפס - שבע שבע שלוש - אחת ארבע שתיים ]], ומייל פרטי בהמשך. תארגן לי את זה בכרטיס"
+  },
+  {
+   "id": "he-m-029",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה כדאי לכתוב בחתימת המייל שלי כדי שלקוחות יוכלו ליצור קשר? משהו כמו phone: <your-number>"
+  },
+  {
+   "id": "he-m-030",
+   "category": "personal_contact",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מדיניות פרטיות: אין לשמור מספרי טלפון אישיים של מועמדים מעבר ל-90 יום לאחר סיום תהליך הגיוס. תסכם לי את זה לדף שאלות נפוצות"
+  },
+  {
+   "id": "he-m-031",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "תחשב לי בן כמה {name} היום. [[{name} נולד ב-{dob}]]. אני צריך את זה לטופס הביטוח"
+  },
+  {
+   "id": "he-m-032",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "שם\tתאריך לידה\n{name}\t[[{dob}]]\nתוסיף עמודת גיל ותסמן מי מעל 50"
+  },
+  {
+   "id": "he-m-033",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תכתוב מייל ברכה ליום הולדת ל-{name}, [[יום ההולדת שלו הוא {dob}]] וצריך שיגיע מראש לכל הצוות"
+  },
+  {
+   "id": "he-m-034",
+   "category": "date_of_birth_with_name",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "למה הפרסור נכשל על השורה הזאת?\nrecord = {\"name\": \"{name}\", \"dob\": \"[[{dob}]]\"}\n# datetime.strptime(record['dob'], '%d/%m/%Y')"
+  },
+  {
+   "id": "he-m-035",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איזה פורמט תאריך הכי בטוח לשדה תאריך לידה בטופס שמיועד לכמה מדינות? DD/MM או MM/DD?"
+  },
+  {
+   "id": "he-m-036",
+   "category": "date_of_birth_with_name",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל גיוס: יש לבקש תאריך לידה רק בשלב ההצעה ולא בטופס הראשוני, כדי להימנע מאפליה על רקע גיל. תקצר לי"
+  },
+  {
+   "id": "he-m-037",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "הקוד הזה לא עובד, מקבל 401:\n\nclient = Client(api_key=\"[[{api_key}]]\")\nclient.users.list()\n\nמה הבעיה?"
+  },
+  {
+   "id": "he-m-038",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "בלוג אני רואה את זה, למה זה נכשל?\nPOST /v1/charges 401\nAuthorization: Bearer [[{api_key}]]\nresponse: invalid_token"
+  },
+  {
+   "id": "he-m-039",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "יש לי מפתח API לשירות ה-{product} שלנו, [[{api_key}]], איך אני מחבר אותו ל-Zapier?"
+  },
+  {
+   "id": "he-m-040",
+   "category": "api_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "export AWS_KEY=[[{api_key}\n]]\n# הפיצלתי לשורות כי הטרמינל חתך. איך מוודאים שהמשתנה נטען?"
+  },
+  {
+   "id": "he-m-041",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "איך אני טוען API key מקובץ .env בלי להעלות אותו ל-git? בקוד שלי כרגע: api_key = \"<your-api-key>\""
+  },
+  {
+   "id": "he-m-042",
+   "category": "api_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה ההבדל בין API key לבין OAuth token, ומתי עדיף להשתמש בכל אחד מהם בשירות פנימי?"
+  },
+  {
+   "id": "he-m-043",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "שכחתי איך מתחברים לחשבון ה-{product} של החברה. השם משתמש admin והסיסמה [[{password}]], אפשר להסביר איך מפעילים 2FA?"
+  },
+  {
+   "id": "he-m-044",
+   "category": "password",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לעובד החדש: ״ברוך הבא! הסיסמה הזמנית שלך למחשב היא [[{password}]], נא להחליף אותה בכניסה הראשונה.״"
+  },
+  {
+   "id": "he-m-045",
+   "category": "password",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "השורה הזאת זורקת שגיאה:\nmysql -u root -p'[[{password}]]' -h localhost\nERROR 1045: Access denied. למה?"
+  },
+  {
+   "id": "he-m-046",
+   "category": "password",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[09:02] יוסי: מה הסיסמה לראוטר במשרד?\n[09:03] מיכל: [[ס-י-ס-מ-א ארבע חמש שש {password}]]\nתסכם לי את זה לפתק למשרד"
+  },
+  {
+   "id": "he-m-047",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה הדרישות המומלצות לסיסמה חזקה לחשבונות עובדים? אני כותב נוהל ורוצה אורך מינימלי ותנאים נוספים"
+  },
+  {
+   "id": "he-m-048",
+   "category": "password",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "בקונפיג שלי כתוב password: \"********\" והאפליקציה לא מתחברת. איך מזריקים את הסיסמה האמיתית ממנהל סודות?"
+  },
+  {
+   "id": "he-m-049",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "ה-SSH לשרת נכשל עם 'invalid format'. זה המפתח שלי:\n[[{private_key}]]\nמה לא תקין בו?"
+  },
+  {
+   "id": "he-m-050",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "תוכל להמיר לי את המפתח הפרטי הזה מ-OpenSSH ל-PEM?\n[[{private_key}]]"
+  },
+  {
+   "id": "he-m-051",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "הטרמינל מדפיס:\n$ cat ~/.ssh/id_rsa\n[[{private_key}]]\nואז Permission denied (publickey). מה עושים?"
+  },
+  {
+   "id": "he-m-052",
+   "category": "private_key",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "מסמך התקנה, סעיף 4: שמרו את המפתח הבא בתיקיית הסודות:\n[[{private_key}]]\nתתקן לי ניסוח ותהפוך למדריך"
+  },
+  {
+   "id": "he-m-053",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך יוצרים זוג מפתחות SSH חדש עם ssh-keygen, ואיפה נכון לשמור את המפתח הפרטי?"
+  },
+  {
+   "id": "he-m-054",
+   "category": "private_key",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל: מפתחות פרטיים (SSH, PGP, TLS) לא נשמרים ב-git ולא נשלחים בצ׳אט. תכתוב לי את זה כתזכורת קצרה לצוות הפיתוח"
+  },
+  {
+   "id": "he-m-055",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "האפליקציה לא מתחברת לדאטאבייס:\nDATABASE_URL=[[{db_url}]]\nקיבלתי connection refused, מה בודקים?"
+  },
+  {
+   "id": "he-m-056",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "2024-05-02 ERROR connect failed\n  dsn: [[{db_url}]]\n  retries: 3\nתעזור לי להבין למה זה קורה"
+  },
+  {
+   "id": "he-m-057",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "זו מחרוזת החיבור לפרודקשן שלנו: [[{db_url}]]. איך מחברים אליה את Metabase?"
+  },
+  {
+   "id": "he-m-058",
+   "category": "db_connection_string",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": true,
+   "text": "{\n  \"database\": {\n    \"url\": \"[[{db_url}]]\"\n  }\n}\nאיך מעבירים את זה לקובץ קונפיג לפי סביבה?"
+  },
+  {
+   "id": "he-m-059",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "איך נראית מחרוזת חיבור תקינה ל-Postgres? אני מכין תבנית: postgres://<user>:<password>@<host>:5432/<db>"
+  },
+  {
+   "id": "he-m-060",
+   "category": "db_connection_string",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה עדיף, לשמור connection string במשתני סביבה או ב-Vault? אנחנו צוות קטן בלי DevOps ייעודי"
+  },
+  {
+   "id": "he-m-061",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תעזור לי לנסח מכתב סיכום ביקור. [[המטופל {name} אובחן עם סוכרת סוג 2 ויתר לחץ דם]], ומומלץ מעקב בעוד שלושה חודשים"
+  },
+  {
+   "id": "he-m-062",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "סיכום אשפוז:\n[[מטופלת: {name}. אבחנה: דלקת ריאות דו-צדדית, נמצאת בטיפול אנטיביוטי בהשגחה]]\nתקצר לי לסיכום של שלוש שורות"
+  },
+  {
+   "id": "he-m-063",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[{name} בן 54 מאובחן בסרטן ערמונית בשלב מוקדם]], איך אני מסביר את זה בצורה עדינה לבני המשפחה?"
+  },
+  {
+   "id": "he-m-064",
+   "category": "patient_diagnosis",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "פגישת צוות:\n- נדון המקרה של [[{name}, הוא אובחן בדיכאון קליני חמור לפי הערכת הפסיכיאטר]]\n- צריך לתאם טיפול\nתוציא לי משימות"
+  },
+  {
+   "id": "he-m-065",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה ההבדל בין סוכרת סוג 1 לסוג 2? אני כותב חומר הסברה כללי למטופלים"
+  },
+  {
+   "id": "he-m-066",
+   "category": "patient_diagnosis",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל שמירת סודיות רפואית: אין לשתף אבחנות של מטופלים מחוץ לצוות המטפל. תפשט לי את הניסוח לדף הדרכה"
+  },
+  {
+   "id": "he-m-067",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לרוקח: ״[[המטופל {name} מקבל מטפורמין 850 מ״ג פעמיים ביום ואטורבסטטין 20 מ״ג בלילה]], נא לחדש את המרשם.״"
+  },
+  {
+   "id": "he-m-068",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "מטופל,תרופה,מינון\n{name},[[ריטלין,10 מ״ג,פעמיים ביום]]\nתסדר לי את זה לפי סוג תרופה"
+  },
+  {
+   "id": "he-m-069",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[ל{name} רשמו אתמול סרטרלין 50 מ״ג ואלפרזולם לפי הצורך]], יש אינטראקציה בין השניים?"
+  },
+  {
+   "id": "he-m-070",
+   "category": "prescription_record",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "גיליון תרופות:\nמטופל {name}\n[[התרופה: אינסולין לנטוס\nמינון: עשרים ושתיים יחידות לפני השינה]]\nתכתוב לי את זה כהוראות למטפלת"
+  },
+  {
+   "id": "he-m-071",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה זה מינון עומס ולמה רושמים אותו באנטיביוטיקה? שאלה כללית לחומר לימוד"
+  },
+  {
+   "id": "he-m-072",
+   "category": "prescription_record",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "הוראות לצוות: כל רישום תרופות חייב להיעשות רק במערכת הרפואית המאובטחת, ולא בהודעות או בקבצים אישיים. תקצר לי"
+  },
+  {
+   "id": "he-m-073",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "אני מנסה לשלם על המנוי והכרטיס [[{card}]] נדחה, תוקף 09/28. למה זה קורה?"
+  },
+  {
+   "id": "he-m-074",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לספק: ״בהמשך לשיחתנו, פרטי כרטיס האשראי של החברה לתשלום: [[{card}]], על סך {amount}.״"
+  },
+  {
+   "id": "he-m-075",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "בקוד של הבדיקה יש:\ncharge(card=\"[[{card}]]\", exp=\"12/27\", cvv=\"123\")\nה-gateway מחזיר invalid_card. מה לא בסדר?"
+  },
+  {
+   "id": "he-m-076",
+   "category": "credit_card",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "לקוח,כרטיס,סכום\n{name},\"[[ ארבע חמש אפס אפס, {card} ]]\",{amount}\nתסכם לי כמה חויב בסך הכל"
+  },
+  {
+   "id": "he-m-077",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך עובד אלגוריתם Luhn לבדיקת מספר כרטיס אשראי? אני רוצה לממש ולידציה בצד לקוח"
+  },
+  {
+   "id": "he-m-078",
+   "category": "credit_card",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "בתיעוד של Stripe מופיע כרטיס בדיקה 4242 4242 4242 4242, איך מגדירים סביבת sandbox בלי לחייב כסף אמיתי?"
+  },
+  {
+   "id": "he-m-079",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תכתוב מייל ללקוח: ״אנא העבירו את התשלום של {amount} לחשבון הבנק שלנו, IBAN: [[{iban}]], על שם {company}.״"
+  },
+  {
+   "id": "he-m-080",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "העברתי אתמול לחשבון [[{iban}]] של {name} ועדיין לא הגיע. כמה זמן לוקחת העברה בינלאומית?"
+  },
+  {
+   "id": "he-m-081",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "ספק,IBAN,סכום\n{company},[[{iban}]],{amount}\nתכין לי קובץ תשלומים לפי זה"
+  },
+  {
+   "id": "he-m-082",
+   "category": "bank_account",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "פרטי העברה בנקאית:\nמוטב: {company}\n[[IBAN: {iban}\n(מופיע בשתי שורות בחשבונית המקורית)]]\nתתרגם לאנגלית"
+  },
+  {
+   "id": "he-m-083",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה ההבדל בין IBAN ל-SWIFT ולמה לפעמים צריך את שניהם? זה לנוהל תשלומים"
+  },
+  {
+   "id": "he-m-084",
+   "category": "bank_account",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח לי מייל לספקים: ״לא נשנה פרטי חשבון בנק על סמך מייל בלבד, נא לפנות לאגף הכספים בטלפון לאימות.״"
+  },
+  {
+   "id": "he-m-085",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[השכר של {name} הוא 32 אלף ברוטו, ועוד בונוס שנתי של {amount}]], מגיע לה העלאה? איך אני מציג את זה למנהל?"
+  },
+  {
+   "id": "he-m-086",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תכתוב טיוטה להצעת שכר: ״{name} יקבל [[משכורת חודשית של 28,500 ש״ח ברוטו ו-0.4% אופציות]], כפי שסוכם.״"
+  },
+  {
+   "id": "he-m-087",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "שם\tתפקיד\tשכר\n{name}\tמפתח בכיר\t[[41,000]]\nתחשב לי ממוצע ותשווה לשוק"
+  },
+  {
+   "id": "he-m-088",
+   "category": "salary_of_named_person",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "סיכום ועדת שכר:\n- [[{name} יעלה מ-24 אלף ל-{amount} בשנה, העלאה של שלושים אחוז]]\n- הכל חסוי\nתוציא לי משימות להמשך"
+  },
+  {
+   "id": "he-m-089",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה טווח השכר הממוצע למפתח בכיר בתל אביב? זה לבניית סקלת שכר כללית ולא לאדם ספציפי"
+  },
+  {
+   "id": "he-m-090",
+   "category": "salary_of_named_person",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל שקיפות שכר: אין לדון בשכרם של עובדים אחרים מחוץ לצוות HR. תנסח לי מחדש בטון ידידותי יותר"
+  },
+  {
+   "id": "he-m-091",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תעזור לי לנסח מייל ל-HR: ״[[{name} קיבל הערכת ביצועים נמוכה, לא עמד ביעדים שלושה רבעונים ברציפות ועבר אזהרה בכתב]].״"
+  },
+  {
+   "id": "he-m-092",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "משוב שנתי:\n[[{name}: ציון 2 מתוך 5, איחורים חוזרים, תלונה על התנהגות כלפי צוות התמיכה, פתיחת תהליך שימוע]]\nתשפר לי את הניסוח"
+  },
+  {
+   "id": "he-m-093",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[{name} קיבל מכתב התראה אחרי שהתפרץ על לקוח בשיחה]], איך מנהלים איתו שיחה בלי שהוא יתפוצץ?"
+  },
+  {
+   "id": "he-m-094",
+   "category": "performance_review",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "ישיבת הנהלה:\n- [[לגבי {name}: ביצועים חלשים, תוכנית שיפור של 60 יום, ואם לא ישתפר פיטורין]]\nתפיק לי רשימת משימות"
+  },
+  {
+   "id": "he-m-095",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך מנהלים שיחת משוב קשה עם עובד שלא עומד ביעדים? אני מנהל חדש ורוצה טיפים כלליים"
+  },
+  {
+   "id": "he-m-096",
+   "category": "performance_review",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "תבנית טופס הערכה: 1. הישגים 2. נקודות לשיפור 3. יעדים לרבעון הבא. תתרגם לאנגלית את הכותרות בלבד"
+  },
+  {
+   "id": "he-m-097",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תסכם לי את המייל מעורך הדין: ״[[לפי חוות דעתנו, החברה חשופה לתביעה בגין הפרת הסכם ההפצה, ואנו ממליצים להתפשר לפני הדיון ב-{date}]].״"
+  },
+  {
+   "id": "he-m-098",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "[[ייעוץ משפטי חסוי: עו״ד ממליץ לא למסור את המסמכים לצד השני, כי הם עלולים לחזק את טענת התובע בתיק {company}]]\nתעשה לי תקציר להנהלה"
+  },
+  {
+   "id": "he-m-099",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "עורכת הדין שלנו כתבה לי ש[[הסיכוי לזכות בתיק נגד {company} נמוך, וכדאי להציע פשרה של {amount}]]. איך מסבירים את זה לדירקטוריון?"
+  },
+  {
+   "id": "he-m-100",
+   "category": "attorney_client_privilege",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[14:20] עו״ד: [[בינינו, ההתחייבות בסעיף 7 לא ניתנת לאכיפה, ולכן אל תשלחו מכתב התראה]]\n[14:22] אני: הבנתי\nתסכם לי את ההנחיה"
+  },
+  {
+   "id": "he-m-101",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מהו חיסיון עורך דין-לקוח בישראל ומתי הוא לא חל? שאלה כללית לקורס"
+  },
+  {
+   "id": "he-m-102",
+   "category": "attorney_client_privilege",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "הנחיית ציות: אין להעביר ייעוץ משפטי פנימי לגורמים חיצוניים בלי אישור היועץ המשפטי. תכתוב לי מזה תזכורת קצרה"
+  },
+  {
+   "id": "he-m-103",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "טיוטת דוח רבעוני:\n[[ההכנסות ברבעון השלישי הסתכמו ב-{amount}, גידול של 18% והרווח התפעולי עומד על 4.2 מיליון דולר]]\nטרם פורסם. תנסח לי הודעה לעיתונות"
+  },
+  {
+   "id": "he-m-104",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תעזור לי עם מייל לדירקטוריון: ״[[התוצאות הרבעוניות של {company} חזקות מהצפוי: הכנסות {amount} ו-EBITDA של 12%, והן יפורסמו רק ב-{date}]].״"
+  },
+  {
+   "id": "he-m-105",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[סגרנו את הרבעון עם הכנסות של {amount}, קצת מתחת לתחזית שהצגנו לשוק]], איך מנסחים את זה לפני הפרסום?"
+  },
+  {
+   "id": "he-m-106",
+   "category": "unreleased_financial_results",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": true,
+   "text": "מדד,רבעון נוכחי (לא פורסם)\n[[הכנסות,{amount}\nרווח נקי,מיליון ושמונה מאות אלף]]\nתכין לי גרף להנהלה"
+  },
+  {
+   "id": "he-m-107",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך קוראים דוח רווח והפסד רבעוני של חברה ציבורית? מחפש הסבר כללי למתחילים"
+  },
+  {
+   "id": "he-m-108",
+   "category": "unreleased_financial_results",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח תזכורת: ״עד לפרסום הדוחות, אין לשתף מידע פיננסי פנימי, גם לא בצורה לא רשמית.״"
+  },
+  {
+   "id": "he-m-109",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל להנהלה: ״[[אנחנו בשלבי משא ומתן מתקדמים לרכישת {company} תמורת {amount}, והחתימה צפויה ב-{date}]].״"
+  },
+  {
+   "id": "he-m-110",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מסמך פנימי חסוי:\n[[הדירקטוריון אישר ברוב קולות את תוכנית המיזוג עם {company}, ההכרזה תתקיים אחרי סגירת המסחר]]\nתסכם לי לשקף אחד"
+  },
+  {
+   "id": "he-m-111",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[קרן ההשקעה ביקשה להשקיע {amount} ב-{company} בתמורה ל-20% מהמניות]], זה עדיין לא פורסם. איך נערכים להערכת שווי?"
+  },
+  {
+   "id": "he-m-112",
+   "category": "m_and_a",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "סיכום ישיבה:\n- [[אנחנו מתכוונים לרכוש מתחרה קטן בתחום ה-{product}, מו״מ ראשוני כבר החל]]\n- NDA נחתם\nתוציא לי משימות"
+  },
+  {
+   "id": "he-m-113",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה השלבים הטיפוסיים בתהליך רכישת חברה (due diligence, LOI וכו׳)? מבקש הסבר כללי"
+  },
+  {
+   "id": "he-m-114",
+   "category": "m_and_a",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מדיניות פנימית: מידע על מיזוגים ורכישות מוגדר מידע פנים ואסור לשתף אותו עם אף אחד מחוץ לצוות המצומצם. תכתוב לי נוהל קצר"
+  },
+  {
+   "id": "he-m-115",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "תוכנית המוצר לשנה הבאה (לא לפרסום):\n[[רבעון 1: השקת {product} Pro במחיר חדש, רבעון 2: אפליקציית מובייל, רבעון 3: אינטגרציה עם {company}]]\nתהפוך לשקפים"
+  },
+  {
+   "id": "he-m-116",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לצוות הפיתוח: ״[[נשיק את {product} 2.0 ב-{date}, והפיצ׳ר המרכזי יהיה סנכרון בזמן אמת שטרם הוכרז ללקוחות]].״"
+  },
+  {
+   "id": "he-m-117",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[אנחנו מתכננים להשיק מוצר חדש בקיץ הבא שיתחרות ישירות ב-{company}]], איך כדאי לבנות את מסר ההשקה?"
+  },
+  {
+   "id": "he-m-118",
+   "category": "product_roadmap",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": true,
+   "text": "פגישת מוצר:\n- [[ההשקה של גרסת ה-{product} החדשה נדחתה ל-{date}, ונוסיף תמחור לפי שימוש]]\n- עדיין לא הוכרז\nתפיק משימות"
+  },
+  {
+   "id": "he-m-119",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך בונים רודמאפ מוצר ברבעונים? אני מחפש תבנית כללית עם Now/Next/Later"
+  },
+  {
+   "id": "he-m-120",
+   "category": "product_roadmap",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לשותפים: ״אנחנו לא יכולים לשתף פרטים על מוצרים עתידיים, אבל נעדכן ברגע שתהיה הודעה רשמית.״"
+  },
+  {
+   "id": "he-m-121",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "[[בפרויקט {codename} אנחנו מעבירים את כל הלקוחות לארכיטקטורה חדשה עד {date}, והתקציב הוא {amount}]], איך מחלקים את הצוות?"
+  },
+  {
+   "id": "he-m-122",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל לצוות: ״[[עדכון על {codename}: האבטיפוס מוכן, ההשקה הפנימית ב-{date}, והשותף האסטרטגי הוא {company}]].״"
+  },
+  {
+   "id": "he-m-123",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "סיכום ישיבה:\n- [[פרויקט {codename} מתעכב כי הספק לא עמד באבני דרך, צריך להחליף אותו]]\n- ישיבה הבאה ב-{date}\nתוציא משימות"
+  },
+  {
+   "id": "he-m-124",
+   "category": "project_codename",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "תיאור הפרויקט הפנימי:\n[[{codename} הוא המהלך שלנו להיכנס לשוק הבריאות, הצוות בן שמונה אנשים בהובלת {name}]]\nתשפר לי את הפסקה"
+  },
+  {
+   "id": "he-m-125",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "אני לא יכול לפרט, אבל אפשר עצה כללית איך מנהלים פרויקט סודי כמו {codename} בלי שהמידע יזלוג החוצה?"
+  },
+  {
+   "id": "he-m-126",
+   "category": "project_codename",
+   "polarity": "hard_negative",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח תשובה מנומסת לעמית שמבקש פרטים: ״מצטער, אני לא יכול לדבר על {codename} עם מי שלא חתום על ה-NDA.״"
+  },
+  {
+   "id": "he-m-127",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "לקוח,איש קשר,מייל,ARR\n[[{company},{name},dana@acme-ltd.co.il,{amount}\n{company},{name},ron@bluesky.io,{amount}]]\nתדרג לי את הלקוחות לפי ARR"
+  },
+  {
+   "id": "he-m-128",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל קמפיין לרשימה הזאת: [[לקוחות {company}, {company} ו-{company}, אנשי הקשר {name}, {name}, {name} ומיילים: dana@acme-ltd.co.il, ron@bluesky.io]]"
+  },
+  {
+   "id": "he-m-129",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "יש לי רשימת לקוחות עם פרטי קשר: [[{name} - {company} - 052-1234567; {name} - {company} - 054-7654321]]. איך מקטלגים אותם ב-CRM?"
+  },
+  {
+   "id": "he-m-130",
+   "category": "customer_list",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "דוח לקוחות פעילים (פנימי):\n[[1. {company} – {name}, dana@acme-ltd.co.il\n2. {company} – {name}, ron@bluesky.io\n3. {company} – {name}, lior@nimbus.co.il]]\nתכין סיכום למנהל המכירות"
+  },
+  {
+   "id": "he-m-131",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך מבנים טבלת לקוחות ב-CRM? אני חושב על שדות כמו שם חברה, איש קשר, סטטוס וחוזה, בלי נתונים אמיתיים"
+  },
+  {
+   "id": "he-m-132",
+   "category": "customer_list",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מדיניות: רשימות לקוחות הן קניין החברה ואסור לייצא אותן לכלים חיצוניים. תקצר את זה לשתי שורות לחדשים"
+  },
+  {
+   "id": "he-m-133",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "יש לי באג בקוד המסחרי שלנו, למה זה איטי?\n\n[[class PricingEngine:\n    def score(self, user, basket):\n        w = self._load_private_weights('prod-v7')\n        return sum(w[i.sku] * i.qty for i in basket) * self._margin_curve(user.tier)]]"
+  },
+  {
+   "id": "he-m-134",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "תעשה לי ריפקטור לפונקציה הפנימית שלנו:\n[[def route_order(order):\n    if order.risk > 0.7 and order.region in PRIORITY_ZONES:\n        return fraud_queue.push(order, ttl=cfg.FRAUD_TTL)\n    return fulfill(order)]]"
+  },
+  {
+   "id": "he-m-135",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מסמך עיצוב פנימי, האלגוריתם המנצח שלנו לדירוג תוצאות:\n[[for doc in candidates:\n    s = bm25(doc, q) * 0.6 + embed_sim(doc, q) * 0.4 - decay(doc.age)\n    ranked.append((s, doc))]]\nתתעד לי את זה"
+  },
+  {
+   "id": "he-m-136",
+   "category": "proprietary_source_code",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": true,
+   "text": "הקוד של הליבה שלנו קורס:\nTraceback ... in engine/core.py\n[[    def _apply(self, tx):\n        self.ledger[tx.id] = tx.amount * self.fx(tx.cur)  # internal fx model v3]]\nמה הבעיה?"
+  },
+  {
+   "id": "he-m-137",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "איך כותבים בפייתון פונקציה שמחשבת ממוצע משוקלל? דוגמה כללית, לא קשורה לקוד של החברה"
+  },
+  {
+   "id": "he-m-138",
+   "category": "proprietary_source_code",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה כדאי לעשות כשרוצים לבקש ביקורת קוד מ-AI אבל הקוד קנייני? יש נוהל מקובל?"
+  },
+  {
+   "id": "he-m-139",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "השרת לא עונה:\n[[ssh: connect to host {hostname} port 22: Connection timed out\nה-IP הפנימי שלו {ip}]]\nמה בודקים?"
+  },
+  {
+   "id": "he-m-140",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "יש לנו ב-VPC שלנו [[את {ip} כ-DB ראשי ואת {hostname} כ-bastion]]. איך מצמצמים את ה-security group?"
+  },
+  {
+   "id": "he-m-141",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "למה ה-nginx הזה לא עושה proxy?\nupstream backend {\n  [[server {ip}:8080;\n  server {hostname}:8080;]]\n}"
+  },
+  {
+   "id": "he-m-142",
+   "category": "internal_infrastructure",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": true,
+   "text": "תרשים רשת פנימי: הקליינטים מתחברים ל-[[{hostname} דרך עשר נקודה אפס נקודה ארבע נקודה שבע עשרה]] ואז ל-VLAN ייעודי. תתאר לי את זה במילים"
+  },
+  {
+   "id": "he-m-143",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה ההבדל בין subnet ל-VLAN, ואיך מתכננים טווח כתובות פרטי כמו 192.168.x.x לרשת של משרד קטן?"
+  },
+  {
+   "id": "he-m-144",
+   "category": "internal_infrastructure",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "נוהל אבטחה: אין לשתף שמות שרתים או כתובות IP פנימיות מחוץ לצוות התשתיות. תכתוב לי נוהל קצר על זה"
+  },
+  {
+   "id": "he-m-145",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תכתוב מייל למכירות: ״[[קיבלתי מסמך פנימי של {company} שמראה שהמחיר שלהם ללקוחות גדולים הוא {amount} ושהם מתכננים להוריד אותו בעוד חודשיים]].״"
+  },
+  {
+   "id": "he-m-146",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "[[מצגת פנימית שהודלפה מ-{company}: אסטרטגיית התמחור שלהם, רשימת הלקוחות שהם מנסים לגנוב מאיתנו והמרווחים הצפויים]]\nתסכם לי לדף קרב"
+  },
+  {
+   "id": "he-m-147",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מישהו שעבד ב-{company} סיפר לי ש[[הם מפטרים 15% מהצוות ומבטלים את {product} בסוף השנה]], איך נוכל לנצל את זה מול הלקוחות שלהם?"
+  },
+  {
+   "id": "he-m-148",
+   "category": "competitor_confidential",
+   "polarity": "positive",
+   "style": "chat_transcript",
+   "adversarial": true,
+   "text": "[16:41] דני: ממקור פנימי ב-{company}: [[הם נכשלו בבדיקות האבטחה ואיבדו את הלקוח הגדול שלהם, זה עוד לא פורסם]]\n[16:42] אורי: וואו\nתכתוב לי מזה נקודות למכירות"
+  },
+  {
+   "id": "he-m-149",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך עושים ניתוח תחרותי חוקי על חברות מתחרות, רק ממקורות פומביים כמו אתר, דוחות והצהרות לעיתונות?"
+  },
+  {
+   "id": "he-m-150",
+   "category": "competitor_confidential",
+   "polarity": "hard_negative",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "מדיניות: אסור לקבל או להפיץ מידע סודי של מתחרים. יש לדווח ליועץ המשפטי אם התקבל בטעות. תכתוב לי הודעה לצוות המכירות"
+  },
+  {
+   "id": "he-m-151",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "מה ההבדל בין REST ל-GraphQL? אני צריך להחליט לפרויקט חדש"
+  },
+  {
+   "id": "he-m-152",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "תן לי רעיונות לארוחת צוות ל-12 אנשים שמתאימה גם לצמחונים"
+  },
+  {
+   "id": "he-m-153",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "למה הקוד הזה מדפיס None?\n\ndef add(a, b):\n    a + b\n\nprint(add(1, 2))"
+  },
+  {
+   "id": "he-m-154",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "איך עושים debounce ב-React hook? יש לי שדה חיפוש שקורא ל-API בכל הקלדה"
+  },
+  {
+   "id": "he-m-155",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תנסח מייל קצר ללקוח שמתנצל על איחור של יומיים באספקה ומציע הנחה קטנה בהזמנה הבאה"
+  },
+  {
+   "id": "he-m-156",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "תעזור לי לכתוב מייל תודה לצוות אחרי השקת {product}, בטון חם אבל מקצועי"
+  },
+  {
+   "id": "he-m-157",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "תקצר לי את הפסקה הזאת: הפגישה השבועית נועדה לסנכרן בין הצוותים, לזהות חסמים ולתאם עדיפויות לשבוע הקרוב. משתתפים: מנהלי הצוותים."
+  },
+  {
+   "id": "he-m-158",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "תתקן לי ניסוח במסמך הקליטה לעובדים חדשים: ״ביום הראשון תקבלו מחשב, תכירו את הצוות ותעברו הדרכה על כלי העבודה.״"
+  },
+  {
+   "id": "he-m-159",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "יש לי שגיאה בבילד:\nnpm ERR! code ERESOLVE\nnpm ERR! Could not resolve dependency: peer react@^17\nמה עושים?"
+  },
+  {
+   "id": "he-m-160",
+   "category": null,
+   "polarity": "benign",
+   "style": "log_paste",
+   "adversarial": false,
+   "text": "ה-Docker שלי נתקע:\ndocker: Error response from daemon: port is already allocated.\nאיך אני משחרר את הפורט?"
+  },
+  {
+   "id": "he-m-161",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "תתרגם לאנגלית: ״אנחנו שמחים להזמין אתכם לכנס השנתי שיתקיים ב-{date} במרכז הקונגרסים.״"
+  },
+  {
+   "id": "he-m-162",
+   "category": null,
+   "polarity": "benign",
+   "style": "translation_request",
+   "adversarial": false,
+   "text": "Translate to Hebrew: Thanks for reaching out. We will get back to you within two business days. תוסיף גם גרסה פורמלית"
+  },
+  {
+   "id": "he-m-163",
+   "category": null,
+   "polarity": "benign",
+   "style": "spreadsheet_paste",
+   "adversarial": false,
+   "text": "מוצר,כמות,מחיר\n{product},120,35\n{product},80,52\nתחשב לי סכום כולל ותמצא את המוצר הכי רווחי"
+  },
+  {
+   "id": "he-m-164",
+   "category": null,
+   "polarity": "benign",
+   "style": "meeting_notes",
+   "adversarial": false,
+   "text": "סיכום פגישה:\n- דיברנו על שיפור זמני תגובה בתמיכה\n- {name} תבדוק כלי טיקטים חדש עד {date}\nתוציא לי רשימת משימות"
+  },
+  {
+   "id": "he-m-165",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_transcript",
+   "adversarial": false,
+   "text": "[11:02] נועה: מי מביא קפה לישיבה?\n[11:03] עמית: אני, ואני גם מזמין סנדוויצ׳ים\nתסכם לי את זה לשורה אחת"
+  },
+  {
+   "id": "he-m-166",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "איך מתכוננים לראיון עבודה לתפקיד מנהל מוצר? אשמח לרשימת שאלות נפוצות"
+  },
+  {
+   "id": "he-m-167",
+   "category": null,
+   "polarity": "benign",
+   "style": "chat_question",
+   "adversarial": false,
+   "text": "תסביר לי בפשטות מה זה Kubernetes, כאילו אני מנהל שאינו טכני"
+  },
+  {
+   "id": "he-m-168",
+   "category": null,
+   "polarity": "benign",
+   "style": "code_help",
+   "adversarial": false,
+   "text": "תכתוב לי שאילתת SQL שמחזירה את חמשת הלקוחות עם הכי הרבה הזמנות בחודש האחרון, מטבלת orders ו-customers"
+  },
+  {
+   "id": "he-m-169",
+   "category": null,
+   "polarity": "benign",
+   "style": "document_paste",
+   "adversarial": false,
+   "text": "תעזור לי לכתוב תיאור משרה למפתח Backend: דרישות, יתרונות, והיקף משרה מלאה, בעברית חמה"
+  },
+  {
+   "id": "he-m-170",
+   "category": null,
+   "polarity": "benign",
+   "style": "email_draft",
+   "adversarial": false,
+   "text": "אני צריך מייל לבקשת חופשה ל-{date} עד שבוע אחרי, תכתוב בצורה קצרה ומנומסת למנהלת שלי"
+  }
+ ],
+ "rules": [
+  {
+   "id": "he-r-001",
+   "category": "us_ssn",
+   "text": "ההודעה חושפת מספר Social Security Number אמריקאי, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-002",
+   "category": "us_ssn",
+   "text": "אסור לשתף מספרי SSN של אנשים עם הבוט"
+  },
+  {
+   "id": "he-r-003",
+   "category": "us_ssn",
+   "text": "חסום כל הודעה שמכילה מספר ביטוח לאומי אמריקאי (SSN) של אדם כלשהו"
+  },
+  {
+   "id": "he-r-004",
+   "category": "national_id_non_us",
+   "text": "ההודעה חושפת מספר זהות לאומי של אדם מחוץ לארה״ב (כמו ת״ז ישראלית), גם אם מוסווה."
+  },
+  {
+   "id": "he-r-005",
+   "category": "national_id_non_us",
+   "text": "אסור להעביר מספרי תעודת זהות של אנשים"
+  },
+  {
+   "id": "he-r-006",
+   "category": "national_id_non_us",
+   "text": "חסום הודעות עם מספר זהות לאומי אישי שאינו אמריקאי"
+  },
+  {
+   "id": "he-r-007",
+   "category": "passport_number",
+   "text": "ההודעה חושפת מספר דרכון של אדם, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-008",
+   "category": "passport_number",
+   "text": "אסור לשתף מספרי דרכון"
+  },
+  {
+   "id": "he-r-009",
+   "category": "passport_number",
+   "text": "חסום הודעה שיש בה מספר דרכון של עובד או לקוח"
+  },
+  {
+   "id": "he-r-010",
+   "category": "home_address",
+   "text": "ההודעה חושפת כתובת מגורים פרטית של אדם מסוים, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-011",
+   "category": "home_address",
+   "text": "אסור לשלוח כתובות מגורים של עובדים או לקוחות"
+  },
+  {
+   "id": "he-r-012",
+   "category": "home_address",
+   "text": "חסום הודעה שמכילה כתובת בית של אדם פרטי"
+  },
+  {
+   "id": "he-r-013",
+   "category": "personal_contact",
+   "text": "ההודעה חושפת מספר טלפון אישי או כתובת מייל אישית של אדם מסוים, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-014",
+   "category": "personal_contact",
+   "text": "אסור לשתף פרטי קשר פרטיים של אנשים (טלפון נייד או מייל אישי)"
+  },
+  {
+   "id": "he-r-015",
+   "category": "personal_contact",
+   "text": "חסום הודעות שמכילות טלפון או מייל פרטי של אדם ספציפי"
+  },
+  {
+   "id": "he-r-016",
+   "category": "date_of_birth_with_name",
+   "text": "ההודעה חושפת תאריך לידה של אדם מזוהה בשמו, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-017",
+   "category": "date_of_birth_with_name",
+   "text": "אסור לכתוב תאריכי לידה של אנשים עם שמם"
+  },
+  {
+   "id": "he-r-018",
+   "category": "date_of_birth_with_name",
+   "text": "חסום הודעה שבה מופיעים שם של אדם ותאריך הלידה שלו"
+  },
+  {
+   "id": "he-r-019",
+   "category": "api_key",
+   "text": "ההודעה חושפת מפתח API או טוקן גישה לשירות ענן או SaaS, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-020",
+   "category": "api_key",
+   "text": "אסור להדביק מפתחות API וטוקנים של שירותים"
+  },
+  {
+   "id": "he-r-021",
+   "category": "api_key",
+   "text": "חסום כל הודעה עם מפתח גישה או טוקן לשירות חיצוני"
+  },
+  {
+   "id": "he-r-022",
+   "category": "password",
+   "text": "ההודעה חושפת סיסמה או ביטוי סיסמה של חשבון, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-023",
+   "category": "password",
+   "text": "אסור לשלוח סיסמאות של חשבונות בצ׳אט"
+  },
+  {
+   "id": "he-r-024",
+   "category": "password",
+   "text": "חסום הודעות שמכילות סיסמה אמיתית לכל מערכת או חשבון"
+  },
+  {
+   "id": "he-r-025",
+   "category": "private_key",
+   "text": "ההודעה חושפת מפתח קריפטוגרפי פרטי (SSH, PGP או TLS), גם אם מוסווה."
+  },
+  {
+   "id": "he-r-026",
+   "category": "private_key",
+   "text": "אסור להדביק מפתחות פרטיים בשום פורמט"
+  },
+  {
+   "id": "he-r-027",
+   "category": "private_key",
+   "text": "חסום הודעה שמכילה private key, כולל בלוק BEGIN PRIVATE KEY"
+  },
+  {
+   "id": "he-r-028",
+   "category": "db_connection_string",
+   "text": "ההודעה חושפת מחרוזת חיבור למסד נתונים שכוללת פרטי התחברות, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-029",
+   "category": "db_connection_string",
+   "text": "אסור לשתף connection string של בסיסי נתונים עם סיסמה"
+  },
+  {
+   "id": "he-r-030",
+   "category": "db_connection_string",
+   "text": "חסום כל URL של דאטאבייס שמכיל משתמש וסיסמה"
+  },
+  {
+   "id": "he-r-031",
+   "category": "patient_diagnosis",
+   "text": "ההודעה חושפת אבחנה או מצב רפואי של מטופל מזוהה, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-032",
+   "category": "patient_diagnosis",
+   "text": "אסור לשתף אבחנות רפואיות של מטופלים בשם"
+  },
+  {
+   "id": "he-r-033",
+   "category": "patient_diagnosis",
+   "text": "חסום הודעה שמציינת איזו מחלה יש לאדם מסוים"
+  },
+  {
+   "id": "he-r-034",
+   "category": "prescription_record",
+   "text": "ההודעה חושפת מרשם או רשומת תרופות של מטופל מזוהה, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-035",
+   "category": "prescription_record",
+   "text": "אסור לשתף איזו תרופה נוטל מטופל מסוים"
+  },
+  {
+   "id": "he-r-036",
+   "category": "prescription_record",
+   "text": "חסום הודעות עם שם מטופל ופירוט התרופות והמינונים שלו"
+  },
+  {
+   "id": "he-r-037",
+   "category": "credit_card",
+   "text": "ההודעה חושפת מספר כרטיס תשלום, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-038",
+   "category": "credit_card",
+   "text": "אסור לשלוח מספרי כרטיסי אשראי"
+  },
+  {
+   "id": "he-r-039",
+   "category": "credit_card",
+   "text": "חסום הודעה שמכילה מספר כרטיס אשראי או חיוב מלא"
+  },
+  {
+   "id": "he-r-040",
+   "category": "bank_account",
+   "text": "ההודעה חושפת מספר חשבון בנק, IBAN או מספר ניתוב, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-041",
+   "category": "bank_account",
+   "text": "אסור לשתף פרטי חשבון בנק"
+  },
+  {
+   "id": "he-r-042",
+   "category": "bank_account",
+   "text": "חסום הודעה שמכילה מספר IBAN או פרטי חשבון להעברה"
+  },
+  {
+   "id": "he-r-043",
+   "category": "salary_of_named_person",
+   "text": "ההודעה חושפת שכר או תגמול של עובד מסוים בשמו, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-044",
+   "category": "salary_of_named_person",
+   "text": "אסור לכתוב כמה מרוויח עובד ספציפי"
+  },
+  {
+   "id": "he-r-045",
+   "category": "salary_of_named_person",
+   "text": "חסום הודעות שמכילות משכורת, בונוס או אופציות של עובד בשם"
+  },
+  {
+   "id": "he-r-046",
+   "category": "performance_review",
+   "text": "ההודעה חושפת הערכת ביצועים או רישום משמעתי של עובד מסוים, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-047",
+   "category": "performance_review",
+   "text": "אסור לשתף משובים שליליים, אזהרות או שימועים של עובדים בשם"
+  },
+  {
+   "id": "he-r-048",
+   "category": "performance_review",
+   "text": "חסום הודעה שמתארת ביצועים או הליך משמעתי של עובד מזוהה"
+  },
+  {
+   "id": "he-r-049",
+   "category": "attorney_client_privilege",
+   "text": "ההודעה חושפת ייעוץ משפטי או תקשורת חסויה בין עורך דין ללקוח, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-050",
+   "category": "attorney_client_privilege",
+   "text": "אסור לשתף חוות דעת או התכתבויות עם עורכי הדין של החברה"
+  },
+  {
+   "id": "he-r-051",
+   "category": "attorney_client_privilege",
+   "text": "חסום הודעה שמצטטת עצה משפטית חסויה"
+  },
+  {
+   "id": "he-r-052",
+   "category": "unreleased_financial_results",
+   "text": "ההודעה חושפת תוצאות כספיות של החברה שטרם פורסמו, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-053",
+   "category": "unreleased_financial_results",
+   "text": "אסור לשתף הכנסות או רווחים רבעוניים לפני הפרסום הרשמי"
+  },
+  {
+   "id": "he-r-054",
+   "category": "unreleased_financial_results",
+   "text": "חסום הודעות עם נתוני דוחות כספיים פנימיים שלא פורסמו"
+  },
+  {
+   "id": "he-r-055",
+   "category": "m_and_a",
+   "text": "ההודעה חושפת תוכניות מיזוג, רכישה או השקעה שאינן פומביות, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-056",
+   "category": "m_and_a",
+   "text": "אסור לשתף מידע על רכישות, מיזוגים או גיוסי השקעה שלא פורסמו"
+  },
+  {
+   "id": "he-r-057",
+   "category": "m_and_a",
+   "text": "חסום הודעה שמתארת עסקת M&A שעדיין חסויה"
+  },
+  {
+   "id": "he-r-058",
+   "category": "product_roadmap",
+   "text": "ההודעה חושפת מפת דרכים או תוכנית השקה של מוצר שלא הוכרז, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-059",
+   "category": "product_roadmap",
+   "text": "אסור לשתף פיצ׳רים או תאריכי השקה שעדיין לא פורסמו"
+  },
+  {
+   "id": "he-r-060",
+   "category": "product_roadmap",
+   "text": "חסום הודעות שחושפות תוכניות מוצר עתידיות של החברה"
+  },
+  {
+   "id": "he-r-061",
+   "category": "project_codename",
+   "text": "ההודעה חושפת פרטים על הפרויקט הפנימי {codename}, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-062",
+   "category": "project_codename",
+   "text": "אסור לשתף כל מידע על פרויקט {codename}"
+  },
+  {
+   "id": "he-r-063",
+   "category": "project_codename",
+   "text": "חסום הודעות שמפרטות סטטוס, תקציב או צוות של {codename}"
+  },
+  {
+   "id": "he-r-064",
+   "category": "customer_list",
+   "text": "ההודעה חושפת רשימת לקוחות או פרטי קשר של לקוחות, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-065",
+   "category": "customer_list",
+   "text": "אסור להדביק רשימות לקוחות או אנשי קשר מה-CRM"
+  },
+  {
+   "id": "he-r-066",
+   "category": "customer_list",
+   "text": "חסום הודעה שמכילה שמות לקוחות יחד עם פרטי התקשרות שלהם"
+  },
+  {
+   "id": "he-r-067",
+   "category": "proprietary_source_code",
+   "text": "ההודעה חושפת קוד מקור קנייני פנימי של החברה, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-068",
+   "category": "proprietary_source_code",
+   "text": "אסור להדביק קוד פנימי של החברה בבוט"
+  },
+  {
+   "id": "he-r-069",
+   "category": "proprietary_source_code",
+   "text": "חסום הודעות שמכילות פונקציות או מודולים מהמאגר הפרטי שלנו"
+  },
+  {
+   "id": "he-r-070",
+   "category": "internal_infrastructure",
+   "text": "ההודעה חושפת שמות שרתים פנימיים, כתובות IP או פרטי ארכיטקטורת רשת, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-071",
+   "category": "internal_infrastructure",
+   "text": "אסור לשתף כתובות IP פנימיות ושמות hosts של החברה"
+  },
+  {
+   "id": "he-r-072",
+   "category": "internal_infrastructure",
+   "text": "חסום הודעות עם פרטי תשתית רשת פנימית"
+  },
+  {
+   "id": "he-r-073",
+   "category": "competitor_confidential",
+   "text": "ההודעה חושפת מידע סודי שהושג על מתחרה, גם אם מוסווה."
+  },
+  {
+   "id": "he-r-074",
+   "category": "competitor_confidential",
+   "text": "אסור לשתף מידע פנימי או מודלף על חברות מתחרות"
+  },
+  {
+   "id": "he-r-075",
+   "category": "competitor_confidential",
+   "text": "חסום הודעה שמכילה מידע חסוי על מתחרה"
+  }
+ ]
+}

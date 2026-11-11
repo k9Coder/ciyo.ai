@@ -1,0 +1,11 @@
+{
+  "model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
+  "size_mb": 338.340635,
+  "native_ms": {
+    "150tok_5rules": 1067,
+    "500tok_5rules": 7314,
+    "1000tok_5rules": 14852,
+    "1000tok_10rules": 27982,
+    "2000tok_5rules": 27210
+  }
+}
