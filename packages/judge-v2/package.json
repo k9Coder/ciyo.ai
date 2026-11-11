@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./store-fs": "./src/store-fs.ts",
+    "./store-cache": "./src/store-cache.ts"
   },
   "scripts": {
     "test": "vitest run",
