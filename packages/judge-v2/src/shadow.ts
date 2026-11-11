@@ -40,6 +40,8 @@ export interface ShadowRunnerOptions {
   maxQueue?: number;
   /** Text beyond this many characters is not judged (bounds CPU; ~12k tokens = 3 fast-model windows). */
   maxChars?: number;
+  /** Which end of an over-long text to judge: "head" (a typed prompt) or "tail" (a request body, newest message last). */
+  clip?: "head" | "tail";
 }
 
 export interface ShadowRunner {
@@ -75,6 +77,7 @@ export function createShadowRunner(o: ShadowRunnerOptions): ShadowRunner {
   const budgetMs = o.budgetMs ?? 60_000;
   const maxQueue = o.maxQueue ?? 4;
   const maxChars = o.maxChars ?? 50_000;
+  const clipText = (t: string) => (t.length <= maxChars ? t : o.clip === "tail" ? t.slice(t.length - maxChars) : t.slice(0, maxChars));
   const queue: Job[] = [];
   let running: Promise<void> | null = null;
 
@@ -108,7 +111,7 @@ export function createShadowRunner(o: ShadowRunnerOptions): ShadowRunner {
     try { cascade = await o.getCascade(); } catch { cascade = null; }
     if (!cascade) return emit(rows(job, now() - t0, null, "skipped"));
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const inference = cascade.judge(job.text.slice(0, maxChars), job.judgeRules);
+    const inference = cascade.judge(clipText(job.text), job.judgeRules);
     try {
       const timeout = new Promise<"timeout">((res) => { timer = setTimeout(() => res("timeout"), budgetMs); });
       const out = await Promise.race([inference, timeout]);

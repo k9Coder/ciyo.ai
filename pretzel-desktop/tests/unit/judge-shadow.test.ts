@@ -8,7 +8,8 @@ vi.mock('../../electron/env', () => ({ env: { PRETZEL_API_URL: 'https://api.test
 vi.mock('onnxruntime-node', () => ({}))
 
 import { loadToken } from '../../electron/auth'
-import { shadowRulesFrom, primarySummaryFrom } from '../../electron/judge-shadow'
+import { shadowRulesFrom, primarySummaryFrom, createDesktopShadow, type WorkerLike } from '../../electron/judge-shadow'
+import { isLowMemoryDesktop } from '../../electron/judge-shadow-runner'
 import { reportJudgeShadow } from '../../electron/report-judge-shadow'
 import { submitShadowSafely } from '../../electron/proxy'
 
@@ -92,5 +93,60 @@ describe('reportJudgeShadow', () => {
     expect(fetch).not.toHaveBeenCalled()
     vi.mocked(fetch).mockRejectedValue(new Error('offline'))
     await expect(reportJudgeShadow([row(1)])).resolves.toBeUndefined()
+  })
+})
+
+class FakeWorker implements WorkerLike {
+  posted: unknown[] = []
+  listeners: Record<string, ((v: unknown) => void)[]> = {}
+  throwOnPost = false
+  postMessage(m: unknown) { if (this.throwOnPost) throw new Error('worker gone'); this.posted.push(m) }
+  on(ev: string, fn: (v: unknown) => void) { (this.listeners[ev] ??= []).push(fn); return this }
+  emit(ev: string, v: unknown) { for (const fn of this.listeners[ev] ?? []) fn(v) }
+}
+
+describe('createDesktopShadow (main process side; inference runs in a worker thread)', () => {
+  it('spawns no worker for a policy without judge_prompt rules', () => {
+    const spawn = vi.fn(() => new FakeWorker())
+    const s = createDesktopShadow({ spawn, report: vi.fn() })
+    const noJudge = { ...policy, custom: policy.custom.filter((r) => r.kind !== 'judge_prompt') } as Policy
+    s.prepare(noJudge)
+    s.submit('body', noJudge, result([]))
+    expect(spawn).not.toHaveBeenCalled()
+  })
+
+  it('posts the job to the worker (text, mapped rules, primary) and forwards rows back to report', () => {
+    const w = new FakeWorker(); const report = vi.fn()
+    const s = createDesktopShadow({ spawn: () => w, report })
+    s.submit('body text', policy, result([{ ruleId: KW_ID, action: 'warn' }]))
+    expect(w.posted).toEqual([{ type: 'submit', text: 'body text', rules: shadowRulesFrom(policy), primary: { actionByRuleId: { [KW_ID]: 'warn' } } }])
+    w.emit('message', { type: 'rows', rows: [{ ruleId: JP_ID }] })
+    expect(report).toHaveBeenCalledWith([{ ruleId: JP_ID }])
+  })
+
+  it('never throws when the worker fails, and respawns after the worker exits', () => {
+    const workers: FakeWorker[] = []
+    const s = createDesktopShadow({ spawn: () => { const w = new FakeWorker(); workers.push(w); return w }, report: vi.fn() })
+    s.prepare(policy)
+    expect(workers[0]!.posted).toEqual([{ type: 'prepare' }])
+    workers[0]!.throwOnPost = true
+    expect(() => s.submit('b', policy, result([]))).not.toThrow()
+    workers[0]!.emit('exit', 1)
+    s.submit('b', policy, result([]))
+    expect(workers.length).toBe(2)
+    expect(workers[1]!.posted[0]).toMatchObject({ type: 'submit', text: 'b' })
+  })
+
+  it('a spawn failure is swallowed', () => {
+    const s = createDesktopShadow({ spawn: () => { throw new Error('no worker') }, report: vi.fn() })
+    expect(() => s.submit('b', policy, result([]))).not.toThrow()
+  })
+})
+
+describe('isLowMemoryDesktop', () => {
+  it('uses total RAM (macOS free memory excludes cache): under 4 GiB is low', () => {
+    expect(isLowMemoryDesktop(2 * 2 ** 30)).toBe(true)
+    expect(isLowMemoryDesktop(4 * 2 ** 30)).toBe(false)
+    expect(isLowMemoryDesktop(16 * 2 ** 30)).toBe(false)
   })
 })

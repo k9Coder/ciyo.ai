@@ -151,6 +151,17 @@ describe("shadow runner", () => {
     expect(s.rows()[0]!.messageChars).toBe(100_000);
   });
 
+  it("clip 'tail' keeps the end of the text (desktop: newest message sits at the end of the request body)", async () => {
+    let seen = "";
+    const reported: JudgeShadowRow[] = [];
+    const runner = createShadowRunner({ surface: "desktop", getCascade: async () => ({ judge: async (m, rules) => { seen = m; return result(rules); } }),
+      modelVersion: () => "v", report: (r) => reported.push(...r), lowMemory: () => false, maxChars: 5, clip: "tail" });
+    runner.submit("0123456789", [JP], { actionByRuleId: {} });
+    await runner.idle();
+    expect(seen).toBe("56789");
+    expect(reported[0]!.messageChars).toBe(10);
+  });
+
   it("a timed-out inference keeps the queue busy until it settles: never two inferences at once", async () => {
     let inFlight = 0, maxInFlight = 0;
     const judge = async (_m: string, rules: CascadeRule[]) => {

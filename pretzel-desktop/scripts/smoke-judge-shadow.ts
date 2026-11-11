@@ -9,7 +9,8 @@ import { mkdirSync } from 'fs'
 import { DEFAULT_POLICY, detectPrompt } from '@mykka/detect'
 import type { Policy } from '@mykka/detect'
 import type { JudgeShadowRow } from '@mykka/judge-v2'
-import { createDesktopShadow } from '../electron/judge-shadow'
+import { createDesktopRunner } from '../electron/judge-shadow-runner'
+import { shadowRulesFrom, primarySummaryFrom } from '@mykka/judge-v2'
 
 const dir = process.argv[2]
 const base = process.env.JUDGE_V2_MODEL_BASE
@@ -27,7 +28,12 @@ const policy: Policy = {
 } as Policy
 
 const rows: JudgeShadowRow[] = []
-const shadow = createDesktopShadow({ userDataDir: dir, report: (r) => rows.push(...r), modelBase: base })
+// Exercises the runner the worker thread hosts (judge-shadow-worker.ts), in-process.
+const runner = createDesktopRunner({ userDataDir: dir, report: (r) => rows.push(...r), modelBase: base })
+const shadow = {
+  prepare: (_p: Policy) => runner.prepare(),
+  submit: (text: string, p: Policy, r: Awaited<ReturnType<typeof detectPrompt>>) => runner.submit(text, shadowRulesFrom(p), primarySummaryFrom(r)),
+}
 
 async function main(): Promise<void> {
   const t0 = Date.now()
