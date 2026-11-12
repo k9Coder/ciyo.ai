@@ -53,7 +53,12 @@ export default defineManifest(async ({ mode }) => {
     : [];
   // API host goes in host_permissions only — NOT content_scripts/matches (we
   // never inject into the API) or web_accessible_resources.
-  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern(apiBase), ...CLERK_HOSTS];
+  // Judge v2 shadow model download: GitHub Release assets redirect to these hosts.
+  const MODEL_HOSTS = ["https://github.com/*", "https://objects.githubusercontent.com/*", "https://release-assets.githubusercontent.com/*"];
+  // Dev only: a local model server set via VITE_JUDGE_V2_MODEL_BASE also needs a host permission.
+  const devModelBase = env.VITE_JUDGE_V2_MODEL_BASE ?? process.env.VITE_JUDGE_V2_MODEL_BASE;
+  if (devModelBase) MODEL_HOSTS.push(`${new URL(devModelBase).origin}/*`);
+  const HOST_PERMISSIONS = [...LLM_HOSTS, apiHostPattern(apiBase), ...CLERK_HOSTS, ...MODEL_HOSTS];
 
   return {
     manifest_version: 3,
@@ -62,7 +67,8 @@ export default defineManifest(async ({ mode }) => {
     description: "Pretzel by mykka.ai — intercepts AI prompts and blocks sensitive data before it leaves your browser.",
     // "offscreen": hosts the local-judge model outside the service worker's
     // idle-kill lifecycle (spike/local-judge-poc) — see background/local-judge-poc.ts.
-    permissions: ["storage", "activeTab", "alarms", "cookies", "identity", "offscreen"],
+    // "unlimitedStorage": judge v2 shadow models (~430 MB) cached in the offscreen document's Cache API.
+    permissions: ["storage", "unlimitedStorage", "activeTab", "alarms", "cookies", "identity", "offscreen"],
     host_permissions: HOST_PERMISSIONS,
     background: {
       service_worker: "src/background/service-worker.ts",
@@ -106,9 +112,9 @@ export default defineManifest(async ({ mode }) => {
       "48": "public/icons/icon48.png",
       "128": "public/icons/icon128.png",
     },
-    // wasm-unsafe-eval: the offscreen document's local-judge model
-    // (spike/local-judge-poc, themis-judge.ts) runs via WASM, which MV3's
-    // default CSP blocks compiling without this explicit opt-in.
+    // wasm-unsafe-eval: the offscreen document runs the judge v2 shadow models
+    // on onnxruntime-web (WASM), which MV3's default CSP blocks compiling
+    // without this explicit opt-in.
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
     },

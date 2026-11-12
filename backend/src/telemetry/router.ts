@@ -3,6 +3,12 @@ import { requireOrgTokenOrClerkAuth, requireAdminTokenOrClerkAdmin } from '../au
 import {
   recordEnforcementSignal,
   recordShadowVerdicts,
+  recordJudgeShadowChecks,
+  JUDGE_SHADOW_SURFACES,
+  JUDGE_SHADOW_RULE_KINDS,
+  JUDGE_SHADOW_PRIMARY_ACTIONS,
+  JUDGE_SHADOW_SECONDARY_VERDICTS,
+  type JudgeShadowRowInput,
   recentDegraded,
   silentFailureSuspected,
   ENFORCEMENT_REASONS,
@@ -13,6 +19,46 @@ import {
 } from './service.js'
 
 const MAX_SHADOW_VERDICT_BATCH = 200
+const MAX_JUDGE_SHADOW_BATCH = 100
+const MODEL_VERSION_RE = /^[a-z0-9_.+-]{1,32}$/
+
+const JUDGE_SHADOW_KEYS = [
+  'checkId', 'surface', 'ruleId', 'ruleKind', 'primaryAction', 'secondaryVerdict', 'fastScore', 'secondScore',
+  'spanStart', 'spanEnd', 'messageChars', 'windows', 'latencyMs', 'modelVersion', 'occurredAt',
+] as const
+
+// Column limits: integer (int4) and smallint. Larger values must be a 400, not a database 500.
+const INT_MAX = 2_147_483_647
+const SMALLINT_MAX = 32_767
+const isUint = (v: unknown, max = INT_MAX): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
+const isScore = (v: unknown): boolean => v === null || (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1)
+
+/** Returns an error message, or null when the row is valid. Exact key set: nothing else (no prompt text) fits. */
+export function judgeShadowRowError(raw: unknown): string | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'each row must be an object'
+  const r = raw as Record<string, unknown>
+  const keys = Object.keys(r)
+  if (keys.length !== JUDGE_SHADOW_KEYS.length || !JUDGE_SHADOW_KEYS.every((k) => k in r)) {
+    return 'row must have exactly the keys ' + JUDGE_SHADOW_KEYS.join(', ')
+  }
+  if (typeof r.checkId !== 'string' || !UUID_RE.test(r.checkId)) return 'checkId must be a UUID'
+  if (typeof r.ruleId !== 'string' || !UUID_RE.test(r.ruleId)) return 'ruleId must be a UUID'
+  if (!JUDGE_SHADOW_SURFACES.includes(r.surface as never)) return 'surface must be one of ' + JUDGE_SHADOW_SURFACES.join(', ')
+  if (!JUDGE_SHADOW_RULE_KINDS.includes(r.ruleKind as never)) return 'ruleKind must be one of ' + JUDGE_SHADOW_RULE_KINDS.join(', ')
+  if (!JUDGE_SHADOW_PRIMARY_ACTIONS.includes(r.primaryAction as never)) return 'primaryAction must be one of ' + JUDGE_SHADOW_PRIMARY_ACTIONS.join(', ')
+  if (!JUDGE_SHADOW_SECONDARY_VERDICTS.includes(r.secondaryVerdict as never)) return 'secondaryVerdict must be one of ' + JUDGE_SHADOW_SECONDARY_VERDICTS.join(', ')
+  if (!isScore(r.fastScore) || !isScore(r.secondScore)) return 'scores must be null or a number between 0 and 1'
+  if ((r.spanStart === null) !== (r.spanEnd === null)) return 'spanStart and spanEnd must both be set or both be null'
+  if (r.spanStart !== null && (!isUint(r.spanStart) || !isUint(r.spanEnd) || (r.spanEnd as number) < r.spanStart)) {
+    return 'span must be non-negative integers with spanEnd >= spanStart'
+  }
+  if (!isUint(r.messageChars) || !isUint(r.windows, SMALLINT_MAX) || !isUint(r.latencyMs)) {
+    return 'messageChars, windows and latencyMs must be non-negative integers within the column range'
+  }
+  if (typeof r.modelVersion !== 'string' || !MODEL_VERSION_RE.test(r.modelVersion)) return 'modelVersion is malformed'
+  if (typeof r.occurredAt !== 'string' || Number.isNaN(new Date(r.occurredAt).getTime())) return 'occurredAt must be a valid ISO date string'
+  return null
+}
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
@@ -86,6 +132,21 @@ export async function telemetryRouter(fastify: FastifyInstance): Promise<void> {
     }
 
     await recordShadowVerdicts(req.tenant.id, items)
+    return reply.status(204).send()
+  })
+
+  // Judge v2 shadow rows (desktop/extension). Content-free by construction:
+  // exact key whitelist, enums, UUIDs, numbers — see judgeShadowRowError.
+  fastify.post('/telemetry/judge-shadow', { preHandler: requireOrgTokenOrClerkAuth, bodyLimit: 64 * 1024 }, async (req, reply) => {
+    const body = req.body
+    if (!Array.isArray(body)) return reply.status(400).send({ error: 'request body must be an array' })
+    if (body.length > MAX_JUDGE_SHADOW_BATCH) return reply.status(400).send({ error: `batch too large (max ${MAX_JUDGE_SHADOW_BATCH} rows)` })
+    if (body.length === 0) return reply.status(204).send()
+    for (const raw of body as unknown[]) {
+      const error = judgeShadowRowError(raw)
+      if (error) return reply.status(400).send({ error })
+    }
+    await recordJudgeShadowChecks(req.tenant.id, req.member?.id ?? null, body as JudgeShadowRowInput[])
     return reply.status(204).send()
   })
 }

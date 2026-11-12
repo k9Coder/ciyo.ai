@@ -155,4 +155,23 @@ describe("detectPrompt — judge_prompt enforcement", () => {
     expect(calls).toBe(0);
     expect(result.highestAction).toBe("log");
   });
+
+  it("a non-enforced judge_prompt rule is never sent to the judge and yields no finding or shadow finding", async () => {
+    const policy: Policy = {
+      ...policyWithJudgePrompt("Does this contain a secret?", "block"),
+      custom: [{ ...policyWithJudgePrompt("x", "block").custom[0]!, enforced: false }],
+    };
+    let calls = 0;
+    class CountingJudge extends FakeJudge {
+      async classify(input: JudgeInput): Promise<JudgeVerdict> {
+        calls++;
+        return super.classify(input);
+      }
+    }
+    const result = await detectPrompt("this is a secret", policy, "example.com", false, new CountingJudge({ verdict: "match", confidence: 0.99 }));
+    expect(calls).toBe(0);
+    expect(result.findings).toHaveLength(0);
+    expect(result.shadowFindings).toHaveLength(0);
+    expect(result.highestAction).toBe("log");
+  });
 });

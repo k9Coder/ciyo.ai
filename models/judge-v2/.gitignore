@@ -1,0 +1,9 @@
+/data/
+/runs/
+/artifacts/
+/spike/artifacts/
+*.onnx
+*.onnx.data
+*.pt
+__pycache__/
+.pytest_cache/

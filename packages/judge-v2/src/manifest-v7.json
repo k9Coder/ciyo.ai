@@ -1,0 +1,67 @@
+{
+  "version": "v7",
+  "fast": [
+    {
+      "name": "fast_v7-judge.onnx",
+      "source": "fast_v7/judge.onnx",
+      "bytes": 139290431,
+      "sha256": "43bd94e34c2187211fa3181b0a4d2e336f640d7903c681de320138a2fdb9576b"
+    },
+    {
+      "name": "fast_v7-tokenizer.json",
+      "source": "fast_v7/tokenizer.json",
+      "bytes": 8018151,
+      "sha256": "e149134c8dae24dfca1c795501642db540e56a112c78cf9d31cf13c902411ba2"
+    },
+    {
+      "name": "fast_v7-tokenizer_config.json",
+      "source": "fast_v7/tokenizer_config.json",
+      "bytes": 283,
+      "sha256": "cd1e573a9e3a12e1b953a4daf904314a0b2d8e402d684db6a824bad0543968a3"
+    },
+    {
+      "name": "fast_v7-judge_config.json",
+      "source": "fast_v7/judge_config.json",
+      "bytes": 584,
+      "sha256": "4580ac8ef12f39b475f79c240a758d52325234355c7e6571f58b6df80362ba8f"
+    },
+    {
+      "name": "fast_v7-backbone_spec.json",
+      "source": "fast_v7/backbone_spec.json",
+      "bytes": 838,
+      "sha256": "f712bfe3af34b5dee25e59a5098dc46be81aa5460eba4e0dab14c89a2c98b9c6"
+    }
+  ],
+  "second": [
+    {
+      "name": "so_v7-judge.onnx",
+      "source": "so_v7/judge.onnx",
+      "bytes": 301104805,
+      "sha256": "618515243375dd9845fd4e712c04b705d80d0c9390ca4b9c2b02925a02b9a35b"
+    },
+    {
+      "name": "so_v7-tokenizer.json",
+      "source": "so_v7/tokenizer.json",
+      "bytes": 2781287,
+      "sha256": "7a014e8e33c3d98433f1749bbe6e9b3e92cfbc97ad98b273c1ca20f9a342c963"
+    },
+    {
+      "name": "so_v7-tokenizer_config.json",
+      "source": "so_v7/tokenizer_config.json",
+      "bytes": 246,
+      "sha256": "f791d8f7b62093d1d7e9e36b1bf9bd62f8f503a14f1f8450259643c538f99460"
+    },
+    {
+      "name": "so_v7-judge_config.json",
+      "source": "so_v7/judge_config.json",
+      "bytes": 577,
+      "sha256": "5860e91b111d894af05ce04cf2d0c164d0284885b5c70ba58b40e79687ab7fb3"
+    },
+    {
+      "name": "so_v7-backbone_spec.json",
+      "source": "so_v7/backbone_spec.json",
+      "bytes": 912,
+      "sha256": "f609004aebb86405247ec9ae2c256bed1e805635558d88f08f6a5abfb92d22ce"
+    }
+  ]
+}

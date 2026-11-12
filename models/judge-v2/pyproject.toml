@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = [
+  "slow: downloads real base-model weights or tokenizers from the Hugging Face Hub",
+  "gated: needs a Hugging Face token with Gemma 3 access",
+]
+addopts = "-m 'not slow and not gated'"

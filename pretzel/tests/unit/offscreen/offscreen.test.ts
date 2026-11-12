@@ -10,13 +10,6 @@ import { describe, it, expect, vi } from 'vitest'
 const mockPort = { disconnect: vi.fn(), onDisconnect: { addListener: vi.fn() } }
 const mockConnect = vi.fn().mockReturnValue(mockPort)
 
-vi.mock('../../../src/offscreen/themis-judge', () => ({
-  ThemisLocalJudge: vi.fn().mockImplementation(() => ({
-    isAvailable: vi.fn().mockReturnValue(false),
-    classify: vi.fn(),
-  })),
-}))
-
 vi.stubGlobal('chrome', {
   runtime: {
     connect:     mockConnect,

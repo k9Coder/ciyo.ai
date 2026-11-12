@@ -1,0 +1,275 @@
+import argparse
+import dataclasses
+import json
+import math
+import os
+import random
+import shutil
+from pathlib import Path
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.optimization import Adafactor
+
+from judge.backbone import Backbone, spec_to_json
+from judge.config import JudgeConfig
+from judge.data.schema import Example, LazyJsonl, read_jsonl
+from judge.lora import add_lora, merged_state_dict
+from judge.evaluate.metrics import Row, fbeta, precision, recall
+from judge.model import SPAN_DIM, JudgeModel, load_judge, step_tensors
+from judge.sequence import single_pass
+from judge.tokenize import JudgeTokenizer, char_span_to_tokens
+
+
+def seed_everything(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+def make_optimizer(model, lr: float) -> Adafactor:
+    # Adafactor's factored second moments use ~1GB less than AdamW for this model; AdamW
+    # peaked at 3.0GB reserved and ran out of memory on the 4GB training GPU.
+    return Adafactor([q for q in model.parameters() if q.requires_grad], lr=lr, relative_step=False, scale_parameter=False, warmup_init=False,
+                     weight_decay=0.01)
+
+
+def soft_ce(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    logp = torch.log_softmax(logits, -1)
+    return -(target * logp[:, 1] + (1 - target) * logp[:, 0]).mean()
+
+
+def _encode(tok, prefix, ex, max_tokens: int):
+    msg = tok.message_ids(ex.message)
+    rules = [tok.rule_ids(r) for r in ex.rules]
+    if len(prefix) + len(msg) + sum(len(r) for r in rules) > max_tokens:
+        return None
+    return single_pass(prefix, msg, rules)
+
+
+def span_targets(tok, prefix, ex) -> list:
+    """Per rule: (start, end) token positions in the single-pass step of the offending text, or None."""
+    if not ex.spans:
+        return [None] * len(ex.rules)
+    offs = tok.message_offsets(ex.message)
+    out = []
+    for span in ex.spans:
+        tt = None if span is None else char_span_to_tokens(offs, *span)
+        out.append(None if tt is None else (len(prefix) + tt[0], len(prefix) + tt[1]))
+    return out
+
+
+def span_loss(skey, squery, verdict_index, targets, msg_start: int, msg_end: int, device):
+    terms = []
+    keys = skey[0, msg_start:msg_end].float()
+    for vi, tgt in zip(verdict_index, targets):
+        if tgt is None:
+            continue
+        q = squery[0, vi].float()
+        s_log, e_log = keys @ q[:SPAN_DIM], keys @ q[SPAN_DIM:]
+        terms.append(F.cross_entropy(s_log[None], torch.tensor([tgt[0] - msg_start], device=device))
+                     + F.cross_entropy(e_log[None], torch.tensor([tgt[1] - msg_start], device=device)))
+    return torch.stack(terms).mean() if terms else None
+
+
+def evaluate(model, tok, prefix, examples, device, max_tokens) -> dict:
+    model.eval()
+    rows = []
+    k0, v0 = model.backbone.empty_past(device)
+    with torch.no_grad():
+        for ex in examples:
+            st = _encode(tok, prefix, ex, max_tokens)
+            if st is None:
+                continue
+            logits, _, _, _, _ = model(*step_tensors(st, device), k0, v0)
+            probs = torch.softmax(logits[0, list(st.verdict_index)].float(), -1)[:, 1].cpu().tolist()
+            rows += [Row(p, int(t >= 0.5), c, ex.adversarial, None, ex.language)
+                     for p, t, c in zip(probs, ex.targets, ex.critical)]
+    model.train()
+    return {"f2": fbeta(rows, 0.5), "recall": recall(rows, 0.5), "precision": precision(rows, 0.5), "rows": len(rows)}
+
+
+def _from_base(a, out: Path):
+    from judge.vocab import prune_embeddings
+    hf_tok = AutoTokenizer.from_pretrained(a.pruned_tokenizer or a.base)
+    hf_tok.save_pretrained(out / "tokenizer")
+    hf = AutoModelForCausalLM.from_pretrained(a.base, torch_dtype=torch.float32)
+    backbone = Backbone.from_hf_model(hf)
+    del hf
+    if a.pruned_tokenizer:
+        old_ids = json.loads((a.pruned_tokenizer / "old_ids.json").read_text(encoding="utf-8"))
+        prune_embeddings(backbone, {old: new for new, old in enumerate(old_ids)})
+    cfg = JudgeConfig(model_version=out.name, base_model=a.base)
+    return JudgeModel(backbone), JudgeTokenizer(hf_tok, cfg), cfg
+
+
+def _from_run(a, out: Path):
+    src = a.init_from
+    model = load_judge(src).train()
+    shutil.copytree(src / "tokenizer", out / "tokenizer", dirs_exist_ok=True)
+    prev = JudgeConfig.load(src / "judge_config.json")
+    cfg = dataclasses.replace(prev, model_version=out.name, temperature=1.0, threshold=0.5)
+    remap = None
+    if prev.vocab_remap_file:
+        shutil.copy2(src / prev.vocab_remap_file, out / prev.vocab_remap_file)
+        remap = out / prev.vocab_remap_file
+    return model, JudgeTokenizer.load(out / "tokenizer", cfg, remap), cfg
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="judge.train.train")
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--base")
+    src.add_argument("--init-from", type=Path)
+    ap.add_argument("--data", type=Path, required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--pruned-tokenizer", type=Path)
+    ap.add_argument("--precision", choices=["fp32", "fp16"], default="fp32")
+    ap.add_argument("--grad-checkpointing", action="store_true")
+    ap.add_argument("--max-tokens", type=int, default=4096)
+    ap.add_argument("--epochs", type=int, default=1)
+    ap.add_argument("--lr", type=float, default=3e-5)
+    ap.add_argument("--warmup", type=int, default=200)
+    ap.add_argument("--grad-accum", type=int, default=16)
+    ap.add_argument("--seed", type=int, default=1234)
+    ap.add_argument("--limit-train", type=int, default=0)
+    ap.add_argument("--eval-every", type=int, default=2000)
+    ap.add_argument("--span-weight", type=float, default=0.5)
+    ap.add_argument("--lora-rank", type=int, default=0)
+    ap.add_argument("--lora-alpha", type=int, default=16)
+    ap.add_argument("--frozen-fp16", action="store_true")
+    ap.add_argument("--span-only", action="store_true")
+    ap.add_argument("--save-every", type=int, default=0, help="write resume.pt every N optimizer steps")
+    ap.add_argument("--resume", action="store_true", help="continue from resume.pt in --out when it exists")
+    a = ap.parse_args(argv)
+    a.out.mkdir(parents=True, exist_ok=True)
+    seed_everything(a.seed)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    fp16 = a.precision == "fp16" and device == "cuda"
+
+    # Streamed from disk: holding hundreds of thousands of parsed examples exhausted RAM.
+    train = LazyJsonl(a.data / "train.jsonl", Example)
+    val = read_jsonl(a.data / "val.jsonl", Example)
+    indices = list(range(len(train)))
+    if a.limit_train:
+        indices = random.Random(a.seed).sample(indices, min(a.limit_train, len(indices)))
+
+    model, tok, cfg = (_from_base if a.base else _from_run)(a, a.out)
+    seed_everything(a.seed)
+    if a.span_only:
+        # Train only the span head on a finished judge: the verdict path stays bit-identical.
+        for name, q in model.named_parameters():
+            q.requires_grad_(name.startswith("span_"))
+    if a.lora_rank:
+        # Second-opinion models: frozen backbone (optionally stored in fp16) plus LoRA adapters; heads train fully.
+        for q in model.backbone.parameters():
+            q.requires_grad_(False)
+        add_lora(model.backbone, a.lora_rank, a.lora_alpha, frozen_fp16=a.frozen_fp16)
+    model = model.to(device)
+    model.backbone.checkpointing = a.grad_checkpointing
+    model.train()
+    cfg.save(a.out / "judge_config.json")
+    (a.out / "backbone_spec.json").write_text(json.dumps(spec_to_json(model.backbone.spec)), encoding="utf-8")
+
+    prefix = tok.prefix_ids()
+    skipped_ids: set[int] = set()
+    total_steps = max(1, a.epochs * len(indices) // a.grad_accum)
+    opt = make_optimizer(model, a.lr)
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / max(1, a.warmup))
+                                              * 0.5 * (1 + math.cos(math.pi * min(1.0, s / total_steps))))
+    scaler = torch.amp.GradScaler("cuda", enabled=fp16)
+    k0, v0 = model.backbone.empty_past(device)
+    rng = random.Random(a.seed)
+    best_f2, step, acc, acc_loss, acc_span = -1.0, 0, 0, 0.0, 0.0
+    metrics_path = a.out / "val_metrics.json"
+    log_path, resume_path = a.out / "train_log.jsonl", a.out / "resume.pt"
+    start_epoch, start_pos = 0, 0
+    if a.resume and resume_path.exists():
+        state = torch.load(resume_path, map_location=device, weights_only=False)
+        model.load_state_dict(state["model"])
+        opt.load_state_dict(state["opt"])
+        sched.load_state_dict(state["sched"])
+        scaler.load_state_dict(state["scaler"])
+        step, best_f2, start_epoch, start_pos = state["step"], state["best_f2"], state["epoch"], state["pos"]
+        skipped_ids = set(state["skipped"])
+        # Steps logged after the checkpoint are about to be redone.
+        kept = [l for l in log_path.read_text(encoding="utf-8").splitlines() if json.loads(l)["step"] <= step]
+        log_path.write_text("".join(l + "\n" for l in kept), encoding="utf-8")
+    log = log_path.open("a" if start_epoch or start_pos else "w", encoding="utf-8", buffering=1)
+
+    def save_resume(epoch: int, pos: int) -> None:
+        # Written to a temporary name first: a crash mid-save must not destroy the previous checkpoint.
+        tmp = a.out / "resume.pt.tmp"
+        torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(),
+                    "scaler": scaler.state_dict(), "step": step, "best_f2": best_f2, "epoch": epoch, "pos": pos,
+                    "skipped": sorted(skipped_ids)}, tmp)
+        os.replace(tmp, resume_path)
+
+    def checkpoint():
+        nonlocal best_f2
+        m = evaluate(model, tok, prefix, val, device, a.max_tokens)
+        if m["f2"] > best_f2:
+            best_f2 = m["f2"]
+            torch.save(merged_state_dict(model) if a.lora_rank else model.state_dict(), a.out / "best.pt")
+            metrics_path.write_text(json.dumps({**m, "step": step, "skipped_long": len(skipped_ids)}), encoding="utf-8")
+
+    for epoch in range(a.epochs):
+        order = list(indices)
+        rng.shuffle(order)  # replayed on resume, so a resumed run sees the same order
+        if epoch < start_epoch:
+            continue
+        for pos, j in enumerate(order):
+            if epoch == start_epoch and pos < start_pos:
+                continue
+            ex = train[j]
+            st = _encode(tok, prefix, ex, a.max_tokens)
+            if st is None:
+                skipped_ids.add(j)
+                continue
+            with torch.autocast("cuda", dtype=torch.float16, enabled=fp16):
+                logits, skey, squery, _, _ = model(*step_tensors(st, device), k0, v0)
+            target = torch.tensor(ex.targets, dtype=torch.float32, device=device)
+            loss = soft_ce(logits[0, list(st.verdict_index)].float(), target) / a.grad_accum
+            if a.span_only:
+                loss = logits.sum() * 0
+            if a.span_weight or a.span_only:
+                n_msg = len(tok.message_ids(ex.message))
+                sl = span_loss(skey, squery, st.verdict_index, span_targets(tok, prefix, ex), len(prefix),
+                               len(prefix) + n_msg, device)
+                if sl is not None:
+                    loss = loss + (1.0 if a.span_only else a.span_weight) * sl / a.grad_accum
+                    acc_span += sl.item() / a.grad_accum
+            if loss.requires_grad:  # span-only examples without a span carry no gradient
+                scaler.scale(loss).backward()
+            acc += 1
+            acc_loss += loss.item()
+            if acc == a.grad_accum:
+                scaler.unscale_(opt)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                scaler.step(opt)
+                scaler.update()
+                sched.step()
+                opt.zero_grad(set_to_none=True)
+                step += 1
+                log.write(json.dumps({"step": step, "loss": acc_loss, "span_loss": acc_span}) + "\n")
+                acc, acc_loss, acc_span = 0, 0.0, 0.0
+                # Evaluate first, so a resume checkpoint on the same step carries this step's best score.
+                if step % a.eval_every == 0:
+                    checkpoint()
+                if a.save_every and step % a.save_every == 0:
+                    save_resume(epoch, pos + 1)
+    checkpoint()
+    if a.span_only:
+        # Verdict metrics cannot change, so best-F2 selection never fires after the first save; keep the end state.
+        torch.save(model.state_dict(), a.out / "best.pt")
+    log.close()
+    final = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics_path.write_text(json.dumps({**final, "skipped_long": len(skipped_ids)}), encoding="utf-8")
+    print(f"done: steps={step} best_f2={best_f2:.4f} skipped_long={len(skipped_ids)}")
+
+
+if __name__ == "__main__":
+    main()

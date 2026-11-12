@@ -4,14 +4,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { DEFAULT_POLICY } from '@mykka/detect'
-import type { Policy, LocalJudge, JudgeInput, JudgeVerdict } from '@mykka/detect'
+import type { Policy } from '@mykka/detect'
 import { evaluateRequest, needsDecision, isMonitoredHost, isNoisePath } from '../../electron/proxy'
-
-class FakeJudge implements LocalJudge {
-  constructor(private readonly verdict: JudgeVerdict, private readonly available = true) {}
-  isAvailable(): boolean { return this.available }
-  async classify(_input: JudgeInput): Promise<JudgeVerdict> { return this.verdict }
-}
 
 describe('isMonitoredHost', () => {
   it('matches the AI hosts we intercept (and their subdomains)', () => {
@@ -84,7 +78,7 @@ describe('evaluateRequest + needsDecision', () => {
 })
 
 describe('evaluateRequest — judge_prompt', () => {
-  it('passes the judge through and lets a real match block', async () => {
+  it('never blocks on a judge_prompt rule (judge v2 shadow period: no judge on the send path)', async () => {
     const policy: Policy = {
       version: 1, baseline: [], perSite: {}, allowSendAnywayWithReason: false,
       auditRetentionDays: 90, failMode: 'open',
@@ -94,8 +88,8 @@ describe('evaluateRequest — judge_prompt', () => {
         kind: 'judge_prompt', prompt: 'Does this leak a secret?',
       }],
     }
-    const judge = new FakeJudge({ verdict: 'match', confidence: 0.9 })
-    const result = await evaluateRequest(policy, 'example.com', 'leaking a secret', judge)
-    expect(result.highestAction).toBe('block')
+    const result = await evaluateRequest(policy, 'example.com', 'leaking a secret')
+    expect(result.highestAction).toBe('log')
+    expect(needsDecision(result)).toBe(false)
   })
 })

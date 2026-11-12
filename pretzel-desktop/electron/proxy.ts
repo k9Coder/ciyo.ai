@@ -28,14 +28,24 @@ import tls from 'tls'
 import zlib from 'zlib'
 import { EventEmitter } from 'events'
 import { detectPrompt } from '@mykka/detect'
-import type { Policy, DetectionResult, LocalJudge } from '@mykka/detect'
+import type { Policy, DetectionResult } from '@mykka/detect'
 import { signHostCertCached, type CACert } from './ca'
-import { ThemisLocalJudge } from './themis-judge'
 import { reportShadowTelemetry } from './report-shadow-telemetry'
 
-const judge: LocalJudge = new ThemisLocalJudge()
-
 export const PROXY_PORT = 18888
+
+/** Judge v2 shadow hook: receives the inspected body after the primary decision is computed. */
+export type ShadowHook = (body: string, policy: Policy, result: DetectionResult) => void
+
+/** Hands a request to the shadow hook. Synchronous and never throws: the shadow path must not touch the send path. */
+export function submitShadowSafely(hook: ShadowHook | null, body: string, policy: Policy, result: DetectionResult): void {
+  if (!hook) return
+  try {
+    hook(body, policy, result)
+  } catch (err) {
+    console.warn('[pretzel-desktop] judge v2 shadow submit failed', (err as Error).message)
+  }
+}
 
 /** Max request body we will buffer for inspection (2 MB). Larger → forward unscanned. */
 const MAX_INSPECT_BYTES = 2 * 1024 * 1024
@@ -146,9 +156,8 @@ export async function evaluateRequest(
   policy: Policy,
   hostname: string,
   body: string,
-  judge?: LocalJudge,
 ): Promise<DetectionResult> {
-  return detectPrompt({ text: body, hostname, inputType: 'prompt' }, policy, hostname, undefined, judge)
+  return detectPrompt({ text: body, hostname, inputType: 'prompt' }, policy, hostname)
 }
 
 /** True if a detection result requires holding the request for a user decision. */
@@ -244,6 +253,12 @@ export class PretzelProxy extends EventEmitter {
 
   setCA(ca: CACert): void {
     this.ca = ca
+  }
+
+  private shadowHook: ShadowHook | null = null
+
+  setShadowHook(hook: ShadowHook | null): void {
+    this.shadowHook = hook
   }
 
   setPolicy(policy: Policy | null): void {
@@ -412,8 +427,9 @@ export class PretzelProxy extends EventEmitter {
 
     if (!truncated && body.length > 0 && this.policy && !isNoisePath(clientReq.url ?? '')) {
       try {
-        const result = await evaluateRequest(this.policy, hostname, body, judge)
+        const result = await evaluateRequest(this.policy, hostname, body)
         void reportShadowTelemetry(result.shadowFindings)
+        submitShadowSafely(this.shadowHook, body, this.policy, result)
         if (body.includes('AKIA')) {
           console.log(`[proxy][diag] AKIA result: action=${result.highestAction} findings=${result.findings.length}`)
         }

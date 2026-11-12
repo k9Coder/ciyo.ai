@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { enforcementSignals, scans, members, shadowVerdicts } from '../db/schema.js'
+import { enforcementSignals, scans, members, shadowVerdicts, judgeShadowChecks } from '../db/schema.js'
 
 export type EnforcementReason = 'decision_timeout' | 'bridge_error' | 'adapter_miss'
 export const ENFORCEMENT_REASONS: EnforcementReason[] = ['decision_timeout', 'bridge_error', 'adapter_miss']
@@ -96,4 +96,53 @@ export async function silentFailureSuspected(tenantId: string): Promise<boolean>
   // Baseline of ~1 scan/hour over 7d ≈ 168; require clearly-active history before alarming.
   const avgPerHour = baselineScans / (7 * 24)
   return avgPerHour >= 1
+}
+
+// ── Judge v2 shadow checks ────────────────────────────────────────────────────
+
+export const JUDGE_SHADOW_SURFACES = ['extension', 'desktop'] as const
+export const JUDGE_SHADOW_RULE_KINDS = ['keyword', 'pattern', 'judge_prompt'] as const
+export const JUDGE_SHADOW_PRIMARY_ACTIONS = ['block', 'warn', 'log', 'none'] as const
+export const JUDGE_SHADOW_SECONDARY_VERDICTS = ['block', 'warn', 'ok', 'pending', 'skipped', 'error', 'not_applicable'] as const
+
+/** Mirrors JudgeShadowRow in @mykka/judge-v2. The router whitelists exactly these keys. */
+export interface JudgeShadowRowInput {
+  checkId: string
+  surface: typeof JUDGE_SHADOW_SURFACES[number]
+  ruleId: string
+  ruleKind: typeof JUDGE_SHADOW_RULE_KINDS[number]
+  primaryAction: typeof JUDGE_SHADOW_PRIMARY_ACTIONS[number]
+  secondaryVerdict: typeof JUDGE_SHADOW_SECONDARY_VERDICTS[number]
+  fastScore: number | null
+  secondScore: number | null
+  spanStart: number | null
+  spanEnd: number | null
+  messageChars: number
+  windows: number
+  latencyMs: number
+  modelVersion: string
+  occurredAt: string
+}
+
+export async function recordJudgeShadowChecks(tenantId: string, memberId: string | null, rows: JudgeShadowRowInput[]): Promise<void> {
+  if (rows.length === 0) return
+  await db.insert(judgeShadowChecks).values(rows.map((r) => ({
+    tenantId,
+    memberId,
+    checkId:          r.checkId,
+    surface:          r.surface,
+    ruleId:           r.ruleId,
+    ruleKind:         r.ruleKind,
+    primaryAction:    r.primaryAction,
+    secondaryVerdict: r.secondaryVerdict,
+    fastScore:        r.fastScore === null ? null : r.fastScore.toFixed(3),
+    secondScore:      r.secondScore === null ? null : r.secondScore.toFixed(3),
+    spanStart:        r.spanStart,
+    spanEnd:          r.spanEnd,
+    messageChars:     r.messageChars,
+    windows:          r.windows,
+    latencyMs:        r.latencyMs,
+    modelVersion:     r.modelVersion,
+    occurredAt:       new Date(r.occurredAt),
+  })))
 }
